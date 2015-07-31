@@ -5,7 +5,7 @@
 # TODO: filestring
 
 rm(list=ls())
-setwd("~/Dropbox (MIT)/dc-cw-scratch")
+setwd("~/projects/group-irt")
 
 library(foreign)        # for reading the test data, FunTestEU150616.dta
 library(codetools)      # for interactive use in development
