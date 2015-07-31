@@ -55,70 +55,58 @@ inTable = function(.table, s, .all=TRUE) {
 countValid <- function (x) sum(!is.na(x))
 notNA <- function (x) !is.na(x)
 
-# FIXME: default DATA
-# getDesignEffects = function(d = .data, .n.responses = n.responses, .covs.yr = covs.yr){
-#   # Calculate design effects
-#   # TODO: change all d$opts references to implementation of .opts$
-#   de.df = data.frame(row = 1:nrow(d$data), Nresponses = .n.responses, d$data[, d$fm.vars])
-#   # FIXME: 'useweight'?
-#   de.df <- de.df %>% group_by_(.covs.yr) %>%
-#     # mutate(def = 1 + (sd(useweight) / mean(useweight)) ^ 2, def = ifelse(is.na(def), 1, def))
-#     mutate(def = mutate.def(useweight))
-#   de.df = de.df %>% ungroup() %>% arrange(row)
-#   return(de.df)
-# }
-
-# FIXME: use this summary table of de
-
+# Create summary table of design effects
 summariseDef = function(x) {
   y = 1 + (sd(x) / mean(x)) ^ 2
   if (is.na(y)) return(1)
   else return(y)
 }
 
-obAdj = function(x, .n.responses = n.responses) { 
-  out = sumValid(x)/
-  names(out) = names(x)
-  return(out)
-}
-
 # Create design matrix for model of hierarchical coefficients
-createZZPrior = function(d = .data, .svy.yr.range = svy.yr.range, .XX = XX){
+createZZPrior = function(d = .data,
+    .svy.yr.range = svy.yr.range,
+    .XX = XX,
+    ..opts = .opts) {
   # First-period priors
-  if (is.null(d$geo.mod.prior.vars)) {
-    zz.prior.names <- list(.svy.yr.range, levels(d$data[, d$geo.var]), "Zero")
+  if (is.null(..opts$geo.mod.prior.vars)) {
+    zz.prior.names <- list(levels(.svy.yr.range), levels(d$data[, ..opts$geo.var]), "Zero")
     ZZ.prior <- array(data=0, dim=llply(zz.prior.names, length), dimnames=zz.prior.names)
     ZZ.prior <- ZZ.prior[as.character(.svy.yr.range),,, drop=FALSE]
   } else {
-    if (d$geo.var == "StPOAbrv") {
+    if (..opts$geo.var == "StPOAbrv") {
       # TODO: data-particular arguments here, but not sure what to make of them
       ZZ.prior <- melt(subset(st.dta,, -REGION4), id.vars=c("StPOAbrv", "year"))
       ZZ.prior <- acast(ZZ.prior, year ~ StPOAbrv ~ variable)
-      ZZ.prior <- ZZ.prior[as.character(.svy.yr.range),, d$geo.mod.prior.vars, drop=FALSE]
+      ZZ.prior <- ZZ.prior[.svy.yr.range,, ..opts$geo.mod.prior.vars, drop=FALSE]
     }
   }
   ZZp0 <- array(0, dim = c(dim(ZZ.prior)[1], ncol(.XX) - dim(ZZ.prior)[2], dim(ZZ.prior)[3]))
   ZZ.prior = abind(ZZ.prior, ZZp0, along = 2)
-  cat(dim(ZZ.prior))
+  # Quick fix for null colnames
+  dimnames(ZZ.prior)[[2]] = colnames(.XX)
   return(ZZ.prior)
 }
 
 # Create hierarchical priors
-createZZ = function(d = .data, .svy.yr.range = svy.yr.range, .XX = XX) {
-  if (is.null(d$geo.mod.vars)) {
-    zz.names <- list(.svy.yr.range, levels(d$data[, d$geo.var]), "Zero")
+createZZ = function(d = .data,
+    .svy.yr.range = svy.yr.range,
+    .XX = XX,
+    ..opts = .opts) {
+  if (is.null(..opts$geo.mod.vars)) {
+    zz.names <- list(levels(.svy.yr.range), levels(d$data[, ..opts$geo.var]), "Zero")
     ZZ <- array(data=0, dim=llply(zz.names, length), dimnames=zz.names)
   } else {
     # TODO: application-specific variables used here; expose?
-    if (d$geo.var == "StPOAbrv") {
+    if (..opts$geo.var == "StPOAbrv") {
       ZZ <- melt(subset(st.dta,, -REGION4), id.vars=c("StPOAbrv", "year"))
       ZZ <- acast(ZZ, year ~ StPOAbrv ~ variable)
-      ZZ <- ZZ[as.character(.svy.yr.range),, d$geo.mod.vars, drop=FALSE]
+      ZZ <- ZZ[as.character(.svy.yr.range),, ..opts$geo.mod.vars, drop=FALSE]
     }
   }
   ZZ0 <- array(0, dim = c(dim(ZZ)[1], ncol(.XX) - dim(ZZ)[2], dim(ZZ)[3]))
   ZZ <- abind(ZZ, ZZ0, along = 2)
-  cat(dim(ZZ))
+  # Quick fix for null colnames
+  dimnames(ZZ)[[2]] = colnames(.XX)
   return(ZZ)
 }
 
@@ -152,9 +140,8 @@ createGT = function(d = .data$data, .q.vars=.data$q.vars) {
   return(d)
 }
 
-# Test whether an object (identified by string) is
-# identical to one of the same name in the "orig"
-# environment
+# Test whether an object (identified by string) is identical to one of the same
+# name in the "orig" environment
 is.original = function(x) {
   identical(eval(as.symbol(x)), get(x, envir = orig), ignore.environment = TRUE)
 }
