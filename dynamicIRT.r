@@ -426,7 +426,9 @@ runStan = function(
     "nu_geo", "nu_geo_prior", "kappa", "sd_item",
     "sd_theta", "sd_theta_bar", "sd_gamma",
     "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd",
-    "sd_total", "theta_nat", "var_theta_bar_nat")) {
+    "sd_total", "theta_nat", "var_theta_bar_nat")
+  seed = 1,
+  parallel = TRUE) {
 
   date()
   system.time(
@@ -452,19 +454,19 @@ runStan = function(
   # covs
   # txt.out
 
+  ## Change settings to run in parallel
+  rstan_options(auto_write = parallel)
+  if (parallel) {    
+    options(mc.cores = parallel::detectCores())
+  }
   date()
   system.time({
-    # FIXME: parallel::mclapply isn't available to Windows users
-    stan.par = mclapply(1:n.chain, mc.cores = n.chain, FUN = function(chain) {
-      cat('\nStarting chain', chain, '\n')
-      out <- stan(model_code = stan.code, data = stan.data, iter = n.iter,
-        chains = 1, warmup = n.warm, thin = n.thin, verbose = FALSE,
-        chain_id = chain, refresh = max(floor(n.iter/100), 1),
-        pars = pars.to.save, seed = chain, init = "random",
-        init_r = init.range)
-      cat('Ending chain', chain, '\n\n')
-      return(out)
-      })
+    stan.out <- stan(model_code = stan.code, data = stan.data, iter = n.iter,
+                     chains = n.chain, warmup = n.warm, thin = n.thin,
+                     verbose = FALSE, refresh = max(floor(n.iter/100), 1),
+                     pars = pars.to.save, seed = seed,
+                     init = "random", init_r = init.range)
   })
   date()
+  return(stan.out)
 }
