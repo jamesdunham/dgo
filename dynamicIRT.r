@@ -414,37 +414,40 @@ formatData = function(.data, .opts) {
 }
 
 runStan = function(
-  # TODO: also expose stan.data and stan.code arguments here
   # TODO: pick sane defaults
-  n.iter = 2e3,
-  n.chain = 2,
-  max.save = 2e3,
-  n.warm = min(1e4, floor(n.iter * 3/4)),
-  n.thin = ceiling((n.iter - n.warm) / (max.save / n.chain)),
-  init.range = 1,
-  pars.to.save = c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
-    "nu_geo", "nu_geo_prior", "kappa", "sd_item",
-    "sd_theta", "sd_theta_bar", "sd_gamma",
-    "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd",
-    "sd_total", "theta_nat", "var_theta_bar_nat")
-  seed = 1,
-  parallel = TRUE) {
-
-  date()
-  system.time(
-    # TODO: make test run optional; expose arguments for test run
-    stan.test <- stan(model_code=stan.code, data=stan.data, chains=1, iter=10,
-      pars=pars.to.save, verbose=FALSE, seed=1,
-      init = "random", init_r = init.range)
-    )
-  date()
+    stan.code,
+    stan.data,
+    n.iter = 2e3,
+    n.chain = 2,
+    max.save = 2e3,
+    n.warm = min(1e4, floor(n.iter * 3/4)),
+    n.thin = ceiling((n.iter - n.warm) / (max.save / n.chain)),
+    init.range = 1,
+    seed = 1,    
+    pars.to.save = c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
+        "nu_geo", "nu_geo_prior", "kappa", "sd_item",
+        "sd_theta", "sd_theta_bar", "sd_gamma",
+        "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd",
+        "sd_total", "theta_nat", "var_theta_bar_nat"),
+    parallel = TRUE) {
+  
+  ## date()
+  ## system.time(
+  ##   # TODO: make test run optional; expose arguments for test run
+  ##   stan.test <- stan(model_code=stan.code, data=stan.data, chains=1, iter=10,
+  ##     pars=pars.to.save, verbose=FALSE, seed=1,
+  ##     init = "random", init_r = init.range)
+  ##   )
+  ## date()
 
   # FIXME: update to extract these successfully
   # stopifnot(all.equal(prod(test_sds = extract(stan.test, pars="sd_item")$sd_item), 1))
   # stopifnot(all.equal(exp(mean(test_diff = as.vector(extract(stan.test, pars="kappa")$kappa) / test_sds)), 1))
 
+
   cat(str_wrap(str_c(
-    "Running ", n.iter, " iterations in each of ", n.chain,
+    "Running ", n.iter
+    , " iterations in each of ", n.chain,
     " chains, thinned at an interval of ", n.thin, ", with ", n.warm,
     " adaptation iterations over the years ", rownames(stan.data$ZZ)[1],
     "-", rownames(stan.data$ZZ)[length(rownames(stan.data$ZZ))], ".")))
@@ -459,14 +462,13 @@ runStan = function(
   if (parallel) {    
     options(mc.cores = parallel::detectCores())
   }
-  date()
-  system.time({
-    stan.out <- stan(model_code = stan.code, data = stan.data, iter = n.iter,
-                     chains = n.chain, warmup = n.warm, thin = n.thin,
-                     verbose = FALSE, refresh = max(floor(n.iter/100), 1),
-                     pars = pars.to.save, seed = seed,
-                     init = "random", init_r = init.range)
-  })
-  date()
+  
+  cat("\nStart: ", date(), "\n")
+  stan.out <- stan(model_code = stan.code, data = stan.data, iter = n.iter,
+                   chains = n.chain, warmup = n.warm, thin = n.thin,
+                   verbose = FALSE, refresh = max(floor(n.iter/100), 1),
+                   pars = pars.to.save, seed = seed,
+                   init = "random", init_r = init.range)
+  cat("\nEnd: ", date(), "\n")
   return(stan.out)
 }
