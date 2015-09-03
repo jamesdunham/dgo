@@ -7,9 +7,6 @@
 ## Dependencies ##
 
 library(rstan)
-# TODO: only load parallel if more than one thread requested in runStan()
-# TODO: need a cross-platform solution for multithreading; Windows users can't mcapply()
-library(parallel)
 library(reshape2)
 # TODO: confirm dependency
 library(car)
@@ -34,8 +31,13 @@ source('stan.code.r')
 
 ## User-exposed functions ##
 
-checkData = function(.data, .opts) {
+checkData = function(.data, .group.data = NULL, .opts) {
   # TODO: docstring
+
+  # NOTE: for dev
+  # .data = as.tbl(abort.df)
+  # .group.data = as.tbl(abort.st.df)
+  # .opts = abort.test.opts
 
   # Convert to tidyr tbl_df for dplyr
   .data = as.tbl(.data)
@@ -53,15 +55,20 @@ checkData = function(.data, .opts) {
   # }
 
   # Get levels of the time variable, handling the possibility that it isn't a factor
-  # TODO: could implement a verbosity argument
   if (is.factor(.data[[.opts$time.var]])) {
-    yr.range = as.numeric(levels(.data[[.opts$time.var]]))
+    periods = as.numeric(levels(.data[[.opts$time.var]]))
   } else {
-    yr.range = as.numeric(unique(.data[[.opts$time.var]]))
+    periods = as.numeric(unique(.data[[.opts$time.var]]))
   }
   cat("\n\n")
-  cat("Time variable has", length(yr.range), "levels: ")
-  cat(yr.range, sep=", ")
+  cat("Time variable has", length(periods), "levels: ")
+  cat(sort(periods), sep=", ")
+  cat("\n")
+
+  # Get the range of the time variable
+  time.range = c("min" = min(periods), "max" = max(periods))
+  # TODO: handle the possibility that the user doesn't want to estimate all
+  # periods in the range
 
   # Check for question columns with no valid responses
   invalid.vars = names(.data)[colSums(!is.na(.data)) == 0]
@@ -78,6 +85,7 @@ checkData = function(.data, .opts) {
   }
 
   # Check for rows with no valid question responses
+  # FIXME: error from abany_binary and abrape_binary missing from .data
   none.valid = rowSums(!is.na(.data[, .opts$q.vars])) == 0
   cat("\n\n")
   cat(sum(none.valid), "rows out of", nrow(.data), "have no valid responses.")
@@ -88,7 +96,8 @@ checkData = function(.data, .opts) {
   colsum.na.fm = colSums(is.na(select(.data, one_of(.opts$fm.vars))))
   if (any(row.missing.fm)) {
     cat("\n\n")
-    cat(sum(row.missing.fm), "rows out of", nrow(.data), "have missingness in frontmatter variables. Proportion missing by variable:\n\n")
+    cat(sum(row.missing.fm), "rows out of", nrow(.data), "have missingness in frontmatter variables.\n")
+    cat("Proportion missing by variable:\n\n")
     print(round(colsum.na.fm/nrow(.data), 2))
   }
 
@@ -99,7 +108,7 @@ checkData = function(.data, .opts) {
   valid.yrs = colSums(select(yrs.asked, -one_of(.opts$time.var)))
   yrs.invalid = names(valid.yrs[valid.yrs < .opts$min.years])
   cat("\n")
-  cat(sum(valid.yrs < .opts$min.years), "response variables out of", (length(valid.yrs)), "fail min.years requirement.")
+  cat(sum(valid.yrs < .opts$min.years), "response variables out of", (length(valid.yrs)), "fail min.years requirement.\n")
   cat(yrs.invalid, sep=", ")
 
   # If this wasn't a dry run (.opts$test = TRUE), attempt to fix problems
@@ -145,17 +154,17 @@ checkData = function(.data, .opts) {
 
   # Final check: do questions appear in the minimum number of polls?
   lt.min.polls = names(poll.count)[poll.count < .opts$min.polls]
-  cat(length(lt.min.polls), 'questions appear in fewer than the minimum polls per question, which is set to', .opts$min.polls, '\n')
+  cat(length(lt.min.polls), 'questions appear in fewer than the minimum polls per question, which is set to', .opts$min.polls, '.\n')
   cat(names(lt.min.polls)[lt.min.polls], sep = ',')
-  cat('\nDropped', length(lt.min.polls), 'questions for appearing in too few polls.\n\n')
+  cat('Dropped', length(lt.min.polls), 'questions for appearing in too few polls.\n\n')
   if (!.opts$test & length(lt.min.polls) > 0) {
     .data = select(.data, -one_of(lt.min.polls))
   } else if (.opts$test) {
-    cat("Finished test.")
+    cat("Finished test.\n")
   }
 
   # Make all the variables given as strings factors
-  .data = .data %>% 
+  .data = .data %>%
     mutate_each_(funs(factor), vars = c(.opts$time.var, .opts$demo.vars,
         .opts$geo.var, .opts$geo.mod.vars, .opts$geo.mod.prior.vars))
 
@@ -423,14 +432,14 @@ runStan = function(
     n.warm = min(1e4, floor(n.iter * 3/4)),
     n.thin = ceiling((n.iter - n.warm) / (max.save / n.chain)),
     init.range = 1,
-    seed = 1,    
+    seed = 1,
     pars.to.save = c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
         "nu_geo", "nu_geo_prior", "kappa", "sd_item",
         "sd_theta", "sd_theta_bar", "sd_gamma",
         "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd",
         "sd_total", "theta_nat", "var_theta_bar_nat"),
     parallel = TRUE) {
-  
+
   ## date()
   ## system.time(
   ##   # TODO: make test run optional; expose arguments for test run
@@ -443,7 +452,6 @@ runStan = function(
   # FIXME: update to extract these successfully
   # stopifnot(all.equal(prod(test_sds = extract(stan.test, pars="sd_item")$sd_item), 1))
   # stopifnot(all.equal(exp(mean(test_diff = as.vector(extract(stan.test, pars="kappa")$kappa) / test_sds)), 1))
-
 
   cat(str_wrap(str_c(
     "Running ", n.iter
@@ -459,10 +467,10 @@ runStan = function(
 
   ## Change settings to run in parallel
   rstan_options(auto_write = parallel)
-  if (parallel) {    
+  if (parallel) {
     options(mc.cores = parallel::detectCores())
   }
-  
+
   cat("\nStart: ", date(), "\n")
   stan.out <- stan(model_code = stan.code, data = stan.data, iter = n.iter,
                    chains = n.chain, warmup = n.warm, thin = n.thin,

@@ -19,27 +19,6 @@ Formula <- function (vars, y=NULL, text=FALSE) {
   else return(as.formula(paste(Y, vars)))
 }
 
-onDevin <- function (...) {
-  user <- Sys.info()["user"]
-  onD <- grepl("devin", user, ignore.case=TRUE)
-  return(onD)
-}
-onChris <- function (...) {
-  user <- Sys.info()["user"]
-  onD <- grepl("cwarshaw", user, ignore.case=TRUE)
-  return(onD)
-}
-onJames <- function (...) {
-  user <- Sys.info()["user"]
-  onJ <- grepl("james", user, ignore.case=TRUE)
-  return(onJ)
-}
-onHMDC <- function (...) {
-  user <- Sys.info()["nodename"]
-  hmdc <- grepl("hmdc", user, ignore.case=TRUE)
-  return(hmdc)
-}
-
 # TODO: new or old?
 inTable = function(.table, s, .all=TRUE) {
   out = sapply(s, function(x) !is.null(.table[[x]]))
@@ -51,6 +30,34 @@ inTable = function(.table, s, .all=TRUE) {
 }
 
 ## New functions for package ##
+
+setUserHome = function() {
+  # Try to determine the current user and set working directory to their home
+  user = Sys.info()["user"]
+  if (grepl("devin", user, ignore.case=TRUE)) {
+    home.dir = "~/Dropbox/shared/work/Dynamic_MRP"
+    # data.dir = paste(home.dir, "Data", sep="/")
+    # save.dir = paste(home.dir, "R-output", sep="/")
+    # plot.dir = paste(save.dir, "Plots/Devin", sep="/")
+    # out.dir = paste0(save.dir, "/Out/Devin")
+  } else if (grepl("cwarshaw", user, ignore.case=TRUE)) {
+    # TODO: add cwarshaw folders
+  } else if (grepl("james", user, ignore.case=TRUE)) {
+    home.dir = "~/projects/group-irt"
+    # data.dir = home.dir
+    # save.dir = home.dir
+    # plot.dir = home.dir
+    # out.dir = home.dir
+  } else {
+    home.dir = "~/"
+    # data.dir = home.dir
+    # plot.dir = home.dir
+    # save.dir = home.dir
+    # out.dir = home.dir
+  }
+  setwd(home.dir)
+  cat('Working in', getwd(), '\n')
+}
 
 countValid <- function (x) sum(!is.na(x))
 notNA <- function (x) !is.na(x)
