@@ -19,6 +19,8 @@ if (grepl("devin", Sys.info()["user"], ignore.case=TRUE)) {
   setwd('~/projects/group-irt')
 }
 
+source('dynamicIRT.r')  # Group IRT code
+
 # Read EU test data
 # NOTE: [JD 9/3] moved EU and abortion data to git folder
 eu.df = read.dta('FunTestEU150616.dta')
@@ -28,8 +30,7 @@ eu.df = read.dta('FunTestEU150616.dta')
 #   * abort.fm.vars: names of frontmatter variables
 #   * abort.q.vars: names of question variables
 load('abortion.test.data.Rdata')
-
-source('dynamicIRT.r')  # Group IRT code
+abort.q.vars = abort.q.vars[-grep("binary", abort.q.vars)]
 
 # Read the results of running the original code (all objects in the workspace
 # on completion) into their own environment.
@@ -40,16 +41,17 @@ load('original-eu-output.Rdata', env = eu.orig)
 eu.test.opts = list(
   fm.vars = names(select(eu.df, YearFactor:age)),    # front matter variable names (character vector)
   q.vars = names(select(eu.df, -c(YearFactor:age))), # survey question variable names (character vector)
-  time.var = 'YearFactor',             # time variable (character)
+  t.var = 'YearFactor',             # time variable (character)
   # TODO: replace 'years' with 'periods'/'time' throughout; we're agnostic about units
-  min.years = 1L,                      # questions appearing in any fewer periods will be dropped (numeric)
-  min.polls = 1L,                      # questions appearing in any fewer polls will be dropped (numeric)
+  min.t = 1L,                         # questions appearing in any fewer periods will be dropped (numeric)
+  min.poll = 1L,                       # questions appearing in any fewer polls will be dropped (numeric)
   geo.var = 'Country',                 # geographic variable (character)
   demo.vars = 'Gender',                # demographic variables (character vector)
   geo.mod.vars = NULL,                 # TODO: description (character vector)
   geo.mod.prior.vars = NULL,           # TODO: description (character vector)
+  weight.var = 'useweight',            # weight variable (character)
   # TODO: just use T/F
-  separate.years = as.integer(FALSE),  # no smoothing over time? (logical)
+  separate.t = as.integer(FALSE),      # no smoothing over time? (logical)
   constant.item = as.integer(TRUE),    # make difficulty parameters constant over time? (logical)
   test = TRUE)                         # run checks without touching the data? (logical)
 
@@ -57,45 +59,54 @@ eu.test.opts = list(
 abort.test.opts = list(
   fm.vars = abort.fm.vars,            # front matter variable names (character vector)
   q.vars = abort.q.vars,              # survey question variable names (character vector)
-  time.var = 'Year',                  # time variable (character)
+  t.var = 'year',                     # time variable (character)
+  use.t = 1942:2012,                  # a vector t_min:t_max
   # TODO: replace 'years' with 'periods'/'time' throughout; we're agnostic about units
-  min.years = 1L,                      # questions appearing in any fewer periods will be dropped (numeric)
-  min.polls = 1L,                      # questions appearing in any fewer polls will be dropped (numeric)
-  geo.var = 'StPOAbrv',                 # geographic variable (character)
-  demo.vars = 'Gender',                # demographic variables (character vector)
-  geo.mod.vars = NULL,                 # TODO: description (character vector)
-  geo.mod.prior.vars = NULL,           # TODO: description (character vector)
+  min.t = 1L,                         # questions appearing in any fewer periods will be dropped (numeric)
+  min.poll = 1L,                      # questions appearing in any fewer polls will be dropped (numeric)
+  poll.var = "source",                # survey identifier
+  geo.var = 'StPOAbrv',               # geographic variable (character)
+  demo.vars = 'Female',               # demographic variables (character vector)
+  geo.mod.vars = NULL,                # TODO: description (character vector)
+  geo.mod.prior.vars = NULL,          # TODO: description (character vector)
+  weight.var = 'weight',              # weight variable (character)
   # TODO: just use T/F
-  separate.years = as.integer(FALSE),  # no smoothing over time? (logical)
+  separate.t = as.integer(FALSE),  # no smoothing over time? (logical)
   constant.item = as.integer(TRUE),    # make difficulty parameters constant over time? (logical)
   test = TRUE)                         # run checks without touching the data? (logical)
 
 # Check the data to be used in the model. For now, don't make any changes; we set test = TRUE.
-# TODO: interpret .opts
 checkData(.data = eu.df, .opts = eu.test.opts)
 checkData(.data = abort.df, .opts = abort.test.opts)
 
 # Now let's update the data to be used in the model.
 eu.test.opts$test = FALSE
-checked.data = checkData(.data = eu.df, .opts = eu.test.opts)
+abort.test.opts$test = FALSE
+eu.checked.data = checkData(.data = eu.df, .opts = eu.test.opts)
+abort.checked.data = checkData(.data = abort.df, .opts = abort.test.opts)
 
 # Examine the resulting data...
 # TODO: pull out these as functions
-# Create a contingency table of question and year combinations.
-checked.data$yrs.asked
-# Create a contingency table of question and survey-year combinations.
-checked.data$svy.year.asked
-# Create a table with counts of the polls in which questions appear.
-checked.data$poll.count
+# Print a contingency table of question and year combinations.
+eu.checked.data$summary$q.when.asked
+abort.checked.data$summary$q.when.asked
+# Print a contingency table of question and survey-year combinations.
+eu.checked.data$summary$q.which.observed
+abort.checked.data$summary$q.which.observed
+# Print counts of the polls in which questions appear.
+eu.checked.data$summary$q.counts
+abort.checked.data$summary$q.counts
 
 # Create the tables and variables that Stan will use
-stan.data = formatData(.data = checked.data, .opts = eu.test.opts)
+eu.stan.data = formatData(.data = eu.checked.data, .opts = eu.test.opts)
+abort.stan.data = formatData(.data = abort.checked.data, .opts = abort.test.opts)
 
 # Take a look
 # TODO: implement a summarize() method?
-str(stan.data)
+str(eu.stan.data)
+str(abort.stan.data)
 
-save(stan.data, file = paste0('pkg.stan.data.', as.Date(Sys.time()), '.Rdata'))
+# save(stan.data, file = paste0('pkg.stan.data.', as.Date(Sys.time()), '.Rdata'))
 eu.orig.data = get('stan.data', envir = eu.orig)
 
 ## Test package output against original script's output ##
@@ -162,19 +173,21 @@ table(compare.s_vec)
 
 ## Fit model ##
 
+
+
 # Pass everything to Stan
 # TODO: this is a good place for ... argument
 stan.out <- runStan(
-    stan.code = stan.code,
-    stan.data = stan.data,
-    n.iter = 2e1,
-    n.chain = 2,
-    max.save = 2e3,
-    init.range = 1,
-    seed = 1,
-    pars.to.save = c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
-        "nu_geo", "nu_geo_prior", "kappa", "sd_item",
-        "sd_theta", "sd_theta_bar", "sd_gamma",
-        "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd",
-        "sd_total", "theta_nat", "var_theta_bar_nat"),
-    parallel = TRUE)
+  stan.code = stan.code,
+  stan.data = abort.stan.data,
+  n.iter = 2e1,
+  n.chain = 2,
+  max.save = 2e3,
+  init.range = 1,
+  seed = 1,
+  pars.to.save = c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
+    "nu_geo", "nu_geo_prior", "kappa", "sd_item",
+    "sd_theta", "sd_theta_bar", "sd_gamma",
+    "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd",
+    "sd_total", "theta_nat", "var_theta_bar_nat"),
+  parallel = TRUE)

@@ -1,7 +1,7 @@
 stan.code <- "
   data {
     int<lower=1> G; ## number of covariate groups
-    int<lower=1> Gnat; ## number of national-level demographic groups
+    int<lower=1> Gl2; ## number of level-two demographic groups
     int<lower=1> Q; ## number of items/questions
     int<lower=1> T; ## number of years
     int<lower=1> N; ## number of observed cells
@@ -14,14 +14,14 @@ stan.code <- "
     int<lower=0,upper=1> separate_years; ## indicator for no over-time smoothing
     int n_vec[N]; ## long vector of trials
     int s_vec[N]; ## long vector of successes
-    int NNnat[T, Q, Gnat]; ## trials
-    int SSnat[T, Q, Gnat]; ## successes
+    int NNl2[T, Q, Gl2]; ## trials
+    int SSl2[T, Q, Gl2]; ## successes
     int<lower=0> MMM[T, Q, G]; ## missingness array
     matrix<lower=0, upper=1>[G, P] XX; ## indicator matrix for hierarchical vars.
-    matrix<lower=0, upper=1>[Gnat, G] WT[T]; ## weight array
+    matrix<lower=0, upper=1>[Gl2, G] WT[T]; ## weight array
     matrix[P, H] ZZ[T]; ## data for geographic model
     matrix[P, Hprior] ZZ_prior[T]; ## data for geographic model (prior)
-    matrix<lower=0, upper=1>[T, Q] nat_only;
+    matrix<lower=0, upper=1>[T, Q] l2_only;
   }
   transformed data {
   }
@@ -51,16 +51,16 @@ stan.code <- "
     vector<lower=0>[Q] sd_item; ## item standard deviation
     vector<lower=0>[Q] var_item; ## item variance
     vector<lower=0>[T] var_theta; ## within-group variance of theta
-    ## var. of theta_bar w/in each nat. group **NOT CONSTRAINED TO BE POSITIVE**
-    vector[Gnat] var_theta_bar_nat[T];
+    ## var. of theta_bar w/in each level-two group **NOT CONSTRAINED TO BE POSITIVE**
+    vector[Gl2] var_theta_bar_l2[T];
     vector[P] gamma[T]; ## hierarchical parameters (adjusted)
     vector[G] mu_theta_bar[T]; ## linear predictor for group means
     vector[P] mu_gamma[T];
     vector[G] z[T, Q]; ## array of vectors of group deviates
-    vector[Gnat] z_nat[T, Q]; ##
+    vector[Gl2] z_l2[T, Q]; ##
     real<lower=0,upper=1> prob[T, Q, G]; ## array of probabilities
-    vector[Gnat] prob_nat[T, Q]; ## array of probabilities
-    vector[Gnat] theta_nat[T]; ## national-level group abililities
+    vector[Gl2] prob_l2[T, Q]; ## array of probabilities
+    vector[Gl2] theta_l2[T]; ## second-level group abililities
     ## scale (product = 1)
     disc <- disc_raw * pow(exp(sum(log(disc_raw))), (-inv(Q)));
     for (q in 1:Q) {
@@ -98,8 +98,8 @@ stan.code <- "
       ## Matt trick for group means
       theta_bar[t] <- mu_theta_bar[t] + sd_theta_bar[t] * theta_bar_raw[t]; #!#
       ## Weighted average of group means (weights must sum to 1)
-      theta_nat[t] <- WT[t] * theta_bar[t]; ## Gnatx1 = GnatxG * Gx1
-      for (n in 1:Gnat) {
+      theta_l2[t] <- WT[t] * theta_bar[t]; ## Gl2x1 = Gl2xG * Gx1
+      for (n in 1:Gl2) {
         matrix[G, G] WTdiag;
         for (g in 1:G) {
           for (h in 1:G) {
@@ -112,31 +112,31 @@ stan.code <- "
           }
         }
         ## (y - w'y)' W (y - w'y) = weighted variance
-        var_theta_bar_nat[t][n] <- (theta_bar[t] - theta_nat[t, n])' * WTdiag *
-        (theta_bar[t] - theta_nat[t, n]);
+        var_theta_bar_l2[t][n] <- (theta_bar[t] - theta_l2[t, n])' * WTdiag *
+        (theta_bar[t] - theta_l2[t, n]);
       }
       for (q in 1:Q) { ## loop over questions
         real sd_tq;
-        real sd_nat_tq[Gnat];
+        real sd_l2_tq[Gl2];
         sd_tq <- sqrt(var_theta[t] + var_item[q]);
-        for (n in 1:Gnat) {
-          sd_nat_tq[n] <- sqrt(square(sd_tq) + var_theta_bar_nat[t, n]);
+        for (n in 1:Gl2) {
+          sd_l2_tq[n] <- sqrt(square(sd_tq) + var_theta_bar_l2[t, n]);
         }
         ## Group-level IRT model
         if (constant_item == 0) {
           z[t, q] <- (theta_bar[t] - kappa[t][q]) / sd_tq;
-          for (n in 1:Gnat) {
-            z_nat[t, q, n] <-
-              (theta_nat[t, n] - kappa[t][q]) / sd_nat_tq[n];
-            prob_nat[t, q, n] <- Phi_approx(z_nat[t, q, n]);
+          for (n in 1:Gl2) {
+            z_l2[t, q, n] <-
+              (theta_l2[t, n] - kappa[t][q]) / sd_l2_tq[n];
+            prob_l2[t, q, n] <- Phi_approx(z_l2[t, q, n]);
           }
         }
         if (constant_item == 1) {
           z[t, q] <- (theta_bar[t] - kappa[1][q]) / sd_tq;
-          for (n in 1:Gnat) {
-            z_nat[t, q, n] <-
-              (theta_nat[t, n] - kappa[1][q]) / sd_nat_tq[n];
-            prob_nat[t, q, n] <- Phi_approx(z_nat[t, q, n]);
+          for (n in 1:Gl2) {
+            z_l2[t, q, n] <-
+              (theta_l2[t, n] - kappa[1][q]) / sd_l2_tq[n];
+            prob_l2[t, q, n] <- Phi_approx(z_l2[t, q, n]);
           }
         }
         for (g in 1:G) { ## loop over groups
@@ -196,9 +196,9 @@ stan.code <- "
         }
       }
       for (q in 1:Q) { ## loop over questions
-        if (nat_only[t, q] == 1) {
-          ## National mean
-          SSnat[t, q] ~ binomial(NNnat[t, q], prob_nat[t, q]);
+        if (l2_only[t, q] == 1) {
+          ## Second-level mean
+          SSl2[t, q] ~ binomial(NNl2[t, q], prob_l2[t, q]);
         }
         for (g in 1:G) { ## loop over groups
           if (MMM[t, q, g] == 0) { ## Use only if not missing

@@ -42,50 +42,67 @@ checkData = function(.data, .group.data = NULL, .opts) {
   # Convert to tidyr tbl_df for dplyr
   .data = as.tbl(.data)
 
-  # TODO: confirm which strings must exist as variables if specified
+  # TODO: check argument types
+
+  # TODO: confirm which strings must exist as variables, if specified
   # Check that variables given as strings exist
-  # all.vars = c(
-  #   .opts$q.vars,
-  #   .opts$fm.vars,
-  #   .opts$time.var,
-  #   .opts$demo.vars,
-  # if (!all(all.vars %in% colnames(.data))) {
-  #   stop(paste("Didn't find all variabels given as strings in .data",
-  #       str_c(names(all.vars[!(all.vars %in% colnames(data))]) , collapse=", ")))
-  # }
+  if (!(.opts$t.var %in% colnames(.data))) {
+    cat("Didn't find a time variable called", .opts$t.var,
+      "in the individual data.")
+  }
+  if (!is.null(.group.data) & !(.opts$t.var %in% colnames(.group.data))) {
+    cat("Didn't find a time variable called", .opts$t.var,
+      "in the group data.")
+  }
+  if (!all(.opts$fm.vars %in% colnames(.data))) {
+    cat("Didn't find a frontmatter variable in the individual data:",
+      str_c(setdiff(.opts$fm.vars, colnames(.data)), collapse = ", "), "\n")
+  }
+  if (!all(.opts$q.vars %in% colnames(.data))) {
+    cat("Didn't find a question variable in the individual data:",
+      str_c(setdiff(.opts$q.vars, colnames(.data)), collapse = ", "), "\n")
+  }
+  if (!all(.opts$demo.vars %in% colnames(.data))) {
+    cat("Didn't find a demographic variable in the individual data:",
+      str_c(setdiff(.opts$demo.vars, colnames(.data)), collapse = ", "), "\n")
+  }
 
   # Get levels of the time variable, handling the possibility that it isn't a factor
-  if (is.factor(.data[[.opts$time.var]])) {
-    periods = as.numeric(levels(.data[[.opts$time.var]]))
+  if (is.factor(.data[[.opts$t.var]])) {
+    t.which.observed = as.numeric(levels(.data[[.opts$t.var]]))
   } else {
-    periods = as.numeric(unique(.data[[.opts$time.var]]))
+    t.which.observed = as.numeric(unique(.data[[.opts$t.var]]))
   }
-  cat("\n\n")
-  cat("Time variable has", length(periods), "levels: ")
-  cat(sort(periods), sep=", ")
-  cat("\n")
+  cat("\nTime variable has", length(t.which.observed), "levels in the data.")
 
-  # Get the range of the time variable
-  time.range = c("min" = min(periods), "max" = max(periods))
-  # TODO: handle the possibility that the user doesn't want to estimate all
-  # periods in the range
+  # NOTE: instead of svy.year.range, etc., now using the vector of t.which.observed
+  # and an argument for which to estimate
+
+  # Report missing levels
+  # t.missing = setdiff(seq(t.which.observed.range['min'], t.which.observed.range['max']),
+  #   svy.periods)
+  t.missing = setdiff(.opts$use.t, t.which.observed)
+  if (length(t.missing) > 0) {
+    cat("\n\nNot all periods specified in t.use appear in the data:", str_c(t.missing, collapse = ', '))
+  } else {
+    cat("\n\nAll periods specified in t.use appear in the data.")
+  }
 
   # Check for question columns with no valid responses
-  invalid.vars = names(.data)[colSums(!is.na(.data)) == 0]
-  if (length(invalid.vars) > 0) {
+  q.all.missing = names(.data)[colSums(!is.na(.data)) == 0]
+  if (length(q.all.missing) > 0) {
     cat("\n\n")
-    cat(length(invalid.vars), "response variables are entirely missing: ")
-    cat(invalid.vars, sep=", ")
+    cat(length(q.all.missing), "response variables are entirely missing: ")
+    cat(q.all.missing, sep=", ")
     # Drop the invalid variables from the local vector of question variable
     # names. (Data untouched.)
-    .opts$q.vars = sort(setdiff(.opts$q.vars, invalid.vars))
+    .opts$q.vars = sort(setdiff(.opts$q.vars, q.all.missing))
     cat("\n\n")
     cat(length(.opts$q.vars), "remaining response variables: ")
     cat(.opts$q.vars, sep=", ")
   }
 
   # Check for rows with no valid question responses
-  # FIXME: error from abany_binary and abrape_binary missing from .data
   none.valid = rowSums(!is.na(.data[, .opts$q.vars])) == 0
   cat("\n\n")
   cat(sum(none.valid), "rows out of", nrow(.data), "have no valid responses.")
@@ -102,83 +119,107 @@ checkData = function(.data, .group.data = NULL, .opts) {
   }
 
   # Check whether variables satisfy min.years requirement
-  yrs.asked = .data %>%
-    group_by_(.opts$time.var) %>%
+  q.when.asked = .data %>%
+    group_by_(.opts$t.var) %>%
     summarise_each(funs(anyValid), one_of(.opts$q.vars))
-  valid.yrs = colSums(select(yrs.asked, -one_of(.opts$time.var)))
-  yrs.invalid = names(valid.yrs[valid.yrs < .opts$min.years])
+  q.t.count = colSums(select(q.when.asked, -one_of(.opts$t.var)))
+  q.rare = names(q.t.count[q.t.count < .opts$min.t])
   cat("\n")
-  cat(sum(valid.yrs < .opts$min.years), "response variables out of", (length(valid.yrs)), "fail min.years requirement.\n")
-  cat(yrs.invalid, sep=", ")
+  cat(sum(q.t.count < .opts$min.t), "response variables out of", (length(q.t.count)), "fail min.t requirement, which is", .opts$min.t)
+  cat(q.rare, sep=", ")
 
   # If this wasn't a dry run (.opts$test = TRUE), attempt to fix problems
   if (!.opts$test) {
     # Drop rows with no valid question responses
+    # TODO: none.valid is a logical vector corresponding to rows in .data as
+    # provided; musn't manipulate them above. It would be safer to create
+    # none.valid as a new variable in .data.
     .data = filter(.data, !none.valid)
     cat("\n\nDropped", sum(none.valid), "rows for lack of any responses.")
 
     # Drop question columns with no valid responses
-    if (length(invalid.vars) > 0) {
-      .data = select(.data, -one_of(invalid.vars))
+    if (length(q.all.missing) > 0) {
+      .data = select(.data, -one_of(q.all.missing))
     }
-    cat("\n\nDropped", length(invalid.vars), "questions for lack of valid responses.")
+    cat("\n\nDropped", length(q.all.missing), "questions for lack of valid responses:",
+      str_c(q.all.missing, collapse = ", "))
 
     # Drop variables that don't satisfy min.years requirement
-    if (length(yrs.invalid) > 0) {
-      .data = select(.data, -one_of(yrs.invalid))
+    if (length(q.rare) > 0) {
+      .data = select(.data, -one_of(q.rare))
     }
-    cat("\n\nDropped", length(yrs.invalid), "more questions for failing min.years requirement.\n\n")
+    cat("\n\nDropped", length(q.rare), "more questions for failing min.t requirement.")
   }
 
   # TODO: could re-check the data after attempting to fix problems here
 
   ## Create tables summarizing the data ##
 
-  # Create a summary table for which questions appear in which periods
-  yrs.asked.melt <- melt(yrs.asked, id="YearFactor")
+  # For output, melt q.when.asked for a long summary table of which questions
+  # appear in which periods
+  q.when.asked = melt(q.when.asked, id=.opts$t.var)
 
-  # Create a factor in the data for the combinations of year and survey (e.g. "2008.ess")
-  .data$survey.year <- interaction(.data$YearFactor, .data$survey, drop=TRUE, lex.order=TRUE)
+  # Create a factor in the data for the combinations of surveys and the time
+  # variable (e.g. "2008.ess")
+  # TODO: as written this factor is created as "poll.year.factor" and there
+  # musn't be an existing variable with that name. Could instead provide the
+  # option of creating the factor, or use a specified existing variable.
+  .data = .data %>% unite(poll.year.factor, one_of(.opts$poll.var, .opts$t.var), sep = ".", remove = F)
+  .data = .data %>% mutate(poll.year.factor = factor(poll.year.factor))
 
   # And use it to create a summary table for whether a question appeared in
-  # combinations of years and surveys. This table replaces forms.asked in the
+  # combinations of periods t and polls. This table replaces forms.asked in the
   # original code.
-  svy.year.asked = .data %>%
-    group_by(survey.year) %>%
+  q.which.observed = .data %>%
+    group_by(poll.year.factor) %>%
     select(one_of(.opts$q.vars)) %>%
     summarise_each(funs(anyValid))
 
-  poll.count = svy.year.asked %>%
-    select(one_of(.opts$q.vars)) %>%
-    colSums() %>% melt(value.name = 'polls')
-
-  # Final check: do questions appear in the minimum number of polls?
-  lt.min.polls = names(poll.count)[poll.count < .opts$min.polls]
-  cat(length(lt.min.polls), 'questions appear in fewer than the minimum polls per question, which is set to', .opts$min.polls, '.\n')
-  cat(names(lt.min.polls)[lt.min.polls], sep = ',')
-  cat('Dropped', length(lt.min.polls), 'questions for appearing in too few polls.\n\n')
+  # Final check: do questions appear in the minimum number of survey-periods?
+  q.counts = q.which.observed %>%
+    select(-poll.year.factor) %>%
+    summarise_each(funs(sum))
+  lt.min.polls = colnames(q.counts)[unlist(q.counts) < .opts$min.poll]
+  cat('\n\n')
+  cat(length(lt.min.polls), 'questions appear in fewer than the minimum polls per question, which is set to', .opts$min.poll, '\n')
+  cat(str_c(lt.min.polls, collapse = ", "))
+  cat('\nDropped', length(lt.min.polls), 'questions for appearing in too few polls.\n\n')
   if (!.opts$test & length(lt.min.polls) > 0) {
     .data = select(.data, -one_of(lt.min.polls))
   } else if (.opts$test) {
-    cat("Finished test.\n")
+    cat("Finished test.\n\n")
   }
 
   # Make all the variables given as strings factors
   .data = .data %>%
-    mutate_each_(funs(factor), vars = c(.opts$time.var, .opts$demo.vars,
-        .opts$geo.var, .opts$geo.mod.vars, .opts$geo.mod.prior.vars))
+    mutate_each_(funs(factor), vars = c(.opts$t.var, .opts$demo.vars,
+        .opts$geo.var, .opts$geo.mod.vars, .opts$geo.mod.prior.vars, .opts$poll.var))
 
   out = list(
     data = .data,
-    yrs.asked = yrs.asked,
-    svy.year.asked = svy.year.asked,
-    poll.count = poll.count,
-    fm.vars = .opts$fm.vars,
-    q.vars = .opts$q.vars,
-    time.var = .opts$time.var,
-    yr.range = yr.range,
-    min.years = .opts$min.years,
-    min.polls = .opts$min.polls)
+    summary = list(
+      q.when.asked = q.when.asked,
+      q.all.missing = q.all.missing,
+      q.counts = q.counts,
+      t.which.observed = t.which.observed,
+      q.which.observed = q.which.observed),
+    varnames = list(
+      fm.vars = .opts$fm.vars,
+      q.vars = .opts$q.vars,
+      t.var = .opts$t.var,
+      poll.var = .opts$poll.var,
+      geo.var = .opts$geo.var,
+      weight.var = .opts$weight.var,
+      demo.vars = .opts$demo.vars,
+      geo.mod.vars = .opts$geo.mod.vars,
+      geo.mod.prior.vars = .opts$geo.mod.prior.vars),
+    params = list(
+      use.t = .opts$use.t,
+      min.t = .opts$min.t,
+      min.poll = .opts$min.poll,
+      separate.t = .opts$separate.t,
+      constant.item = .opts$constant.item))
+
   invisible(out)
 }
 
@@ -191,52 +232,75 @@ formatData = function(.data, .opts) {
   # TODO: docstring
   # TODO: check whether data appear as expected
   # dev:
-  # .data = checked.data
-  # .opts = test.opts
+  # .data = abort.checked.data
+  # .opts = abort.test.opts
+
+  # NOTE: working with character variable names in dplyr is proving tricky, so
+  # create some temporary variables at the outset instead using the variables
+  # specified as strings
+  .data$data = .data$data %>%
+    mutate_(
+      dirt.weight = .data$varnames$weight.var,
+      dirt.poll = .data$varnames$poll.var,
+      dirt.t = .data$varnames$t.var,
+      dirt.geo = .data$varnames$geo.var)
+  .data$data = .data$data %>%
+    unite(dirt.demo, one_of(.opts$demo.vars), sep = ".", remove = F)
+  .data$data = .data$data %>% 
+    mutate(dirt.demo = factor(dirt.demo))
 
   # These variables are from the original code; use them for now rather than
   # refactoring.
-  covs = c(.opts$geo.var, .opts$demo.vars)
-  covs.yr = c(covs, .opts$time.var)
-  f0 = Formula(c("0", covs))
-  f0.yr = Formula(c("0", covs.yr))
+  # TODO: make consistent use of checked.data slots versus .opts
+  # covs = c("dirt.geo", "dirt.demo")
+  # covs.t = c(covs, "dirt.t")
+  # f0 = Formula(c("0", covs))
+  f0 = Formula(c("0", "dirt.geo", "dirt.demo"))
+  # f0.t = Formula(c("0", covs, "dirt.t"))
+  f0.t = Formula(c("0", "dirt.geo", "dirt.demo", "dirt.t"))
 
   # Drop rows lacking covariates or time variable
   .data$data = .data$data %>%
-    filter(rowSums(is.na(select(.data$data, one_of(covs.yr)))) == 0)
+    mutate(missing.geo.demo.t = any(is.na(dirt.geo) , is.na(dirt.demo) , is.na(dirt.t))) %>%
+    filter(!missing.geo.demo.t)
+  # TODO: check that length > 0
 
   # Create .gt. variables
-  .data$data = createGT(d = .data$data, .q.vars = .data$q.vars)
+  .data$data = createGT(d = .data$data, .q.vars = .data$varnames$q.vars)
+  # TODO: check for whether any variables were created
 
   # Drop rows lacking at least one .gt variable
   .data$data = .data$data %>%
     filter(rowSums(!is.na(select(.data$data, contains('.gt')))) > 0)
+  # TODO: check that length > 0
 
   # Fix levels of geo variable after filtering
-  .data$data[, .data$geo.var] = droplevels(.data$data[, .data$geo.var])
+  .data$data$dirt.geo = droplevels(.data$data$dirt.geo)
   # Fix levels of covariates after filtering
-  .data$data[, covs.yr] = droplevels(.data$data[, covs.yr])
+  .data$data$dirt.demo = droplevels(.data$data$dirt.demo)
 
   # Represent covariates in data as model frame
   MF = model.frame(f0, data=.data$data, na.action=return)
-  MF.yr = model.frame(f0.yr, data=.data$data, na.action=return)
+  MF.t = model.frame(f0.t, data=.data$data, na.action=return)
 
   # Create factors with levels for each combination of covariate values
+  # NOTE: these are standalone factors
   group = interaction(as.list(MF), sep="__", lex.order=FALSE)
-  group.yr = interaction(as.list(MF.yr), sep="__", lex.order=FALSE)
+  group.t = interaction(as.list(MF.t), sep="__", lex.order=FALSE)
 
   # Get frequency counts of factor combinations (reordered in factor order)
-  xtab.yr = as.data.frame(table(MF.yr))
-  # TODO: why does the original code subset to the first year here?
-  xtab = xtab.yr %>%
-    subset(YearFactor == .data$yr.range[1], -c(YearFactor, Freq))
-  # Check that group.yr levels are in same order as rows of xtab.yr
-  stopifnot(identical(levels(group.yr), unname(apply(subset(xtab.yr,, -Freq), 1, paste, collapse="__"))))
+  xtab.t = as.data.frame(table(MF.t))
+  # FIXME: why does the original code subset to the first year here?
+  xtab = xtab.t %>%
+    subset(dirt.t == .data$summary$t.which.observed[1]) %>%
+    select(-dirt.t, Freq)
+  # Check that group.t levels are in same order as rows of xtab.t
+  stopifnot(identical(levels(group.t), unname(apply(subset(xtab.t,, -Freq), 1, paste, collapse="__"))))
 
   # Get dummy variable representation of contingency table
   XX <- model.matrix(f0, xtab)
   # Don't use hierarchical model if we only have one predictor
-  if (length(covs) == 1) {
+  if (length(f0) == 1) {
     XX = matrix(0, nrow(XX), ncol(XX))
   }
   # Create a variable counting number of responses
@@ -246,149 +310,166 @@ formatData = function(.data, .opts) {
 
   # de.df was a 176K x 20 matrix in which a design effect was attached to
   # each respondent. But the design effects are unique to combinations of
-  # the identifiers in covs.yr (here Country, Gender, and YearFactor), so
+  # the identifiers in covs.t (here Country, Gender, and YearFactor), so
   # there are fewer than two dozen values. Instead, create a table with
   # the design effect for each combination.
 
   # Create table of design effects
   de.tbl = .data$data %>%
-    group_by_(.dots = covs.yr) %>%
-    summarise(def = summariseDef(useweight))
+    group_by(dirt.geo, dirt.demo, dirt.t) %>%
+    select(dirt.weight) %>%
+    summarise(def = summariseDef(dirt.weight))
 
   # Create table of (adjusted) trial counts
   NN.tbl = .data$data %>%
-    group_by_(.dots = covs.yr) %>%
-    select(n.responses, contains(".gt")) %>%
-    mutate_each(funs(notNA), contains(".gt")) %>%
+    # The .gt variables can take values of 0/1/NA
+    mutate_each(funs(notNA) , contains(".gt")) %>%
+    # TODO: review this calculation
     mutate_each(funs(. / n.responses), contains(".gt"))  %>%
-    full_join(de.tbl, by = covs.yr) %>%
-    summarise_each(funs(ceiling(sum(. / def))), contains(".gt")) %>%
+    group_by(dirt.geo, dirt.demo, dirt.t) %>%
+    summarise_each(funs(sum), contains(".gt")) %>%
+    full_join(de.tbl, by = c('dirt.geo', 'dirt.demo', 'dirt.t')) %>%
+    mutate_each(funs(ceiling(. / def)), contains(".gt")) %>%
     ungroup() %>%
-    mutate_each(funs(as.character), Country, Gender, YearFactor) %>%
-    arrange_(covs.yr)
+    mutate_each(funs(as.character), dirt.geo, dirt.demo, dirt.t) %>%
+    arrange(dirt.geo, dirt.demo, dirt.t)
 
   # TODO: Check this: in the new NN, six all-NA covariate combinations are
   # excluded; not in the original NN. Should these cells be zero instead?
 
   # Create table of (weighted) outcomes
   y.bar.star = .data$data %>%
-    group_by_(.dots = covs.yr) %>%
-    select(useweight, n.responses, contains(".gt")) %>%
-    summarise_each(funs(weighted.mean(., useweight / n.responses, na.rm=T)), contains(".gt")) %>%
+    group_by(dirt.geo, dirt.demo, dirt.t) %>%
+    select(contains(".gt")) %>%
+    summarise_each(funs(weighted.mean(., wt = dirt.weight/n.responses))) %>%
     mutate_each(funs(ifelse(is.nan(.), 0, .)), contains(".gt")) %>%
     ungroup() %>%
-    mutate_each_(funs(as.character), covs.yr) %>%
-    arrange_(covs.yr)
+    mutate_each(funs(as.character), dirt.geo, dirt.demo, dirt.t) %>%
+    arrange(dirt.geo, dirt.demo, dirt.t)
 
   # Check row order before taking product
-  stopifnot(identical(select(y.bar.star, Country:YearFactor),
-    select(NN.tbl, Country:YearFactor)))
-  SS = select(NN.tbl, contains('.gt')) *
-      select(y.bar.star, contains('.gt'))
-  SS = SS %>%
-    bind_cols(NN.tbl[, 1:3]) %>%
-    mutate_each(funs(round(., digits=0)), contains(".gt")) %>%
-    arrange(Country, Gender, YearFactor)
+  stopifnot(identical(
+    select(y.bar.star, dirt.geo, dirt.demo, dirt.t),
+    select(NN.tbl, dirt.geo, dirt.demo, dirt.t)))
 
-  N.valid = data.frame(t = NN.tbl$YearFactor, n = select(NN.tbl, contains('.gt')) %>% rowSums()) %>%
+  SS = select(NN.tbl, contains('.gt')) * select(y.bar.star, contains('.gt'))
+  SS = SS %>%
+    # FIXME: why is it geo-t-demo here instead of geo-demo-t
+    bind_cols(select(NN.tbl, dirt.geo, dirt.t, dirt.demo)) %>%
+    mutate_each(funs(round(., digits=0)), contains(".gt")) %>%
+    arrange(dirt.geo, dirt.demo, dirt.t)
+
+  N.valid = data.frame(
+      t = NN.tbl$dirt.t,
+      n = select(NN.tbl, contains('.gt')) %>% rowSums()) %>%
     group_by(t) %>%
     summarise(any.valid = sum(n, na.rm=T) > 0)
-  svy.yrs = as.numeric(as.character(N.valid$t[N.valid$any.valid]))
-  svy.yr.range = factor(min(svy.yrs):max(svy.yrs))
+  # svy.yrs = as.numeric(as.character(N.valid$t[N.valid$any.valid]))
+  # svy.yr.range = factor(min(svy.yrs):max(svy.yrs))
+  t.observed = as.numeric(as.character(N.valid$t[N.valid$any.valid]))
+  t.range = factor(min(t.observed):max(t.observed))
 
   # TODO: these are both all 0; as expected?
-  ZZ.prior = createZZPrior(.data, svy.yr.range, XX, .opts)
-  ZZ = createZZ(.data, svy.yr.range, XX, .opts)
+  ZZ.prior = createZZPrior(.data, t.range, XX, .opts)
+  ZZ = createZZ(.data, t.range, XX, .opts)
 
   # T gives the number of time periods
-  T <- length(svy.yr.range)
+  T <- length(t.range)
   # Q gives the number of questions
   Q = sum(grepl('.gt', colnames(.data$data), fixed=T))
   # G gives the number of covariate (?) combinations
   G <- nlevels(group)
 
   # Generate factor levels for combinations of demographic variables
-  if (is.null(.opts$demo.vars)) {
-    demo.group <- gl(1, nrow(xtab))
+  if (is.null(.data$data$dirt.demo)) {
+    demo.group = gl(1, nrow(xtab))
   } else {
-    demo.group <- interaction(as.list(xtab[, .opts$demo.vars, drop=FALSE]))
+    demo.group = xtab$dirt.demo
   }
-  # Gnat gives the number of combinations
-  Gnat <- nlevels(demo.group)
+  # G.l2 gives the number of combinations
+  G.l2 = nlevels(demo.group)
 
   # Calculate weights
-  xtab.ds <- svydesign(~1, probs=1, data=xtab.yr)
-  nat.wts <- 1/xtab.ds$prob
-  WT = createWT(.nat.wts = nat.wts,
+  xtab.ds = svydesign(~1, probs=1, data=xtab.t)
+  l2.wts = 1/xtab.ds$prob
+  WT = createWT(.l2.wts = l2.wts,
     .G = G,
     .T = T,
-    .Gnat = Gnat,
+    .G.l2 = G.l2,
     .demo.group = demo.group,
     .XX = XX)
 
-  NN.nat = NN.tbl %>%
+  NN.l2 = NN.tbl %>%
     mutate_each(funs(rep(0, length(.))), contains('.gt'))
   # TODO: confirm Q should be ncol(contains('.gt')) and not length(q) and not
-  # length(.opts$q.vars)
-  # TODO: nat_only is set to false for all groups here, but presumably this
+  # length(.data$varnames$q.vars)
+  # TODO: l2_only is set to false for all groups here, but presumably this
   # should be exposed to the user
-  # Quick fix for missing rownames in nat_only
-  nat_only = NN.tbl %>%
-    group_by(YearFactor) %>%
+  # Quick fix for missing rownames in l2_only
+  l2_only = NN.tbl %>%
+    group_by(dirt.t) %>%
     summarise_each(funs(c(0)), contains('.gt'))
-  rownames(nat_only) = nat_only$YearFactor
-  nat_only = nat_only %>%
-    select(-YearFactor) %>%
-    as.matrix(nat_only, rownames.force=T)
+  rownames(l2_only) = l2_only$dirt.t
+  l2_only = l2_only %>%
+    select(-dirt.t) %>%
+    as.matrix(l2_only, rownames.force=T)
 
-  # Calculate N, including groups with data that aren't national-only
+  # Calculate N, including groups with data that aren't level-two-only
   N = full_join(
-      melt(NN.tbl, id.vars = covs.yr) %>%
+      melt(NN.tbl, id.vars = c('dirt.demo', 'dirt.geo', 'dirt.t')) %>%
           mutate(n.nonzero = value > 0) %>%
           as.tbl(),
-      melt(NN.nat, id.vars = covs.yr) %>%
+      melt(NN.l2, id.vars = c('dirt.demo', 'dirt.geo', 'dirt.t')) %>%
         as.tbl() %>%
-        mutate(not.nat = !value),
-      by = c(covs.yr, 'variable')) %>%
-    summarise(N = sum(n.nonzero & not.nat)) %>%
+        mutate(not.l2 = !value),
+      by = c(c('dirt.demo', 'dirt.geo', 'dirt.t'), 'variable')) %>%
+    summarise(N = sum(n.nonzero & not.l2)) %>%
     unlist()
 
-  NNnat = NN.nat %>%
-    melt(id.vars = covs.yr) %>%
-    group_by(YearFactor, Gender, variable) %>%
-    summarise(country.sum = sum(value)) %>%
-    mutate(country.sum = as.integer(country.sum)) %>%
-    acast(YearFactor ~ variable ~ Gender,
-      value.var = 'country.sum')
+  NNl2 = NN.l2 %>%
+    melt(id.vars = c('dirt.demo', 'dirt.geo', 'dirt.t')) %>%
+    group_by(dirt.t, dirt.demo, variable) %>%
+    summarise(l2.sum = sum(value)) %>%
+    mutate(l2.sum = as.integer(l2.sum)) %>%
+    acast(dirt.t ~ variable ~ dirt.demo, value.var = 'l2.sum')
 
-  # TODO: this is what happens in the original code, but then we don't have
-  # any group-level test data
-  SSnat = NNnat
+  # TODO: this is what happens in the original code, but then we didn't have
+  # any group-level data
+  SSl2 = NNl2
 
+  # FIXME: assignment to what?
   NN.tbl %>%
     mutate_each(funs(. == 0), contains('.gt')) %>%
-    melt(id.vars = covs.yr) %>%
-    group_by(YearFactor, Gender, variable) %>%
-    summarise(country.sum = sum(value) == 0) %>%
-    mutate(country.sum = as.integer(country.sum)) %>%
-    acast(YearFactor ~ variable ~ Gender,
-      value.var = 'country.sum')
+    melt(id.vars = c('dirt.demo', 'dirt.geo', 'dirt.t')) %>%
+    group_by(dirt.t, dirt.demo, variable) %>%
+    summarise(l2.sum = sum(value) == 0) %>%
+    mutate(l2.sum = as.integer(l2.sum)) %>%
+    acast(dirt.t ~ variable ~ dirt.demo, value.var = 'l2.sum')
 
   ns.long = left_join(
-      melt(NN.tbl, id.vars = covs.yr, value.name = 'n.grp'),
-      melt(SS, id.vars = covs.yr, value.name = 's.grp'),
-      by = c('Country', 'Gender', 'YearFactor', 'variable')) %>%
-    arrange(variable, YearFactor, desc(Gender), Country) %>%
+      melt(NN.tbl, id.vars = c("dirt.geo", "dirt.demo", "dirt.t"), value.name = 'n.grp'),
+      melt(SS, id.vars = c("dirt.geo", "dirt.demo", "dirt.t"), value.name = 's.grp'),
+      by = c('dirt.geo', 'dirt.demo', 'dirt.t', 'variable')) %>%
+    arrange(variable, dirt.t, desc(dirt.demo), dirt.geo) %>%
     filter(!is.na(n.grp) & n.grp != 0) %>%
-    mutate(name = str_c(Country, Gender, YearFactor, sep = '__')) %>%
+    mutate(name = str_c(dirt.geo, dirt.demo, dirt.t, sep = '__')) %>%
     mutate(name = str_c(name, variable, sep = ' | '))
+
+  # NOTE: some NAs are the result of the join; they represent cells with
+  # level-one data but no level-two data. Others are from NN.tbl -
+  # double-check.
+  ns.long$s.grp[is.na(ns.long$s.grp)] = 0
+  ns.long$n.grp[is.na(ns.long$n.grp)] = 0
+  ns.long$s.grp = as.integer(ns.long$s.grp)
+  ns.long$n.grp = as.integer(ns.long$n.grp)
+  # TODO: checks
 
   # Create missingness indicator array
   # MMM <- array(1, dim=list(T, Q, G))
   MMM = ns.long %>%
     mutate(m.grp = as.integer(is.na(n.grp) | n.grp == 0)) %>%
     select(-s.grp) %>%
-    acast(YearFactor ~ variable ~ Country + Gender, value.var = 'm.grp',
+    acast(dirt.t ~ variable ~ dirt.geo + dirt.demo, value.var = 'm.grp',
       fill = 1)
 
   n.vec = unlist(ns.long$n.grp)
@@ -400,8 +481,8 @@ formatData = function(.data, .opts) {
   list(
     n_vec = n.vec,      # response counts
     s_vec = s.vec,      # group counts
-    NNnat = NNnat,
-    SSnat = SSnat,
+    NNl2 = NNl2,
+    SSl2 = SSl2,
     XX = XX[, -1],
     ZZ = ZZ[, -1, , drop = FALSE],      # geographic predictors
     ZZ_prior = ZZ.prior[, -1, , drop = FALSE],
@@ -414,12 +495,12 @@ formatData = function(.data, .opts) {
     S = dim(ZZ)[[2]] - 1,  # number of geographic units
     H = dim(ZZ)[[3]],      # number of geographic-level predictors
     Hprior = dim(ZZ.prior)[[3]],
-    separate_years = .opts$separate.years,    # if 1, no pooling over time
-    constant_item = .opts$constant.item,      # if 1, difficulties constant
-    D = ifelse(.opts$constant.item, 1, T),
-    WT = WT,                            # weight matrix for calculating national mean
-    nat_only = nat_only,
-    Gnat = Gnat)                        # number of national-level groups
+    separate_years = .data$params$separate.t,    # if 1, no pooling over time
+    constant_item = .data$params$constant.item,      # if 1, difficulties constant
+    D = ifelse(.data$params$constant.item, 1, T),
+    WT = WT,                            # weight matrix for calculating level-two mean
+    l2_only = l2_only,
+    Gl2 = G.l2)                        # number of second-level groups
 }
 
 runStan = function(
@@ -437,7 +518,7 @@ runStan = function(
         "nu_geo", "nu_geo_prior", "kappa", "sd_item",
         "sd_theta", "sd_theta_bar", "sd_gamma",
         "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd",
-        "sd_total", "theta_nat", "var_theta_bar_nat"),
+        "sd_total", "theta_l2", "var_theta_bar_l2"),
     parallel = TRUE) {
 
   ## date()

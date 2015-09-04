@@ -118,11 +118,11 @@ createZZ = function(d = .data,
 }
 
 # Create weights
-createWT = function(.nat.wts = nat.wts, .G = G, .T = T, .Gnat = Gnat, .demo.group = demo.group, .XX = XX){
-  WT <- array(.nat.wts, dim=c(.G, .T, .Gnat))
-  # T x Gnat x G (TODO: will these dimensions always be corrrect?)
+createWT = function(.l2.wts = l2.wts, .G = G, .T = T, .G.l2 = G.l2, .demo.group = demo.group, .XX = XX){
+  WT <- array(.l2.wts, dim=c(.G, .T, .G.l2))
+  # T x G.l2 x G (TODO: will these dimensions always be corrrect?)
   WT <- aperm(WT, c(2, 3, 1))
-  for (i in seq_len(.Gnat)) {
+  for (i in seq_len(.G.l2)) {
     (dg <- levels(.demo.group)[i])
     WT[, i, !.demo.group == dg] <- 0
     WT[, i, ] <- WT[, i, ] / rowSums(WT[, i, ])
