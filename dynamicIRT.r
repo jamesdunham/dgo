@@ -246,7 +246,7 @@ formatData = function(.data, .opts) {
       dirt.geo = .data$varnames$geo.var)
   .data$data = .data$data %>%
     unite(dirt.demo, one_of(.opts$demo.vars), sep = ".", remove = F)
-  .data$data = .data$data %>% 
+  .data$data = .data$data %>%
     mutate(dirt.demo = factor(dirt.demo))
 
   # These variables are from the original code; use them for now rather than
@@ -472,6 +472,7 @@ formatData = function(.data, .opts) {
     acast(dirt.t ~ variable ~ dirt.geo + dirt.demo, value.var = 'm.grp',
       fill = 1)
 
+  # FIXME: mismatch, n_vec; dims declared=(4461); dims found=(7303)
   n.vec = unlist(ns.long$n.grp)
   s.vec = unlist(ns.long$s.grp)
   names(n.vec) = ns.long$name
