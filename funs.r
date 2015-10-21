@@ -119,9 +119,9 @@ createZZ = function(d = .data,
 
 # Create weights
 createWT = function(.l2.wts = l2.wts, .G = G, .T = T, .G.l2 = G.l2, .demo.group = demo.group, .XX = XX){
-  WT <- array(.l2.wts, dim=c(.G, .T, .G.l2))
-  # T x G.l2 x G (TODO: will these dimensions always be corrrect?)
-  WT <- aperm(WT, c(2, 3, 1))
+  WT = array(.l2.wts, dim=c(.G, .T, .G.l2))
+  # TODO: perm was 2 x 3 x 1; why x1?
+  WT = aperm(WT, c(.G.l2, .T, 1))
   for (i in seq_len(.G.l2)) {
     (dg <- levels(.demo.group)[i])
     WT[, i, !.demo.group == dg] <- 0

@@ -234,6 +234,10 @@ formatData = function(.data, .opts) {
   # dev:
   # .data = abort.checked.data
   # .opts = abort.test.opts
+  # .data = eu.checked.data
+  # .opts = eu.test.opts
+
+  ## RESPONSES ##
 
   # NOTE: working with character variable names in dplyr is proving tricky, so
   # create some temporary variables at the outset instead using the variables
@@ -245,9 +249,7 @@ formatData = function(.data, .opts) {
       dirt.t = .data$varnames$t.var,
       dirt.geo = .data$varnames$geo.var)
   .data$data = .data$data %>%
-    unite(dirt.demo, one_of(.opts$demo.vars), sep = ".", remove = F)
-  .data$data = .data$data %>%
-    mutate(dirt.demo = factor(dirt.demo))
+    mutate(dirt.demo = interaction(.[, .opts$demo.vars], drop = T))
 
   # These variables are from the original code; use them for now rather than
   # refactoring.
@@ -261,9 +263,9 @@ formatData = function(.data, .opts) {
 
   # Drop rows lacking covariates or time variable
   .data$data = .data$data %>%
-    mutate(missing.geo.demo.t = any(is.na(dirt.geo) , is.na(dirt.demo) , is.na(dirt.t))) %>%
+    mutate(missing.geo.demo.t = is.na(dirt.geo) | is.na(dirt.demo) | is.na(dirt.t)) %>%
     filter(!missing.geo.demo.t)
-  # TODO: check that length > 0
+  stopifnot(nrow(.data$data) > 0)
 
   # Create .gt. variables
   .data$data = createGT(d = .data$data, .q.vars = .data$varnames$q.vars)
@@ -274,19 +276,14 @@ formatData = function(.data, .opts) {
     filter(rowSums(!is.na(select(.data$data, contains('.gt')))) > 0)
   # TODO: check that length > 0
 
-  # Fix levels of geo variable after filtering
+  # Fix levels of variables after filtering
   .data$data$dirt.geo = droplevels(.data$data$dirt.geo)
-  # Fix levels of covariates after filtering
   .data$data$dirt.demo = droplevels(.data$data$dirt.demo)
+  # .data$data$demo.group = droplevels(.data$data$demo.group)
 
   # Represent covariates in data as model frame
   MF = model.frame(f0, data=.data$data, na.action=return)
   MF.t = model.frame(f0.t, data=.data$data, na.action=return)
-
-  # Create factors with levels for each combination of covariate values
-  # NOTE: these are standalone factors
-  group = interaction(as.list(MF), sep="__", lex.order=FALSE)
-  group.t = interaction(as.list(MF.t), sep="__", lex.order=FALSE)
 
   # Get frequency counts of factor combinations (reordered in factor order)
   xtab.t = as.data.frame(table(MF.t))
@@ -294,8 +291,6 @@ formatData = function(.data, .opts) {
   xtab = xtab.t %>%
     subset(dirt.t == .data$summary$t.which.observed[1]) %>%
     select(-dirt.t, Freq)
-  # Check that group.t levels are in same order as rows of xtab.t
-  stopifnot(identical(levels(group.t), unname(apply(subset(xtab.t,, -Freq), 1, paste, collapse="__"))))
 
   # Get dummy variable representation of contingency table
   XX <- model.matrix(f0, xtab)
@@ -303,10 +298,14 @@ formatData = function(.data, .opts) {
   if (length(f0) == 1) {
     XX = matrix(0, nrow(XX), ncol(XX))
   }
-  # Create a variable counting number of responses
+
+  # Create a variable counting the number of responses given by each
+  # respondent in the data
   .data$data$n.responses = rowSums(
     !is.na(select(.data$data, contains('.gt')) %>% as.matrix(.)),
     na.rm=T)
+
+  ## GROUPS ##
 
   # de.df was a 176K x 20 matrix in which a design effect was attached to
   # each respondent. But the design effects are unique to combinations of
@@ -320,65 +319,122 @@ formatData = function(.data, .opts) {
     select(dirt.weight) %>%
     summarise(def = summariseDef(dirt.weight))
 
-  # Create table of (adjusted) trial counts
+  # Create table of (adjusted) trial counts by geographic, demographic, and
+  # time variable combination
   NN.tbl = .data$data %>%
-    # The .gt variables can take values of 0/1/NA
-    mutate_each(funs(notNA) , contains(".gt")) %>%
-    # TODO: review this calculation
+    # The .gt variables can take values of 0/1/NA. For each response in the
+    # data, return whether it's NA.  Because the .gt variables are indicators
+    # referring to levels of a smaller number of questions (i.e., trials), the
+    # count of non-NA responses isn't itself the trial count. Say we have .gt
+    # variables:
+    # A0,  A1,  A2,  B0,  B1,  C0,  C1.
+    mutate_each(funs(notNA), contains(".gt")) %>%
+    # For a respondent who only answered questions A and B, we now have
+    #  T,   T,   T,   T,   T,   F,   F.
     mutate_each(funs(. / n.responses), contains(".gt"))  %>%
+    # Dividing the booleans by n.responses = 5 calculated earlier gives us
+    #.02, .02, .02, .02, .02,   0,   0.
+    # Which ... FIXME: doesn't make sense. We started with 2 trials, so
+    # n.responses should be 2.
     group_by(dirt.geo, dirt.demo, dirt.t) %>%
     summarise_each(funs(sum), contains(".gt")) %>%
-    full_join(de.tbl, by = c('dirt.geo', 'dirt.demo', 'dirt.t')) %>%
-    mutate_each(funs(ceiling(. / def)), contains(".gt")) %>%
     ungroup() %>%
-    mutate_each(funs(as.character), dirt.geo, dirt.demo, dirt.t) %>%
-    arrange(dirt.geo, dirt.demo, dirt.t)
+    # Summing over respondents within the grouping variables gives the count
+    # of trials for each combination of geo, demo, and time variables, divided
+    # equally across the .gt indicators.
+    full_join(de.tbl, by = c('dirt.geo', 'dirt.demo', 'dirt.t')) %>%
+    # Joining the design effect table by the grouping variables attaches for
+    # each variable combination the associated design effect
+    mutate_each(funs(ceiling(. / def)), contains(".gt")) %>%
+    # Dividing by the design effect gives us a design-effect-adjusted trial
+    # count.
+    select(-def) %>%
+    # Tidy up. Recasting the grouping variables requires ungrouping.
+    mutate_each(funs(as.character), dirt.geo, dirt.demo, dirt.t)
+
+  # The table just created excludes covariate combinations not observed in the
+  # data, but we want all combinations of the demographic and geographic
+  # covariates and specified periods
+  group.grid = expand.grid(
+    'dirt.geo' = sort(unique(NN.tbl$dirt.geo)),
+    'dirt.demo' = sort(unique(NN.tbl$dirt.demo)),
+    'dirt.t' = as.character(.opts$use.t),
+    stringsAsFactors = F)
+  # A full_join of NN.tbl and group.grid will create rows for the desired
+  # covariate combinations, where unobserved cells take NA values
+  NN.tbl = full_join(NN.tbl, group.grid,
+    by = c('dirt.geo', 'dirt.demo', 'dirt.t'))
+  # Replace the NA values in those rows representing unobserved covariate
+  # combinations with zeroes
+  replaceNA = function(x) replace(x, is.na(x), 0)
+  NN.tbl = NN.tbl %>% mutate_each(funs(replaceNA), contains('.gt'))
+  # NOTE: Order will matter in a moment
+  NN.tbl = NN.tbl %>% arrange(dirt.geo, dirt.demo, dirt.t) %>%
+    mutate_each(funs(as.vector), contains('.gt'))
 
   # TODO: Check this: in the new NN, six all-NA covariate combinations are
   # excluded; not in the original NN. Should these cells be zero instead?
 
-  # Create table of (weighted) outcomes
+  replaceNaN = function(x) replace(x, is.nan(x), NA)
+  # Create table of (weighted) average outcomes within combinations of
+  # geographic, demographic, and time variables.
   y.bar.star = .data$data %>%
     group_by(dirt.geo, dirt.demo, dirt.t) %>%
-    select(contains(".gt")) %>%
-    summarise_each(funs(weighted.mean(., wt = dirt.weight/n.responses))) %>%
-    mutate_each(funs(ifelse(is.nan(.), 0, .)), contains(".gt")) %>%
+        # Starting again from the data, select the .gt variables
+    summarise_each(funs(weighted.mean(as.vector(.), dirt.weight/n.responses,
+      na.rm = T)), contains('.gt')) %>%
+    group_by(dirt.geo, dirt.demo, dirt.t) %>%
+    # Replace NAN with NA
+    mutate_each(funs(replaceNaN)) %>%
     ungroup() %>%
-    mutate_each(funs(as.character), dirt.geo, dirt.demo, dirt.t) %>%
-    arrange(dirt.geo, dirt.demo, dirt.t)
+    mutate_each(funs(as.character), dirt.geo, dirt.demo, dirt.t)
+  # As above, create rows for unobserved but desired covariate combinations,
+  # but this time leave the values as NA
+  y.bar.star = full_join(y.bar.star, group.grid,
+      by = c('dirt.geo', 'dirt.demo', 'dirt.t')) %>%
+    # NOTE: Order will matter in a moment
+    arrange(dirt.geo, dirt.demo, dirt.t) %>%
+    mutate_each(funs(as.vector), contains('.gt'))
 
-  # Check row order before taking product
+  # summarise_each(x, funs(weighted.mean(., wt = dirt.weight/n.responses)), contains('.gt'))
+
+  # Confirm row order is identical before taking product
   stopifnot(identical(
     select(y.bar.star, dirt.geo, dirt.demo, dirt.t),
     select(NN.tbl, dirt.geo, dirt.demo, dirt.t)))
 
+  # Take the product of the (weighted) average cell outcome and the (adjusted)
+  # trial count
   SS = select(NN.tbl, contains('.gt')) * select(y.bar.star, contains('.gt'))
   SS = SS %>%
-    # FIXME: why is it geo-t-demo here instead of geo-demo-t
-    bind_cols(select(NN.tbl, dirt.geo, dirt.t, dirt.demo)) %>%
-    mutate_each(funs(round(., digits=0)), contains(".gt")) %>%
+    # Reattach our identifiers
+    bind_cols(select(NN.tbl, dirt.geo, dirt.demo, dirt.t), .) %>%
+    # Round off returning integers
+    ungroup() %>%
+    mutate_each(funs(round(., digits = 0)), contains(".gt")) %>%
     arrange(dirt.geo, dirt.demo, dirt.t)
 
+  # Create a summary table: for each period t, are there any nonmissing responses?
   N.valid = data.frame(
       t = NN.tbl$dirt.t,
       n = select(NN.tbl, contains('.gt')) %>% rowSums()) %>%
     group_by(t) %>%
     summarise(any.valid = sum(n, na.rm=T) > 0)
-  # svy.yrs = as.numeric(as.character(N.valid$t[N.valid$any.valid]))
-  # svy.yr.range = factor(min(svy.yrs):max(svy.yrs))
+  # Giving us the periods in which we observe responses
   t.observed = as.numeric(as.character(N.valid$t[N.valid$any.valid]))
-  t.range = factor(min(t.observed):max(t.observed))
+  # Which may be different from the periods we'll use in estimation
+  t.use = factor(.opts$use.t)
 
   # TODO: these are both all 0; as expected?
-  ZZ.prior = createZZPrior(.data, t.range, XX, .opts)
-  ZZ = createZZ(.data, t.range, XX, .opts)
+  ZZ.prior = createZZPrior(.data, t.use, XX, .opts)
+  ZZ = createZZ(.data, t.use, XX, .opts)
 
   # T gives the number of time periods
-  T <- length(t.range)
+  T = length(t.use)
   # Q gives the number of questions
   Q = sum(grepl('.gt', colnames(.data$data), fixed=T))
-  # G gives the number of covariate (?) combinations
-  G <- nlevels(group)
+  # G gives the number of covariate combinations
+  G = nlevels(.data$data$dirt.geo) * nlevels(.data$data$dirt.demo)
 
   # Generate factor levels for combinations of demographic variables
   if (is.null(.data$data$dirt.demo)) {
@@ -386,10 +442,11 @@ formatData = function(.data, .opts) {
   } else {
     demo.group = xtab$dirt.demo
   }
-  # G.l2 gives the number of combinations
-  G.l2 = nlevels(demo.group)
+  # G.l2 gives the number of level-2 covariate combinations
+  # TODO: not implemented
+  G.l2 = nlevels(.data$data$dirt.demo)
 
-  # Calculate weights
+  # Calculate G x T x G.l2 weight matrix
   xtab.ds = svydesign(~1, probs=1, data=xtab.t)
   l2.wts = 1/xtab.ds$prob
   WT = createWT(.l2.wts = l2.wts,
@@ -398,13 +455,17 @@ formatData = function(.data, .opts) {
     .G.l2 = G.l2,
     .demo.group = demo.group,
     .XX = XX)
+  # FIXME: quick hack for no level-two data
+  # WT = WT[, 1, ]
 
-  NN.l2 = NN.tbl %>%
-    mutate_each(funs(rep(0, length(.))), contains('.gt'))
+  # NOTE: creating NN.l2 as a placeholder for non-missing level-2 data
+  NN.l2 = NN.tbl %>% mutate_each(funs(rep(0, length(.))), contains('.gt'))
+
   # TODO: confirm Q should be ncol(contains('.gt')) and not length(q) and not
   # length(.data$varnames$q.vars)
-  # TODO: l2_only is set to false for all groups here, but presumably this
-  # should be exposed to the user
+
+  # TODO: l2_only is set to false for all groups here, but if level-2 data are
+  # provided this should be calculated or exposed
   # Quick fix for missing rownames in l2_only
   l2_only = NN.tbl %>%
     group_by(dirt.t) %>%
@@ -414,46 +475,58 @@ formatData = function(.data, .opts) {
     select(-dirt.t) %>%
     as.matrix(l2_only, rownames.force=T)
 
-  # Calculate N, including groups with data that aren't level-two-only
-  N = full_join(
-      melt(NN.tbl, id.vars = c('dirt.demo', 'dirt.geo', 'dirt.t')) %>%
-          mutate(n.nonzero = value > 0) %>%
-          as.tbl(),
-      melt(NN.l2, id.vars = c('dirt.demo', 'dirt.geo', 'dirt.t')) %>%
-        as.tbl() %>%
-        mutate(not.l2 = !value),
-      by = c(c('dirt.demo', 'dirt.geo', 'dirt.t'), 'variable')) %>%
-    summarise(N = sum(n.nonzero & not.l2)) %>%
-    unlist()
+  # Check that NN.tbl and NN.l2 contain three expected identifiers, ".gt"
+  # variables, and nothing else. Otherwise, N will differ from length(n.vec.).
+  stopifnot(length(setdiff(colnames(NN.tbl), c('dirt.geo', 'dirt.demo',
+          'dirt.t', colnames(NN.tbl)[grep('.gt\\d+', colnames(NN.tbl))]))) == 0)
+  stopifnot(length(setdiff(colnames(NN.l2), c('dirt.geo', 'dirt.demo',
+          'dirt.t', colnames(NN.l2)[grep('.gt\\d+', colnames(NN.l2))]))) == 0)
+
+  # Calculate N as the (adjusted) count of responses that aren't level-two-only
+  # N = full_join(
+  #       melt(NN.tbl, id.vars = c('dirt.demo', 'dirt.geo', 'dirt.t'), value.name = 'n.l1') %>%
+  #         # mutate(n.nonzero = value > 0) %>%
+  #         as.tbl(),
+  #       melt(NN.l2, id.vars = c('dirt.demo', 'dirt.geo', 'dirt.t'), value.name = 'n.l2') %>%
+  #         as.tbl(),
+  #       by = c(c('dirt.demo', 'dirt.geo', 'dirt.t'), 'variable')) %>%
+  #     mutate(N = n.l1 + n.l2 * !is.na(n.l1)) %>%
+  #   summarise(N = sum(N)) %>%
+  #   unlist()
 
   NNl2 = NN.l2 %>%
     melt(id.vars = c('dirt.demo', 'dirt.geo', 'dirt.t')) %>%
     group_by(dirt.t, dirt.demo, variable) %>%
     summarise(l2.sum = sum(value)) %>%
     mutate(l2.sum = as.integer(l2.sum)) %>%
-    acast(dirt.t ~ variable ~ dirt.demo, value.var = 'l2.sum')
+    acast(dirt.t ~ variable ~ dirt.demo, value.var = 'l2.sum', fill = 0, drop = F)
 
   # TODO: this is what happens in the original code, but then we didn't have
   # any group-level data
   SSl2 = NNl2
 
-  # FIXME: assignment to what?
-  NN.tbl %>%
-    mutate_each(funs(. == 0), contains('.gt')) %>%
-    melt(id.vars = c('dirt.demo', 'dirt.geo', 'dirt.t')) %>%
-    group_by(dirt.t, dirt.demo, variable) %>%
-    summarise(l2.sum = sum(value) == 0) %>%
-    mutate(l2.sum = as.integer(l2.sum)) %>%
-    acast(dirt.t ~ variable ~ dirt.demo, value.var = 'l2.sum')
-
-  ns.long = left_join(
-      melt(NN.tbl, id.vars = c("dirt.geo", "dirt.demo", "dirt.t"), value.name = 'n.grp'),
-      melt(SS, id.vars = c("dirt.geo", "dirt.demo", "dirt.t"), value.name = 's.grp'),
+  ns.long.obs = left_join(
+      melt(NN.tbl, id.vars = c("dirt.geo", "dirt.demo", "dirt.t"), value.name = 'n.grp') %>% mutate(variable = as.character(variable)),
+      melt(SS, id.vars = c("dirt.geo", "dirt.demo", "dirt.t"), value.name = 's.grp') %>% mutate(variable = as.character(variable)),
       by = c('dirt.geo', 'dirt.demo', 'dirt.t', 'variable')) %>%
     arrange(variable, dirt.t, desc(dirt.demo), dirt.geo) %>%
-    filter(!is.na(n.grp) & n.grp != 0) %>%
-    mutate(name = str_c(dirt.geo, dirt.demo, dirt.t, sep = '__')) %>%
-    mutate(name = str_c(name, variable, sep = ' | '))
+    # filter(!is.na(n.grp) & n.grp != 0) %>%
+    # mutate(name = str_c(dirt.geo, dirt.demo, dirt.t, sep = '__')) %>%
+    mutate(name = str_c(dirt.geo, dirt.demo, sep = '__')) %>%
+    # mutate(name = str_c(name, variable, sep = ' | ')) %>%
+    # NOTE: Dropping all zero-trial groups ... But want to include covariate
+    # combinations observed in any period in all specified periods
+    filter(n.grp != 0) %>%
+    as.tbl()
+
+  # So, a
+  ns.long = data.frame(expand.grid(unique(ns.long.obs$name), t.use)) %>%
+      mutate_each(funs(as.character)) %>%
+    left_join(ns.long.obs, ., by = c('name' = 'Var1', 'dirt.t' = 'Var2')) %>%
+    mutate(n.grp = replaceNA(n.grp),
+      name = str_c(name, dirt.t, sep = '__'),
+      name = str_c(name, variable, sep = ' | ')) %>%
+    arrange(dirt.geo, desc(dirt.demo), variable, dirt.t)
 
   # NOTE: some NAs are the result of the join; they represent cells with
   # level-one data but no level-two data. Others are from NN.tbl -
@@ -465,23 +538,29 @@ formatData = function(.data, .opts) {
   # TODO: checks
 
   # Create missingness indicator array
-  # MMM <- array(1, dim=list(T, Q, G))
   MMM = ns.long %>%
-    mutate(m.grp = as.integer(is.na(n.grp) | n.grp == 0)) %>%
-    select(-s.grp) %>%
-    acast(dirt.t ~ variable ~ dirt.geo + dirt.demo, value.var = 'm.grp',
-      fill = 1)
+    full_join(group.grid, by = c('dirt.geo', 'dirt.demo', 'dirt.t')) %>%
+    # Drop any NA-variable rows induced by full_join
+    filter(!is.na(variable) & variable != '' & variable != 'NA') %>%
+    # Get missingness by group
+    group_by(dirt.geo, dirt.demo, dirt.t) %>%
+    summarise(m.grp = as.integer(sum(n.grp, na.rm = T) == 0)) %>%
+    acast(dirt.t ~ dirt.demo + dirt.geo, value.var = 'm.grp', fill = 1)
 
-  # FIXME: mismatch, n_vec; dims declared=(4461); dims found=(7303)
   n.vec = unlist(ns.long$n.grp)
   s.vec = unlist(ns.long$s.grp)
   names(n.vec) = ns.long$name
   names(s.vec) = ns.long$name
 
+  # stopifnot(identical(dim(NNl2), dim(SSl2)))
+  # dim(MMM)
+  # dim(WT)
+  # stopifnot(identical(dim(MMM), dim(WT)))
+
   # Return stan data
   list(
-    n_vec = n.vec,      # response counts
-    s_vec = s.vec,      # group counts
+    n_vec = n.vec,      # trial counts
+    s_vec = s.vec,      # sums
     NNl2 = NNl2,
     SSl2 = SSl2,
     XX = XX[, -1],
@@ -491,7 +570,7 @@ formatData = function(.data, .opts) {
     G = G,                 # number of covariate groups
     Q = Q,                 # number of questions (items)
     T = T,                 # number of time units (years)
-    N = N,                 # number of observed group-question cells
+    N = length(n.vec),                 # number of observed group-question cells
     P = ncol(XX[, -1]),    # number of hierarchical parameters
     S = dim(ZZ)[[2]] - 1,  # number of geographic units
     H = dim(ZZ)[[3]],      # number of geographic-level predictors

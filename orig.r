@@ -1,4 +1,4 @@
-options(width=110)
+rm(list=ls())
 
 ################################################################################
 #### LIBRARIES #################################################################
@@ -421,7 +421,7 @@ two.digit.labels <- paste0("'", str_sub(unique(4*trunc(svy.yr.range/4)), 3, 4))
 
 (T <- length(svy.yr.range)) ## some years may not have a question
 (Q <- length(qs.used))
-(Gr <- nlevels(group))
+(G <- nlevels(group))
 nat.vars <- demo.vars
 if (is.null(nat.vars)) {
   demo.group <- gl(1, nrow(xtab))
