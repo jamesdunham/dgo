@@ -1,0 +1,26 @@
+Package: dgirt
+Title: Group-Level Dynamic IRT and Small Area Estimation
+Version: 0.0.9
+Description: What the package does (one paragraph).
+Authors@R: c(person("James", "Dunham", email = "jdunham@mit.edu", role = c("aut", "cre")),
+  person("Christopher", "Warshaw", email = "cwarshaw@mit.edu", role = c("aut")),
+  person("Devin", "Caughey", email = "dcaughey@mit.edu", role = c("aut")))
+License: MIT
+Depends:
+    R (>= 3.2.2),
+    rstan
+LazyData: true
+Imports:
+    dplyr,
+    reshape2,
+    stringi,
+    stringr,
+    survey,
+    tidyr
+RoxygenNote: 5.0.1
+Suggests:
+    knitr,
+    lintr,
+    rmarkdown,
+    testthat
+VignetteBuilder: knitr

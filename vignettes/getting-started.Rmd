@@ -1,0 +1,48 @@
+---
+title: "Getting Started"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+We might eventually start this vignette with an overview of the
+\package{dgirt} package, but for now, we'll just illustrate a
+two-step workflow.
+
+## Diving In
+
+Let's use one of the datasets included with `dgirt`.
+```{r}
+library(dgirt)
+data(states)
+```
+
+`states` is a `data.frame` in which rows correspond to survey
+responses from individuals. These data aren't yet structured in
+the way that `dgirt` expects. But the `format_data` function can
+accomplish this given a table like `states` and some information from
+the user.
+
+```{r, results = 'hide'}
+
+states_fmt = format_data(
+  data = list(level1 = states),
+  vars = list(items = grep('^Q_', colnames(states), value = T),
+               groups = c('D_gender', 'D_race_new'),
+               time_id = "D_year",
+               geo_id = "D_abb",
+               survey_id = "D_source",
+               survey_weight = "D_weight"))
+```
+
+`run_dgirt` is a thin wrapper for `rstan::stan` that provides the
+dynamic group-level IRT model and chooses generally reasonable
+defaults. It takes as its first argument the output from `format_data`.
+
+```{r, results = 'hide', warning = FALSE, message = FALSE}
+dgirt_estimates = run_dgirt(states_fmt, n_iter = 10, n_chain = 1)
+```
+
