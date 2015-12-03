@@ -49,7 +49,7 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
       stan_call <- paste0(dgirt_path, " variational iter=", n_iter, " init='", init_range, "' data file=dgirt_data.Rdump")
       system(stan_call)
     }
-    if (file.exists("output.csv")) {
+    if (!file.exists("output.csv")) {
       warning("cmdstan didn't return estimates; check its output for errors.")
       stan.out <- NULL
     } else {
