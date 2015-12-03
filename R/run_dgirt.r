@@ -40,18 +40,19 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
       chains = n_chain, warmup = n_warm, thin = n_thin, verbose = FALSE, pars = save_pars, 
       seed = seed, init = "random", init_r = init_range)
   } else {
-    dgirt_path = system.file("dgirt", package = "dgirt", mustWork = TRUE)
+    dgirt_path <- system.file("dgirt", package = "dgirt", mustWork = TRUE)
     rstan::stan_rdump(names(dgirt_data), "dgirt_data.Rdump", envir = list2env(dgirt_data))
     if (method == 'optimize') {
-      stan_call = paste0(dgirt_path, " optimize iter=", n_iter, " init='", init_range, "' data file=dgirt_data.Rdump")
+      stan_call <- paste0(dgirt_path, " optimize iter=", n_iter, " init='", init_range, "' data file=dgirt_data.Rdump")
       system(stan_call)
     } else if (method == 'variational') {
-      stan_call = paste0(dgirt_path, " variational iter=", n_iter, " init='", init_range, "' data file=dgirt_data.Rdump")
+      stan_call <- paste0(dgirt_path, " variational iter=", n_iter, " init='", init_range, "' data file=dgirt_data.Rdump")
       system(stan_call)
     }
-    output_path = system.file("output.csv", package = "dgirt")
+    output_path <- system.file("output.csv", package = "dgirt")
     if (identical(output_path, "")) {
-      warning("Didn't find cmdstan output")
+      warning("cmdstan didn't return estimates; check its output for errors.")
+      stan.out <- NULL
     } else {
       cmdstan_output <- readLines(output_path)
       cmdstan_config <- cmdstan_output[stringr::str_sub(cmdstan_output, 1, 1) == '#']
@@ -59,8 +60,8 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
         message("No sampled values in output")
         stan.out <- list(config = cmdstan_config)
       } else {
-        message('Reading sampled values from disk')
-        cmdstan_result <- read.csv(cmdstan_output, skip = length(cmdstan_config))
+        message('Reading sampled values from disk. (This may take some time.)')
+        cmdstan_result <- read.csv(output_path, skip = length(cmdstan_config))
         stan.out <- list(config = cmdstan_config, values = cmdstan_result)
       }
     }
