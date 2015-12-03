@@ -1,6 +1,4 @@
-# dgirt
-
-Development of dynamic group-level IRT code for R.
+# dgirt: dynamic group-level IRT models in R
 
 ## Installation
 

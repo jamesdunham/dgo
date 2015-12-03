@@ -9,7 +9,7 @@ vignette: >
 ---
 
 We might eventually start this vignette with an overview of the
-\package{dgirt} package, but for now, we'll just illustrate a
+`dgirt` package, but for now, we'll just illustrate a
 two-step workflow.
 
 ## Diving In
