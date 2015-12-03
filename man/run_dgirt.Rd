@@ -10,7 +10,8 @@ run_dgirt(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000,
   save_pars = c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
   "nu_geo", "nu_geo_prior", "kappa", "sd_item", "sd_theta", "sd_theta_bar",
   "sd_gamma", "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd", "sd_total",
-  "theta_l2", "var_theta_bar_l2"), parallel = TRUE)
+  "theta_l2", "var_theta_bar_l2"), parallel = TRUE, method = c("rstan",
+  "optimize", "variational"))
 }
 \arguments{
 \item{dgirt_data}{Data prepared for use with \code{run_dgirt} by \code{format_data}.}
@@ -32,6 +33,13 @@ run_dgirt(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000,
 \item{save_pars}{See \code{pars} in \code{rstan::rstan_options}}
 
 \item{parallel}{See \code{rstan::rstan_options(auto_write = parallel)}.}
+
+\item{method}{By default, `rstan::stan` estimates the model using MCMC
+sampling. Alternatively, `cmdstan optimize` or `cmdstan variational`
+can be used if `CmdStan` is available. Note that these methods
+are faster than MCMC sampling but return only point estimates.
+See \url{http://mc-stan.org/interfaces/cmdstan.html} for `CmdStan`
+installation instructions.}
 }
 \description{
 Estimate dynamic group-level IRT model
