@@ -31,7 +31,8 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
   }
 
   cat("\nStart: ", date(), "\n")
-  if (identical(method, c("rstan", "optimize", "variational"))) {
+  # FIXME: fix logic
+  if (identical(method, "rstan")) {
     cat(stringr::str_wrap(stringr::str_c("Running ", n_iter, " iterations in each of ", 
           n_chain, " chains, thinned at an interval of ", n_thin, ", with ", n_warm, 
           " adaptation iterations over the years ", rownames(dgirt_data$ZZ)[1], "-", 
@@ -42,10 +43,10 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
   } else {
     dgirt_path <- system.file("dgirt", package = "dgirt", mustWork = TRUE)
     rstan::stan_rdump(names(dgirt_data), "dgirt_data.Rdump", envir = list2env(dgirt_data))
-    if (method == 'optimize') {
+    if (identical(method, 'optimize')) {
       stan_call <- paste0(dgirt_path, " optimize iter=", n_iter, " init='", init_range, "' data file=dgirt_data.Rdump")
       system(stan_call)
-    } else if (method == 'variational') {
+    } else if (identical(method, 'variational') {
       stan_call <- paste0(dgirt_path, " variational iter=", n_iter, " init='", init_range, "' data file=dgirt_data.Rdump")
       system(stan_call)
     }
@@ -59,7 +60,7 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
         message("No sampled values in output")
         stan.out <- list(config = cmdstan_config)
       } else {
-        message('Reading sampled values from disk. (This may take some time.)')
+        message("Reading sampled values from disk. (This may take some time.)")
         cmdstan_result <- read.csv("output.csv", skip = length(cmdstan_config))
         stan.out <- list(config = cmdstan_config, values = cmdstan_result)
       }
