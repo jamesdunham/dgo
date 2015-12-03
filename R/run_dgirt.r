@@ -53,7 +53,7 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
       warning("cmdstan didn't return estimates; check its output for errors.")
       stan.out <- NULL
     } else {
-      cmdstan_output <- readLines("output.scv")
+      cmdstan_output <- readLines("output.csv")
       cmdstan_config <- cmdstan_output[stringr::str_sub(cmdstan_output, 1, 1) == '#']
       if (length(cmdstan_config) == length(cmdstan_output)) {
         message("No sampled values in output")
