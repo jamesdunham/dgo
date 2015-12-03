@@ -52,16 +52,17 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
     output_path = system.file("output.csv", package = "dgirt")
     if (identical(output_path, "")) {
       warning("Didn't find cmdstan output")
-    }
-    cmdstan_output <- readLines(output_path)
-    cmdstan_config <- cmdstan_output[stringr::str_sub(cmdstan_output, 1, 1) == '#']
-    if (length(cmdstan_config) == length(cmdstan_output)) {
-      message("No sampled values in output")
-      stan.out <- list(config = cmdstan_config)
     } else {
-      message('Reading sampled values from disk')
-      cmdstan_result <- read.csv(cmdstan_output, skip = length(cmdstan_config))
-      stan.out <- list(config = cmdstan_config, values = cmdstan_result)
+      cmdstan_output <- readLines(output_path)
+      cmdstan_config <- cmdstan_output[stringr::str_sub(cmdstan_output, 1, 1) == '#']
+      if (length(cmdstan_config) == length(cmdstan_output)) {
+        message("No sampled values in output")
+        stan.out <- list(config = cmdstan_config)
+      } else {
+        message('Reading sampled values from disk')
+        cmdstan_result <- read.csv(cmdstan_output, skip = length(cmdstan_config))
+        stan.out <- list(config = cmdstan_config, values = cmdstan_result)
+      }
     }
   }
   cat("\nEnd: ", date(), "\n")
