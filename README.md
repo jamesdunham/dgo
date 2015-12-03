@@ -13,10 +13,7 @@ devtools::install_github("jamesdunham/dgirt")
 
 ```
 # Attach dgirt
-
 library(dgirt)
-
-## Workflow ##
 
 # 1. Pass data to format_data
 ?format_data
@@ -24,6 +21,8 @@ library(dgirt)
 # 2. Pass what format_data returns to run_dgirt
 ?run_dgirt
 ```
+
+See also the "[Getting Started](https://github.com/jamesdunham/dgirt/blob/master/vignettes/getting-started.Rmd)" vignette.
 
 ## Updates
 
