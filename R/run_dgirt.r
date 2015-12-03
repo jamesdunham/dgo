@@ -49,19 +49,18 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
       stan_call <- paste0(dgirt_path, " variational iter=", n_iter, " init='", init_range, "' data file=dgirt_data.Rdump")
       system(stan_call)
     }
-    output_path <- system.file("output.csv", package = "dgirt")
-    if (identical(output_path, "")) {
+    if (file.exists("output.csv")) {
       warning("cmdstan didn't return estimates; check its output for errors.")
       stan.out <- NULL
     } else {
-      cmdstan_output <- readLines(output_path)
+      cmdstan_output <- readLines("output.scv")
       cmdstan_config <- cmdstan_output[stringr::str_sub(cmdstan_output, 1, 1) == '#']
       if (length(cmdstan_config) == length(cmdstan_output)) {
         message("No sampled values in output")
         stan.out <- list(config = cmdstan_config)
       } else {
         message('Reading sampled values from disk. (This may take some time.)')
-        cmdstan_result <- read.csv(output_path, skip = length(cmdstan_config))
+        cmdstan_result <- read.csv("output.csv", skip = length(cmdstan_config))
         stan.out <- list(config = cmdstan_config, values = cmdstan_result)
       }
     }
@@ -69,4 +68,3 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
   cat("\nEnd: ", date(), "\n")
   return(stan.out)
 }
-
