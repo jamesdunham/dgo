@@ -22,7 +22,7 @@ library(dgirt)
 ?run_dgirt
 ```
 
-See also the [Getting Started](https://github.com/jamesdunham/dgirt/blob/master/vignettes/getting-started.Rmd)" vignette.
+See also the "[Getting Started](https://github.com/jamesdunham/dgirt/blob/master/vignettes/getting-started.Rmd)" vignette.
 
 ## Updates
 
