@@ -1,8 +1,8 @@
 #' State-level demographic marginals
 #'
-#' A dataset with the proportion of each state's population 1960-2010 in strata defiend by four demograhic variables. 
+#' A dataset with the proportion of each state's population 1960-2010 in strata defined by four demographic variables.
 #'
-#' \enumerate{
+#' \itemize{
 #'  \item state
 #'  \item year
 #'  \item race
