@@ -106,10 +106,6 @@ expect_equal(get_rare_items_over_t(checks, list(time_id = "t", min_periods = 1L)
 expect_equal(get_rare_items_over_t(checks, list(time_id = "t", min_periods = 2L)), 
   c("q1", "q2"))
 
-context("Get items appearing in less than min_surveys polls")
-# d_poll_args = poll_check = list(q.which.asked = get_question_polls(d_t,
-# d_t_args))
-
 context("Get observed time periods")
 rm(list = ls())
 d <- dplyr::data_frame(time_id = factor(c("1991", "1992")))
