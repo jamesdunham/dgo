@@ -1,0 +1,85 @@
+---
+title: "Getting Started"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+We might eventually start this vignette with an overview of the
+`dgirt` package, but for now, we'll just illustrate a
+two-step workflow.
+
+## Diving In
+
+Let's use one of the datasets included with `dgirt`.
+```{r}
+library(dgirt)
+data(states)
+```
+
+`states` is a `data.frame` in which rows correspond to survey responses from
+individuals. These data aren't yet structured in the way that `dgirt` expects.
+(See `?states`). But the `format_data` function can accomplish this given a
+table like `states` and some information from the user. For details see
+`?format_data`. We'll use these minimal arguments:
+
+  * `data$level1`: Table of survey responses at the lowest level of aggregation
+    (e.g. individual), as `data.frame`.
+  * `vars$items`: Names of item response variables in `vars$level1`, as
+    `character`.
+  * `vars$groups`: Names of respondent characteristic variables in
+    `vars$level1`, as `character`.
+  * `vars$time_id`: Name of time period variable in `vars$level1`, as
+    `character`.
+  * `vars$geo_id`: Name of geographic identifier variable in `vars$level1`, as
+    `character`.
+  * `vars$survey_id`: Name of survey identifier variable in `vars$level1`, as
+    `character`.
+  * `vars$survey_weight`: Name of weight variable in `vars$level1`, as
+    `character`.
+
+The `data` argument will take our `data.frame` of individual survey responses,
+while the `vars` argument will specify as `character` vectors the names of
+variables in `data`.
+
+```{r}
+states_fmt = format_data(
+  data = list(level1 = states),
+  vars = list(items = grep("^Q_", colnames(states), value = T),
+               groups = c("D_gender", "D_race_new"),
+               time_id = "D_year",
+               geo_id = "D_abb",
+               survey_id = "D_source",
+               survey_weight = "D_weight"))
+```
+
+If `format_data` had recognized any issues with the data, we'd see more
+messages.  Its return value is a list of objects formatted for estimation with
+`run_dgirt`, a thin wrapper for `rstan::stan` that provides the dynamic
+group-level IRT model and chooses generally reasonable defaults. 
+
+`run_dgirt` takes as its first argument the output from `format_data`. We'll
+use its `n_iter` argument to iterate the sampler just once, in a single 
+chain (`n_chain`).
+
+```{r}
+dgirt_estimates = run_dgirt(states_fmt, n_iter = 1, n_chain = 1)
+```
+
+`rstan` reports problems it encounters when compiling the model and sampling.
+If successful, `run_dgirt` returns the return value of `rstan::rstan`.
+
+## `cmdstan` `optimize` and `variational`
+
+We can use the `method` argument of `run_dgirt` to choose an alternative to
+MCMC sampling if `cmdstan` is available. See
+http://mc-stan.org/interfaces/cmdstan.html for installation instructions.
+Setting `method = "optimize"` will call `cmdstan optimize`.
+
+```{r}
+dgirt_estimates = run_dgirt(states_fmt, n_iter = 1, n_chain = 1, method = "optimize")
+dgirt_estimates = run_dgirt(states_fmt, n_iter = 1, n_chain = 1, method = "variational")
+```
