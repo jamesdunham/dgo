@@ -72,7 +72,7 @@ dgirt_estimates = run_dgirt(states_fmt, n_iter = 1, n_chain = 1)
 `rstan` reports problems it encounters when compiling the model and sampling.
 If successful, `run_dgirt` returns the return value of `rstan::rstan`.
 
-## `optimize` via `cmdstan`
+## `cmdstan` `optimize` and `variational`
 
 We can use the `method` argument of `run_dgirt` to choose an alternative to
 MCMC sampling if `cmdstan` is available. See
@@ -81,4 +81,5 @@ Setting `method = "optimize"` will call `cmdstan optimize`.
 
 ```{r}
 dgirt_estimates = run_dgirt(states_fmt, n_iter = 1, n_chain = 1, method = "optimize")
+dgirt_estimates = run_dgirt(states_fmt, n_iter = 1, n_chain = 1, method = "variational")
 ```
