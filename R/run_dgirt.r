@@ -24,48 +24,68 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
     "sd_gamma", "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd", "sd_total", 
     "theta_l2", "var_theta_bar_l2"), parallel = TRUE, method = c("rstan", "optimize", "variational")) {
 
-  requireNamespace('rstan', quietly = TRUE)
+  requireNamespace("rstan", quietly = TRUE)
   rstan::rstan_options(auto_write = parallel)
   if (parallel) {
     options(mc.cores = parallel::detectCores())
   }
 
-  cat("\nStart: ", date(), "\n")
-  # FIXME: fix logic
-  if (identical(method, "rstan")) {
-    cat(stringr::str_wrap(stringr::str_c("Running ", n_iter, " iterations in each of ", 
-          n_chain, " chains, thinned at an interval of ", n_thin, ", with ", n_warm, 
-          " adaptation iterations over the years ", rownames(dgirt_data$ZZ)[1], "-", 
-          rownames(dgirt_data$ZZ)[length(rownames(dgirt_data$ZZ))], ".")))
-    stan.out <- rstan::stan(model_code = stan_code, data = dgirt_data, iter = n_iter, 
-      chains = n_chain, warmup = n_warm, thin = n_thin, verbose = FALSE, pars = save_pars, 
+  message("Started:", date())
+  if (identical(method, "rstan") || identical(method, c("rstan", "optimize", "variational"))) {
+    message("Running", n_iter, "iterations in each of ", n_chain, "chains. Thinning at an interval of", 
+      n_thin, "with", n_warm, "adaptation iterations.")
+    stan_out <- rstan::stan(model_code = stan_code, data = dgirt_data, iter = n_iter,
+      chains = n_chain, warmup = n_warm, thin = n_thin, verbose = FALSE, pars = save_pars,
       seed = seed, init = "random", init_r = init_range)
+  } else if (identical(method, "optimize") || identical(method, "variational")) {
+    stan_out <- run_cmdstan(method, n_iter, init_range)
   } else {
-    dgirt_path <- system.file("dgirt", package = "dgirt", mustWork = TRUE)
-    rstan::stan_rdump(names(dgirt_data), "dgirt_data.Rdump", envir = list2env(dgirt_data))
-    if (identical(method, 'optimize')) {
-      stan_call <- paste0(dgirt_path, " optimize iter=", n_iter, " init='", init_range, "' data file=dgirt_data.Rdump")
-      system(stan_call)
-    } else if (identical(method, 'variational') {
-      stan_call <- paste0(dgirt_path, " variational iter=", n_iter, " init='", init_range, "' data file=dgirt_data.Rdump")
-      system(stan_call)
-    }
-    if (!file.exists("output.csv")) {
-      warning("cmdstan didn't return estimates; check its output for errors.")
-      stan.out <- NULL
-    } else {
-      cmdstan_output <- readLines("output.csv")
-      cmdstan_config <- cmdstan_output[stringr::str_sub(cmdstan_output, 1, 1) == '#']
-      if (length(cmdstan_config) == length(cmdstan_output)) {
-        message("No sampled values in output")
-        stan.out <- list(config = cmdstan_config)
-      } else {
-        message("Reading sampled values from disk. (This may take some time.)")
-        cmdstan_result <- read.csv("output.csv", skip = length(cmdstan_config))
-        stan.out <- list(config = cmdstan_config, values = cmdstan_result)
-      }
-    }
+    stop("Didn't recognize run_dgirt method")
   }
-  cat("\nEnd: ", date(), "\n")
-  return(stan.out)
+  message("Ended:", date())
+  return(stan_out)
+}
+
+run_cmdstan = function(dgirt_data, method, n_iter, init_range) {
+  dump_dgirt(dgirt_data)
+  stan_call <- paste0(get_dgirt_path(), " ", method, " iter=", n_iter,
+    " init='", init_range, "' data file=", get_dump_path())
+  system(stan_call)
+  unlink(get_dump_path())
+  if (file.exists(get_output_path())) {
+    stan_output <- read_cmdstan_output()
+    return(stan_output)
+  } else {
+    warning("cmdstan didn't write an output file; check its output for errors.")
+    return(NULL)
+  }
+}
+
+read_cmdstan_output = function() {
+    output_path  <- get_output_path()
+    cmdstan_output <- readLines(output_path)
+    cmdstan_config <- cmdstan_output[stringr::str_sub(cmdstan_output, 1, 1) == '#']
+    message("Reading sampled values from disk. (This may take some time.)")
+    cmdstan_values <- read.csv(output_path, skip = length(cmdstan_config))
+    unlink(outout_path)
+    return(list(config = cmdstan_config, values = cmdstan_values))
+}
+
+dump_dgirt <- function(dgirt_data) {
+  stopifnot(is.list(dgirt_data))
+  stopifnot(length(dgirt_data) > 0)
+  rstan::stan_rdump(names(dgirt_data), get_dump_path(),
+    envir = list2env(dgirt_data))
+}
+
+get_dgirt_path <- function() {
+  system.file("dgirt", package = "dgirt", mustWork = TRUE)
+}
+
+get_output_path <- function() {
+  paste0(system.file(package = "dgirt"), "/output.csv")
+}
+
+get_dump_path <- function() {
+  paste0(system.file(package = "dgirt"), "/dgirt_data.Rdump")
 }
