@@ -32,15 +32,15 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
 
   message("Started:", date())
   if (identical(method, "rstan") || identical(method, c("rstan", "optimize", "variational"))) {
-    message("Running", n_iter, "iterations in each of ", n_chain, "chains. Thinning at an interval of", 
-      n_thin, "with", n_warm, "adaptation iterations.")
+    message("Running ", n_iter, " iterations in each of ", n_chain, " chains. Thinning at an interval of ",
+      n_thin, " with ", n_warm, " adaptation iterations.")
     stan_out <- rstan::stan(model_code = stan_code, data = dgirt_data, iter = n_iter,
       chains = n_chain, warmup = n_warm, thin = n_thin, verbose = FALSE, pars = save_pars,
       seed = seed, init = "random", init_r = init_range)
   } else if (identical(method, "optimize") || identical(method, "variational")) {
     stan_out <- run_cmdstan(method, n_iter, init_range)
   } else {
-    stop("Didn't recognize run_dgirt method")
+    stop("Didn't recognize method")
   }
   message("Ended:", date())
   return(stan_out)
