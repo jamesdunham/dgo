@@ -1,8 +1,15 @@
 # Check argument lengths
 check_arg_lengths <- function(.arg) {
+  if (is.null(.arg$items) || length(.arg$items) < 1) {
+    stop("no variable(s) given as items")
+  }
   # These arguments should be length-one; confirm they are
   length_one <- .arg[c("time_id", "geo_id", "survey_weight", "survey_id")]
-  if (any(sapply(length_one, length) != 1)) {
+  if (any(sapply(length_one, length) == 0)) {
+    stop(sprintf("no variable given for %s",
+        stringi::stri_c(c("time_id", "geo_id", "survey_weight",
+            "survey_id")[sapply(length_one, length) == 0], collapse = ", ")))
+  } else if (any(sapply(length_one, length) != 1)) {
     stop(sprintf("more than one variable given for %s", stringi::stri_c(names(which(sapply(length_one, 
       length) != 1)), collapse = ", ")))
   }
@@ -17,24 +24,24 @@ check_arg_names <- function(..arg) {
   # These variables must exist in level1
   check_names(unlist(..arg[c("items", "time_id", "groups", "geo_id", "survey_weight", 
     "survey_id")]), ..arg$level1)
-  
+
   # If any of these variables are given, level2 must also
   imply_level2 <- unlist(..arg[c("level2_modifiers", "level2_period1_modifiers")])
   if (!all(sapply(imply_level2, is.null)) && is.null(..arg$level2)) {
     stop(sprintf("%s given but level2 is NULL", stringi::stri_c(names(which(!sapply(imply_level2, 
       is.null))), collapse = ", ")))
   }
-  
+
   # If level2 exists, these variables must exist in it
   check_names(unlist(..arg[c("time_id", "geo_id")]), ..arg$level2, check_tab = FALSE)
-  
+
   # If given, these variables with NULL defaults must exist in level2
   check_names(unlist(..arg[c("level2_modifiers", "level2_period1_modifiers")]), 
     ..arg$level2, check_tab = FALSE, check_nulls = FALSE)
   # If targets exists, these variables must exist in it
   check_names(unlist(..arg[c("time_id", "groups", "geo_id", "group_proportion")]), 
     ..arg$targets, check_tab = FALSE)
-  
+
   return(TRUE)
 }
 
@@ -53,7 +60,7 @@ check_names <- function(varnames, tab, check_tab = TRUE, check_nulls = TRUE) {
     }
     nulls <- varnames[is.null(varnames)]
     if (length(nulls) > 0) {
-      stop(sprintf("%s missing with no default", stringi::stri_c(missing_vars, 
+      stop(sprintf("%s missing with no default", stringi::stri_c(nulls,
         collapse = ", ")))
     }
   }
@@ -61,8 +68,8 @@ check_names <- function(varnames, tab, check_tab = TRUE, check_nulls = TRUE) {
   if (length(defined_varnames) > 0) {
     missing_vars <- setdiff(defined_varnames, names(tab))
     if (length(missing_vars) > 0) {
-      stop(sprintf(ngettext(length(missing_vars), "%s isn't an element of %s", 
-        "%s aren't elements of %s"), stringi::stri_c(missing_vars, collapse = ", "), 
+      stop(sprintf(ngettext(length(missing_vars), "%s isn't an element of %s",
+        "%s aren't elements of %s"), stringi::stri_c(missing_vars, collapse = ", "),
         sub(".arg$", "", as.expression(substitute(tab)), fixed = T)))
     }
   }
