@@ -2,9 +2,8 @@ context("Write data with stan_rdump")
 d = list("a" = 1L)
 
 dump_dgirt(d)
-expect_true(file.exists(system.file("inst/dgirt_data.Rdump", 
- package = "dgirt")))
-unlink(system.file("inst/dgirt_data.Rdump", package = "dgirt"))
+expect_true(file.exists(system.file("dgirt_data.Rdump", package = "dgirt")))
+unlink(system.file("dgirt_data.Rdump", package = "dgirt"))
 
 expect_silent(dump_dgirt(d))
 expect_error(dump_dgirt(NULL))

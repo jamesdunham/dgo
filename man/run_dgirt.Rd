@@ -41,6 +41,9 @@ are faster than MCMC sampling but return only point estimates.
 See \url{http://mc-stan.org/interfaces/cmdstan.html} for `CmdStan`
 installation instructions.}
 }
+\value{
+An object of S4 class `stanfit` as returned by `rstan::stan`.
+}
 \description{
 Estimate dynamic group-level IRT model
 }

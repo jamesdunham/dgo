@@ -16,6 +16,8 @@
 #'        are faster than MCMC sampling but return only point estimates.
 #'        See \url{http://mc-stan.org/interfaces/cmdstan.html} for `CmdStan`
 #'        installation instructions.
+#' @return An object of S4 class `stanfit` as returned by `rstan::stan`.
+#' @import rstan
 #' @export
 run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n_warm = min(10000, 
   floor(n_iter * 3/4)), n_thin = ceiling((n_iter - n_warm)/(max_save/n_chain)), 
@@ -38,11 +40,19 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
       chains = n_chain, warmup = n_warm, thin = n_thin, verbose = FALSE, pars = save_pars,
       seed = seed, init = "random", init_r = init_range)
   } else if (identical(method, "optimize") || identical(method, "variational")) {
-    stan_out <- run_cmdstan(method, n_iter, init_range)
+    stan_out <- run_cmdstan(dgirt_data, method, n_iter, init_range)
   } else {
     stop("Didn't recognize method")
   }
   message("Ended:", date())
+
+  if (!is.null(stan_out)) {
+    stan_out@.MISC$group_names = get_group_names(dgirt_data)
+    stan_out@.MISC$t_names = get_t_names(dgirt_data)
+    stan_out@.MISC$q_names = get_q_names(dgirt_data)
+    stan_out@.MISC$p_names = get_p_names(dgirt_data)
+  }
+
   return(stan_out)
 }
 
@@ -63,12 +73,9 @@ run_cmdstan = function(dgirt_data, method, n_iter, init_range) {
 
 read_cmdstan_output = function() {
     output_path  <- get_output_path()
-    cmdstan_output <- readLines(output_path)
-    cmdstan_config <- cmdstan_output[stringr::str_sub(cmdstan_output, 1, 1) == '#']
     message("Reading sampled values from disk. (This may take some time.)")
-    cmdstan_values <- read.csv(output_path, skip = length(cmdstan_config))
-    unlink(outout_path)
-    return(list(config = cmdstan_config, values = cmdstan_values))
+    cmdstan_value <- read_stan_csv(output_path)
+    return(cmdstan_value)
 }
 
 dump_dgirt <- function(dgirt_data) {
@@ -89,3 +96,23 @@ get_output_path <- function() {
 get_dump_path <- function() {
   paste0(system.file(package = "dgirt"), "/dgirt_data.Rdump")
 }
+
+get_group_names = function(dgirt_data) {
+  demo_geo_names = dimnames(dgirt_data$MMM)[[3]]
+  group_names = tidyr::separate(data.frame(demo_geo_names), demo_geo_names,
+    c("demo", "geo"), "_", remove = FALSE)
+  return(group_names)
+}
+
+get_t_names = function(dgirt_data) {
+  dimnames(dgirt_data$MMM)[[1]]
+}
+
+get_q_names = function(dgirt_data) {
+  dimnames(dgirt_data$MMM)[[2]]
+}
+
+get_p_names = function(dgirt_data) {
+  gsub("^dgirt_(geo|demo)", "",  dimnames(dgirt_data$XX)[[2]])
+}
+
