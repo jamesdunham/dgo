@@ -18,4 +18,3 @@
 #' @examples
 #' state_targets
 NULL
- 

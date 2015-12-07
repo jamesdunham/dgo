@@ -3,7 +3,7 @@
 # Create summary table of design effects
 createDef <- function(x) {
   y <- 1 + (sd(x, na.rm = T)/mean(x, na.rm = T))^2
-  if (is.na(y))
+  if (is.na(y)) 
     return(1) else return(y)
 }
 
@@ -15,9 +15,9 @@ createZZ <- function(.XX, .arg) {
   } else {
     stopifnot(!is.null(.arg$level2))
     stopifnot(all(c(.arg$time_id, .arg$geo_id) %in% names(.arg$level2)))
-    ZZ <- suppressWarnings(reshape2::melt(.arg$level2, id.vars = c(.arg$time_id,
+    ZZ <- suppressWarnings(reshape2::melt(.arg$level2, id.vars = c(.arg$time_id, 
       .arg$geo_id)))
-    ZZ <- suppressWarnings(reshape2::acast(ZZ, formula(paste(.arg$time_id, .arg$geo_id,
+    ZZ <- suppressWarnings(reshape2::acast(ZZ, formula(paste(.arg$time_id, .arg$geo_id, 
       "variable", sep = " ~ "))))
   }
   return(ZZ)
@@ -69,4 +69,4 @@ anyValid <- function(x) any(!is.na(x))
 # Check element-wise if !is.na over x
 notNA <- function(x) {
   !is.na(x)
-}
+} 
