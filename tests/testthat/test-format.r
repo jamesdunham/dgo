@@ -31,7 +31,7 @@ expect_error(check_arg_lengths(group_proportion = c("var1", "var2")))
 
 context("Argument names")
 d <- dplyr::data_frame(q1 = 1, t = 1, geo = 1, female = 1, poll = 1, weight = 1)
-d_args <- list(level1 = d, items = "q1", time_id = "t", geo_id = "geo", groups = "female", 
+d_args <- list(level1 = d, items = "q1", time_id = "t", geo_id = "geo", groups = "female",
   survey_id = "poll", survey_weight = "weight")
 
 expect_silent(check_arg_names(d_args))
@@ -43,15 +43,10 @@ expect_error(check_arg_names(list(level1 = d, time_id = "T")), "element\\s* of .
 expect_error(check_arg_names(list(level1 = d, groups = "Female")), " element\\s* of .level1")
 expect_error(check_arg_names(list(level1 = d, geo_id = "Geo")), "element\\s* of .level1")
 
-# TODO: add required elements to level1 expect_error(check_arg_names(list(level1
-# = d, level2_modifiers = 'Geo')), 'but .level2 is NULL')
-# expect_error(check_arg_names(list(level1 = d, c(d_args,
-# level2_period1_modifiers = 'Geo')), 'given but .level2 is NULL')
-
 context("Argument types")
 rm(list = ls())
 d <- dplyr::data_frame(q1 = 1, t = 1, geo = 1, female = 1, poll = 1, weight = 1)
-a <- set_arg_defaults(list(level1 = d, items = "q1", time_id = "t", geo_id = "geo", 
+a <- set_arg_defaults(list(level1 = d, items = "q1", time_id = "t", geo_id = "geo",
   groups = "female", survey_id = "poll", survey_weight = "weight"))
 
 expect_silent(check_arg_types(a))
@@ -74,7 +69,7 @@ expect_error(check_arg_types(c(a[-13], list(silent = 1))), "should be TRUE or FA
 context("Factorize variables")
 rm(list = ls())
 d <- dplyr::data_frame(q1 = 1, t = 1, geo = 1, female = 1, poll = 1, weight = 1)
-a <- list(level1 = d, items = "q1", time_id = "t", geo_id = "geo", groups = "female", 
+a <- list(level1 = d, items = "q1", time_id = "t", geo_id = "geo", groups = "female",
   survey_id = "poll", survey_weight = "weight")
 
 expect_silent(factorize_arg_vars(NULL, a))
@@ -101,9 +96,9 @@ d <- dplyr::data_frame(q1 = c(1, NA), q2 = c(NA, 1), t = as.factor(c(1, 2)))
 a <- list(level1 = d, items = c("q1", "q2"), time_id = "t")
 checks <- list(q_when_asked = get_question_periods(d, a))
 
-expect_equal(get_rare_items_over_t(checks, list(time_id = "t", min_periods = 1L)), 
+expect_equal(get_rare_items_over_t(checks, list(time_id = "t", min_periods = 1L)),
   character(0))
-expect_equal(get_rare_items_over_t(checks, list(time_id = "t", min_periods = 2L)), 
+expect_equal(get_rare_items_over_t(checks, list(time_id = "t", min_periods = 2L)),
   c("q1", "q2"))
 
 context("Get observed time periods")
@@ -127,7 +122,60 @@ expect_equal(unname(get_missing_respondents(d)), c(TRUE, FALSE))
 
 context("Subset to estimation periods")
 rm(list = ls())
+d_factor <- dplyr::data_frame(dgirt_t = as.factor(c(1991, 1991, 1992)))
+a_char <- list(use_t = c("1991"))
+expect_equal(levels(subset_to_estimation_periods(d_factor, a_char)$dgirt_t), "1991")
+expect_is(subset_to_estimation_periods(d_factor, a_char), "data.frame")
 
-d <- data.frame(dgirt_t = as.factor(c(1991, 1991, 1992)))
-a <- list(use_t = c(1991))
-subset_to_estimation_periods(d, a) 
+a_length0 <- list(use_t = character())
+expect_error(subset_to_estimation_periods(d_factor, a_length0), "nrow.* is not TRUE")
+
+a_str_length0 <- list(use_t = "")
+expect_error(subset_to_estimation_periods(d_factor, a_str_length0), "nrow.* is not TRUE")
+
+a_length2 <- list(use_t = c("1991", "1992"))
+expect_equal(levels(subset_to_estimation_periods(d_factor, a_length2)$dgirt_t), c("1991", "1992"))
+
+d_num <- data.frame(dgirt_t = c(1991, 1991, 1992))
+expect_error(subset_to_estimation_periods(d_num, a_char), "factor.* is not TRUE")
+
+d_char <- dplyr::data_frame(dgirt_t = c("1991", "1991", "1992"))
+expect_error(subset_to_estimation_periods(d_char, a_char), "factor.* is not TRUE")
+
+a_num <- list(use_t = c(1991))
+expect_error(subset_to_estimation_periods(d_factor, a_num), "character.* is not TRUE")
+
+a_factor <- list(use_t = as.factor("1991"))
+expect_error(subset_to_estimation_periods(d_factor, a_num), "character.* is not TRUE")
+
+d_tbl <- dplyr::as.tbl(dplyr::data_frame(dgirt_t = as.factor(c(1991, 1991, 1992))))
+expect_is(subset_to_estimation_periods(d_tbl, a_char), "tbl")
+
+context("Drop rows missing covariates")
+rm(list = ls())
+d <- dplyr::data_frame(
+  id = 1:4,
+  dgirt_geo = as.factor(c("A", NA, "C", "D")),
+  dgirt_demo = as.factor(c("A", "B", NA, "D")),
+  dgirt_t = as.factor(c("A", "B", "C", NA)))
+expect_equal(drop_rows_missing_covariates(d)$id, 1)
+
+context("Create GT variables")
+context("Drop rows missing gt variables")
+context("Subset to observed geo periods")
+contedxt("Count respondent trials")
+context("Summarize design effects")
+context("Count level2 groups")
+context("Create ZZ")
+context("Make NNl2")
+context("Make dummy weight matrix")
+context("Make group grid")
+context("Make group identifier")
+context("Make l2_only")
+context("Make missingness array")
+context("Make ns_long")
+context("Make ns_long_obs")
+context("Summarize mean_y")
+context("Summarize success count")
+context("Summarize trial counts")
+context("Summarize trials by period")
