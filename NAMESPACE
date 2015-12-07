@@ -2,3 +2,4 @@
 
 export(format_data)
 export(run_dgirt)
+import(rstan)
