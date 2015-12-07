@@ -75,7 +75,8 @@ read_cmdstan_output <- function() {
 dump_dgirt <- function(dgirt_data) {
   stopifnot(is.list(dgirt_data))
   stopifnot(length(dgirt_data) > 0)
-  rstan::stan_rdump(names(dgirt_data), get_dump_path(), envir = list2env(dgirt_data))
+  rstan::stan_rdump(names(dgirt_data), get_dump_path(),
+    envir = list2env(dgirt_data))
 }
 
 get_dgirt_path <- function() {
