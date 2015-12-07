@@ -3,3 +3,5 @@
 ^\.DS_Store$
 ^packrat/
 ^\.Rprofile$
+^\.travis.yml$
+^\todo.txt$
