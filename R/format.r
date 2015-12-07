@@ -42,17 +42,17 @@
 #' @export
 
 format_data <- function(data = list(level1,
-                                   level2 = NULL,
-                                   targets = NULL),
+                                    level2 = NULL,
+                                    targets = NULL),
                        vars = list(items,
-                                    groups,
-                                    time_id,
-                                    geo_id,
-                                    survey_id,
-                                    survey_weight,
-                                    group_proportion = NULL,
-                                    level2_modifiers = NULL,
-                                    level2_period1_modifiers = NULL),
+                                   groups,
+                                   time_id,
+                                   geo_id,
+                                   survey_id,
+                                   survey_weight,
+                                   group_proportion = NULL,
+                                   level2_modifiers = NULL,
+                                   level2_period1_modifiers = NULL),
                        filters = list(periods = NULL,
                                       geo_ids = NULL,
                                       min_surveys = 1L,
@@ -61,14 +61,7 @@ format_data <- function(data = list(level1,
                                      difficulty_count = 1L,
                                      constant_item = TRUE)){
 
-  # Get arguments
-  arg <- mget(names(formals(format_data)),
-    ifnotfound = list(rep(NULL, length(formals(format_data)))))
-  arg <- handle_arguments(arg)
-  arg$min_periods <- as.integer(arg$min_periods)
-  arg$min_surveys <- as.integer(arg$min_surveys)
-
-  # Handle data
+  arg <- handle_arguments()
   level1 <- handle_data(arg$level1, arg)
   arg$level2 <- handle_data(arg$level2, arg)
 
@@ -95,10 +88,8 @@ format_data <- function(data = list(level1,
   arg$use_t <- set_use_t(level1, arg)
 
   level1 <- subset_to_estimation_periods(level1, arg)
-  level1 <- droplevels(level1)
   if (!is.null(arg$level2)){
     arg$level2 <- subset_to_estimation_periods(arg$level2, arg)
-    arg$level2 <- droplevels(arg$level2)
   }
 
   # Drop rows lacking covariates or time variable
@@ -142,21 +133,15 @@ format_data <- function(data = list(level1,
 
   # Create table of design effects
   design_effects <- summarize_design_effects(level1)
-
   group_grid <- make_group_grid(level1, arg)
-
   # Create table of (adjusted) trial counts by geographic, demographic, and time variable combination
   trial_counts <- summarize_trial_counts(level1, design_effects, group_grid)
-
   # Create table of (weighted) average outcomes within combinations of geographic, demographic, and time variables.
   mean_y <- summarize_mean_y(level1, group_grid)
-
   # Take the product of the (weighted) average cell outcome and the (adjusted) trial count
   success_counts <- summarize_success_count(trial_counts, mean_y)
-
   # Create a summary table: for each period t, are there any nonmissing responses?
   trials_by_period <- summarize_trials_by_period(trial_counts)
-
   # Giving us the periods in which we observe responses, which may be different from the periods we"ll use in estimation (given in arg$use_t)
   checks$nonmissing_t <- as.character(trials_by_period$t[trials_by_period$any_valid])
 
@@ -170,9 +155,7 @@ format_data <- function(data = list(level1,
   G <- count_covariate_combos(level1)
 
   level1$dgirt_demo <- make_group_identifier(level1, arg)
-
   Gl2 <- count_level2_groups(arg$level2, xtab, arg)
-
   XX <- model.matrix(f0, xtab)
 
   # NOTE: not implemented
@@ -185,7 +168,6 @@ format_data <- function(data = list(level1,
 
   ns_long_obs <- make_ns_long_obs(trial_counts, success_counts)
   ns_long <- make_ns_long(ns_long_obs, arg)
-
   n_vec <- unlist(ns_long$n_grp)
   s_vec <- unlist(ns_long$s_grp)
   names(n_vec) <- ns_long$name
@@ -582,7 +564,7 @@ subset_to_estimation_periods <- function(.data, .arg){
   periods_filter <- as.character(unlist(.data$dgirt_t)) %in% as.character(.arg$use_t)
   .data <- .data %>% dplyr::filter(periods_filter)
   stopifnot(nrow(.data) > 0)
-  .data$dgirt_t <- droplevels(.data$dgirt_t)
+  .data <- droplevels(.data)
   .data
 }
 
@@ -633,20 +615,25 @@ add_survey_period_factor <- function(level1, arg){
   level1 <- level1 %>% dplyr::mutate(survey_period_factor = factor(survey_period_factor))
 }
 
-handle_arguments <- function(.arg){
-
-  .arg <- unlist(.arg, recursive = FALSE)
-  names(.arg) <- sub("^(data|vars|filters|params)\\.", "", names(.arg))
+handle_arguments <- function(){
+  arg <- mget(names(formals(format_data)), parent.frame(),
+    ifnotfound = list(rep(NULL, length(formals(format_data)))))
+  arg <- unlist(arg, recursive = FALSE)
+  stopifnot(length(names(arg)) > 0)
+  names(arg) <- sub("^(data|vars|filters|params)\\.", "", names(arg))
 
   # Set defaults
-  .arg <- set_arg_defaults(.arg)
+  arg <- set_arg_defaults(arg)
 
-  # Check .arguments and throw errors on failures
-  check_arg_lengths(.arg)
-  check_arg_names(.arg)
-  check_arg_types(.arg)
+  # Check arguments and throw errors on failures
+  check_arg_lengths(arg)
+  check_arg_names(arg)
+  check_arg_types(arg)
 
-  return(.arg)
+  arg$min_periods <- as.integer(arg$min_periods)
+  arg$min_surveys <- as.integer(arg$min_surveys)
+
+  return(arg)
 }
 
 handle_data <- function(.data, .arg){
