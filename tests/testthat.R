@@ -1,4 +1,4 @@
 library(testthat)
 library(dgirt)
 
-test_check("dgirt") 
+test_check("dgirt")

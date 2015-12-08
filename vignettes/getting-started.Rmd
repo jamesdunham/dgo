@@ -48,12 +48,12 @@ variables in `data`.
 ```{r}
 states_fmt = format_data(
   data = list(level1 = states),
-  vars = list(items = grep("^Q_", colnames(states), value = T),
-               groups = c("D_gender", "D_race_new"),
-               time_id = "D_year",
-               geo_id = "D_abb",
-               survey_id = "D_source",
-               survey_weight = "D_weight"))
+  vars = list(items = grep("^Q_", colnames(states), value = TRUE),
+              groups = c("D_gender", "D_race_new"),
+              time_id = "D_year",
+              geo_id = "D_abb",
+              survey_id = "D_source",
+              survey_weight = "D_weight"))
 ```
 
 If `format_data` had recognized any issues with the data, we'd see more
@@ -80,6 +80,8 @@ http://mc-stan.org/interfaces/cmdstan.html for installation instructions.
 Setting `method = "optimize"` will call `cmdstan optimize`.
 
 ```{r}
-dgirt_estimates = run_dgirt(states_fmt, n_iter = 1, n_chain = 1, method = "optimize")
-dgirt_estimates = run_dgirt(states_fmt, n_iter = 1, n_chain = 1, method = "variational")
+dgirt_estimates = run_dgirt(states_fmt, n_iter = 1, n_chain = 1,
+  method = "optimize")
+dgirt_estimates = run_dgirt(states_fmt, n_iter = 1, n_chain = 1,
+  method = "variational")
 ```

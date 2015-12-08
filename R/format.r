@@ -65,6 +65,15 @@ format_data <- function(data = list(level1,
   level1 <- handle_data(arg$level1, arg)
   arg$level2 <- handle_data(arg$level2, arg)
 
+  arg$demo_id <- "dgirt_demo"
+  level1 <- level1 %>%
+    dplyr::mutate(dgirt_demo = interaction(.[, arg$groups], drop = TRUE))
+
+  # Drop rows lacking covariates or time variable
+  level1 <- drop_rows_missing_covariates(level1, arg)
+  level1 <- level1 %>% dplyr::filter_(lazyeval::interp(~!is.na(varname),
+    varname = as.name(arg$demo_id)))
+
   # Filter data
   checks <- check_restrictions(level1, arg)
   # Find rows with no valid question responses
@@ -78,22 +87,13 @@ format_data <- function(data = list(level1,
     level1 <- create_weights(level1, arg)
   }
 
-  level1 <- add_dgirt_variables(level1, arg)
-  if (!is.null(arg$level2)){
-    arg$level2 <- arg$level2 %>%
-      dplyr::mutate_(dgirt_t = arg$time_id, dgirt_geo = arg$geo_id)
-  }
-
-  arg$use_geo <- update_use_geo(level1)
+  arg$use_geo <- update_use_geo(level1, arg)
   arg$use_t <- set_use_t(level1, arg)
 
   level1 <- subset_to_estimation_periods(level1, arg)
   if (!is.null(arg$level2)){
     arg$level2 <- subset_to_estimation_periods(arg$level2, arg)
   }
-
-  # Drop rows lacking covariates or time variable
-  level1 <- drop_rows_missing_covariates(level1)
 
   # Create _gt. variables
   level1 <- createGT(d = level1, .items = arg$items)
@@ -106,24 +106,25 @@ format_data <- function(data = list(level1,
 
   # Quick hack: observed periods should be be the periods observed after
   # dropping observations
-  if (is.factor(level1$dgirt_t)) {
-    checks$observed_periods <- levels(droplevels(unlist(level1$dgirt_t)))
+  if (is.factor(level1[[arg$time_id]])) {
+    checks$observed_periods <- levels(droplevels(level1[[arg$time_id]]))
   } else {
-    checks$observed_periods <- unique(unlist(level1$dgirt_t))
+    checks$observed_periods <- unique(level1[[arg$time_id]])
   }
   checks$observed_periods <- as.character(checks$observed_periods)
 
   # Represent covariates in data as model frame
-  f0 <- as.formula(stringr::str_c("~", stringr::str_c(c("0", "dgirt_geo", "dgirt_demo"), collapse = "+")))
-  f0_t <- as.formula(stringr::str_c("~", stringr::str_c(c("0", "dgirt_geo", "dgirt_demo", "dgirt_t"), collapse = "+")))
+  f0 <- as.formula(paste("~", paste("0", arg$geo_id, arg$demo_id, sep = " + ")))
+  f0_t <- as.formula(paste("~", paste("0", arg$geo_id, arg$demo_id, arg$time_id, sep = " + ")))
   MF <- model.frame(f0, data = level1, na.action = return)
   MF_t <- model.frame(f0_t, data = level1, na.action = return)
   # Get frequency counts of factor combinations (reordered in factor order)
   xtab_t <- as.data.frame(table(MF_t))
-  stopifnot(checks$observed_periods[1] %in% as.character(xtab_t$dgirt_t))
+  stopifnot(checks$observed_periods[1] %in% as.character(xtab_t[[arg$time_id]]))
   xtab <- xtab_t %>%
-    subset(as.character(dgirt_t) %in% checks$observed_periods[1]) %>%
-    dplyr::select(dgirt_geo, dgirt_demo, dgirt_t)
+    dplyr::filter_(lazyeval::interp(~ x %in% y, x = as.name(arg$time_id),
+      y = checks$observed_periods[1])) %>%
+    dplyr::select_(arg$geo_id, arg$demo_id, arg$time_id)
   stopifnot(nrow(xtab) > 0)
 
   # Create a variable counting the number of responses given by each respondent in the data
@@ -132,16 +133,16 @@ format_data <- function(data = list(level1,
   ## GROUPS ##
 
   # Create table of design effects
-  design_effects <- summarize_design_effects(level1)
+  design_effects <- summarize_design_effects(level1, arg)
   group_grid <- make_group_grid(level1, arg)
   # Create table of (adjusted) trial counts by geographic, demographic, and time variable combination
-  trial_counts <- summarize_trial_counts(level1, design_effects, group_grid)
+  trial_counts <- summarize_trial_counts(level1, design_effects, group_grid, arg)
   # Create table of (weighted) average outcomes within combinations of geographic, demographic, and time variables.
-  mean_y <- summarize_mean_y(level1, group_grid)
+  mean_y <- summarize_mean_y(level1, group_grid, arg)
   # Take the product of the (weighted) average cell outcome and the (adjusted) trial count
-  success_counts <- summarize_success_count(trial_counts, mean_y)
+  success_counts <- summarize_success_count(trial_counts, mean_y, arg)
   # Create a summary table: for each period t, are there any nonmissing responses?
-  trials_by_period <- summarize_trials_by_period(trial_counts)
+  trials_by_period <- summarize_trials_by_period(trial_counts, arg)
   # Giving us the periods in which we observe responses, which may be different from the periods we"ll use in estimation (given in arg$use_t)
   checks$nonmissing_t <- as.character(trials_by_period$t[trials_by_period$any_valid])
 
@@ -152,9 +153,8 @@ format_data <- function(data = list(level1,
   # Q gives the number of questions
   Q <- count_questions(level1)
   # G gives the number of covariate combinations
-  G <- count_covariate_combos(level1)
+  G <- count_covariate_combos(level1, arg)
 
-  level1$dgirt_demo <- make_group_identifier(level1, arg)
   Gl2 <- count_level2_groups(arg$level2, xtab, arg)
   XX <- model.matrix(f0, xtab)
 
@@ -166,14 +166,14 @@ format_data <- function(data = list(level1,
   NNl2 <- make_NNl2(level1, T, Q, Gl2, arg)
   SSl2 <- NNl2
 
-  ns_long_obs <- make_ns_long_obs(trial_counts, success_counts)
+  ns_long_obs <- make_ns_long_obs(trial_counts, success_counts, arg)
   ns_long <- make_ns_long(ns_long_obs, arg)
   n_vec <- unlist(ns_long$n_grp)
   s_vec <- unlist(ns_long$s_grp)
   names(n_vec) <- ns_long$name
   names(s_vec) <- ns_long$name
 
-  MMM <- make_missingness_array(ns_long, group_grid)
+  MMM <- make_missingness_array(ns_long, group_grid, arg)
 
   # The indicator matrix for hierarchical variables, XX, has as many columns as geographic units; drop one
   XX <- XX[, -1]
@@ -238,7 +238,7 @@ check_restrictions <- function(level1, .arg){
   checks$observed_periods <- get_t(level1[, .arg$time_id])
 
   # And which question columns have no valid responses
-  checks$q_all_missing <- get_missing_items(level1[, .arg$items])
+  checks$q_all_missing <- get_missing_items(level1, .arg$items)
 
   # And which variables don"t satisfy the min_periods requirement
   checks$q_when_asked <- get_question_periods(level1, .arg)
@@ -254,7 +254,7 @@ check_restrictions <- function(level1, .arg){
 get_question_periods <- function(.data, .arg) {
   .data %>%
     dplyr::group_by_(.arg$time_id) %>%
-    dplyr::summarise_each(dplyr::funs(anyValid), one_of(.arg$items))
+    dplyr::summarise_each_(~anyValid, vars = .arg$items)
 }
 
 get_rare_items_over_t <- function(.checks, .arg){
@@ -285,9 +285,13 @@ get_t <- function(t_data){
   levels(observed_t)
 }
 
-get_missing_items <- function(item_data){
-  not_na <- !is.na(item_data)
-  names(item_data)[colSums(not_na) == 0]
+get_missing_items <- function(.data, item_names){
+  nonmissing <- .data %>%
+    dplyr::select(one_of(item_names)) %>%
+    dplyr::summarise_each(~sum(!is.na(.)) > 0) %>%
+    wrap_melt(id.vars = NULL) %>%
+    dplyr::filter(value == FALSE)
+  unlist(nonmissing$variable)
 }
 
 get_missing_respondents <- function(item_data){
@@ -295,16 +299,16 @@ get_missing_respondents <- function(item_data){
   rowSums(not_na) == 0
 }
 
-summarize_design_effects <- function(.data){
+summarize_design_effects <- function(.data, .arg){
   de_table <- .data %>%
-    dplyr::group_by(dgirt_geo, dgirt_demo, dgirt_t) %>%
-    dplyr::select(dgirt_weight) %>%
-    dplyr::summarise(def = createDef(dgirt_weight)) %>%
-    dplyr::arrange(dgirt_geo, dgirt_demo, dgirt_t)
+    dplyr::group_by_(.arg$geo_id, .arg$demo_id, .arg$time_id) %>%
+    dplyr::select_(.arg$survey_weight) %>%
+    dplyr::summarise_(def = ~createDef(.[[.arg$survey_weight]])) %>%
+    dplyr::arrange_(.arg$geo_id, .arg$demo_id, .arg$time_id)
   return(de_table)
 }
 
-summarize_trial_counts <- function(.data, design_effects, group_grid){
+summarize_trial_counts <- function(.data, design_effects, group_grid, .arg){
   trial_counts <- .data %>%
     # The _gt variables can take values of 0/1/NA
     dplyr::mutate_each(dplyr::funs(notNA), contains("_gt")) %>%
@@ -313,7 +317,7 @@ summarize_trial_counts <- function(.data, design_effects, group_grid){
     dplyr::mutate_each(dplyr::funs(. / n_responses), contains("_gt"))  %>%
     # Dividing the booleans by n_responses = 5 calculated earlier gives us
     #.02, .02, .02, .02, .02,   0,   0.
-    dplyr::group_by(dgirt_geo, dgirt_demo, dgirt_t) %>%
+    dplyr::group_by_(.arg$geo_id, .arg$demo_id, .arg$time_id) %>%
     dplyr::summarise_each(dplyr::funs(sum), contains("_gt")) %>%
     dplyr::ungroup() %>%
     # Summing over respondents within the grouping variables gives the count
@@ -321,70 +325,73 @@ summarize_trial_counts <- function(.data, design_effects, group_grid){
     # equally across the _gt indicators.
     # Joining the design effect table by the grouping variables attaches
     # the design effect associated with each variable combination.
-    muffle_full_join(design_effects, by = c("dgirt_geo", "dgirt_demo", "dgirt_t")) %>%
+    muffle_full_join(design_effects, by = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
     dplyr::mutate_each(dplyr::funs(ceiling(. / def)), contains("_gt")) %>%
     # Dividing by the design effect gives us a design-effect-adjusted trial
     # count.
     dplyr::select(-def) %>%
     # Tidy up.
-    dplyr::mutate_each(dplyr::funs(as.character), dgirt_geo, dgirt_demo, dgirt_t)
+    dplyr::mutate_each_(~as.character, vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id))
 
   # A dplyr::full_join of trial_counts and group_grid will create rows for the desired
   # covariate combinations, where unobserved cells take NA values
   trial_counts <- muffle_full_join(trial_counts, group_grid,
-    by = c("dgirt_geo", "dgirt_demo", "dgirt_t"))
+    by = c(.arg$geo_id, .arg$demo_id, .arg$time_id))
   # Replace the NA values in those rows representing unobserved covariate
   # combinations with zeroes
-  trial_counts <- trial_counts %>% dplyr::mutate_each(dplyr::funs(replaceNA), contains("_gt"))
+  trial_counts <- trial_counts %>% dplyr::mutate_each(~replaceNA, contains("_gt"))
   # NOTE: Order will matter in a moment
-  trial_counts <- trial_counts %>% dplyr::arrange(dgirt_geo, dgirt_demo, dgirt_t) %>%
+  trial_counts <- trial_counts %>% dplyr::arrange_(.arg$geo_id, .arg$demo_id, .arg$time_id) %>%
     dplyr::mutate_each(dplyr::funs(as.vector), contains("_gt"))
   return(trial_counts)
 }
 
-summarize_mean_y <- function(level1, group_grid){
+summarize_mean_y <- function(level1, group_grid, .arg){
   mean_y <- level1 %>%
-    dplyr::group_by(dgirt_geo, dgirt_demo, dgirt_t) %>%
-    dplyr::summarise_each(dplyr::funs(weighted.mean(as.vector(.), dgirt_weight/n_responses, na.rm = TRUE)),
-      contains("_gt")) %>%
-    dplyr::group_by(dgirt_geo, dgirt_demo, dgirt_t) %>%
+    dplyr::group_by_(.arg$geo_id, .arg$demo_id, .arg$time_id) %>%
+    dplyr::select_("contains('_gt')", "n_responses", .arg$survey_weight) %>%
+    dplyr::mutate_(weight = lazyeval::interp(~ w / n,
+      w = as.name(.arg$survey_weight), n = quote(n_responses))) %>%
+    dplyr::summarise_each_(dplyr::funs(weighted.mean(as.vector(.), weight,
+      na.rm = TRUE)), vars = "contains('_gt')") %>%
+    dplyr::group_by_(.arg$geo_id, .arg$demo_id, .arg$time_id) %>%
     dplyr::mutate_each(dplyr::funs(replaceNaN)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate_each(dplyr::funs(as.character), dgirt_geo, dgirt_demo, dgirt_t)
+    dplyr::mutate_each_(~as.character, vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id))
 
   # As above, create rows for unobserved but desired covariate combinations,
   # but this time leave the values as NA
   mean_y <- muffle_full_join(mean_y, group_grid,
-    by = c("dgirt_geo", "dgirt_demo", "dgirt_t")) %>%
+    by = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
       # NOTE: Order will matter in a moment
-      dplyr::arrange(dgirt_geo, dgirt_demo, dgirt_t) %>%
+      dplyr::arrange_(.arg$geo_id, .arg$demo_id, .arg$time_id) %>%
       dplyr::mutate_each(dplyr::funs(as.vector), contains("_gt"))
   return(mean_y)
 }
 
-summarize_success_count <- function(trial_counts, mean_y){
+summarize_success_count <- function(trial_counts, mean_y, .arg){
   # Confirm row order is identical before taking product
   stopifnot(identical(
-      dplyr::select(mean_y, dgirt_geo, dgirt_demo, dgirt_t),
-      dplyr::select(trial_counts, dgirt_geo, dgirt_demo, dgirt_t)))
+      dplyr::select_(mean_y, .arg$geo_id, .arg$demo_id, .arg$time_id),
+      dplyr::select_(trial_counts, .arg$geo_id, .arg$demo_id, .arg$time_id)))
   success_counts <- dplyr::select(trial_counts, contains("_gt")) * dplyr::select(mean_y, contains("_gt"))
   success_counts <- success_counts %>%
     # Reattach our identifiers
-    dplyr::bind_cols(dplyr::select(trial_counts, dgirt_geo, dgirt_demo, dgirt_t), .) %>%
+    dplyr::bind_cols(dplyr::select_(trial_counts, .arg$geo_id, .arg$demo_id, .arg$time_id), .) %>%
     # Round off returning integers and replace NA with 0
     dplyr::ungroup() %>%
     dplyr::mutate_each(dplyr::funs(replaceNA), contains("_gt")) %>%
     dplyr::mutate_each(dplyr::funs(round(., digits = 0)), contains("_gt")) %>%
-    dplyr::arrange(dgirt_geo, dgirt_demo, dgirt_t)
+    dplyr::arrange_(.arg$geo_id, .arg$demo_id, .arg$time_id)
   return(success_counts)
 }
 
-summarize_trials_by_period <- function(trial_counts){
+summarize_trials_by_period <- function(trial_counts, .arg){
   N.valid <- data.frame(
-    t = trial_counts$dgirt_t,
+    t = trial_counts[[.arg$time_id]],
     n = dplyr::select(trial_counts, contains("_gt")) %>% rowSums()) %>%
           dplyr::group_by(t) %>%
-          dplyr::summarise(any_valid = sum(n, na.rm= TRUE) > 0)
+          dplyr::summarise(any_valid = sum(n, na.rm = TRUE) > 0)
   return(N.valid)
 }
 
@@ -392,15 +399,15 @@ make_group_identifier <- function(.data, .arg){
   interaction(.data[, .arg$groups], drop = TRUE)
 }
 
-make_ns_long_obs <- function(trial_counts, success_counts){
-  trial_counts_melt <- wrap_melt(trial_counts, id.vars = c("dgirt_geo", "dgirt_demo", "dgirt_t"),
-    value.name = "n_grp")
-  success_counts_melt <- wrap_melt(success_counts, id.vars = c("dgirt_geo", "dgirt_demo", "dgirt_t"),
-    value.name = "s_grp")
+make_ns_long_obs <- function(trial_counts, success_counts, .arg){
+  trial_counts_melt <- wrap_melt(trial_counts,
+    id.vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id), value.name = "n_grp")
+  success_counts_melt <- wrap_melt(success_counts,
+    id.vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id), value.name = "s_grp")
   joined <- dplyr::left_join(trial_counts_melt, success_counts_melt,
-      by = c("dgirt_geo", "dgirt_demo", "dgirt_t", "variable")) %>%
-    dplyr::arrange(variable, dgirt_t, desc(dgirt_demo), dgirt_geo) %>%
-    dplyr::mutate(name = stringr::str_c(dgirt_geo, dgirt_demo, sep = "__")) %>%
+      by = c(.arg$geo_id, .arg$demo_id, .arg$time_id, "variable")) %>%
+    dplyr::arrange_("variable", .arg$time_id, .arg$demo_id, .arg$geo_id) %>%
+    dplyr::mutate(name = stringr::str_c(.arg$geo_id, .arg$demo_id, sep = "__")) %>%
     dplyr::filter(n_grp != 0) %>%
     dplyr::as.tbl()
   return(joined)
@@ -412,15 +419,15 @@ wrap_melt <- function(...) {
   return(melt)
 }
 
-make_ns_long <- function(ns_long_obs, arg){
-  ns_long <- data.frame(expand.grid(unique(ns_long_obs$name), arg$use_t)) %>%
+make_ns_long <- function(ns_long_obs, .arg){
+  ns_long <- setNames(data.frame(expand.grid(unique(ns_long_obs$name), .arg$use_t)), c("name", .arg$time_id)) %>%
     dplyr::mutate_each(dplyr::funs(as.character)) %>%
-    dplyr::left_join(ns_long_obs, ., by = c("name" = "Var1", "dgirt_t" = "Var2")) %>%
+    dplyr::left_join(ns_long_obs, ., by = c("name", .arg$time_id)) %>%
     dplyr::mutate(
       n_grp = replaceNA(n_grp),
-      name = stringr::str_c(name, dgirt_t, sep = "__"),
+      name = stringr::str_c(name, .arg$time_id, sep = "__"),
       name = stringr::str_c(name, variable, sep = " | ")) %>%
-    dplyr::arrange(dgirt_geo, desc(dgirt_demo), variable, dgirt_t)
+    dplyr::arrange_(.arg$geo_id, .arg$demo_id, "variable", .arg$time_id)
 
   ns_long$s_grp[is.na(ns_long$s_grp)] <- 0
   ns_long$n_grp[is.na(ns_long$n_grp)] <- 0
@@ -429,16 +436,17 @@ make_ns_long <- function(ns_long_obs, arg){
   ns_long
 }
 
-make_missingness_array <- function(ns_long, group_grid){
+make_missingness_array <- function(ns_long, group_grid, .arg){
   # Create missingness indicator array
+  acast_formula = as.formula(paste0(.arg$time_id, "~ variable ~", .arg$demo_id, "+", .arg$geo_id))
   MMM <- ns_long %>%
     # Include in the missingness array all group-variables that might not exist
     # in the data because of unobserved use_t
-    muffle_full_join(group_grid, by = c("dgirt_geo", "dgirt_demo", "dgirt_t")) %>%
+    muffle_full_join(group_grid, by = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
     # Get missingness by group
-    dplyr::group_by(dgirt_geo, dgirt_demo, dgirt_t, variable) %>%
-    dplyr::summarise(m.grp = as.integer(sum(n_grp, na.rm = TRUE) == 0)) %>%
-    reshape2::acast(dgirt_t ~ variable ~ dgirt_demo + dgirt_geo, value.var = "m.grp", fill = 1)
+    dplyr::group_by_(.arg$geo_id, .arg$demo_id, .arg$time_id, "variable") %>%
+    dplyr::summarise(m_grp = as.integer(sum(n_grp, na.rm = TRUE) == 0)) %>%
+    reshape2::acast(acast_formula, value.var = "m_grp", fill = 1)
   # But we don"t want to include "NA" as a variable
   MMM <- MMM[!(dimnames(MMM)[[1]] == "NA"),
     !(dimnames(MMM)[[2]] == "NA"),
@@ -447,30 +455,29 @@ make_missingness_array <- function(ns_long, group_grid){
 }
 
 make_dummy_weight_matrix <- function(T, Gl2, G) {
-  array(1, dim=c(T, Gl2, G))
+  array(1, dim = c(T, Gl2, G))
 }
 
-make_l2_only <- function(trial_counts, level1, T, Q, arg){
-  l2_only <- array(0, dim = c(T, Q), dimnames = list(arg$use_t,
-      grep("_gt", colnames(level1), fixed= TRUE, value = TRUE)))
+make_l2_only <- function(trial_counts, level1, T, Q, .arg){
+  l2_only <- array(0, dim = c(T, Q), dimnames = list(.arg$use_t,
+      grep("_gt", colnames(level1), fixed = TRUE, value = TRUE)))
   l2_only <- trial_counts %>%
-    dplyr::group_by(dgirt_t) %>%
+    dplyr::group_by_(.arg$time_id) %>%
     dplyr::summarise_each(dplyr::funs(c(0)), contains("_gt"))
-  rownames(l2_only) <- l2_only$dgirt_t
+  rownames(l2_only) <- l2_only[[.arg$time_id]]
   l2_only <- l2_only %>%
-    dplyr::select(-dgirt_t) %>%
-    as.matrix(l2_only, rownames.force = TRUE)
-  l2_only
+    dplyr::select(contains("_gt"))
+  as.matrix(l2_only, rownames.force = TRUE)
 }
 
-make_NNl2 <- function(level1, T, Q, Gl2, arg){
-  array(0, c(T, Q, Gl2), list(arg$use_t,
+make_NNl2 <- function(level1, T, Q, Gl2, .arg){
+  array(0, c(T, Q, Gl2), list(.arg$use_t,
       grep("_gt", colnames(level1), fixed= TRUE, value = TRUE), NULL))
 }
 
-factorize_arg_vars <- function(.data, arg){
+factorize_arg_vars <- function(.data, .arg){
   arg_vars <- intersect(names(.data),
-    c(arg$time_id, arg$groups, arg$geo_id, arg$survey_id))
+    c(.arg$time_id, .arg$groups, .arg$geo_id, .arg$survey_id))
   if (is.null(.data)) {
     return(NULL)
   }
@@ -533,25 +540,13 @@ drop_rare_items_over_polls <- function(.data, .lt_min_surveys, .arg){
   .data
 }
 
-add_dgirt_variables <- function(.data, .arg){
-  .data <- .data %>%
-    dplyr::mutate_(
-  dgirt_weight = .arg$survey_weight,
-  dgirt.poll = .arg$survey_id,
-  dgirt_t = .arg$time_id,
-  dgirt_geo = .arg$geo_id)
-  .data <- .data %>%
-    dplyr::mutate(dgirt_demo = interaction(.[, .arg$groups], drop = TRUE))
-  .data
-}
-
-update_use_geo <- function(.data){
-  levels(unlist(.data[, "dgirt_geo"]))
+update_use_geo <- function(.data, .arg){
+  levels(unlist(.data[[.arg$geo_id]]))
 }
 
 set_use_t <- function(.data, .arg){
   if (is.null(.arg$use_t)){
-    return(levels(.data$dgirt_t))
+    return(levels(.data[[.arg$time_id]]))
   } else {
     return(.arg$use_t)
   }
@@ -559,18 +554,23 @@ set_use_t <- function(.data, .arg){
 
 subset_to_estimation_periods <- function(.data, .arg){
   stopifnot(is.data.frame(.data))
-  stopifnot(is.factor(.data$dgirt_t))
+  stopifnot(is.factor(.data[[.arg$time_id]]))
   stopifnot(is.character(.arg$use_t))
-  periods_filter <- as.character(unlist(.data$dgirt_t)) %in% as.character(.arg$use_t)
+  periods_filter <- as.character(.data[[.arg$time_id]]) %in%
+    as.character(.arg$use_t)
   .data <- .data %>% dplyr::filter(periods_filter)
   stopifnot(nrow(.data) > 0)
   .data <- droplevels(.data)
   .data
 }
 
-drop_rows_missing_covariates <- function(.data){
+drop_rows_missing_covariates <- function(.data, .arg){
   .data <- .data %>%
-    dplyr::filter(!is.na(dgirt_geo) & !is.na(dgirt_demo) & !is.na(dgirt_t))
+    dplyr::filter_(lazyeval::interp(~!is.na(geo_name) & !is.na(demo_name)
+        & !is.na(time_name),
+      geo_name = as.name(.arg$geo_id),
+      demo_name = as.name(.arg$demo_id),
+      time_name = as.name(.arg$time_id)))
   droplevels(.data)
 }
 
@@ -581,18 +581,18 @@ drop_rows_missing_gt_variables <- function(.data){
   droplevels(.data)
 }
 
-subset_to_observed_geo_periods <- function(arg){
+subset_to_observed_geo_periods <- function(.arg){
   # Subset level-2 data to geographic units observed and time periods
   # specified
-  if (is.null(arg$level2)) {
+  if (is.null(.arg$level2)) {
     return(NULL)
   } else {
-    arg$level2 <- arg$level2 %>%
-      dplyr::filter(as.character(dgirt_geo) %in% arg$use_geo)
-    stopifnot(nrow(arg$level2) > 0)
+    .arg$level2 <- .arg$level2 %>%
+      dplyr::filter(.arg$geo_id %in% .arg$use_geo)
+    stopifnot(nrow(.arg$level2) > 0)
   }
-  arg$level2$dgirt_geo <- droplevels(arg$level2$dgirt_geo)
-  return(arg$level2)
+  .arg$level2[[.arg$geo_id]] <- droplevels(.arg$level2[[.arg$geo_id]])
+  return(.arg$level2)
 }
 
 count_respondent_trials <- function(level1){
@@ -602,17 +602,17 @@ count_respondent_trials <- function(level1){
 }
 
 count_questions <- function(level1){
-  sum(grepl("_gt", colnames(level1), fixed <- TRUE))
+  sum(grepl("_gt", colnames(level1), fixed = TRUE))
 }
 
-count_covariate_combos <- function(level1){
-  nlevels(level1$dgirt_geo) * nlevels(level1$dgirt_demo)
+count_covariate_combos <- function(level1, .arg){
+  nlevels(level1[[.arg$geo_id]]) * nlevels(level1[[.arg$demo_id]])
 }
 
-add_survey_period_factor <- function(level1, arg){
-  level1 <- level1 %>% tidyr::unite(survey_period_factor,
-    one_of(arg$survey_id, arg$time_id), sep = ".", remove = FALSE)
-  level1 <- level1 %>% dplyr::mutate(survey_period_factor = factor(survey_period_factor))
+add_survey_period_id <- function(level1, .arg){
+  level1 <- level1 %>% tidyr::unite(survey_period_id,
+    one_of(.arg$survey_id, .arg$time_id), sep = ".", remove = FALSE)
+  level1 <- level1 %>% dplyr::mutate(survey_period_id = factor(survey_period_id))
 }
 
 handle_arguments <- function(){
@@ -655,7 +655,7 @@ apply_restrictions <- function(.data, .checks, .arg){
   if (length(.arg$items) == 0) stop("no response variables left")
   if (nrow(.data) == 0) stop("no rows left")
 
-  .data <- add_survey_period_factor(.data, .arg)
+  .data <- add_survey_period_id(.data, .arg)
 
   .data <- drop_rare_items_over_polls(.data, .checks$q_rare.polls, .arg)
 
@@ -670,21 +670,22 @@ count_level2_groups <- function(level2, xtab, .arg){
     Gl2 <- nlevels(l2.group)
     return(Gl2)
   } else {
-    Gl2 <- nlevels(.arg$level2$dgirt_demo)
+    Gl2 <- nlevels(.arg$level2[[.arg$demo_id]])
     if (Gl2 == 0) Gl2 <- 1
     stopifnot(Gl2 > 0)
     return(Gl2)
   }
 }
 
-make_group_grid <- function(level1, arg){
+make_group_grid <- function(level1, .arg){
   # The table just created excludes covariate combinations not observed in the
   # data, but we want all combinations of the demographic and geographic
   # covariates and specified periods
-  expand.grid(
-    "dgirt_geo" = sort(unique(level1$dgirt_geo)),
-    "dgirt_demo" = sort(unique(level1$dgirt_demo)),
-    "dgirt_t" = as.character(arg$use_t), stringsAsFactors = FALSE)
+  group_grid = expand.grid(
+    sort(unique(level1[[.arg$geo_id]])),
+    sort(unique(level1[[.arg$demo_id]])),
+    as.character(.arg$use_t), stringsAsFactors = FALSE)
+  setNames(group_grid, c(.arg$geo_id, .arg$demo_id, .arg$time_id))
 }
 
 muffle_full_join <- function(...) {

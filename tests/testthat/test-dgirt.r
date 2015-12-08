@@ -1,5 +1,5 @@
 context("Write data with stan_rdump")
-d = list("a" = 1L)
+d <- list(a = 1L)
 
 dump_dgirt(d)
 expect_true(file.exists(system.file("dgirt_data.Rdump", package = "dgirt")))
@@ -25,4 +25,3 @@ context("Get stan_rdump output path")
 expect_match(get_dump_path(), "/dgirt_data.Rdump$")
 expect_true(stringr::str_length(get_dump_path()) >
   stringr::str_length("/dgirt_data.Rdump"))
-
