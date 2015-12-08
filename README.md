@@ -20,9 +20,13 @@ library(dgirt)
 
 # 2. Pass what format_data returns to run_dgirt
 ?run_dgirt
+
+# 3. Extract estimates from the result
+?extract_dgirt
 ```
 
-See also the "[Getting Started](https://github.com/jamesdunham/dgirt/blob/master/vignettes/getting-started.Rmd)" vignette.
+For more, see the "[Getting Started](https://github.com/jamesdunham/dgirt/blob/master/vignettes/getting-started.Rmd)"
+vignette.
 
 ## Updates
 

@@ -8,9 +8,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-We might eventually start this vignette with an overview of the
-`dgirt` package, but for now, we'll just illustrate a
-two-step workflow.
+This vignette illustrates a typical `dgirt` workflow. First, we'll reformat
+some input data via `format_data`, and then we'll apply a dynamic group-level
+IRT model via `run_dgirt`.
 
 ## Diving In
 
@@ -21,29 +21,27 @@ data(states)
 ```
 
 `states` is a `data.frame` in which rows correspond to survey responses from
-individuals. These data aren't yet structured in the way that `dgirt` expects.
-(See `?states`). But the `format_data` function can accomplish this given a
-table like `states` and some information from the user. For details see
-`?format_data`. We'll use these minimal arguments:
+individuals. Data formatted in this way need to be restructured with the
+`format_data` function.
 
-  * `data$level1`: Table of survey responses at the lowest level of aggregation
-    (e.g. individual), as `data.frame`.
-  * `vars$items`: Names of item response variables in `vars$level1`, as
-    `character`.
-  * `vars$groups`: Names of respondent characteristic variables in
-    `vars$level1`, as `character`.
-  * `vars$time_id`: Name of time period variable in `vars$level1`, as
-    `character`.
-  * `vars$geo_id`: Name of geographic identifier variable in `vars$level1`, as
-    `character`.
-  * `vars$survey_id`: Name of survey identifier variable in `vars$level1`, as
-    `character`.
-  * `vars$survey_weight`: Name of weight variable in `vars$level1`, as
-    `character`.
+We'll pass `states` to the `data` argument, which takes a list of data to be
+modeled. Our table of survey responses will be an element named `level1`,
+the lowest hierarchical level in the model.
 
-The `data` argument will take our `data.frame` of individual survey responses,
-while the `vars` argument will specify as `character` vectors the names of
-variables in `data`.
+We'll use the `vars` argument to identify variables of importance in `data`,
+e.g. which represent item responses and which identify time periods. `vars`
+is a list of named character vectors with (at least) these elements:
+
+  * `items`: Names of item response variables in `data$level1`.
+  * `groups`: Names of respondent characteristic variables in
+    `data$level1`.
+  * `time_id`: Name of time period variable in `data$level1`.
+  * `geo_id`: Name of geographic identifier variable in `data$level1`.
+  * `survey_id`: Name of survey identifier variable in `data$level1`.
+  * `survey_weight`: Name of weight variable in `data$level1`.
+
+All the names of item response variables happen to start with "Q\_", so we'll
+pass them using `grep`.
 
 ```{r}
 states_fmt = format_data(
@@ -56,32 +54,46 @@ states_fmt = format_data(
               survey_weight = "D_weight"))
 ```
 
-If `format_data` had recognized any issues with the data, we'd see more
-messages.  Its return value is a list of objects formatted for estimation with
-`run_dgirt`, a thin wrapper for `rstan::stan` that provides the dynamic
-group-level IRT model and chooses generally reasonable defaults. 
-
-`run_dgirt` takes as its first argument the output from `format_data`. We'll
-use its `n_iter` argument to iterate the sampler just once, in a single 
-chain (`n_chain`).
+The return value of `format_data` is a list of objects that `run_dgirt` expects
+as its first argument. We'll also set its `n_iter` and `n_chain` arguments to
+minimize its run time, but otherwise rely on the defaults.
 
 ```{r}
-dgirt_estimates = run_dgirt(states_fmt, n_iter = 1, n_chain = 1)
+dgirt_estimates = run_dgirt(states_fmt, n_iter = 10, n_chain = 1)
 ```
 
-`rstan` reports problems it encounters when compiling the model and sampling.
-If successful, `run_dgirt` returns the return value of `rstan::rstan`.
+`rstan` will report any problems it encounters when compiling the model and
+sampling. If sampling is successful, `run_dgirt` will return the `stanfit`
+object returned by `rstan::rstan`.
+
+To extract samples from the result of `run_dgirt` we can use `extract_dgirt`,
+which returns a list whose elements are named arrays and matrices representing
+model parameters. We'll take a look at `theta_bar`, the estimated group means.
+
+```{r, results = "show"}
+dgirt_extract = extract_dgirt(dgirt_estimates)
+str(dgirt_extract$theta_bar)
+```
+
+`theta_bar` is `3 \times 9 times 306`. The first dimension of the array is
+indexed by sampler iteration. We ran the sampler for 10 iterations and by
+default discarded 7, so this dimension is length-3. The array's second
+dimension is indexed by time period, here the years 2006-2014. The third
+dimension, indexed by covariate combination, is length-306 (2 `\times` 3
+`\times` 51) because we have 2 levels in our first covariate `D_gender`, 3
+levels (excluding `NA`) in our second covariate `D_race_new`, and 51 levels in
+the geographic identifier.
 
 ## `cmdstan` `optimize` and `variational`
 
 We can use the `method` argument of `run_dgirt` to choose an alternative to
 MCMC sampling if `cmdstan` is available. See
-http://mc-stan.org/interfaces/cmdstan.html for installation instructions.
-Setting `method = "optimize"` will call `cmdstan optimize`.
+http://mc-stan.org/interfaces/cmdstan.html for installation instructions. For
+example, setting `method = "optimize"` will call `cmdstan optimize`.
 
 ```{r}
-dgirt_estimates = run_dgirt(states_fmt, n_iter = 1, n_chain = 1,
+dgirt_estimates = run_dgirt(states_fmt, n_iter = 10, n_chain = 1,
   method = "optimize")
-dgirt_estimates = run_dgirt(states_fmt, n_iter = 1, n_chain = 1,
+dgirt_estimates = run_dgirt(states_fmt, n_iter = 10, n_chain = 1,
   method = "variational")
 ```
