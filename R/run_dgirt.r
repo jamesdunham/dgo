@@ -32,7 +32,7 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
       options(mc.cores = parallel::detectCores())
   }
 
-  message("Started:", date())
+  message("Started: ", date())
   if (identical(method, "rstan") || identical(method, c("rstan", "optimize", "variational"))) {
       message("Running ", n_iter, " iterations in each of ", n_chain, " chains. Thinning at an interval of ",
           n_thin, " with ", n_warm, " adaptation iterations.")
@@ -44,7 +44,7 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
   } else {
       stop("Didn't recognize method")
   }
-  message("Ended:", date())
+  message("Ended: ", date())
   stan_out <- attach_names(stan_out, dgirt_data)
   return(stan_out)
 }
