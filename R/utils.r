@@ -12,13 +12,15 @@ createDef <- function(x) {
 createZZ <- function(.XX, .arg) {
     if (is.null(.arg$level2_modifiers)) {
         zz.names <- list(.arg$use_t, dimnames(.XX)[[2]], "Zero")
-        ZZ <- array(data = 0, dim = lapply(zz.names, length), dimnames = zz.names)
+        ZZ <- array(data = 0, dim = lapply(zz.names, length),
+          dimnames = zz.names)
     } else {
         stopifnot(!is.null(.arg$level2))
         stopifnot(all(c(.arg$time_id, .arg$geo_id) %in% names(.arg$level2)))
-        ZZ <- suppressWarnings(reshape2::melt(.arg$level2, id.vars = c(time_id, geo_id)))
-        ZZ <- suppressWarnings(reshape2::acast(ZZ, formula(paste(time_id, geo_id, "variable",
-            sep = " ~ "))))
+        ZZ <- suppressWarnings(reshape2::melt(.arg$level2,
+          id.vars = c(.arg$time_id, .arg$geo_id)))
+        ZZ <- suppressWarnings(reshape2::acast(ZZ, formula(paste(.arg$time_id,
+          .arg$geo_id, "variable", sep = " ~ "))))
     }
     return(ZZ)
 }
@@ -64,7 +66,9 @@ countValid <- function(x) {
 }
 
 # Check if any !is.na over x
-anyValid <- function(x) any(!is.na(x))
+anyValid <- function(x) {
+  any(!is.na(x))
+}
 
 # Check element-wise if !is.na over x
 notNA <- function(x) {
