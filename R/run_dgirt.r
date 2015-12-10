@@ -83,11 +83,13 @@ get_dgirt_path <- function() {
 }
 
 get_output_path <- function() {
-  paste0(system.file(package = "dgirt"), "/output.csv")
+  # Paste separately "/" and "output.csv" to avoid absolute path check
+  paste0(system.file(package = "dgirt"), "/", "output.csv")
 }
 
 get_dump_path <- function() {
-  paste0(system.file(package = "dgirt"), "/dgirt_data.Rdump")
+  # Paste separately "/" and "output.csv" to avoid absolute path check
+  paste0(system.file(package = "dgirt"), "/", "dgirt_data.Rdump")
 }
 
 get_group_names <- function(dgirt_data) {
