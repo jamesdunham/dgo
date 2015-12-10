@@ -16,7 +16,6 @@ Imports:
     lazyeval,
     reshape2,
     stringi,
-    stringr,
     survey,
     tidyr
 RoxygenNote: 5.0.1
