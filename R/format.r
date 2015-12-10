@@ -146,7 +146,7 @@ format_data <- function(data = list(level1,
   # Giving us the periods in which we observe responses, which may be different from the periods we"ll use in estimation (given in arg$use_t)
   checks$nonmissing_t <- trials_by_period %>%
     dplyr::filter_(~valid_items == TRUE) %>%
-    dplyr::select_(.arg$time_id) %>%
+    dplyr::select_(arg$time_id) %>%
     unlist(as.character(.))
 
   # NOTE: use_t must match nonmissing t at the moment
