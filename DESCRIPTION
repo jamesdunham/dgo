@@ -5,7 +5,7 @@ Description: What the package does (one paragraph).
 Authors@R: c(person("James", "Dunham", email = "jdunham@mit.edu", role = c("aut", "cre")),
   person("Christopher", "Warshaw", email = "cwarshaw@mit.edu", role = c("aut")),
   person("Devin", "Caughey", email = "dcaughey@mit.edu", role = c("aut")))
-License: MIT
+License: GPL-3
 Depends:
     R (>= 3.2.2),
     rstan
@@ -13,6 +13,7 @@ LazyData: true
 Imports:
     devtools,
     dplyr,
+    lazyeval,
     reshape2,
     stringi,
     stringr,
