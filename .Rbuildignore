@@ -4,4 +4,4 @@
 ^packrat/
 ^\.Rprofile$
 ^\.travis.yml$
-^\todo.txt$
+^todo.txt$
