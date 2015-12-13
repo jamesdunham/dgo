@@ -34,7 +34,7 @@ create_weights <- function(.level1, .arg) {
   # We'll create a design object from the target data.frame; this is a
   # data.frame with attributes that indicate the survey design
   target_design <- survey::svydesign(ids = ~1, data = .arg$targets,
-    weights = formula(paste0("~", .arg$group_proportion)))
+    weights = formula(paste0("~", .arg$target_proportion)))
 
   rake_weight <- function(.level1, formula.list, target_design) {
     ds <- survey::svydesign(ids = ~1, data = .level1,

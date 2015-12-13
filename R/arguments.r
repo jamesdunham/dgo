@@ -12,8 +12,8 @@ check_arg_lengths <- function(.arg) {
         stop(sprintf("more than one variable given for %s", stringi::stri_c(names(which(sapply(length_one,
             length) != 1)), collapse = ", ")))
     }
-    if (any(!is.null(.arg$group_proportion)) & length(.arg$group_proportion) > 1) {
-        stop("more than one variable given for group_proportion")
+    if (any(!is.null(.arg$target_proportion)) & length(.arg$target_proportion) > 1) {
+        stop("more than one variable given for target_proportion")
     }
     return(TRUE)
 }
@@ -36,10 +36,11 @@ check_arg_names <- function(..arg) {
 
     # If given, these variables with NULL defaults must exist in level2
     check_names(unlist(..arg[c("level2_modifiers", "level2_period1_modifiers")]), ..arg$level2,
-        check_tab = FALSE, check_nulls = FALSE)
+      check_tab = FALSE, check_nulls = FALSE)
+
     # If targets exists, these variables must exist in it
-    check_names(unlist(..arg[c("time_id", "groups", "geo_id", "group_proportion")]), ..arg$targets,
-        check_tab = FALSE)
+    check_names(unlist(..arg[c("time_id", "groups", "geo_id", "target_groups",
+      "target_proportion")]), ..arg$targets, check_tab = FALSE)
 
     return(TRUE)
 }
@@ -93,8 +94,8 @@ check_arg_types <- function(..arg) {
     if (!is.null(..arg$targets)) {
         if (!inherits(..arg$targets, "data.frame"))
             stop("targets should inherit from data.frame")
-        if (!is.character(..arg$group_proportion))
-            stop("targets given so group_proportion should be a character vector")
+        if (!is.character(..arg$target_proportion))
+            stop("targets given so target_proportion should be a character vector")
     }
 
     if (!is.character(..arg$items))

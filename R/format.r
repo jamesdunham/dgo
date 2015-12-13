@@ -18,7 +18,8 @@
 #'     \item{geo_id}{Geographic identifier in `data$level1` and `data$level2`.}
 #'     \item{survey_id}{Survey identifier in `data$level1`.}
 #'     \item{survey_weight}{Survey weight in `data$level1`.}
-#'     \item{group_proportion}{Population proportions in `data$targets`.}
+#'     \item{target_groups}{Respondent characteristics in `data$targets`.}
+#'     \item{target_proportion}{Population proportions in `data$targets`.}
 #'     \item{level2_modifiers}{Geographic characteristics in `data$level2`.}
 #'     \item{level2_period1_modifiers}{Geographic characteristics in `data$level2` to be used in place of `vars$level2_modifiers` in the first period.}
 #'   }
@@ -50,7 +51,8 @@ format_data <- function(data = list(level1,
                                    geo_id,
                                    survey_id,
                                    survey_weight,
-                                   group_proportion = NULL,
+                                   target_groups = NULL,
+                                   target_proportion = NULL,
                                    level2_modifiers = NULL,
                                    level2_period1_modifiers = NULL),
                        filters = list(periods = NULL,
@@ -64,6 +66,8 @@ format_data <- function(data = list(level1,
   arg <- handle_arguments()
   level1 <- handle_data(arg$level1, arg)
   arg$level2 <- handle_data(arg$level2, arg)
+
+  ## INDIVIDUAL LEVEL ##
 
   arg$demo_id <- "dgirt_demo"
   level1 <- level1 %>%
@@ -130,7 +134,7 @@ format_data <- function(data = list(level1,
   # Create a variable counting the number of responses given by each respondent in the data
   level1$n_responses <- count_respondent_trials(level1)
 
-  ## GROUPS ##
+  ## GROUP LEVEL ##
 
   # Create table of design effects
   design_effects <- summarize_design_effects(level1, arg)
