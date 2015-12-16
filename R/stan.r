@@ -12,6 +12,10 @@ stan_code <- "
     int<lower=1> D; ## number of difficulty parameters per question
     int<lower=0,upper=1> constant_item; ## indicator for constant item parameters
     int<lower=0,upper=1> separate_t; ## indicator for no over-time smoothing
+    real delta_tbar_prior_mean;
+    real<lower=0> delta_tbar_prior_sd;
+    real<lower=0> innov_sd_delta_scale;
+    real<lower=0> innov_sd_theta_scale;
     int n_vec[N]; ## long vector of trials
     int s_vec[N]; ## long vector of successes
     int NNl2[T, Q, Gl2]; ## trials
@@ -156,9 +160,9 @@ stan_code <- "
     }
     disc_raw ~ lognormal(0, 1); ## item discrimination
     sd_gamma ~ cauchy(0, 2.5); ## sd of geographic effects
-    sd_innov_delta ~ cauchy(0, 2.5); ## innovation sd of nu_geo, delta_gamma
+    sd_innov_delta ~ cauchy(0, innov_sd_delta_scale); ## innovation sd of nu_geo, delta_gamma
     sd_innov_gamma ~ cauchy(0, 2.5); ## innovation sd. of gamma, xi, and diff
-    sd_innov_logsd ~ cauchy(0, 2.5); ## innovation sd of theta_sd
+    sd_innov_logsd ~ cauchy(0, innov_sd_theta_scale); ## innovation sd of theta_sd
     for (t in 1:T) { ## loop over years
       gamma_raw[t] ~ normal(0, 1);
       theta_bar_raw[t] ~ normal(0, 1); ## Matt trick done above #!#
@@ -173,7 +177,7 @@ stan_code <- "
         nu_geo[t] ~ normal(0, 10);
         nu_geo_prior ~ normal(0, 10);
         delta_gamma[t] ~ normal(0.5, 0.5); ## 68% of prior mass btwn 0 and 1
-        delta_tbar[t] ~ normal(0.5, 0.5);
+        delta_tbar[t] ~ normal(delta_tbar_prior_mean, delta_tbar_prior_sd);
         xi[t] ~ normal(0, 10); ## intercept
       }
       if (t > 1) {

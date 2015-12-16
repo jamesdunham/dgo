@@ -1,3 +1,25 @@
+handle_arguments <- function() {
+  arg <- mget(names(formals(format_data)), parent.frame(),
+    ifnotfound = list(rep(NULL, length(formals(format_data)))))
+  arg <- unlist(arg, recursive = FALSE)
+  stopifnot(length(names(arg)) > 0)
+  names(arg) <- sub("^(data|vars|filters|params)\\.", "", names(arg))
+
+  # Set defaults
+  arg <- set_arg_defaults(arg)
+
+  # Check arguments and throw errors on failures
+  check_arg_lengths(arg)
+  check_arg_names(arg)
+  check_arg_types(arg)
+  check_arg_ranges(arg)
+
+  arg$min_periods <- as.integer(arg$min_periods)
+  arg$min_surveys <- as.integer(arg$min_surveys)
+
+  return(arg)
+}
+
 # Check argument lengths
 check_arg_lengths <- function(.arg) {
     if (is.null(.arg$items) || length(.arg$items) < 1) {
@@ -17,6 +39,21 @@ check_arg_lengths <- function(.arg) {
     }
     return(TRUE)
 }
+
+# Check argument ranges
+check_arg_ranges = function(.arg) {
+  if (.arg$delta_tbar_prior_sd < 0)
+    stop("delta_tbar_prior_sd cannot be negative")
+  if (.arg$innov_sd_delta_scale < 0)
+    stop("innov_sd_delta_scale cannot be negative")
+  if (.arg$innov_sd_theta_scale < 0)
+    stop("innov_sd_theta_scale cannot be negative")
+  if (.arg$min_surveys < 1)
+    stop("min_surveys must be positive")
+  if (.arg$min_periods < 1)
+    stop("min_periods must be positive")
+}
+
 
 # Check that names given in arguments appear in data.frame arguments
 check_arg_names <- function(..arg) {
@@ -92,10 +129,24 @@ check_arg_types <- function(..arg) {
             stop("level2_period1_modifiers should be a character vector")
     }
     if (!is.null(..arg$targets)) {
-        if (!inherits(..arg$targets, "data.frame"))
+        if (!inherits(..arg$targets, "data.frame")) {
             stop("targets should inherit from data.frame")
-        if (!is.character(..arg$target_proportion))
+        }
+        if (!is.character(..arg$target_proportion)) {
             stop("targets given so target_proportion should be a character vector")
+        }
+        if (is.list(..arg$target_groups)) {
+          if (!is.character(unlist(..arg$target_groups))) {
+            stop("targets given so target_groups should be a character vector
+              or list of character vectors")
+          }
+        } else if (!is.character(..arg$target_groups)) {
+          stop("targets given so target_groups should be a character vector
+            or list of character vectors")
+        }
+        if (!is.character(..arg$target_groups)) {
+            stop("targets given so target_proportion should be a character vector")
+        }
     }
 
     if (!is.character(..arg$items))
@@ -163,5 +214,13 @@ set_arg_defaults <- function(..arg) {
         ..arg$constant_item <- TRUE
     if (is.null(..arg$silent))
         ..arg$silent <- FALSE
+    if (is.null(..arg$delta_tbar_prior_mean))
+      ..arg$delta_tbar_prior_mean = 0.5
+    if (is.null(..arg$delta_tbar_prior_sd))
+      ..arg$delta_tbar_prior_sd = 0.5
+    if (is.null(..arg$innov_sd_delta_scale))
+      ..arg$innov_sd_delta_scale = 2.5
+    if (is.null(..arg$innov_sd_theta_scale))
+      ..arg$innov_sd_theta_scale = 2.5
     return(..arg)
 }

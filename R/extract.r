@@ -7,10 +7,13 @@
 #' @return Return value of `rstan::extract` with names attached to its elements.
 #' @export
 extract_dgirt <- function(dgirt_out) {
+  if (!inherits(dgirt_out, "stanfit")) {
+    stop("Input must be stanfit-class. Did you use method = \"optimize\"?")
+  }
   # theta_bar, group means, is T x G
   dgirt_extract <- rstan::extract(dgirt_out)
   dimnames(dgirt_extract$theta_bar)[[2]] <- dgirt_out@.MISC$t_names
-  dimnames(dgirt_extract$theta_bar)[[3]] <- dgirt_out@.MISC$group_names$demo_geo_names
+  dimnames(dgirt_extract$theta_bar)[[3]] <- dgirt_out@.MISC$group
   # (dgirt_extract$theta_bar)
 
   # xi, common intercepts, is length-T
@@ -46,6 +49,7 @@ extract_dgirt <- function(dgirt_out) {
   # (dgirt_extract$kappa)
 
   # sd_item, item SD, is length-Q
+
   dimnames(dgirt_extract$sd_item)[[2]] <- dgirt_out@.MISC$q_names
   # (dgirt_extract$sd_item)
 

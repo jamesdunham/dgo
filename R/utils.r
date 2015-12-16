@@ -1,7 +1,7 @@
 `%>%` <- magrittr::`%>%`
 
 # Create summary table of design effects
-createDef <- function(x) {
+create_design_effects <- function(x) {
     stopifnot(is.numeric(x))
     y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
     if (is.na(y))
@@ -9,37 +9,31 @@ createDef <- function(x) {
 }
 
 # Create design matrix for model of hierarchical coefficients
-createZZ <- function(.XX, .arg) {
-    if (is.null(.arg$level2_modifiers)) {
-        zz.names <- list(.arg$use_t, dimnames(.XX)[[2]], "Zero")
-        ZZ <- array(data = 0, dim = lapply(zz.names, length),
-          dimnames = zz.names)
-    } else {
-        stopifnot(!is.null(.arg$level2))
-        stopifnot(all(c(.arg$time_id, .arg$geo_id) %in% names(.arg$level2)))
-        ZZ <- suppressWarnings(reshape2::melt(.arg$level2,
-          id.vars = c(.arg$time_id, .arg$geo_id)))
-        ZZ <- suppressWarnings(reshape2::acast(ZZ, formula(paste(.arg$time_id,
-          .arg$geo_id, "variable", sep = " ~ "))))
-    }
-    return(ZZ)
-}
-
-# Create weights
-createWT <- function(.l2.wts, .G, .T, .Gl2, .demo.group, .XX) {
-    WT <- array(.l2.wts, dim = c(.G, .T, .Gl2))
-    WT <- aperm(WT, c(.T, .Gl2, .G))
-    for (i in seq_len(.Gl2)) {
-        (dg <- levels(.demo.group)[i])
-        WT[, i, !.demo.group == dg] <- 0
-        WT[, i, ] <- WT[, i, ] / rowSums(WT[, i, ])
-        (WT[.T, i, ] %*% .XX)
-    }
-    return(WT)
+create_l2_design_matrix <- function(.XX, .arg) {
+  # .XX = XX
+  # .arg = arg
+  if (is.null(.arg$level2_modifiers)) {
+    zz.names <- list(.arg$use_t, dimnames(.XX)[[2]], "Zero")
+    ZZ <- array(data = 0, dim = lapply(zz.names, length),
+      dimnames = zz.names)
+  } else {
+    stopifnot(!is.null(.arg$level2))
+    # stopifnot(all(c(.arg$time_id, .arg$geo_id) %in% names(.arg$level2)))
+    stopifnot(all(.arg$level2_modifiers %in% names(.arg$level2)))
+    level2 = .arg$level2 %>% dplyr::select_(.arg$time_id, .arg$geo_id, .arg$level2_modifiers)
+    ZZ <- suppressWarnings(reshape2::melt(level2, id.vars = c(.arg$time_id, .arg$geo_id)))
+    stopifnot(inherits(ZZ$value, "numeric"))
+    ZZ <- suppressWarnings(reshape2::acast(ZZ, formula(paste(.arg$time_id,
+            .arg$geo_id, "variable", sep = " ~ "))))
+  }
+  if (any(is.na(ZZ))) {
+    stop("No cell of ZZ should be NA")
+  }
+  return(ZZ)
 }
 
 # Create 'greater than' indicators
-createGT <- function(d, .items) {
+create_gt_variables <- function(d, .items) {
     for (q in .items) {
         .levels <- levels(factor(d[[q]]))
         .levels <- .levels[-length(.levels)]

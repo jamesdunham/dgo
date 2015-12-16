@@ -6,10 +6,12 @@
 \usage{
 format_data(data = list(level1, level2 = NULL, targets = NULL),
   vars = list(items, groups, time_id, geo_id, survey_id, survey_weight,
-  group_proportion = NULL, level2_modifiers = NULL, level2_period1_modifiers =
-  NULL), filters = list(periods = NULL, geo_ids = NULL, min_surveys = 1L,
-  min_periods = 1L), params = list(separate_periods = FALSE, difficulty_count
-  = 1L, constant_item = TRUE))
+  target_groups = NULL, target_proportion = NULL, level2_modifiers = NULL,
+  level2_period1_modifiers = NULL), filters = list(periods = NULL, geo_ids =
+  NULL, min_surveys = 1L, min_periods = 1L), params = list(separate_periods =
+  FALSE, difficulty_count = 1L, constant_item = TRUE, delta_tbar_prior_mean =
+  0.5, delta_tbar_prior_sd = 0.5, innov_sd_delta_scale = 2.5,
+  innov_sd_theta_scale = 2.5))
 }
 \arguments{
 \item{data}{Named `list` of `data.frame`s containing:
@@ -31,7 +33,8 @@ format_data(data = list(level1, level2 = NULL, targets = NULL),
   \item{geo_id}{Geographic identifier in `data$level1` and `data$level2`.}
   \item{survey_id}{Survey identifier in `data$level1`.}
   \item{survey_weight}{Survey weight in `data$level1`.}
-  \item{group_proportion}{Population proportions in `data$targets`.}
+  \item{target_groups}{Respondent characteristics in `data$targets`.}
+  \item{target_proportion}{Population proportions in `data$targets`.}
   \item{level2_modifiers}{Geographic characteristics in `data$level2`.}
   \item{level2_period1_modifiers}{Geographic characteristics in `data$level2` to be used in place of `vars$level2_modifiers` in the first period.}
 }}
