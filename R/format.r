@@ -105,7 +105,7 @@ format_data <- function(data = list(level1,
 
   # Create _gt. variables
   level1 <- create_gt_variables(d = level1, .items = arg$items)
-  level1 <- drop_rows_missing_gt_variables(level1)
+  level1 <- drop_rows_missing_items(level1, arg)
 
   # Fix levels of variables after filtering
   level1 <- droplevels(level1)
@@ -323,10 +323,11 @@ get_missing_respondents <- function(item_data) {
 }
 
 summarize_design_effects <- function(.data, .arg) {
-  de_table <- .data %>%
+  stopifnot(is.numeric(.data[[.arg$survey_weight]]))
+  de_table <- dplyr::as.tbl(.data) %>%
     dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
     dplyr::select_(.arg$survey_weight) %>%
-    dplyr::summarise_(def = ~create_design_effects(.[[.arg$survey_weight]])) %>%
+    dplyr::summarise_("def" = lazyeval::interp(~create_design_effects(w), w = as.name(.arg$survey_weight))) %>%
     dplyr::arrange_(.arg$geo_id, .arg$demo_id, .arg$time_id)
   return(de_table)
 }
@@ -615,10 +616,10 @@ drop_rows_missing_covariates <- function(.data, .arg) {
   return(.data)
 }
 
-drop_rows_missing_gt_variables <- function(.data) {
-  # Drop rows lacking at least one _gt variable
-  gts = get_gt(.data)
-  .data <- .data[rowSums(!is.na(gts)) > 0, ]
+drop_rows_missing_items <- function(.data, .arg) {
+  # Respondents should have at least one item response
+  item_filter = rowSums(!is.na(.data[, .arg$items])) > 0
+  .data = .data %>% dplyr::filter(item_filter)
   droplevels(.data)
 }
 
