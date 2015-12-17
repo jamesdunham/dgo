@@ -55,8 +55,8 @@ format_data <- function(data = list(level1,
                                    geo_id,
                                    survey_id,
                                    survey_weight,
-                                   target_groups = NULL,
-                                   target_proportion = NULL,
+                                   preweights = NULL,
+                                   preweight_proportion = NULL,
                                    level2_modifiers = NULL,
                                    level2_period1_modifiers = NULL),
                        filters = list(periods = NULL,
@@ -77,18 +77,10 @@ format_data <- function(data = list(level1,
 
   ## INDIVIDUAL LEVEL ##
 
-  #   level1 <- level1 %>%
-  #     dplyr::mutate_(dgirt_demo = ~interaction(.[, arg$groups], drop = TRUE, sep = "_x_"))
-  #   arg$demo_id <- "dgirt_demo"
   arg$demo_id <- arg$groups
 
-  # Drop rows lacking covariates or time variable
+  # Drop rows lacking covariates, time variable, or geographic variable
   level1 <- drop_rows_missing_covariates(level1, arg)
-  # FIXME: not working
-  #   level1[["D_gender"]][1] = NA
-  #   level1$D_race_new[1] = NA
-  #   sum(is.na(level1$D_gender))
-  #   sum(is.na(level1$D_race_new))
 
   # Filter data
   checks <- check_restrictions(level1, arg)
@@ -617,7 +609,7 @@ drop_rows_missing_covariates <- function(.data, .arg) {
       time_name = as.name(.arg$time_id)))
   for (v in .arg$demo_id) {
     .data <- .data %>%
-      dplyr::filter_(lazyeval::interp(~!is.na(varname), varname = v))
+      dplyr::filter_(lazyeval::interp(~!is.na(varname), varname = as.name(v)))
   }
   .data <- droplevels(.data)
   return(.data)
