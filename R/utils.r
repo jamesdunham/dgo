@@ -2,10 +2,12 @@
 
 # Create summary table of design effects
 create_design_effects <- function(x) {
-    stopifnot(is.numeric(x))
-    y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
-    if (is.na(y))
-        return(1) else return(y)
+  y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
+  if (is.na(y)) {
+    return(1)
+  } else {
+    return(y)
+  }
 }
 
 # Create design matrix for model of hierarchical coefficients
@@ -33,20 +35,28 @@ create_l2_design_matrix <- function(.XX, .arg) {
 }
 
 # Create 'greater than' indicators
-create_gt_variables <- function(d, .items) {
-    for (q in .items) {
-        .levels <- levels(factor(d[[q]]))
-        .levels <- .levels[-length(.levels)]
-        varname <- paste0(q, "_gt", .levels)
-        d[, varname] <- sapply(.levels, function(l) {
-            as.numeric(d[[q]] > as.numeric(l))
-        })
+create_gt_variables <- function(d, .items){
+  out = lapply(.items, function(stub) {
+    if (is.factor(d[[stub]])) {
+      item_levels <- levels(d[[stub]])
+      values <- as.numeric(d[[stub]])
+    } else {
+      item_levels <- as.character(sort(unique(d[[stub]])))
+      values <- d[[stub]]
     }
-    return(d)
+    gt_levels <- item_levels[-length(item_levels)]
+    gt_names <- paste(stub, gt_levels, sep = "_gt")
+    gt_cols <- lapply(gt_levels, function(gt) {
+      values > as.numeric(gt)
+    })
+    setNames(gt_cols, gt_names)
+  })
+  bind_cols(out)
 }
+
 # Replace NA in a vector with 0
 replaceNA <- function(x) {
-    replace(x, is.na(x), 0)
+  replace(x, is.na(x), 0)
 }
 
 # Replace NaN in a vector with NA

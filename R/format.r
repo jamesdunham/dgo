@@ -104,7 +104,8 @@ format_data <- function(data = list(level1,
   }
 
   # Create _gt. variables
-  level1 <- create_gt_variables(d = level1, .items = arg$items)
+  gt_table <- create_gt_variables(d = level1, .items = arg$items)
+  level1 <- bind_cols(level1, gt_table)
   level1 <- drop_rows_missing_items(level1, arg)
 
   # Fix levels of variables after filtering
@@ -646,6 +647,7 @@ get_gt = function(level1) {
 
 count_respondent_trials <- function(level1) {
   gts = get_gt(level1)
+
   rowSums(!is.na(as.matrix(gts)), na.rm = TRUE)
 }
 
