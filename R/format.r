@@ -239,7 +239,7 @@ as_tbl <- function(dataframe) {
 
 check_dimensions <- function(stan_data) {
   with(stan_data, {
-    stopifnot(identical(length(stan_datan_vec), length(s_vec)))
+    stopifnot(identical(length(n_vec), length(s_vec)))
     stopifnot(identical(dim(NNl2), as.integer(c(T, Q, Gl2))))
     stopifnot(identical(dim(SSl2), as.integer(c(T, Q, Gl2))))
     stopifnot(identical(dim(MMM), c(T, Q, G)))
