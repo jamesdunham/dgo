@@ -6,7 +6,7 @@
 \usage{
 format_data(data = list(level1, level2 = NULL, targets = NULL),
   vars = list(items, groups, time_id, geo_id, survey_id, survey_weight,
-  target_groups = NULL, target_proportion = NULL, level2_modifiers = NULL,
+  preweights = NULL, preweight_proportion = NULL, level2_modifiers = NULL,
   level2_period1_modifiers = NULL), filters = list(periods = NULL, geo_ids =
   NULL, min_surveys = 1L, min_periods = 1L), params = list(separate_periods =
   FALSE, difficulty_count = 1L, constant_item = TRUE, delta_tbar_prior_mean =
@@ -48,13 +48,6 @@ format_data(data = list(level1, level2 = NULL, targets = NULL),
      Defaults to the values of `vars$geo_id` in the data.}
   \item{min_surveys}{A positive integer giving the minimum surveys in which an item must appear to be used in estimation.}
   \item{min_periods}{A positive integer giving the minimum periods in which an item must appear to be used in esimation.}
-}}
-
-\item{params}{Named `list` of modeling choices.
-\describe{
-  \item{separate_periods}{Logical for whether estimates should be pooled over time. No pooling if `TRUE`.}
-  \item{constant_item}{Logical for whether item parameters should be constant over time.}
-  \item{difficulty_count}{Number of difficulty parameters.}
 }}
 }
 \value{

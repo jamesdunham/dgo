@@ -75,8 +75,8 @@ read_cmdstan_output <- function() {
 }
 
 name_cmdstan_output <- function(stan_output, dgirt_data, save_pars) {
-  # stan_output = cmdstan_output
-  # dgirt_data = states_fmt
+  # stan_output = read_cmdstan_output()
+  # states_fmt
   # save_pars = eval(formals(run_dgirt)$save_pars)
   output_names <- dimnames(stan_output)[[2]]
   par_regex = paste0("^(", paste0(save_pars, collapse = "|"), ")(_raw)*[.0-9]*$")
@@ -98,49 +98,31 @@ name_cmdstan_output <- function(stan_output, dgirt_data, save_pars) {
   })
   names(stan_output) = parname_stubs
 
-  t_names = get_t_names(dgirt_data)
-  q_names = get_q_names(dgirt_data)
-  hier_names = dimnames(dgirt_data$XX)[[2]]
+  stan_output$kappa$d = stan_output$kappa$index_1
 
+  t_names = get_t_names(dgirt_data)
   stan_output$delta_gamma$t = t_names
   stan_output$delta_tbar$t = t_names
+  stan_output$sd_total$t = t_names
+  stan_output$nu_geo$t = t_names
+  stan_output$sd_theta_bar$t = t_names
+  stan_output$theta_l2$t = t_names
+  stan_output$var_theta_bar_l2$t = t_names
+  stan_output$xi$t = t_names
+
+  hier_names = dimnames(dgirt_data$XX)[[2]]
   stan_output$gamma$t = rep(t_names, length(hier_names))
   stan_output$gamma$p = rep(hier_names, each = length(t_names))
 
+  q_names = get_q_names(dgirt_data)
   stan_output$kappa$q = q_names
-  stan_output$kappa$d = stan_output$kappa$index_1
   stan_output$sd_item$q = q_names
+  # stan_output$nu_geo$geo = # T x H geographic predictor
 
-  stan_output$sd_total$t = t_names
-
-  stan_output$nu_geo$t = t_names
-  # T x H geographic predictor
-  # stan_output$nu_geo$geo =
-
-  stan_output$theta_bar
-  stan_output$theta_bar$t = rep(t_names,
-    nrow(stan_output$theta_bar) / length(t_names))
-  stan_output$theta_bar = suppressWarnings(cbind(stan_output$theta_bar,
-    get_group_names(dgirt_data)))
-  stan_output$sd_theta_bar$t = t_names
-  group_regex = gregexpr("(?<=_x_)([A-Za-z0-9_]+)(?=_x_[A-Za-z0-9_]+)",
-    names(dgirt_data$n_vec), perl = TRUE)
-  group_combos = unique(unlist(regmatches(names(dgirt_data$n_vec), group_regex)))
-  group_crosswalk = dplyr::data_frame(original = group_combos,
-    observed = sub("_x_", "_", group_combos, fixed = TRUE))
-  group_count = length(gregexpr("_x_", group_crosswalk$original[1])) + 1
-  stan_output$theta_bar = dplyr::left_join(stan_output$theta_bar,
-    group_crosswalk, by = c("factor1" = "observed")) %>% dplyr::as.tbl() %>%
-    dplyr::select_(~-factor1) %>%
-    dplyr::select_(~matches(".*"), "geo" = ~matches("^factor")) %>%
-    tidyr::separate_("original", into = paste0("group_", seq(1, group_count)),
-      sep = "_x_")
-
-  stan_output$sd_theta_bar$t = t_names
-  stan_output$theta_l2$t = t_names
-
-  stan_output$var_theta_bar_l2$t = t_names
-  stan_output$xi$t = t_names
+  group_names = get_group_names(dgirt_data)
+  x_collapsed_group_names = names(dgirt_data$n_vec)
+  stan_output$theta_bar = name_group_means(stan_output$theta_bar, group_names,
+    x_collapsed_group_names, t_names)
 
   return(stan_output)
 }
@@ -191,6 +173,25 @@ get_q_names <- function(dgirt_data) {
 
 get_p_names <- function(dgirt_data) {
   gsub("^dgirt_(geo|demo)", "", dimnames(dgirt_data$XX)[[2]])
+}
+
+name_group_means = function(thetas, group_names, x_collapsed_group_names, t_names) {
+  thetas$t = rep(t_names, nrow(group_names))
+  thetas = bind_cols(thetas,
+    group = group_names[rep(seq_len(nrow(group_names)), each = length(t_names)), ])
+  group_regex = gregexpr("(?<=_x_)([A-Za-z0-9_]+)(?=_x_[A-Za-z0-9_]+)",
+    x_collapsed_group_names, perl = TRUE)
+  group_combos = unique(unlist(regmatches(x_collapsed_group_names, group_regex)))
+  group_crosswalk = dplyr::data_frame(original = group_combos,
+    observed = sub("_x_", "_", group_combos, fixed = TRUE))
+  group_count = length(gregexpr("_x_", group_crosswalk$original[1])) + 1
+  thetas = dplyr::left_join(thetas,
+    group_crosswalk, by = c("factor1" = "observed")) %>% dplyr::as.tbl() %>%
+      dplyr::select_(~-factor1) %>%
+      dplyr::select_(~matches(".*"), "geo" = ~matches("^factor")) %>%
+      tidyr::separate_("original", into = paste0("group_", seq(1, group_count)),
+    sep = "_x_")
+      return(thetas)
 }
 
 attach_names <- function(stanfit, dgirt_data) {

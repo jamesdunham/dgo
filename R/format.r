@@ -125,7 +125,6 @@ format_data <- function(data = list(level1,
   # Represent covariates in data as model frame
   f0 <- as.formula(paste("~", paste("0", arg$geo_id, paste0(arg$demo_id, collapse = " + "), sep = " + ")))
   f0_t <- as.formula(paste("~", paste("0", arg$geo_id, paste0(arg$demo_id, collapse = " + "), arg$time_id, sep = " + ")))
-  MF <- model.frame(f0, data = level1, na.action = return)
   MF_t <- model.frame(f0_t, data = level1, na.action = return)
   # Get frequency counts of factor combinations (reordered in factor order)
   xtab_t <- as.data.frame(table(MF_t))
@@ -238,9 +237,9 @@ as_tbl <- function(dataframe) {
   }
 }
 
-check_dimensions = function(stan_data) {
+check_dimensions <- function(stan_data) {
   with(stan_data, {
-    stopifnot(identical(length(n_vec), length(s_vec)))
+    stopifnot(identical(length(stan_datan_vec), length(s_vec)))
     stopifnot(identical(dim(NNl2), as.integer(c(T, Q, Gl2))))
     stopifnot(identical(dim(SSl2), as.integer(c(T, Q, Gl2))))
     stopifnot(identical(dim(MMM), c(T, Q, G)))
@@ -461,7 +460,7 @@ make_ns_long <- function(ns_long_obs, .arg) {
 
 make_missingness_array <- function(ns_long, group_grid, .arg) {
   # Create missingness indicator array
-  acast_formula = as.formula(paste0(.arg$time_id, "~ variable ~", paste(.arg$demo_id, collapse = "+"), "+", .arg$geo_id))
+  acast_formula <- as.formula(paste0(.arg$time_id, "~ variable ~", paste(.arg$demo_id, collapse = "+"), "+", .arg$geo_id))
   MMM <- ns_long %>%
     # Include in the missingness array all group-variables that might not exist
     # in the data because of unobserved use_t
@@ -511,11 +510,11 @@ factorize_arg_vars <- function(.data, .arg) {
   }
   arg_vars <- intersect(names(.data),
     c(.arg$time_id, .arg$groups, .arg$geo_id, .arg$survey_id))
-  is_numeric_group = apply(.data[, .arg$groups], 2, class) == "numeric"
+  is_numeric_group <- apply(.data[, .arg$groups], 2, class) == "numeric"
   if (any(is_numeric_group)) {
     message("Defining groups via numeric variables is allowed, but output names won't be descriptive. Consider using factors.")
     for (varname in .arg$groups[is_numeric_group]) {
-      .data[[varname]] = paste0(varname, as.character(.data[[varname]]))
+      .data[[varname]] <- paste0(varname, as.character(.data[[varname]]))
     }
   }
   .data %>% dplyr::mutate_each_(dplyr::funs(factor), vars = arg_vars)
@@ -619,8 +618,8 @@ drop_rows_missing_covariates <- function(.data, .arg) {
 
 drop_rows_missing_items <- function(.data, .arg) {
   # Respondents should have at least one item response
-  item_filter = rowSums(!is.na(.data[, .arg$items])) > 0
-  .data = .data %>% dplyr::filter(item_filter)
+  item_filter <- rowSums(!is.na(.data[, .arg$items])) > 0
+  .data <- .data %>% dplyr::filter(item_filter)
   droplevels(.data)
 }
 
@@ -639,14 +638,14 @@ subset_to_observed_geo_periods <- function(.arg) {
   return(.arg$level2)
 }
 
-get_gt = function(level1) {
-  gts = level1 %>% dplyr::select_(lazyeval::interp(~matches(x), x = "_gt\\d+$"))
+get_gt <- function(level1) {
+  gts <- level1 %>% dplyr::select_(lazyeval::interp(~matches(x), x = "_gt\\d+$"))
   stopifnot(ncol(gts) > 0)
   return(gts)
 }
 
 count_respondent_trials <- function(level1) {
-  gts = get_gt(level1)
+  gts <- get_gt(level1)
   rowSums(!is.na(as.matrix(gts)), na.rm = TRUE)
 }
 
@@ -655,11 +654,11 @@ count_questions <- function(level1) {
 }
 
 count_covariate_combos <- function(level1, .arg) {
-  factor_levels = nlevels_vectorized(level1, c(.arg$geo_id, .arg$demo_id))
+  factor_levels <- nlevels_vectorized(level1, c(.arg$geo_id, .arg$demo_id))
   Reduce(`*`, factor_levels)
 }
 
-nlevels_vectorized = function(data, varlist) {
+nlevels_vectorized <- function(data, varlist) {
   sapply(data[varlist], nlevels)
 }
 

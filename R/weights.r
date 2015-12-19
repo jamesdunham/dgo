@@ -53,30 +53,25 @@ create_weights <- function(.level1, .arg) {
   return(.level1)
 }
 
-# TODO: test input
-# .arg$target_groups = "Gender"
-# .arg$target_groups = c("Gender", "YearFactor")
-# .arg$target_groups = list(c("Gender", "YearFactor"))
-# .arg$target_groups = list(c("Gender", "YearFactor"), c("Gender", "Country"))
-create_formulas = function(target_groups) {
+create_formulas <- function(target_groups) {
   if (!length(target_groups) > 0) stop("target_groups is NULL")
   if (is.list(target_groups)) {
-    out = sapply(target_groups, function(x) {
+    out <- sapply(target_groups, function(x) {
       as.formula(paste("~", paste(x, collapse = " + ")))
     })
   } else {
-    out = list(as.formula(paste("~", paste(target_groups, collapse = " + "))))
+    out <- list(as.formula(paste("~", paste(target_groups, collapse = " + "))))
   }
   return(out)
 }
 
-get_weight_vars = function(target_groups) {
+get_weight_vars <- function(target_groups) {
   unique(unlist(target_groups))
 }
 
 # This is a minor modification of survey::rake that ignores (leaves unweighted)
 # empty cells
-rake_partial = function(design, sample.margins, population.margins, control = list(maxit = 10,
+rake_partial <- function(design, sample.margins, population.margins, control = list(maxit = 10,
     epsilon = 1, verbose = FALSE), compress = NULL) {
     if (!missing(control)) {
         control.defaults <- formals(survey::rake)$control

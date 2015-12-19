@@ -163,17 +163,17 @@ check_arg_types <- function(..arg) {
         stop("survey_id should be a character vector")
 
     if (is.null(..arg$difficulty_count) || !is.numeric(..arg$difficulty_count) || ..arg$difficulty_count <
-        1 || ..arg$difficulty_count%%1 != 0) {
+        1 || ..arg$difficulty_count %% 1 != 0) {
         stop("difficulty_count should be a positive integer")
     }
 
     if (is.null(..arg$min_surveys) || !is.numeric(..arg$min_surveys) || ..arg$min_surveys <
-        1 || ..arg$min_surveys%%1 != 0) {
+        1 || ..arg$min_surveys %% 1 != 0) {
         stop("min_surveys should be a positive integer")
     }
 
     if (is.null(..arg$min_periods) || !is.numeric(..arg$min_periods) || ..arg$min_periods <
-        1 || ..arg$min_periods%%1 != 0) {
+        1 || ..arg$min_periods %% 1 != 0) {
         stop("min_periods should be a positive integer")
     }
 
@@ -215,12 +215,12 @@ set_arg_defaults <- function(..arg) {
     if (is.null(..arg$silent))
         ..arg$silent <- FALSE
     if (is.null(..arg$delta_tbar_prior_mean))
-      ..arg$delta_tbar_prior_mean = 0.5
+      ..arg$delta_tbar_prior_mean <- 0.5
     if (is.null(..arg$delta_tbar_prior_sd))
-      ..arg$delta_tbar_prior_sd = 0.5
+      ..arg$delta_tbar_prior_sd <- 0.5
     if (is.null(..arg$innov_sd_delta_scale))
-      ..arg$innov_sd_delta_scale = 2.5
+      ..arg$innov_sd_delta_scale <- 2.5
     if (is.null(..arg$innov_sd_theta_scale))
-      ..arg$innov_sd_theta_scale = 2.5
+      ..arg$innov_sd_theta_scale <- 2.5
     return(..arg)
 }
