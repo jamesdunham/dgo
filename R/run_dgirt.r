@@ -53,9 +53,9 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
 
 run_cmdstan <- function(dgirt_data, method, n_iter, init_range, save_pars) {
   dump_dgirt(dgirt_data)
-  stan_call <- paste0(get_dgirt_path(), " ", method, " iter=", n_iter, " init='", init_range,
+  stan_args <- paste0(method, " iter=", n_iter, " init='", init_range,
       "' data file=", get_dump_path(), " output file=", get_output_path())
-  system(stan_call)
+  system2(get_dgirt_path(), stan_args)
   unlink(get_dump_path())
   if (file.exists(get_output_path())) {
       stan_output <- read_cmdstan_output(get_output_path())
