@@ -58,7 +58,7 @@ run_cmdstan <- function(dgirt_data, method, n_iter, init_range, save_pars) {
   system(stan_call)
   unlink(get_dump_path())
   if (file.exists(get_output_path())) {
-      stan_output <- read_cmdstan_output()
+      stan_output <- read_cmdstan_output(get_output_path())
       stan_output <- name_cmdstan_output(stan_output, dgirt_data, save_pars)
       return(stan_output)
   } else {
@@ -67,61 +67,59 @@ run_cmdstan <- function(dgirt_data, method, n_iter, init_range, save_pars) {
   }
 }
 
-read_cmdstan_output <- function() {
-  output_path <- get_output_path()
+read_cmdstan_output <- function(path) {
   message("Reading results from disk.")
-  cmdstan_output = data.table::fread(get_output_path(), skip = "lp__")
+  cmdstan_output <- data.table::fread(path, skip = "lp__", sep = ",",
+    header = FALSE)
+  stopifnot(nrow(cmdstan_output) > 0)
   return(cmdstan_output)
 }
 
 name_cmdstan_output <- function(stan_output, dgirt_data, save_pars) {
-  # stan_output = read_cmdstan_output()
-  # states_fmt
-  # save_pars = eval(formals(run_dgirt)$save_pars)
   output_names <- dimnames(stan_output)[[2]]
-  par_regex = paste0("^(", paste0(save_pars, collapse = "|"), ")(_raw)*[.0-9]*$")
+  par_regex <- paste0("^(", paste0(save_pars, collapse = "|"), ")(_raw)*[.0-9]*$")
   save_pars_matches <- grep(par_regex, output_names, perl = TRUE, value = TRUE)
   stan_output <- stan_output %>% dplyr::select_(~one_of(save_pars_matches))
   parname_stubs <- sort(unique(gsub(par_regex, "\\1", save_pars_matches, perl = TRUE)))
 
   stan_output <- lapply(parname_stubs, function(parname) {
-    this_par = stan_output %>%
+    this_par <- stan_output %>%
       dplyr::select_(~matches(paste0("^", parname, "[0-9.]*$"))) %>%
       reshape2::melt(id.vars = NULL, variable.name = "param") %>%
       dplyr::as.tbl()
     if (nrow(this_par) > 1) {
-      this_par = this_par %>%
+      this_par <- this_par %>%
         dplyr::mutate_(index = ~regmatches(as.character(param),
           regexpr("(?<=\\.)([0-9.]*)$", as.character(param), perl = TRUE)))
     }
     return(this_par)
   })
-  names(stan_output) = parname_stubs
+  names(stan_output) <- parname_stubs
 
-  stan_output$kappa$d = stan_output$kappa$index_1
+  stan_output$kappa$d <- stan_output$kappa$index_1
 
-  t_names = get_t_names(dgirt_data)
-  stan_output$delta_gamma$t = t_names
-  stan_output$delta_tbar$t = t_names
-  stan_output$sd_total$t = t_names
-  stan_output$nu_geo$t = t_names
-  stan_output$sd_theta_bar$t = t_names
-  stan_output$theta_l2$t = t_names
-  stan_output$var_theta_bar_l2$t = t_names
-  stan_output$xi$t = t_names
+  t_names <- get_t_names(dgirt_data)
+  stan_output$delta_gamma$t <- t_names
+  stan_output$delta_tbar$t <- t_names
+  stan_output$sd_total$t <- t_names
+  stan_output$nu_geo$t <- t_names
+  stan_output$sd_theta_bar$t <- t_names
+  stan_output$theta_l2$t <- t_names
+  stan_output$var_theta_bar_l2$t <- t_names
+  stan_output$xi$t <- t_names
 
-  hier_names = dimnames(dgirt_data$XX)[[2]]
-  stan_output$gamma$t = rep(t_names, length(hier_names))
-  stan_output$gamma$p = rep(hier_names, each = length(t_names))
+  hier_names <- dimnames(dgirt_data$XX)[[2]]
+  stan_output$gamma$t <- rep(t_names, length(hier_names))
+  stan_output$gamma$p <- rep(hier_names, each = length(t_names))
 
-  q_names = get_q_names(dgirt_data)
-  stan_output$kappa$q = q_names
-  stan_output$sd_item$q = q_names
-  # stan_output$nu_geo$geo = # T x H geographic predictor
+  q_names <- get_q_names(dgirt_data)
+  stan_output$kappa$q <- q_names
+  stan_output$sd_item$q <- q_names
+  # stan_output$nu_geo$geo <- # T x H geographic predictor
 
-  group_names = get_group_names(dgirt_data)
-  x_collapsed_group_names = names(dgirt_data$n_vec)
-  stan_output$theta_bar = name_group_means(stan_output$theta_bar, group_names,
+  group_names <- get_group_names(dgirt_data)
+  x_collapsed_group_names <- names(dgirt_data$n_vec)
+  stan_output$theta_bar <- name_group_means(stan_output$theta_bar, group_names,
     x_collapsed_group_names, t_names)
 
   return(stan_output)
@@ -130,11 +128,11 @@ name_cmdstan_output <- function(stan_output, dgirt_data, save_pars) {
 dump_dgirt <- function(dgirt_data) {
   stopifnot(is.list(dgirt_data))
   stopifnot(length(dgirt_data) > 0)
-  dgirt_data$items = NULL
-  dgirt_data$groups = NULL
-  dgirt_data$time_id = NULL
-  dgirt_data$geo_id = NULL
-  dgirt_data$survey_id = NULL
+  dgirt_data$items <- NULL
+  dgirt_data$groups <- NULL
+  dgirt_data$time_id <- NULL
+  dgirt_data$geo_id <- NULL
+  dgirt_data$survey_id <- NULL
   rstan::stan_rdump(names(dgirt_data), get_dump_path(),
     envir = list2env(dgirt_data))
 }
@@ -155,8 +153,8 @@ get_dump_path <- function() {
 
 get_group_names <- function(dgirt_data) {
   demo_geo_names <- dimnames(dgirt_data$MMM)[[3]]
-  n_groups = length(gregexpr('_x_', demo_geo_names[1])[[1]]) + 1
-  group_names = tidyr::separate_(data.frame(demo_geo_names),
+  n_groups <- length(gregexpr("_x_", demo_geo_names[1])[[1]]) + 1
+  group_names <- tidyr::separate_(data.frame(demo_geo_names),
     "demo_geo_names", into = paste0("factor", seq.int(1, n_groups)),
     sep = "_x_", fill = "right")
 
@@ -175,17 +173,17 @@ get_p_names <- function(dgirt_data) {
   gsub("^dgirt_(geo|demo)", "", dimnames(dgirt_data$XX)[[2]])
 }
 
-name_group_means = function(thetas, group_names, x_collapsed_group_names, t_names) {
-  thetas$t = rep(t_names, nrow(group_names))
-  thetas = bind_cols(thetas,
-    group = group_names[rep(seq_len(nrow(group_names)), each = length(t_names)), ])
-  group_regex = gregexpr("(?<=_x_)([A-Za-z0-9_]+)(?=_x_[A-Za-z0-9_]+)",
+name_group_means <- function(thetas, group_names, x_collapsed_group_names, t_names) {
+  thetas$t <- rep(t_names, nrow(group_names))
+  thetas <- bind_cols(thetas,
+    group_names[rep(seq_len(nrow(group_names)), each = length(t_names)), ])
+  group_regex <- gregexpr("(?<=_x_)([A-Za-z0-9_]+)(?=_x_[A-Za-z0-9_]+)",
     x_collapsed_group_names, perl = TRUE)
-  group_combos = unique(unlist(regmatches(x_collapsed_group_names, group_regex)))
-  group_crosswalk = dplyr::data_frame(original = group_combos,
+  group_combos <- unique(unlist(regmatches(x_collapsed_group_names, group_regex)))
+  group_crosswalk <- dplyr::data_frame(original = group_combos,
     observed = sub("_x_", "_", group_combos, fixed = TRUE))
-  group_count = length(gregexpr("_x_", group_crosswalk$original[1])) + 1
-  thetas = dplyr::left_join(thetas,
+  group_count <- length(gregexpr("_x_", group_crosswalk$original[1])) + 1
+  thetas <- dplyr::left_join(thetas,
     group_crosswalk, by = c("factor1" = "observed")) %>% dplyr::as.tbl() %>%
       dplyr::select_(~-factor1) %>%
       dplyr::select_(~matches(".*"), "geo" = ~matches("^factor")) %>%
@@ -198,7 +196,7 @@ attach_names <- function(stanfit, dgirt_data) {
   if (is.null(stanfit)) {
       warning("stan returned NULL")
   } else {
-      stanfit@.MISC$group = dimnames(dgirt_data$MMM)[[3]]
+      stanfit@.MISC$group <- dimnames(dgirt_data$MMM)[[3]]
       stanfit@.MISC$group_names <- get_group_names(dgirt_data)
       stanfit@.MISC$t_names <- get_t_names(dgirt_data)
       stanfit@.MISC$q_names <- get_q_names(dgirt_data)
