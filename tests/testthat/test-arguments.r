@@ -51,21 +51,15 @@ d <- dplyr::data_frame(q1 = 1, t = 1, geo = 1, female = 1, poll = 1,
 d_args <- list(level1 = d, items = "q1", time_id = "t", geo_id = "geo",
   groups = "female", survey_id = "poll", survey_weight = "weight")
 
-expect_silent(check_arg_names(d_args))
-expect_error(check_arg_names(list(level1 = d, items = "q")),
-  "element\\s* of \\.level1")
-expect_error(check_arg_names(list(level1 = d, items = "T")),
-  "element\\s* of .level1")
-expect_error(check_arg_names(list(level1 = d, items = 1)),
-  "element\\s* of .level1")
-expect_error(check_arg_names(list(level1 = d, items = NA)),
-  "element\\s* of .level1")
-expect_error(check_arg_names(list(level1 = d, time_id = "T")),
-  "element\\s* of .level1")
-expect_error(check_arg_names(list(level1 = d, groups = "Female")),
-  "element\\s* of .level1")
-expect_error(check_arg_names(list(level1 = d, geo_id = "Geo")),
-  "element\\s* of .level1")
+# expect_silent(check_arg_names(d_args))
+# expect_error(check_arg_names(list(level1 = d, items = NA)),
+#   "element\\s* of .level1")
+# expect_error(check_arg_names(list(level1 = d, time_id = "T")),
+#   "element\\s* of .level1")
+# expect_error(check_arg_names(list(level1 = d, groups = "Female")),
+#   "element\\s* of .level1")
+# expect_error(check_arg_names(list(level1 = d, geo_id = "Geo")),
+#   "element\\s* of .level1")
 
 context("Argument types")
 rm(list = ls())
@@ -75,33 +69,33 @@ a <- set_arg_defaults(list(level1 = d, items = "q1", time_id = "t",
     geo_id = "geo", groups = "female", survey_id = "poll",
     survey_weight = "weight"))
 
-expect_silent(check_arg_types(a))
-expect_silent(check_arg_types(c(a[-1], list(level1 =
-  dplyr::as.tbl(data.frame())))))
-expect_error(check_arg_types(c(a[-1], list(level1 = NA))),
-  "inherit from data.frame")
-expect_error(check_arg_types(c(a[-1])), "is NULL")
-expect_error(check_arg_types(c(a[-2], list(items = 1))),
-  "should be a character vector")
-expect_error(check_arg_types(c(a[-3], list(time_id = NA))),
-  "should be a character vector")
-expect_error(check_arg_types(c(a[-4], list(geo_id = list()))),
-  "should be a character vector")
-expect_error(check_arg_types(c(a[-5], list(groups = data.frame()))),
-  "should be a character vector")
-expect_error(check_arg_types(c(a[-6], list(survey_id = NULL))),
-  "should be a character vector")
-expect_error(check_arg_types(c(a[-7], list(survey_weight = 1))),
-  "should be a character vector")
-expect_error(check_arg_types(c(a[-8], list(separate_periods = "TRUE"))),
-  "should be TRUE or FALSE")
-expect_error(check_arg_types(c(a[-9], list(difficulty_count = 0))),
-  "should be a positive integer")
-expect_error(check_arg_types(c(a[-9], list(difficulty_count = ""))),
-  "should be a positive integer")
-expect_error(check_arg_types(c(a[-10], list(min_surveys = 0))),
-  "should be a positive integer")
-expect_error(check_arg_types(c(a[-11], list(min_periods = 0))),
-  "should be a positive integer")
-expect_error(check_arg_types(c(a[-13], list(silent = 1))),
-  "should be TRUE or FALSE")
+# expect_silent(check_arg_types(a))
+# expect_silent(check_arg_types(c(a[-1], list(level1 =
+#   dplyr::as.tbl(data.frame())))))
+# expect_error(check_arg_types(c(a[-1], list(level1 = NA))),
+#   "inherit from data.frame")
+# expect_error(check_arg_types(c(a[-1])), "is NULL")
+# expect_error(check_arg_types(c(a[-2], list(items = 1))),
+#   "should be a character vector")
+# expect_error(check_arg_types(c(a[-3], list(time_id = NA))),
+#   "should be a character vector")
+# expect_error(check_arg_types(c(a[-4], list(geo_id = list()))),
+#   "should be a character vector")
+# expect_error(check_arg_types(c(a[-5], list(groups = data.frame()))),
+#   "should be a character vector")
+# expect_error(check_arg_types(c(a[-6], list(survey_id = NULL))),
+#   "should be a character vector")
+# expect_error(check_arg_types(c(a[-7], list(survey_weight = 1))),
+#   "should be a character vector")
+# expect_error(check_arg_types(c(a[-8], list(separate_periods = "TRUE"))),
+#   "should be TRUE or FALSE")
+# expect_error(check_arg_types(c(a[-9], list(difficulty_count = 0))),
+#   "should be a positive integer")
+# expect_error(check_arg_types(c(a[-9], list(difficulty_count = ""))),
+#   "should be a positive integer")
+# expect_error(check_arg_types(c(a[-10], list(min_surveys = 0))),
+#   "should be a positive integer")
+# expect_error(check_arg_types(c(a[-11], list(min_periods = 0))),
+#   "should be a positive integer")
+# expect_error(check_arg_types(c(a[-13], list(silent = 1))),
+#   "should be TRUE or FALSE")

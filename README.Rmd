@@ -1,0 +1,134 @@
+---
+output:
+  md_document:
+    variant: markdown_github
+---
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# dgirt: dynamic group-level IRT models in R
+
+```{r, echo = FALSE}
+# rmarkdown::render("~/projects/dgirt/README.Rmd")
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+## Installation
+
+```{r}
+if (packageVersion("devtools") < 1.6) {
+  install.packages("devtools")
+}
+devtools::install_github("jamesdunham/dgirt")
+```
+
+Get updates by reinstalling.
+
+## Quick start
+
+See `?format_data`, `?run_dgirt`, and `?extract_dgirt`
+
+## Use
+
+The following vignette illustrates a simple `dgirt` workflow. We'll reformat some input data via `format_data`, and then apply a dynamic group-level IRT
+model via `run_dgirt`. For derivation of the model see
+[Caughey and Warshaw
+2014](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html).
+
+## Diving In
+
+Let's use one of the datasets included with `dgirt`.
+```{r}
+library(dgirt)
+data(states)
+```
+
+`states` is a `data.frame` in which rows correspond to survey responses from
+individuals. 
+
+```{r}
+dplyr::glimpse(states)
+```
+
+Data formatted in this way need to be restructured with the `format_data`
+function.  We'll pass `states` to `format_data`'s `data` argument, which takes
+a list of data to be modeled. Our table of survey responses will be an element
+named `level1`, for the lowest hierarchical level in the model.
+
+We'll use the `vars` argument to identify variables of importance in `data`
+(e.g. which represent item responses). `vars` is a list of named character
+vectors with (at least) these elements:
+
+  * `items`: Names of item response variables $$y_{iq}$$ in `data$level1`.
+  * `groups`: Names of respondent characteristic variables in `data$level1`.
+    Note: at this time `format_data` requires that the user exclude the
+    geographic indicator from `groups` and name it instead in `geo_id`. this
+    will change in a future version once modeling of any group predictor is
+    supported.
+  * `time_id`: Name of time period variable in `data$level1`.
+  * `geo_id`: Name of geographic identifier variable in `data$level1`.
+  * `survey_id`: Name of survey identifier variable in `data$level1`.
+  * `survey_weight`: Name of weight variable $w_i$ in `data$level1`.
+
+All the names of item response variables happen to start with "Q\_", so we'll
+pass them using `grep`.
+
+```{r}
+states_fmt = format_data(
+  data = list(level1 = states),
+  vars = list(items = grep("^Q_", colnames(states), value = TRUE),
+              groups = c("D_gender", "D_race_new"),
+              time_id = "D_year",
+              geo_id = "D_abb",
+              survey_id = "D_source",
+              survey_weight = "D_weight"))
+```
+
+The return value of `format_data` is a list of objects that `run_dgirt` expects
+as its first argument. We'll also set its `n_iter` and `n_chain` arguments to
+minimize its run time, but otherwise rely on the defaults.
+
+```{r}
+dgirt_estimates = run_dgirt(states_fmt, n_iter = 50, n_chain = 1)
+```
+
+`rstan` will report any problems it encounters when compiling the model and
+sampling. If sampling is successful, `run_dgirt` will return the `stanfit`
+object returned by `rstan::rstan`.
+
+To extract samples from the result of `run_dgirt` we can use `extract_dgirt`,
+which returns a list whose elements are named arrays and matrices containing
+estimates of model parameters. We'll take a look at `theta_bar`, the group
+means ($\bar{\theta}_g$).
+
+```{r}
+dgirt_extract = extract_dgirt(dgirt_estimates)
+str(dgirt_extract$theta_bar)
+```
+
+`theta_bar` is 3 $\times$ 9 $\times$ 306:
+
+  * The first dimension of the array is indexed by sampler iteration. We ran
+    the sampler for 10 iterations and by default discarded 7 as warm-ups, so
+    this dimension is length-3.
+  * The array's second dimension is indexed by time period, here the nine years
+    2006-2014.
+  * The third dimension, indexed by covariate combination, is length-306, or
+    2 $\times$ 3 $\times$ 51. We have 2 levels in our first covariate
+    `D_gender`, 3 levels (excluding `NA`) in our second covariate `D_race_new`,
+    and 51 levels in the geographic identifier.
+
+## `cmdstan`
+
+We can use the `method` argument of `run_dgirt` to choose an alternative to
+MCMC sampling if `cmdstan` is available. See
+http://mc-stan.org/interfaces/cmdstan.html for installation instructions. For
+example, setting `method = "optimize"` will call `cmdstan optimize`.
+
+```{r}
+dgirt_estimates = run_dgirt(states_fmt, n_iter = 100, n_chain = 1, method
+    = "optimize", init_range = 0.5)
+```

@@ -20,11 +20,11 @@
 #' @import rstan
 #' @export
 run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n_warm = min(10000,
-  floor(n_iter * 3 / 4)), n_thin = ceiling((n_iter - n_warm) / (max_save / n_chain)), init_range = 1,
+    floor(n_iter * 3 / 4)), n_thin = ceiling((n_iter - n_warm) / (max_save / n_chain)), init_range = 1,
   seed = 1, save_pars = c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar", "nu_geo",
-      "nu_geo_prior", "kappa", "sd_item", "sd_theta", "sd_theta_bar", "sd_gamma", "sd_innov_gamma",
-      "sd_innov_delta", "sd_innov_logsd", "sd_total", "theta_l2", "var_theta_bar_l2"),
-  parallel = TRUE, method = c("rstan", "optimize", "variational")) {
+    "nu_geo_prior", "kappa", "sd_item", "sd_theta", "sd_theta_bar", "sd_gamma", "sd_innov_gamma",
+    "sd_innov_delta", "sd_innov_logsd", "sd_total", "theta_l2", "var_theta_bar_l2"),
+  parallel = TRUE, method = "rstan") {
 
   requireNamespace("rstan", quietly = TRUE)
   rstan::rstan_options(auto_write = parallel)
@@ -32,38 +32,39 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
       options(mc.cores = parallel::detectCores())
   }
 
+  assertthat::assert_that(is_subset(method, c("rstan", "optimize")))
   message("Started: ", date())
-  if (identical(method, "rstan") || identical(method, c("rstan", "optimize", "variational"))) {
-      message("Running ", n_iter, " iterations in each of ", n_chain, " chains. Thinning at an interval of ",
-          n_thin, " with ", n_warm, " adaptation iterations.")
-      stan_out <- rstan::stan(model_code = stan_code, data = dgirt_data, iter = n_iter,
-          chains = n_chain, warmup = n_warm, thin = n_thin, verbose = FALSE, pars = save_pars,
-          seed = seed, init = "random", init_r = init_range)
-  } else if (identical(method, "optimize") || identical(method, "variational")) {
-      stan_out <- run_cmdstan(dgirt_data, method, n_iter, init_range, save_pars)
-  } else {
-      stop("Didn't recognize method")
-  }
+  stan_out <- switch(method,
+    "rstan" = use_rstan(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, seed, init_range),
+    "optimize" = use_cmdstan(dgirt_data, n_iter, init_range, save_pars))
   message("Ended: ", date())
-  if (inherits(stan_out, "stanfit")) {
-    stan_out <- attach_names(stan_out, dgirt_data)
-  }
+
   return(stan_out)
 }
 
-run_cmdstan <- function(dgirt_data, method, n_iter, init_range, save_pars) {
+use_rstan <- function(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, seed, init_range) {
+  message("Running ", n_iter, " iterations in each of ", n_chain, " chains. Thinning at an interval of ",
+    n_thin, " with ", n_warm, " adaptation iterations.")
+  stan_out <- rstan::stan(model_code = stan_code, data = dgirt_data, iter = n_iter,
+    chains = n_chain, warmup = n_warm, thin = n_thin, verbose = FALSE, pars = save_pars,
+    seed = seed, init = "random", init_r = init_range)
+  stan_out <- attach_names(stan_out, dgirt_data)
+  return(stan_out)
+}
+
+use_cmdstan <- function(dgirt_data, method, n_iter, init_range, save_pars) {
   dump_dgirt(dgirt_data)
   stan_args <- paste0(method, " iter=", n_iter, " init='", init_range,
-      "' data file=", get_dump_path(), " output file=", get_output_path())
+    "' data file=", get_dump_path(), " output file=", get_output_path())
   system2(get_dgirt_path(), stan_args)
   unlink(get_dump_path())
   if (file.exists(get_output_path())) {
-      stan_output <- read_cmdstan_output(get_output_path())
-      stan_output <- name_cmdstan_output(stan_output, dgirt_data, save_pars)
-      return(stan_output)
+    stan_output <- read_cmdstan_output(get_output_path())
+    stan_output <- name_cmdstan_output(stan_output, dgirt_data, save_pars)
+    return(stan_output)
   } else {
-      warning("cmdstan didn't write an output file; check its output for errors.")
-      return(NULL)
+    warning("cmdstan didn't write an output file; check its output for errors.")
+    return(NULL)
   }
 }
 
@@ -71,7 +72,7 @@ read_cmdstan_output <- function(path) {
   message("Reading results from disk.")
   cmdstan_output <- data.table::fread(path, skip = "lp__", sep = ",",
     header = FALSE)
-  stopifnot(nrow(cmdstan_output) > 0)
+  assertthat::not_empty(cmdstan_output)
   return(cmdstan_output)
 }
 
@@ -126,8 +127,8 @@ name_cmdstan_output <- function(stan_output, dgirt_data, save_pars) {
 }
 
 dump_dgirt <- function(dgirt_data) {
-  stopifnot(is.list(dgirt_data))
-  stopifnot(length(dgirt_data) > 0)
+  assertthat::assert_that(is.list(dgirt_data))
+  assertthat::not_empty(dgirt_data)
   dgirt_data$items <- NULL
   dgirt_data$groups <- NULL
   dgirt_data$time_id <- NULL
@@ -175,7 +176,7 @@ get_p_names <- function(dgirt_data) {
 
 name_group_means <- function(thetas, group_names, x_collapsed_group_names, t_names) {
   thetas$t <- rep(t_names, nrow(group_names))
-  thetas <- bind_cols(thetas,
+  thetas <- dplyr::bind_cols(thetas,
     group_names[rep(seq_len(nrow(group_names)), each = length(t_names)), ])
   group_regex <- gregexpr("(?<=_x_)([A-Za-z0-9_]+)(?=_x_[A-Za-z0-9_]+)",
     x_collapsed_group_names, perl = TRUE)
@@ -194,13 +195,13 @@ name_group_means <- function(thetas, group_names, x_collapsed_group_names, t_nam
 
 attach_names <- function(stanfit, dgirt_data) {
   if (is.null(stanfit)) {
-      warning("stan returned NULL")
+    warning("stan returned NULL")
   } else {
-      stanfit@.MISC$group <- dimnames(dgirt_data$MMM)[[3]]
-      stanfit@.MISC$group_names <- get_group_names(dgirt_data)
-      stanfit@.MISC$t_names <- get_t_names(dgirt_data)
-      stanfit@.MISC$q_names <- get_q_names(dgirt_data)
-      stanfit@.MISC$p_names <- get_p_names(dgirt_data)
+    stanfit@.MISC$group <- dimnames(dgirt_data$MMM)[[3]]
+    stanfit@.MISC$group_names <- get_group_names(dgirt_data)
+    stanfit@.MISC$t_names <- get_t_names(dgirt_data)
+    stanfit@.MISC$q_names <- get_q_names(dgirt_data)
+    stanfit@.MISC$p_names <- get_p_names(dgirt_data)
   }
   return(stanfit)
 }

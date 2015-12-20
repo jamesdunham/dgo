@@ -33,15 +33,15 @@
 #'     \item{min_surveys}{A positive integer giving the minimum surveys in which an item must appear to be used in estimation.}
 #'     \item{min_periods}{A positive integer giving the minimum periods in which an item must appear to be used in esimation.}
 #'   }
-#' @param Named `list` of modeling choices.
+#' @param params Named `list` of modeling choices.
 #'   \describe{
 #'     \item{separate_periods}{Logical for whether estimates should be pooled over time. No pooling if `TRUE`.}
 #'     \item{constant_item}{Logical for whether item parameters should be constant over time.}
 #'     \item{difficulty_count}{Number of difficulty parameters.}
-#'     \item{delta_tbar_prior_mean}{Prior mean of $\bar{\delta_t}$.}
-#'     \item{delta_tbar_prior_sd}{Prior standard deviation of $\bar{\delta_t}$.}
-#'     \item{innov_sd_delta_scale}{Prior scale of innovation parameter for standard deviation of $bar{\delta_t}$.}
-#'     \item{innov_sd_theta_scale{Prior scale of innovation for standard deviation of group ability parameter $bar{\theta_t}$.}
+#'     \item{delta_tbar_prior_mean}{Prior mean of $\\bar{\\delta_t}$.}
+#'     \item{delta_tbar_prior_sd}{Prior standard deviation of $\\bar{\\delta_t}$.}
+#'     \item{innov_sd_delta_scale}{Prior scale of innovation parameter for standard deviation of $\\bar{\\delta_t}$.}
+#'     \item{innov_sd_theta_scale}{Prior scale of innovation for standard deviation of group ability parameter $\\bar{\\theta_t}$.}
 #'   }
 #' @return \code{list} List formatted for `run_dgirt`.
 #' @export
@@ -128,12 +128,12 @@ format_data <- function(data = list(level1,
   MF_t <- model.frame(f0_t, data = level1, na.action = return)
   # Get frequency counts of factor combinations (reordered in factor order)
   xtab_t <- as.data.frame(table(MF_t))
-  stopifnot(checks$observed_periods[1] %in% as.character(xtab_t[[arg$time_id]]))
+  assertthat::assert_that(checks$observed_periods[1] %in% as.character(xtab_t[[arg$time_id]]))
   xtab <- xtab_t %>%
     dplyr::filter_(lazyeval::interp(~ x %in% y, x = as.name(arg$time_id),
       y = checks$observed_periods[1])) %>%
     dplyr::select_(.dots = c(arg$geo_id, arg$demo_id, arg$time_id))
-  stopifnot(nrow(xtab) > 0)
+  assertthat::not_empty(xtab)
 
   # Create a variable counting the number of responses given by each respondent in the data
   level1$n_responses <- count_respondent_trials(level1)
@@ -155,7 +155,7 @@ format_data <- function(data = list(level1,
   checks$nonmissing_t <- trials_by_period %>%
     dplyr::filter_(~valid_items == TRUE) %>%
     dplyr::select_(arg$time_id) %>%
-    unlist(as.character(.))
+    unlist(as.character())
 
   # NOTE: use_t must match nonmissing t at the moment
 
@@ -168,7 +168,7 @@ format_data <- function(data = list(level1,
 
   Gl2 <- count_level2_groups(arg$level2, xtab, arg)
   XX <- model.matrix(f0, xtab)
-  dimnames(XX)[[1]] = tidyr::unite_(xtab, "rowname",
+  dimnames(XX)[[1]] <- tidyr::unite_(xtab, "rowname",
     c(arg$geo_id, arg$demo_id), sep = "_x_")$rowname
 
   # NOTE: not implemented
@@ -237,20 +237,18 @@ as_tbl <- function(dataframe) {
   }
 }
 
-check_dimensions <- function(stan_data) {
-  with(stan_data, {
-    stopifnot(identical(length(n_vec), length(s_vec)))
-    stopifnot(identical(dim(NNl2), as.integer(c(T, Q, Gl2))))
-    stopifnot(identical(dim(SSl2), as.integer(c(T, Q, Gl2))))
-    stopifnot(identical(dim(MMM), c(T, Q, G)))
-    stopifnot(identical(dim(WT), as.integer(c(T, Gl2, G))))
-    stopifnot(identical(dim(l2_only), c(T, Q)))
-    stopifnot(identical(dim(XX), c(G, P)))
-    stopifnot(identical(dim(ZZ), c(T, P, H)))
-    stopifnot(identical(dim(ZZ_prior), c(T, P, H)))
-    stopifnot(!is.null(constant_item))
-    stopifnot(!is.null(separate_t))
-    })
+check_dimensions <- function(d) {
+    assertthat::assert_that(equal_length(d$n_vec, d$s_vec))
+    assertthat::are_equal(dim(d$NNl2), as.integer(c(d$T, d$Q, d$Gl2)))
+    assertthat::are_equal(dim(d$SSl2), as.integer(c(d$T, d$Q, d$Gl2)))
+    assertthat::are_equal(dim(d$MMM), c(d$T, d$Q, d$G))
+    assertthat::are_equal(dim(d$WT), as.integer(c(d$T, d$Gl2, d$G)))
+    assertthat::are_equal(dim(d$l2_only), c(d$T, d$Q))
+    assertthat::are_equal(dim(d$XX), c(d$G, d$P))
+    assertthat::are_equal(dim(d$ZZ), c(d$T, d$P, d$H))
+    assertthat::are_equal(dim(d$ZZ_prior), c(d$T, d$P, d$H))
+    assertthat::not_empty(d$constant_item)
+    assertthat::not_empty(d$separate_t)
 }
 
 check_restrictions <- function(level1, .arg) {
@@ -279,7 +277,7 @@ get_question_periods <- function(.data, .arg) {
 }
 
 get_rare_items_over_t <- function(.checks, .arg) {
-  stopifnot(is.integer(.arg$min_periods))
+  assertthat::assert_that(is.integer(.arg$min_periods))
   q_t_count <- colSums(dplyr::select_(.checks$q_when_asked,
     lazyeval::interp(~-one_of(v), v = .arg$time_id)))
   q_rare <- names(q_t_count)[q_t_count < .arg$min_periods]
@@ -303,7 +301,7 @@ get_rare_items_over_polls <- function(.checks, ..arg) {
 
 get_t <- function(t_data) {
   observed_t <- unlist(t_data)
-  stopifnot(is.factor(observed_t))
+  assertthat::assert_that(is.factor(observed_t))
   observed_t <- droplevels(observed_t)
   levels(observed_t)
 }
@@ -323,7 +321,7 @@ get_missing_respondents <- function(item_data) {
 }
 
 summarize_design_effects <- function(.data, .arg) {
-  stopifnot(is.numeric(.data[[.arg$survey_weight]]))
+  assertthat::assert_that(is.numeric(.data[[.arg$survey_weight]]))
   de_table <- dplyr::as.tbl(.data) %>%
     dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
     dplyr::select_(.arg$survey_weight) %>%
@@ -373,11 +371,11 @@ summarize_trial_counts <- function(.data, design_effects, group_grid, .arg) {
 summarize_mean_y <- function(level1, group_grid, .arg) {
   mean_y <- level1 %>%
     dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
-    dplyr::select_(~matches('_gt\\d+$'), ~n_responses, .arg$survey_weight) %>%
+    dplyr::select_(~matches("_gt\\d+$"), ~n_responses, .arg$survey_weight) %>%
     dplyr::mutate_("weight" = lazyeval::interp(~ w / n,
       w = as.name(.arg$survey_weight), n = quote(n_responses))) %>%
-    dplyr::summarise_each_(dplyr::funs(weighted.mean(as.vector(.), weight,
-      na.rm = TRUE)), vars = "contains('_gt')") %>%
+    dplyr::summarise_each_(dplyr::funs("weighted.mean(as.vector(.), weight,
+      na.rm = TRUE)"), vars = "contains(\"_gt\")") %>%
     dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
     dplyr::mutate_each(~replaceNaN) %>%
     dplyr::ungroup() %>%
@@ -395,9 +393,9 @@ summarize_mean_y <- function(level1, group_grid, .arg) {
 
 summarize_success_count <- function(trial_counts, mean_y, .arg) {
   # Confirm row order is identical before taking product
-  stopifnot(identical(
+  assertthat::are_equal(
       dplyr::select_(mean_y, .dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)),
-      dplyr::select_(trial_counts, .dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id))))
+      dplyr::select_(trial_counts, .dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)))
   success_counts <- get_gt(trial_counts) * get_gt(mean_y)
   success_counts <- success_counts %>%
     # Reattach our identifiers
@@ -477,10 +475,8 @@ make_missingness_array <- function(ns_long, group_grid, .arg) {
     !(dimnames(MMM)[[2]] == "NA"),
     !(dimnames(MMM)[[3]] == "NA")]
   # No cells should be NA either
-  if (any(is.na(MMM))) {
-    stop("No cell of MMM should be NA")
-  }
-  MMM
+  assertthat::noNA(MMM)
+  return(MMM)
 }
 
 make_dummy_weight_matrix <- function(T, Gl2, G) {
@@ -592,15 +588,17 @@ set_use_t <- function(.data, .arg) {
 }
 
 subset_to_estimation_periods <- function(.data, .arg) {
-  stopifnot(is.data.frame(.data))
-  stopifnot(is.factor(.data[[.arg$time_id]]))
-  stopifnot(is.character(.arg$use_t))
+  assertthat::assert_that(is.data.frame(.data))
+  assertthat::assert_that(assertthat::not_empty(.data))
+  assertthat::assert_that(is_valid_string(.arg$time_id))
+  assertthat::assert_that(is.factor(.data[[.arg$time_id]]))
+  assertthat::assert_that(all_valid_strings(.arg$use_t))
   periods_filter <- as.character(.data[[.arg$time_id]]) %in%
     as.character(.arg$use_t)
   .data <- .data %>% dplyr::filter(periods_filter)
-  stopifnot(nrow(.data) > 0)
+  assertthat::assert_that(assertthat::not_empty(.data))
   .data <- droplevels(.data)
-  .data
+  return(.data)
 }
 
 drop_rows_missing_covariates <- function(.data, .arg) {
@@ -632,7 +630,7 @@ subset_to_observed_geo_periods <- function(.arg) {
     .arg$level2 <- .arg$level2 %>%
       dplyr::filter_(lazyeval::interp(~geo %in% .arg$use_geo,
         geo = as.name(.arg$geo_id)))
-    stopifnot(nrow(.arg$level2) > 0)
+    assertthat::not_empty(.arg$level2)
   }
   .arg$level2[[.arg$geo_id]] <- droplevels(.arg$level2[[.arg$geo_id]])
   return(.arg$level2)
@@ -640,7 +638,7 @@ subset_to_observed_geo_periods <- function(.arg) {
 
 get_gt <- function(level1) {
   gts <- level1 %>% dplyr::select_(lazyeval::interp(~matches(x), x = "_gt\\d+$"))
-  stopifnot(ncol(gts) > 0)
+  assertthat::not_empty(gts)
   return(gts)
 }
 
@@ -686,11 +684,10 @@ apply_restrictions <- function(.data, .checks, .arg) {
   # Drop variables that don"t satisfy min_periods requirement
   .data <- drop_rare_items_over_t(.data, .checks$q_rare.t, .arg)
 
-  if (length(.arg$items) == 0) stop("no response variables left")
-  if (nrow(.data) == 0) stop("no rows left")
+  assertthat::not_empty(.arg$items)
+  assertthat::not_empty(.data)
 
   .data <- add_survey_period_id(.data, .arg)
-
   .data <- drop_rare_items_over_polls(.data, .checks$q_rare.polls, .arg)
 
   return(.data)
@@ -706,7 +703,7 @@ count_level2_groups <- function(level2, xtab, .arg) {
   } else {
     Gl2 <- nlevels_vectorized(.arg$level2, .arg$demo_id)
     if (Gl2 == 0) Gl2 <- 1
-    stopifnot(Gl2 > 0)
+    assertthat::assert_that(Gl2 > 0)
     return(Gl2)
   }
 }

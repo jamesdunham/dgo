@@ -12,31 +12,26 @@ create_design_effects <- function(x) {
 
 # Create design matrix for model of hierarchical coefficients
 create_l2_design_matrix <- function(.XX, .arg) {
-  # .XX = XX
-  # .arg = arg
   if (is.null(.arg$level2_modifiers)) {
     zz.names <- list(.arg$use_t, dimnames(.XX)[[2]], "Zero")
     ZZ <- array(data = 0, dim = lapply(zz.names, length),
       dimnames = zz.names)
   } else {
-    stopifnot(!is.null(.arg$level2))
-    # stopifnot(all(c(.arg$time_id, .arg$geo_id) %in% names(.arg$level2)))
-    stopifnot(all(.arg$level2_modifiers %in% names(.arg$level2)))
-    level2 = .arg$level2 %>% dplyr::select_(.arg$time_id, .arg$geo_id, .arg$level2_modifiers)
+    assertthat::not_empty(.arg$level2)
+    assertthat::assert_that(is_subset(.arg$level2_modifiers, names(.arg$level2)))
+    level2 <- .arg$level2 %>% dplyr::select_(.arg$time_id, .arg$geo_id, .arg$level2_modifiers)
     ZZ <- suppressWarnings(reshape2::melt(level2, id.vars = c(.arg$time_id, .arg$geo_id)))
-    stopifnot(inherits(ZZ$value, "numeric"))
+    assertthat::assert_that(is.numeric(ZZ$value))
     ZZ <- suppressWarnings(reshape2::acast(ZZ, formula(paste(.arg$time_id,
             .arg$geo_id, "variable", sep = " ~ "))))
   }
-  if (any(is.na(ZZ))) {
-    stop("No cell of ZZ should be NA")
-  }
+  assertthat::assert_that(all(notNA(ZZ)))
   return(ZZ)
 }
 
 # Create 'greater than' indicators
 create_gt_variables <- function(d, .items){
-  out = lapply(.items, function(stub) {
+  out <- lapply(.items, function(stub) {
     if (is.factor(d[[stub]])) {
       item_levels <- levels(d[[stub]])
       values <- as.numeric(d[[stub]])
@@ -51,7 +46,7 @@ create_gt_variables <- function(d, .items){
     })
     setNames(gt_cols, gt_names)
   })
-  bind_cols(out)
+  dplyr::bind_cols(out)
 }
 
 # Replace NA in a vector with 0
@@ -69,7 +64,6 @@ countValid <- function(x) {
     sum(!is.na(x))
 }
 
-# Check if any !is.na over x
 anyValid <- function(x) {
   any(!is.na(x))
 }

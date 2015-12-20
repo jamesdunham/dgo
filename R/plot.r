@@ -1,4 +1,3 @@
-# pidnc = read_csv(paste0(git.path, '/checks/pidnc-by-svy.csv'))
 # pidnc.melt = melt(pidnc, id.vars = c('svy.id', 'year')) %>%
 #   filter(grepl('p\\.', variable)) %>%
 #   mutate(variable = sub('p.', '', variable, fixed = T)) %>%

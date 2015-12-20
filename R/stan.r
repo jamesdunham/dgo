@@ -1,3 +1,4 @@
+# nolint start
 stan_code <- "
   data {
     int<lower=1> G; ## number of covariate groups
@@ -222,3 +223,4 @@ stan_code <- "
     }
   }
   "
+# nolint end

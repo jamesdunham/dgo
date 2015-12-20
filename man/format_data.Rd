@@ -49,6 +49,17 @@ format_data(data = list(level1, level2 = NULL, targets = NULL),
   \item{min_surveys}{A positive integer giving the minimum surveys in which an item must appear to be used in estimation.}
   \item{min_periods}{A positive integer giving the minimum periods in which an item must appear to be used in esimation.}
 }}
+
+\item{params}{Named `list` of modeling choices.
+\describe{
+  \item{separate_periods}{Logical for whether estimates should be pooled over time. No pooling if `TRUE`.}
+  \item{constant_item}{Logical for whether item parameters should be constant over time.}
+  \item{difficulty_count}{Number of difficulty parameters.}
+  \item{delta_tbar_prior_mean}{Prior mean of $\\bar{\\delta_t}$.}
+  \item{delta_tbar_prior_sd}{Prior standard deviation of $\\bar{\\delta_t}$.}
+  \item{innov_sd_delta_scale}{Prior scale of innovation parameter for standard deviation of $\\bar{\\delta_t}$.}
+  \item{innov_sd_theta_scale}{Prior scale of innovation for standard deviation of group ability parameter $\\bar{\\theta_t}$.}
+}}
 }
 \value{
 \code{list} List formatted for `run_dgirt`.

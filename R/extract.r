@@ -7,9 +7,8 @@
 #' @return Return value of `rstan::extract` with names attached to its elements.
 #' @export
 extract_dgirt <- function(dgirt_out) {
-  if (!inherits(dgirt_out, "stanfit")) {
-    stop("Input must be stanfit-class. Did you use method = \"optimize\"?")
-  }
+  assertthat::assert_that(inherits(dgirt_out, "stanfit"))
+
   # theta_bar, group means, is T x G
   dgirt_extract <- rstan::extract(dgirt_out)
   dimnames(dgirt_extract$theta_bar)[[2]] <- dgirt_out@.MISC$t_names
