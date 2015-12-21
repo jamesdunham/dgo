@@ -12,9 +12,9 @@
 #' }
 #'
 #' @docType data
-#' @name state_targets
-#' @usage state_targets
+#' @name state_demographics
+#' @usage state_demographics
 #' @format A \code{dplyr} \code{tbl_df} with 312,120 rows and 7 columns.
 #' @examples
-#' state_targets
+#' state_demographics
 NULL
