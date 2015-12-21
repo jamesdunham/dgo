@@ -33,8 +33,7 @@ dgirt is an R package for dynamic group-level IRT models, as developed in [Caugh
 if (packageVersion("devtools") < 1.6) {
   install.packages("devtools")
 }
-# devtools::install_github("jamesdunham/dgirt")
-devtools::load_all()
+devtools::install_github("jamesdunham/dgirt@milestone")
 ```
 
 Get updates by reinstalling. dgirt is in early stages and under development.
@@ -106,14 +105,14 @@ returns a `stanfit` object.
 To extract samples from the result of `dgirt` we can use `extract_dgirt`, which
 returns a list whose elements are named arrays and matrices containing
 estimates of model parameters. We'll take a look at `theta_bar`, the group
-means ($\bar{\theta}_g$).
+means ($\\bar{\\theta}_g$).
 
 ```{r, dgirt-extract}
 dgirt_extract = extract_dgirt(dgirt_estimates)
 str(dgirt_extract$theta_bar)
 ```
 
-`theta_bar` is 3 $\times$ 9 $\times$ 306:
+`theta_bar` is 3 $\\times$ 9 $\\times$ 306:
 
   * The first dimension of the array is indexed by sampler iteration. We ran
     the sampler for 10 iterations and by default discarded 7 as warm-ups, so
@@ -121,7 +120,7 @@ str(dgirt_extract$theta_bar)
   * The array's second dimension is indexed by time period, here the nine years
     2006-2014.
   * The third dimension, indexed by covariate combination, is length-306, or
-    2 $\times$ 3 $\times$ 51. We have 2 levels in our first covariate
+    2 $\\times$ 3 $\\times$ 51. We have 2 levels in our first covariate
     `D_gender`, 3 levels (excluding `NA`) in our second covariate `D_race_new`,
     and 51 levels in the geographic identifier.
 
@@ -145,9 +144,9 @@ head(state_demographics)
 ```
 
 ```{r, poststratify}
-theta_bars = point_estimates$theta_bar %>%
-  dplyr::rename(female = group_1, race = group_2, year = t) %>%
-  dplyr::mutate(year = as.integer(year), geo = as.factor(geo), female = as.factor(female), race = as.factor(race))
+# theta_bars = point_estimates$theta_bar %>%
+#   dplyr::rename(female = group_1, race = group_2, year = t) %>%
+#   dplyr::mutate(year = as.integer(year), geo = as.factor(geo), female = as.factor(female), race = as.factor(race))
 # group_means = poststratify(
 #   group_means = theta_bars,
 #   targets =  state_demographics, 
