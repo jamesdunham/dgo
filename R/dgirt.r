@@ -1,6 +1,6 @@
 #' Estimate dynamic group-level IRT model
 #'
-#' @param dgirt_data Data prepared for use with \code{run_dgirt} by \code{format_data}.
+#' @param dgirt_data Data prepared for use with `dgirt` by `wrangle`.
 #' @param n_iter See \code{iter} in \code{rstan::stan}.
 #' @param n_chain See \code{chains} in \code{rstan::stan}.
 #' @param n_warm See \code{warmup} in \code{rstan::stan}.
@@ -19,7 +19,7 @@
 #' @return An object of S4 class `stanfit` as returned by `rstan::stan`.
 #' @import rstan
 #' @export
-run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n_warm = min(10000,
+dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n_warm = min(10000,
     floor(n_iter * 3 / 4)), n_thin = ceiling((n_iter - n_warm) / (max_save / n_chain)), init_range = 1,
   seed = 1, save_pars = c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar", "nu_geo",
     "nu_geo_prior", "kappa", "sd_item", "sd_theta", "sd_theta_bar", "sd_gamma", "sd_innov_gamma",
@@ -35,8 +35,8 @@ run_dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n
   assertthat::assert_that(is_subset(method, c("rstan", "optimize")))
   message("Started: ", date())
   stan_out <- switch(method,
-    "rstan" = use_rstan(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, seed, init_range),
-    "optimize" = use_cmdstan(dgirt_data, n_iter, init_range, save_pars))
+    rstan = use_rstan(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, seed, init_range),
+    optimize = use_cmdstan(dgirt_data, n_iter, init_range, save_pars))
   message("Ended: ", date())
 
   return(stan_out)
@@ -52,10 +52,11 @@ use_rstan <- function(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, se
   return(stan_out)
 }
 
-use_cmdstan <- function(dgirt_data, method, n_iter, init_range, save_pars) {
+use_cmdstan <- function(dgirt_data, n_iter, init_range, save_pars) {
   dump_dgirt(dgirt_data)
-  stan_args <- paste0(method, " iter=", n_iter, " init='", init_range,
+  stan_args <- paste0("optimize iter=", n_iter, " init='", init_range,
     "' data file=", get_dump_path(), " output file=", get_output_path())
+  assertthat::assert_that(assertthat::is.readable(get_dgirt_path()))
   system2(get_dgirt_path(), stan_args)
   unlink(get_dump_path())
   if (file.exists(get_output_path())) {
@@ -71,17 +72,19 @@ use_cmdstan <- function(dgirt_data, method, n_iter, init_range, save_pars) {
 read_cmdstan_output <- function(path) {
   message("Reading results from disk.")
   cmdstan_output <- data.table::fread(path, skip = "lp__", sep = ",",
-    header = FALSE)
-  assertthat::not_empty(cmdstan_output)
+    header = TRUE)
+  assertthat::assert_that(assertthat::not_empty(cmdstan_output))
+  assertthat::assert_that(identical(nrow(cmdstan_output), 1L))
   return(cmdstan_output)
 }
 
 name_cmdstan_output <- function(stan_output, dgirt_data, save_pars) {
   output_names <- dimnames(stan_output)[[2]]
   par_regex <- paste0("^(", paste0(save_pars, collapse = "|"), ")(_raw)*[.0-9]*$")
-  save_pars_matches <- grep(par_regex, output_names, perl = TRUE, value = TRUE)
-  stan_output <- stan_output %>% dplyr::select_(~one_of(save_pars_matches))
-  parname_stubs <- sort(unique(gsub(par_regex, "\\1", save_pars_matches, perl = TRUE)))
+  parameter_names <- grep(par_regex, output_names, perl = TRUE, value = TRUE)
+  assertthat::assert_that(all_valid_strings(parameter_names))
+  stan_output <- stan_output %>% dplyr::select_(~one_of(parameter_names))
+  parname_stubs <- sort(unique(gsub(par_regex, "\\1", parameter_names, perl = TRUE)))
 
   stan_output <- lapply(parname_stubs, function(parname) {
     this_par <- stan_output %>%

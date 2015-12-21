@@ -1,4 +1,4 @@
-#'Format data for use with dgirt
+#' Format data for use with dgirt
 #'
 #' @param data Named `list` of `data.frame`s containing:
 #'   \describe{
@@ -43,12 +43,12 @@
 #'     \item{innov_sd_delta_scale}{Prior scale of innovation parameter for standard deviation of $\\bar{\\delta_t}$.}
 #'     \item{innov_sd_theta_scale}{Prior scale of innovation for standard deviation of group ability parameter $\\bar{\\theta_t}$.}
 #'   }
-#' @return \code{list} List formatted for `run_dgirt`.
+#' @return \code{list} List formatted for `dgirt`.
 #' @export
 
-format_data <- function(data = list(level1,
-                                    level2 = NULL,
-                                    targets = NULL),
+wrangle <- function(data = list(level1,
+                                level2 = NULL,
+                                targets = NULL),
                        vars = list(items,
                                    groups,
                                    time_id,
@@ -259,11 +259,11 @@ check_restrictions <- function(level1, .arg) {
   # And which question columns have no valid responses
   checks$q_all_missing <- get_missing_items(level1, .arg$items)
 
-  # And which variables don"t satisfy the min_periods requirement
+  # And which variables don't satisfy the min_periods requirement
   checks$q_when_asked <- get_question_periods(level1, .arg)
   checks$q_rare.t <- get_rare_items_over_t(checks, .arg)
 
-  # And which variables don"t satisfy the min_surveys requirement
+  # And which variables don't satisfy the min_surveys requirement
   checks$q_which_asked <- get_question_polls(level1, .arg)
   checks$q_rare.polls <- get_rare_items_over_polls(checks, .arg)
 
@@ -374,8 +374,8 @@ summarize_mean_y <- function(level1, group_grid, .arg) {
     dplyr::select_(~matches("_gt\\d+$"), ~n_responses, .arg$survey_weight) %>%
     dplyr::mutate_("weight" = lazyeval::interp(~ w / n,
       w = as.name(.arg$survey_weight), n = quote(n_responses))) %>%
-    dplyr::summarise_each_(dplyr::funs("weighted.mean(as.vector(.), weight,
-      na.rm = TRUE)"), vars = "contains(\"_gt\")") %>%
+    dplyr::summarise_each_(~weighted.mean(as.vector(.), weight,
+      na.rm = TRUE), vars = "contains(\"_gt\")") %>%
     dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
     dplyr::mutate_each(~replaceNaN) %>%
     dplyr::ungroup() %>%
@@ -518,12 +518,10 @@ factorize_arg_vars <- function(.data, .arg) {
 
 drop_missing_respondents <- function(.data, .arg) {
   .data <- .data %>% dplyr::filter_(lazyeval::interp(~!none_valid))
-  if (!.arg$silent) {
-    message(sprintf(ngettext(sum(.data$none_valid),
-          "%i row has no responses",
-          "%i rows have no responses"),
-        sum(.data$none_valid)))
-  }
+  message(sprintf(ngettext(sum(.data$none_valid),
+        "%i row has no responses",
+        "%i rows have no responses"),
+      sum(.data$none_valid)))
   .data
 }
 
@@ -533,13 +531,11 @@ drop_missing_items <- function(.data, q_all_missing, .arg) {
     .data <- .data %>% dplyr::select_(lazyeval::interp(~-one_of(v),
         v = q_all_missing))
   }
-  if (!.arg$silent) {
-    message(sprintf(ngettext(length(q_all_missing),
-          "%i question, %s, has no responses",
-          "%i questions have no responses: %s"),
-        length(q_all_missing),
-        stringi::stri_c(q_all_missing, collapse = ", ")))
-  }
+  message(sprintf(ngettext(length(q_all_missing),
+        "%i question, %s, has no responses",
+        "%i questions have no responses: %s"),
+      length(q_all_missing),
+      stringi::stri_c(q_all_missing, collapse = ", ")))
   .data
 }
 
@@ -549,13 +545,11 @@ drop_rare_items_over_t <- function(.data, q_rare, .arg) {
     .data <- .data %>% dplyr::select_(lazyeval::interp(~-one_of(v),
         v = q_rare))
   }
-  if (!.arg$silent) {
-    message(sprintf(ngettext(length(q_rare),
-          "%i question fails min_periods requirement (%i): %s",
-          "%i questions fail min_periods requirement (%i): %s"),
-        length(q_rare), .arg$min_periods,
-        stringi::stri_c(q_rare, collapse = ", ")))
-  }
+  message(sprintf(ngettext(length(q_rare),
+        "%i question fails min_periods requirement (%i): %s",
+        "%i questions fail min_periods requirement (%i): %s"),
+      length(q_rare), .arg$min_periods,
+      stringi::stri_c(q_rare, collapse = ", ")))
   .data
 }
 
@@ -564,14 +558,12 @@ drop_rare_items_over_polls <- function(.data, .lt_min_surveys, .arg) {
   if (length(.lt_min_surveys) > 0) {
     .data <- .data %>% dplyr::select_(lazyeval::interp(~-one_of(v),
         v = .lt_min_surveys))
-    if (!.arg$silent) {
-    }
-    message(sprintf(ngettext(length(.lt_min_surveys),
-          "%i question fails min_surveys requirement (%i): %s",
-          "%i questions fail min_surveys requirement (%i): %s"),
-        length(.lt_min_surveys), .arg$min_surveys,
-        stringi::stri_c(.lt_min_surveys, collapse = ", ")))
   }
+  message(sprintf(ngettext(length(.lt_min_surveys),
+        "%i question fails min_surveys requirement (%i): %s",
+        "%i questions fail min_surveys requirement (%i): %s"),
+      length(.lt_min_surveys), .arg$min_surveys,
+      stringi::stri_c(.lt_min_surveys, collapse = ", ")))
   .data
 }
 

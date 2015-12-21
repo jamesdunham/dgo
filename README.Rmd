@@ -5,106 +5,110 @@ output:
 ---
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# dgirt: dynamic group-level IRT models in R
+# dgirt
 
-```{r, echo = FALSE}
+```{r, knitr-options, echo = FALSE}
 # rmarkdown::render("~/projects/dgirt/README.Rmd")
 knitr::opts_chunk$set(
+  echo = TRUE,
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README-"
-)
+  fig.path = "README-")
 ```
+dgirt is an R package for dynamic group-level IRT models, as developed in [Caughey and Warshaw
+2014](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html):
+
+> Over the past eight decades, millions of people have been surveyed on their political opinions. Until recently,
+> however, polls rarely included enough questions in a given domain to apply scaling techniques such as IRT
+> models at the individual level, preventing scholars from taking full advantage of historical survey data. To
+> address this problem, we develop a Bayesian group-level IRT approach that models latent traits at the level
+> of demographic and/or geographic groups rather than individuals. We use a hierarchical model to borrow
+> strength cross-sectionally and dynamic linear models to do so across time. The group-level estimates can
+> be weighted to generate estimates for geographic units. This framework opens up vast new areas of
+> research on historical public opinion, especially at the subnational level.
 
 ## Installation
 
-```{r}
+```{r, install-dgirt}
 if (packageVersion("devtools") < 1.6) {
   install.packages("devtools")
 }
-devtools::install_github("jamesdunham/dgirt")
+# devtools::install_github("jamesdunham/dgirt")
+devtools::load_all()
 ```
 
-Get updates by reinstalling.
+Get updates by reinstalling. dgirt is in early stages and under development.
+See [NEWS](NEWS.md).
 
 ## Quick start
 
-See `?format_data`, `?run_dgirt`, and `?extract_dgirt`
+  * `wrangle` prepares data
+  * `dgirt` fits models
+  * `poststratify` reweights estimates
 
 ## Use
 
-The following vignette illustrates a simple `dgirt` workflow. We'll reformat some input data via `format_data`, and then apply a dynamic group-level IRT
-model via `run_dgirt`. For derivation of the model see
-[Caughey and Warshaw
-2014](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html).
+`state_opinion` is a dataset included with `dgirt` in which rows correspond to survey
+responses from individuals. 
 
-## Diving In
-
-Let's use one of the datasets included with `dgirt`.
-```{r}
+```{r, load-and-attach}
 library(dgirt)
-data(states)
+data(state_opinion)
 ```
 
-`states` is a `data.frame` in which rows correspond to survey responses from
-individuals. 
-
-```{r}
-dplyr::glimpse(states)
-```
-
-Data formatted in this way need to be restructured with the `format_data`
-function.  We'll pass `states` to `format_data`'s `data` argument, which takes
-a list of data to be modeled. Our table of survey responses will be an element
-named `level1`, for the lowest hierarchical level in the model.
+Data formatted in this way need to be restructured with the `wrangle` function.
+We'll pass `state_opinion` to `wrangle`'s `data` argument, which takes a list of data
+to be used in modeling. Our table of survey responses will be an element named
+`level1`, for the lowest hierarchical level in the model. (Note: at the moment,
+there are limitations on model specifications. Level-one data is required and a
+second hierarchical level is optional.)
 
 We'll use the `vars` argument to identify variables of importance in `data`
 (e.g. which represent item responses). `vars` is a list of named character
 vectors with (at least) these elements:
 
-  * `items`: Names of item response variables $$y_{iq}$$ in `data$level1`.
+  * `items`: Names of item response variables $y_{iq}$ in `data$level1`.
   * `groups`: Names of respondent characteristic variables in `data$level1`.
-    Note: at this time `format_data` requires that the user exclude the
-    geographic indicator from `groups` and name it instead in `geo_id`. this
-    will change in a future version once modeling of any group predictor is
-    supported.
+     (Note: at this time, `wrangle` requires that the user exclude the
+     geographic indicator from `groups` and name it instead in `geo_id`. 
+     Modeling any group predictor is coming.)
   * `time_id`: Name of time period variable in `data$level1`.
   * `geo_id`: Name of geographic identifier variable in `data$level1`.
   * `survey_id`: Name of survey identifier variable in `data$level1`.
   * `survey_weight`: Name of weight variable $w_i$ in `data$level1`.
 
-All the names of item response variables happen to start with "Q\_", so we'll
+The names of the item response variables start with "q\_", so we'll
 pass them using `grep`.
 
-```{r}
-states_fmt = format_data(
-  data = list(level1 = states),
-  vars = list(items = grep("^Q_", colnames(states), value = TRUE),
-              groups = c("D_gender", "D_race_new"),
-              time_id = "D_year",
-              geo_id = "D_abb",
-              survey_id = "D_source",
-              survey_weight = "D_weight"))
+```{r, wrangle}
+state_opinion_fmt = wrangle(
+  data = list(level1 = state_opinion),
+  vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
+              groups = c("female", "race"),
+              time_id = "year",
+              geo_id = "state",
+              survey_id = "source",
+              survey_weight = "weight"))
 ```
 
-The return value of `format_data` is a list of objects that `run_dgirt` expects
-as its first argument. We'll also set its `n_iter` and `n_chain` arguments to
-minimize its run time, but otherwise rely on the defaults.
+`wrangle` returns a list of objects that `dgirt` expects as its first argument.
+We'll also set its `n_iter` and `n_chain` arguments to minimize its run time,
+but otherwise rely on the defaults.
 
-```{r}
-dgirt_estimates = run_dgirt(states_fmt, n_iter = 50, n_chain = 1)
+```{r, dgirt-rstan}
+dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 10, n_chain = 1)
 ```
 
-`rstan` will report any problems it encounters when compiling the model and
-sampling. If sampling is successful, `run_dgirt` will return the `stanfit`
-object returned by `rstan::rstan`.
+`dgirt` calls `rstan`, which reports any problems it encounters when
+compiling the model and sampling. If sampling is successful, `dgirt` 
+returns a `stanfit` object. 
 
-To extract samples from the result of `run_dgirt` we can use `extract_dgirt`,
-which returns a list whose elements are named arrays and matrices containing
+To extract samples from the result of `dgirt` we can use `extract_dgirt`, which
+returns a list whose elements are named arrays and matrices containing
 estimates of model parameters. We'll take a look at `theta_bar`, the group
 means ($\bar{\theta}_g$).
 
-```{r}
+```{r, dgirt-extract}
 dgirt_extract = extract_dgirt(dgirt_estimates)
 str(dgirt_extract$theta_bar)
 ```
@@ -123,12 +127,30 @@ str(dgirt_extract$theta_bar)
 
 ## `cmdstan`
 
-We can use the `method` argument of `run_dgirt` to choose an alternative to
-MCMC sampling if `cmdstan` is available. See
+We can use the `method` argument of `dgirt` to choose an alternative to MCMC
+sampling if `cmdstan` is available. See
 http://mc-stan.org/interfaces/cmdstan.html for installation instructions. For
 example, setting `method = "optimize"` will call `cmdstan optimize`.
 
-```{r}
-dgirt_estimates = run_dgirt(states_fmt, n_iter = 100, n_chain = 1, method
-    = "optimize", init_range = 0.5)
+```{r, dgirt-optimize}
+point_estimates = dgirt(state_opinion_fmt, n_iter = 100, n_chain = 1, method = "optimize", init_range = 0.5)
+head(point_estimates$theta_bar)
+```
+
+## `poststratify`
+
+```{r, load-demograhpics}
+data(state_demographics)
+head(state_demographics)
+```
+
+```{r, poststratify}
+theta_bars = point_estimates$theta_bar %>%
+  dplyr::rename(female = group_1, race = group_2, year = t) %>%
+  dplyr::mutate(year = as.integer(year), geo = as.factor(geo), female = as.factor(female), race = as.factor(race))
+# group_means = poststratify(
+#   group_means = theta_bars,
+#   targets =  state_demographics, 
+#   variables = "year",
+#   prop_var = "proportion")
 ```

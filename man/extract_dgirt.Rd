@@ -7,7 +7,7 @@
 extract_dgirt(dgirt_out)
 }
 \arguments{
-\item{dgirt_out}{Return value of `run_dgirt`.}
+\item{dgirt_out}{Return value of `dgirt`.}
 }
 \value{
 Return value of `rstan::extract` with names attached to its elements.
@@ -15,6 +15,6 @@ Return value of `rstan::extract` with names attached to its elements.
 \description{
 `extract_dgirt` is a wrapper for rstan::extract that attaches
 names to parameters according to the values of the data passed
-to `run_dgirt`.
+to `dgirt`.
 }
 

@@ -3,7 +3,7 @@
 #' Strata in the sampled data must be a subset of those in the population targets.
 #' There can't be missingness in the stratifying variables.
 #' @param .level1 \code{data.frame} with survey responses at the lowest level of aggregation.
-#' @param .arg Arguments to `format_data`
+#' @param .arg Arguments to `wrangle`
 #' @return \code{data_frame} of survey responses with new weights normalized to have mean 1 in each period.
 create_weights <- function(.level1, .arg) {
 
