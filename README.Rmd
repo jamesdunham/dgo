@@ -132,7 +132,8 @@ http://mc-stan.org/interfaces/cmdstan.html for installation instructions. For
 example, setting `method = "optimize"` will call `cmdstan optimize`.
 
 ```{r, dgirt-optimize}
-point_estimates = dgirt(state_opinion_fmt, n_iter = 100, n_chain = 1, method = "optimize", init_range = 0.5)
+point_estimates = dgirt(state_opinion_fmt, n_iter = 100, method = "optimize",
+  init_range = 1)
 head(point_estimates$theta_bar)
 ```
 
@@ -146,7 +147,7 @@ head(state_demographics)
 ```{r, poststratify}
 # theta_bars = point_estimates$theta_bar %>%
 #   dplyr::rename(female = group_1, race = group_2, year = t) %>%
-#   dplyr::mutate(year = as.integer(year), geo = as.factor(geo), female = as.factor(female), race = as.factor(race))
+#   dplyr::mutate(year = as.integer(year), state = as.factor(geo), female = as.factor(female), race = as.factor(race))
 # group_means = poststratify(
 #   group_means = theta_bars,
 #   targets =  state_demographics, 

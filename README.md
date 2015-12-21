@@ -18,7 +18,7 @@ devtools::install_github("jamesdunham/dgirt@milestone")
 #> Installing dgirt
 #> '/Library/Frameworks/R.framework/Resources/bin/R' --no-site-file  \
 #>   --no-environ --no-save --no-restore CMD INSTALL  \
-#>   '/private/var/folders/2p/_d3c95qd6ljg28j1f5l2jqxm0000gn/T/RtmpSFAYZN/devtools38b92eb4fc12/jamesdunham-dgirt-513248f'  \
+#>   '/private/var/folders/2p/_d3c95qd6ljg28j1f5l2jqxm0000gn/T/RtmpsRsqv8/devtools45072cf00a11/jamesdunham-dgirt-a36dcf5'  \
 #>   --library='/Library/Frameworks/R.framework/Versions/3.2/Resources/library'  \
 #>   --install-tests 
 #> 
@@ -73,7 +73,7 @@ state_opinion_fmt = wrangle(
 
 ``` r
 dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 10, n_chain = 1)
-#> Started: Mon Dec 21 11:20:34 2015
+#> Started: Mon Dec 21 15:35:45 2015
 #> Running 10 iterations in each of 1 chains. Thinning at an interval of 1 with 7 adaptation iterations.
 #> 
 #> SAMPLING FOR MODEL '605ba6820a8c93e8038f6394fbb2c3e1' NOW (CHAIN 1).
@@ -88,9 +88,9 @@ dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 10, n_chain = 1)
 #> Chain 1, Iteration: 8 / 10 [ 80%]  (Sampling)
 #> Chain 1, Iteration: 9 / 10 [ 90%]  (Sampling)
 #> Chain 1, Iteration: 10 / 10 [100%]  (Sampling)
-#> #  Elapsed Time: 1.51887 seconds (Warm-up)
-#> #                0.292972 seconds (Sampling)
-#> #                1.81184 seconds (Total)
+#> #  Elapsed Time: 1.70047 seconds (Warm-up)
+#> #                0.311216 seconds (Sampling)
+#> #                2.01169 seconds (Total)
 #> The following numerical problems occured the indicated number of times after warmup on chain 1
 #>                                                                                      count
 #> validate transformed params: disc[1] is nan, but must be greater than or equal to 0      4
@@ -99,7 +99,7 @@ dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 10, n_chain = 1)
 #> When a numerical problem occurs, the Metropolis proposal gets rejected.
 #> However, by design Metropolis proposals sometimes get rejected even when there are no numerical problems.
 #> Thus, if the number in the 'count' column is small, do not ask about this message on stan-users.
-#> Ended: Mon Dec 21 11:20:38 2015
+#> Ended: Mon Dec 21 15:35:48 2015
 ```
 
 `dgirt` calls `rstan`, which reports any problems it encounters when compiling the model and sampling. If sampling is successful, `dgirt` returns a `stanfit` object.
@@ -128,21 +128,22 @@ str(dgirt_extract$theta_bar)
 We can use the `method` argument of `dgirt` to choose an alternative to MCMC sampling if `cmdstan` is available. See <http://mc-stan.org/interfaces/cmdstan.html> for installation instructions. For example, setting `method = "optimize"` will call `cmdstan optimize`.
 
 ``` r
-point_estimates = dgirt(state_opinion_fmt, n_iter = 100, n_chain = 1, method = "optimize", init_range = 0.5)
-#> Started: Mon Dec 21 11:20:38 2015
+point_estimates = dgirt(state_opinion_fmt, n_iter = 100, method = "optimize",
+  init_range = 1)
+#> Started: Mon Dec 21 15:35:48 2015
 #> Reading results from disk.
-#> Ended: Mon Dec 21 11:22:23 2015
+#> Ended: Mon Dec 21 15:37:00 2015
 head(point_estimates$theta_bar)
 #> Source: local data frame [6 x 7]
 #> 
-#>           param     value index     t   geo group_1 group_2
-#>          (fctr)     (dbl) (chr) (chr) (chr)   (chr)   (chr)
-#> 1 theta_bar.1.1  5.291910   1.1  2006    AK       0       1
-#> 2 theta_bar.2.1 -0.870017   2.1  2007    AK       0       1
-#> 3 theta_bar.3.1  2.837810   3.1  2008    AK       0       1
-#> 4 theta_bar.4.1  0.209963   4.1  2009    AK       0       1
-#> 5 theta_bar.5.1 13.027800   5.1  2010    AK       0       1
-#> 6 theta_bar.6.1  1.924610   6.1  2011    AK       0       1
+#>           param    value index     t   geo group_1 group_2
+#>          (fctr)    (dbl) (chr) (chr) (chr)   (chr)   (chr)
+#> 1 theta_bar.1.1 1.989150   1.1  2006    AK       0       1
+#> 2 theta_bar.2.1 1.935640   2.1  2007    AK       0       1
+#> 3 theta_bar.3.1 0.808958   3.1  2008    AK       0       1
+#> 4 theta_bar.4.1 1.735320   4.1  2009    AK       0       1
+#> 5 theta_bar.5.1 4.015730   5.1  2010    AK       0       1
+#> 6 theta_bar.6.1 3.634120   6.1  2011    AK       0       1
 ```
 
 `poststratify`
@@ -166,7 +167,7 @@ head(state_demographics)
 ``` r
 # theta_bars = point_estimates$theta_bar %>%
 #   dplyr::rename(female = group_1, race = group_2, year = t) %>%
-#   dplyr::mutate(year = as.integer(year), geo = as.factor(geo), female = as.factor(female), race = as.factor(race))
+#   dplyr::mutate(year = as.integer(year), state = as.factor(geo), female = as.factor(female), race = as.factor(race))
 # group_means = poststratify(
 #   group_means = theta_bars,
 #   targets =  state_demographics, 

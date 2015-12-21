@@ -4,6 +4,7 @@ handle_arguments <- function() {
   arg <- unlist(arg, recursive = FALSE)
   assertthat::not_empty(names(arg))
   names(arg) <- sub("^(data|vars|filters|params)\\.", "", names(arg))
+  arg <- set_arg_defaults(arg)
   check_arg_lengths(arg)
   check_arg_names(arg)
   check_arg_types(arg)
