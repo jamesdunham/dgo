@@ -73,14 +73,13 @@ wrangle <- function(data = list(level1,
 
   arg <- handle_arguments()
   level1 <- handle_data(arg$level1, arg)
-  arg$level2 <- handle_data(arg$level2, arg)
+  if (!is.null(arg$level2)) {
+    arg$level2 <- handle_data(arg$level2, arg)
+  }
 
   ## INDIVIDUAL LEVEL ##
 
   arg$demo_id <- arg$groups
-
-  # Drop rows lacking covariates, time variable, or geographic variable
-  level1 <- drop_rows_missing_covariates(level1, arg)
 
   # Filter data
   checks <- check_restrictions(level1, arg)
@@ -186,7 +185,21 @@ wrangle <- function(data = list(level1,
   names(n_vec) <- ns_long$name
   names(s_vec) <- ns_long$name
 
-  MMM <- make_missingness_array(ns_long, group_grid, arg)
+  # Create missingness indicator array
+  missingness <- get_missingness(ns_long, group_grid, arg)
+  MMM <- cast_missingness(missingness, arg)
+
+  # Extract group ordering from ns_long
+  ns_covariate_groups = ns_long %>%
+    dplyr::select_(.dots = c(arg$geo_id, arg$demo_id)) %>%
+    dplyr::distinct()
+  # Same from MMM
+  mmm_covariate_groups = missingness %>%
+    dplyr::select_(.dots = c(arg$geo_id, arg$demo_id)) %>%
+    dplyr::distinct()
+  # They should be equal and have no NAs
+  assertthat::assert_that(assertthat::are_equal(ns_covariate_groups, mmm_covariate_groups))
+  assertthat::assert_that(assertthat::noNA(mmm_covariate_groups))
 
   # The indicator matrix for hierarchical variables, XX, has as many columns as geographic units; drop one
   XX <- XX[, -1]
@@ -221,7 +234,15 @@ wrangle <- function(data = list(level1,
     delta_tbar_prior_mean = arg$delta_tbar_prior_mean,
     delta_tbar_prior_sd = arg$delta_tbar_prior_sd,
     innov_sd_delta_scale = arg$innov_sd_delta_scale,
-    innov_sd_theta_scale = arg$innov_sd_theta_scale)
+    innov_sd_theta_scale = arg$innov_sd_theta_scale,
+    vars = list(items = arg$items,
+                groups = arg$groups,
+                time_id = arg$time_id,
+                use_t = arg$use_t,
+                geo_id = arg$geo_id,
+                periods = arg$periods,
+                survey_id = arg$survey_id,
+                covariate_groups = ns_covariate_groups))
 
   # Check dimensions against what Stan will expect
   check_dimensions(stan_data)
@@ -415,10 +436,6 @@ summarize_trials_by_period <- function(trial_counts, .arg) {
     dplyr::summarise_(valid_items = ~sum(value, na.rm = TRUE) > 0)
 }
 
-make_group_identifier <- function(.data, .arg) {
-  interaction(.data[, .arg$groups], drop = TRUE)
-}
-
 make_ns_long_obs <- function(trial_counts, success_counts, .arg) {
   trial_counts_melt <- wrap_melt(trial_counts,
     id.vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id), value.name = "n_grp")
@@ -456,26 +473,28 @@ make_ns_long <- function(ns_long_obs, .arg) {
   ns_long
 }
 
-make_missingness_array <- function(ns_long, group_grid, .arg) {
-  # Create missingness indicator array
-  acast_formula <- as.formula(paste0(.arg$time_id, "~ variable ~", paste(.arg$demo_id, collapse = "+"), "+", .arg$geo_id))
-  MMM <- ns_long %>%
+get_missingness <- function(ns_long, group_grid, .arg) {
+  ns_long %>%
     # Include in the missingness array all group-variables that might not exist
     # in the data because of unobserved use_t
     muffle_full_join(group_grid, by = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
     # Get missingness by group
     dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id, "variable")) %>%
     dplyr::summarise_("m_grp" = ~as.integer(sum(n_grp, na.rm = TRUE) == 0)) %>%
-    dplyr::ungroup() %>%
+    dplyr::ungroup()
+}
+
+cast_missingness <- function(missingness, .arg) {
+  acast_formula <- as.formula(paste0(.arg$time_id, "~ variable ~", paste(.arg$demo_id, collapse = "+"), "+", .arg$geo_id))
+  MMM <- missingness %>%
     dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0("x_", geo), geo = as.name(.arg$geo_id))), .arg$geo_id)) %>%
     reshape2::acast(acast_formula, value.var = "m_grp", fill = 1)
-
   # But we don"t want to include "NA" as a variable
   MMM <- MMM[!(dimnames(MMM)[[1]] == "NA"),
     !(dimnames(MMM)[[2]] == "NA"),
     !(dimnames(MMM)[[3]] == "NA")]
   # No cells should be NA either
-  assertthat::noNA(MMM)
+  assertthat::assert_that(assertthat::noNA(MMM))
   return(MMM)
 }
 
@@ -501,9 +520,6 @@ make_NNl2 <- function(level1, T, Q, Gl2, .arg) {
 }
 
 factorize_arg_vars <- function(.data, .arg) {
-  if (is.null(.data)) {
-    return(NULL)
-  }
   arg_vars <- intersect(names(.data),
     c(.arg$time_id, .arg$groups, .arg$geo_id, .arg$survey_id))
   is_numeric_group <- apply(.data[, .arg$groups], 2, class) == "numeric"
@@ -594,22 +610,25 @@ subset_to_estimation_periods <- function(.data, .arg) {
 }
 
 drop_rows_missing_covariates <- function(.data, .arg) {
+  n <- nrow(.data)
   .data <- .data %>%
     dplyr::filter_(lazyeval::interp(~!is.na(geo_name) & !is.na(time_name),
       geo_name = as.name(.arg$geo_id),
       time_name = as.name(.arg$time_id)))
-  for (v in .arg$demo_id) {
+  for (v in .arg$groups) {
     .data <- .data %>%
       dplyr::filter_(lazyeval::interp(~!is.na(varname), varname = as.name(v)))
   }
-  .data <- droplevels(.data)
-  return(.data)
+  message(n - nrow(.data), " rows dropped for missingness in covariates")
+  droplevels(.data)
 }
 
 drop_rows_missing_items <- function(.data, .arg) {
   # Respondents should have at least one item response
+  n <- nrow(.data)
   item_filter <- rowSums(!is.na(.data[, .arg$items])) > 0
   .data <- .data %>% dplyr::filter(item_filter)
+  message(n - nrow(.data), " rows dropped for missingness in items")
   droplevels(.data)
 }
 
@@ -662,6 +681,8 @@ add_survey_period_id <- function(level1, .arg) {
 handle_data <- function(.data, .arg) {
   .data <- as_tbl(.data)
   # Make all the variables given as strings factors
+  # Drop rows lacking covariates, time variable, or geographic variable
+  .data <- drop_rows_missing_covariates(.data, .arg)
   .data <- factorize_arg_vars(.data, .arg)
   return(.data)
 }
