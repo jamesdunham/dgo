@@ -1,33 +1,33 @@
+# # TODO: reconcile types before joining
+# targets <- state_demographics
+# head(targets)
+# head(group_means)
+# group_means$race = as.integer(group_means$race)
+# group_means$female = as.integer(group_means$female)
+# targets$race = as.integer(targets$race)
+# targets$female = as.integer(targets$female)
+# groups = c('female', 'race')
+
 poststratify <- function(group_means, targets, strata = c('year', 'state'),
-    groups,  prop_var = 'proportion') {
+    groups, prop_var = 'proportion') {
   assertthat::assert_that(assertthat::not_empty(group_means))
   assertthat::assert_that(assertthat::not_empty(targets))
   assertthat::assert_that(all_valid_strings(strata))
   assertthat::assert_that(all_valid_strings(groups))
   assertthat::assert_that(assertthat::is.string(prop_var))
 
-  group_means = group_means %>% dplyr::rename(state = geo)
   n <- nrow(group_means)
-  # TODO: reconcile types before joining
-  targets <- state_demographics
-  head(targets)
-  head(group_means)
-  group_means$race = as.integer(group_means$race)
-  group_means$female = as.integer(group_means$female)
-  targets$race = as.integer(targets$race)
-  targets$female = as.integer(targets$female)
-  groups = c('female', 'race')
-
   targets_n = nrow(dplyr::distinct_(targets, .dots = c(strata, groups)))
   if (nrow(targets) > targets_n) {
-    warning("More rows in object '", deparse(call$targets),
-      "' than combinations of its strata and grouping variables. ",
+    warning("More rows of proportions than combinations of its strata and grouping variables. ",
       "Summing proportions over other variables.")
     targets = targets %>%
       dplyr::group_by_(.dots = c(strata, groups)) %>%
       dplyr::summarise_(.dots = setNames(list(lazyeval::interp(~sum(prop),
         prop = as.name(prop_var))), prop_var))
   }
+
+  sapply(c(groups, strata), check_levels)
 
   group_means_n = nrow(group_means)
   props <- dplyr::inner_join(group_means, targets, by = c(strata, groups))
@@ -41,7 +41,9 @@ poststratify <- function(group_means, targets, strata = c('year', 'state'),
     dplyr::group_by_(.dots = "year") %>%
     dplyr::summarise_(proportion = lazyeval::interp(~sum(prop), prop =
       as.name(prop_var)))
-  assertthat::assert_that(is_subset(round(unlist(prop_sums$proportion), 4), 1L))
+  if (!all(round(unlist(prop_sums$proportion), 4) %in% 1L)) {
+    stop("not all proportions sum to 1 within years")
+  }
 
   props <- props %>%
     dplyr::group_by_(.dots = strata) %>%
@@ -54,4 +56,17 @@ poststratify <- function(group_means, targets, strata = c('year', 'state'),
     dplyr::ungroup()
 
   return(means)
+}
+
+check_levels <- function(variable) {
+  assertthat::assert_that(assertthat::has_name(group_means, variable))
+  assertthat::assert_that(assertthat::has_name(targets, variable))
+  if (!identical(class(group_means[[variable]]), class(targets[[variable]]))) {
+    stop("'", variable, "' inherits from '", class(group_means[[variable]]),
+      "' in group_means and '", class(targets[[variable]]), "' in targets")
+  }
+  if (!all(unique(group_means[[variable]] %in% targets[[variable]]))) {
+    stop("not all values of '", variable, "' in group_means are values of '", variable, "' in targets: ",
+      paste(sort(setdiff(group_means[[variable]], targets[[variable]])), collapse = ", "))
+  }
 }
