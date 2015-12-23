@@ -46,5 +46,5 @@ d <- dplyr::data_frame(id = 1:4,
   state = as.factor(c("A", NA, "C", "D")),
   race = as.factor(c("A", "B", NA, "D")),
   year = as.factor(c("A", "B", "C", NA)))
-arg <- list(geo_id = "state", demo_id = "race", time_id = "year")
+arg <- list(geo_id = "state", groups = "race", time_id = "year")
 expect_equal(drop_rows_missing_covariates(d, arg)$id, 1)
