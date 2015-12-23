@@ -612,9 +612,11 @@ subset_to_estimation_periods <- function(.data, .arg) {
 drop_rows_missing_covariates <- function(.data, .arg) {
   n <- nrow(.data)
   .data <- .data %>%
-    dplyr::filter_(lazyeval::interp(~!is.na(geo_name) & !is.na(time_name),
+    dplyr::filter_(lazyeval::interp(~!is.na(geo_name) & !is.na(time_name) &
+      !is.na(demo_name),
       geo_name = as.name(.arg$geo_id),
-      time_name = as.name(.arg$time_id)))
+      time_name = as.name(.arg$time_id),
+      demo_name = as.name(.arg$demo_id)))
   for (v in .arg$groups) {
     .data <- .data %>%
       dplyr::filter_(lazyeval::interp(~!is.na(varname), varname = as.name(v)))

@@ -1,4 +1,6 @@
 library(testthat)
 library(dgirt)
 
-test_check("dgirt")
+suppressMessages({
+  test_check("dgirt")
+})

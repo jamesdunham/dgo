@@ -12,7 +12,6 @@ d <- dplyr::data_frame(q1 = 1, t = 1, geo = 1, female = 1, poll = 1,
 a <- list(level1 = d, items = "q1", time_id = "t", geo_id = "geo",
   groups = "female", survey_id = "poll", survey_weight = "weight")
 
-expect_silent(factorize_arg_vars(NULL, a))
 expect_is(factorize_arg_vars(d, a)$t, "factor")
 expect_is(factorize_arg_vars(d, a)$female, "factor")
 expect_is(factorize_arg_vars(d, a)$geo, "factor")
