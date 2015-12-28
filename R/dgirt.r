@@ -24,7 +24,7 @@ dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n_war
   seed = 1, save_pars = c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar", "nu_geo",
     "nu_geo_prior", "kappa", "sd_item", "sd_theta", "sd_theta_bar", "sd_gamma", "sd_innov_gamma",
     "sd_innov_delta", "sd_innov_logsd", "sd_total", "theta_l2", "var_theta_bar_l2"),
-  parallel = TRUE, method = "rstan") {
+  parallel = TRUE, method = "rstan", optimize_algorithm = "lbfgs") {
 
   requireNamespace("rstan", quietly = TRUE)
   rstan::rstan_options(auto_write = parallel)
@@ -54,9 +54,9 @@ use_rstan <- function(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, se
   return(stan_out)
 }
 
-use_cmdstan <- function(dgirt_data, n_iter, init_range, save_pars, vars) {
+use_cmdstan <- function(dgirt_data, optimize_algorithm, n_iter, init_range, save_pars, vars) {
   dump_dgirt(dgirt_data)
-  stan_args <- paste0("optimize iter=", n_iter, " init='", init_range,
+  stan_args <- paste0("optimize algorithm=", optimize_algorithm, " iter=", n_iter, " init='", init_range,
     "' data file=", get_dump_path(), " output file=", get_output_path())
   assertthat::assert_that(assertthat::is.readable(get_dgirt_path()))
   system2(get_dgirt_path(), stan_args)
