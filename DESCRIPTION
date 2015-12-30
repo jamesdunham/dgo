@@ -1,6 +1,6 @@
 Package: dgirt
 Title: Group-Level Dynamic IRT and Small Area Estimation
-Version: 0.0.9
+Version: 0.0.10
 Description: What the package does (one paragraph).
 Authors@R: c(person("James", "Dunham", email = "jdunham@mit.edu", role = c("aut", "cre")),
   person("Christopher", "Warshaw", email = "cwarshaw@mit.edu", role = c("aut")),
