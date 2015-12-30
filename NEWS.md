@@ -22,7 +22,7 @@ Version bump to 0.0.10.
     * `states` -> `state_opinion`
     * `state_targets` and `targets` -> `state_demographics`
   * Under the hood:
-    * Switch to (assertthat)[https://github.com/hadley/assertthat] package from
+    * Switch to [assertthat](https://github.com/hadley/assertthat) package from
     ad-hoc `stop()` calls
     * Speed up `wrangle()`
     * Bugfixes
