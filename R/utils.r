@@ -3,11 +3,7 @@
 # Create summary table of design effects
 create_design_effects <- function(x) {
   y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
-  if (is.na(y)) {
-    return(1)
-  } else {
-    return(y)
-  }
+  ifelse(is.na(y), 1, y)
 }
 
 # Create design matrix for model of hierarchical coefficients
@@ -44,6 +40,8 @@ create_gt_variables <- function(d, .items){
     gt_cols <- lapply(gt_levels, function(gt) {
       values > as.numeric(gt)
     })
+    # FIXME: there's a less-than-helpful error here if any item variable is
+    # entirely missing (which should be handled checking the data)
     assertthat::assert_that(assertthat::not_empty(gt_cols))
     setNames(gt_cols, gt_names)
   })

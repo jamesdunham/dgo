@@ -3,7 +3,8 @@
 #' `extract_dgirt` is a wrapper for rstan::extract that attaches
 #' names to parameters according to the values of the data passed
 #' to `dgirt`.
-#' @param dgirt_out Return value of `dgirt`.
+#' @param stan_output Return value of `dgirt`.
+#' @param stan_data Return value of `wrangle`.
 #' @return Return value of `rstan::extract` with names attached to its elements.
 #' @export
 extract_dgirt <- function(stan_output, stan_data) {

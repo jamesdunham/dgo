@@ -12,10 +12,13 @@
 #' @param parallel See \code{rstan::rstan_options(auto_write = parallel)}.
 #' @param method By default, `rstan::stan` estimates the model using MCMC
 #'        sampling. Alternatively, `cmdstan optimize` or `cmdstan variational`
-#'        can be used if `CmdStan` is available. Note that these methods
+#'        can be used if CmdStan is available. Note that these methods
 #'        are faster than MCMC sampling but return only point estimates.
-#'        See \url{http://mc-stan.org/interfaces/cmdstan.html} for `CmdStan`
+#'        See \url{http://mc-stan.org/interfaces/cmdstan.html} for CmdStan
 #'        installation instructions.
+#' @param optimize_algorithm The optimization algorithm for CmdStan to use if
+#'        `method` is `"optimize"`, one of `"bfgs"`, `"lbfgs"` (the default),
+#'        and `"newton"`. See CmdStan documentation for details.
 #' @return An object of S4 class `stanfit` as returned by `rstan::stan`.
 #' @import rstan
 #' @export

@@ -10,7 +10,8 @@ dgirt(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000,
   save_pars = c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
   "nu_geo", "nu_geo_prior", "kappa", "sd_item", "sd_theta", "sd_theta_bar",
   "sd_gamma", "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd", "sd_total",
-  "theta_l2", "var_theta_bar_l2"), parallel = TRUE, method = "rstan")
+  "theta_l2", "var_theta_bar_l2"), parallel = TRUE, method = "rstan",
+  optimize_algorithm = "lbfgs")
 }
 \arguments{
 \item{dgirt_data}{Data prepared for use with `dgirt` by `wrangle`.}
@@ -35,10 +36,14 @@ dgirt(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000,
 
 \item{method}{By default, `rstan::stan` estimates the model using MCMC
 sampling. Alternatively, `cmdstan optimize` or `cmdstan variational`
-can be used if `CmdStan` is available. Note that these methods
+can be used if CmdStan is available. Note that these methods
 are faster than MCMC sampling but return only point estimates.
-See \url{http://mc-stan.org/interfaces/cmdstan.html} for `CmdStan`
+See \url{http://mc-stan.org/interfaces/cmdstan.html} for CmdStan
 installation instructions.}
+
+\item{optimize_algorithm}{The optimization algorithm for CmdStan to use if
+`method` is `"optimize"`, one of `"bfgs"`, `"lbfgs"` (the default),
+and `"newton"`. See CmdStan documentation for details.}
 }
 \value{
 An object of S4 class `stanfit` as returned by `rstan::stan`.

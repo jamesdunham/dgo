@@ -4,10 +4,12 @@
 \alias{extract_dgirt}
 \title{Extract and name parameters}
 \usage{
-extract_dgirt(dgirt_out)
+extract_dgirt(stan_output, stan_data)
 }
 \arguments{
-\item{dgirt_out}{Return value of `dgirt`.}
+\item{stan_output}{Return value of `dgirt`.}
+
+\item{stan_data}{Return value of `wrangle`.}
 }
 \value{
 Return value of `rstan::extract` with names attached to its elements.
