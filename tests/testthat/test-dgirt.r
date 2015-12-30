@@ -25,3 +25,8 @@ context("Get stan_rdump output path")
 expect_match(get_dump_path(), "/dgirt_data.Rdump$")
 expect_true(stringi::stri_length(get_dump_path()) >
   stringi::stri_length("/dgirt_data.Rdump"))
+
+context("Run cmdstan")
+
+expect_error(read_cmdstan_output("\n"))
+

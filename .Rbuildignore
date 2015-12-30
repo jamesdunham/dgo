@@ -5,3 +5,5 @@
 ^\.Rprofile$
 ^\.travis.yml$
 ^todo.txt$
+^wercker.yml$
+^README.Rmd$

@@ -3,12 +3,12 @@
 #' A dataset of survey item responses and characteristics of respondents.
 #' Data are from the Cooperative Congressional Election Study (CCES) 2006-2014.
 
-#' `Q_` prepends the names of item response variables and `D_` those of respondent characteristics.
+#' `Q_` prepends the names of item response variables.
 #'
 #' @docType data
-#' @name states
-#' @usage states
-#' @format A \code{dplyr} \code{tbl_df} with 295,248 rows and 33 columns.
+#' @name state_opinion
+#' @usage state_opinion
+#' @format A `dplyr` `tbl_df` with 295,248 rows and 33 columns.
 #' @examples
-#' states
+#' state_opinion
 NULL

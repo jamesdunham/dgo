@@ -2,51 +2,55 @@
 
 # Create summary table of design effects
 create_design_effects <- function(x) {
-    stopifnot(is.numeric(x))
-    y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
-    if (is.na(y))
-        return(1) else return(y)
+  y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
+  ifelse(is.na(y), 1, y)
 }
 
 # Create design matrix for model of hierarchical coefficients
 create_l2_design_matrix <- function(.XX, .arg) {
-  # .XX = XX
-  # .arg = arg
   if (is.null(.arg$level2_modifiers)) {
     zz.names <- list(.arg$use_t, dimnames(.XX)[[2]], "Zero")
     ZZ <- array(data = 0, dim = lapply(zz.names, length),
       dimnames = zz.names)
   } else {
-    stopifnot(!is.null(.arg$level2))
-    # stopifnot(all(c(.arg$time_id, .arg$geo_id) %in% names(.arg$level2)))
-    stopifnot(all(.arg$level2_modifiers %in% names(.arg$level2)))
-    level2 = .arg$level2 %>% dplyr::select_(.arg$time_id, .arg$geo_id, .arg$level2_modifiers)
+    assertthat::not_empty(.arg$level2)
+    assertthat::assert_that(is_subset(.arg$level2_modifiers, names(.arg$level2)))
+    level2 <- .arg$level2 %>% dplyr::select_(.arg$time_id, .arg$geo_id, .arg$level2_modifiers)
     ZZ <- suppressWarnings(reshape2::melt(level2, id.vars = c(.arg$time_id, .arg$geo_id)))
-    stopifnot(inherits(ZZ$value, "numeric"))
+    assertthat::assert_that(is.numeric(ZZ$value))
     ZZ <- suppressWarnings(reshape2::acast(ZZ, formula(paste(.arg$time_id,
             .arg$geo_id, "variable", sep = " ~ "))))
   }
-  if (any(is.na(ZZ))) {
-    stop("No cell of ZZ should be NA")
-  }
+  assertthat::assert_that(all(notNA(ZZ)))
   return(ZZ)
 }
 
 # Create 'greater than' indicators
-create_gt_variables <- function(d, .items) {
-    for (q in .items) {
-        .levels <- levels(factor(d[[q]]))
-        .levels <- .levels[-length(.levels)]
-        varname <- paste0(q, "_gt", .levels)
-        d[, varname] <- sapply(.levels, function(l) {
-            as.numeric(d[[q]] > as.numeric(l))
-        })
+create_gt_variables <- function(d, .items){
+  out <- lapply(.items, function(stub) {
+    if (is.factor(d[[stub]])) {
+      item_levels <- levels(d[[stub]])
+      values <- as.numeric(d[[stub]])
+    } else {
+      item_levels <- as.character(sort(unique(d[[stub]])))
+      values <- d[[stub]]
     }
-    return(d)
+    gt_levels <- item_levels[-length(item_levels)]
+    gt_names <- paste(stub, gt_levels, sep = "_gt")
+    gt_cols <- lapply(gt_levels, function(gt) {
+      values > as.numeric(gt)
+    })
+    # FIXME: there's a less-than-helpful error here if any item variable is
+    # entirely missing (which should be handled checking the data)
+    assertthat::assert_that(assertthat::not_empty(gt_cols))
+    setNames(gt_cols, gt_names)
+  })
+  dplyr::bind_cols(out)
 }
+
 # Replace NA in a vector with 0
 replaceNA <- function(x) {
-    replace(x, is.na(x), 0)
+  replace(x, is.na(x), 0)
 }
 
 # Replace NaN in a vector with NA
@@ -59,7 +63,6 @@ countValid <- function(x) {
     sum(!is.na(x))
 }
 
-# Check if any !is.na over x
 anyValid <- function(x) {
   any(!is.na(x))
 }

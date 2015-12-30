@@ -1,0 +1,10 @@
+box: rocker/hadleyverse
+build:
+  steps:
+    - jimhester/r-dependencies
+    - jimhester/r-check
+    - jimhester/r-lint:
+         options:
+           - linters = lintr::with_defaults(line_length_linter = lintr::line_length_linter(110))
+           - exclusions = list("R/stan.r")
+    - jimhester/r-coverage
