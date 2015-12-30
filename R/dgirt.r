@@ -38,14 +38,14 @@ dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n_war
   assertthat::assert_that(is_subset(method, c("rstan", "optimize")))
   message("Started: ", date())
   stan_out <- switch(method,
-    rstan = use_rstan(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, seed, init_range),
-    optimize = use_cmdstan(dgirt_data, n_iter, init_range, save_pars, vars))
+    rstan = use_rstan(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, seed, init_range, vars),
+    optimize = use_cmdstan(dgirt_data, optimize_algorithm, n_iter, init_range, save_pars, vars))
   message("Ended: ", date())
 
   return(stan_out)
 }
 
-use_rstan <- function(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, seed, init_range) {
+use_rstan <- function(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, seed, init_range, vars) {
   message("Running ", n_iter, " iterations in each of ", n_chain, " chains. Thinning at an interval of ",
     n_thin, " with ", n_warm, " adaptation iterations.")
   stan_out <- rstan::stan(model_code = stan_code, data = dgirt_data, iter = n_iter,
@@ -95,17 +95,19 @@ name_cmdstan_output <- function(stan_output, dgirt_data, save_pars, vars) {
     return(this_par)
   })
   names(stan_output) <- parname_stubs
+  stan_output <- name_output_dims(stan_output, vars)
 
+  return(stan_output)
+}
+
+name_output_dims <- function(stan_output, vars) {
   indexed_t = c("delta_gamma", "delta_tbar", "sd_total", "nu_geo", "sd_theta_bar",
     "theta_l2", "var_theta_bar_l2", "xi")
   stan_output[indexed_t] = lapply(stan_output[indexed_t], attach_t,
     vars$use_t, vars$time_id)
-  stan_output$delta_gamma = stan_output$delta_gamma %>%
-    attach_t(vars$use_t, vars$time_id)
 
-  hier_names <- dimnames(dgirt_data$XX)[[2]]
-  stan_output$gamma$t <- rep(vars$use_t, length(hier_names))
-  stan_output$gamma$p <- rep(hier_names, each = length(vars$use_t))
+  stan_output$gamma$t <- rep(vars$use_t, length(vars$hier_names))
+  stan_output$gamma$p <- rep(vars$hier_names, each = length(vars$use_t))
 
   stan_output$kappa$q <- vars$items
   stan_output$sd_item$q <- vars$items
@@ -113,7 +115,6 @@ name_cmdstan_output <- function(stan_output, dgirt_data, save_pars, vars) {
 
   stan_output$theta_bar <- stan_output$theta_bar %>%
     name_group_means(vars)
-
   return(stan_output)
 }
 
@@ -145,7 +146,6 @@ get_group_names <- function(dgirt_data) {
   group_names <- tidyr::separate_(data.frame(demo_geo_names),
     "demo_geo_names", into = paste0("factor", seq.int(1, n_groups)),
     sep = "_x_", fill = "right")
-
   return(group_names)
 }
 
@@ -170,6 +170,7 @@ name_group_means <- function(thetas, vars) {
   thetas <- thetas %>%
     dplyr::bind_cols(vars$covariate_groups[rep(seq_len(nrow(vars$covariate_groups)),
       each = length(vars$use_t)), ])
+  thetas <- thetas %>% dplyr::mutate_each_("as.factor", vars = c(vars$groups, vars$geo_id))
   return(thetas)
 }
 

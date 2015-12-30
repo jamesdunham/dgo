@@ -71,6 +71,7 @@ wrangle <- function(data = list(level1,
                                      innov_sd_delta_scale = 2.5,
                                      innov_sd_theta_scale = 2.5)) {
 
+  # TODO: should require that time_id be numeric
   arg <- handle_arguments()
   level1 <- handle_data(arg$level1, arg)
   if (!is.null(arg$level2)) {
@@ -89,21 +90,32 @@ wrangle <- function(data = list(level1,
   # Update arg$items
   arg$items <- intersect(arg$items, names(level1))
 
+  arg$use_t <- set_use_t(level1, arg)
+  arg$use_geo <- update_use_geo(level1, arg)
+  level1 <- subset_to_estimation_periods(level1, arg)
+
+  # TODO: should lapply this and like operations over all tables in the data list
+  if (!is.null(arg$level2)) {
+    arg$level2 <- subset_to_estimation_periods(arg$level2, arg)
+  }
+
+  # TODO: instead of reapplying once here, should loop over restrictions until no changes
+  checks <- check_restrictions(level1, arg)
+  level1 <- apply_restrictions(level1, checks, arg)
+  arg$items <- intersect(arg$items, names(level1))
+  checks <- check_restrictions(level1, arg)
+  level1 <- apply_restrictions(level1, checks, arg)
+  arg$items <- intersect(arg$items, names(level1))
+
   # Create weights from population targets
   if (!is.null(arg$targets)) {
     level1 <- create_weights(level1, arg)
   }
 
-  arg$use_geo <- update_use_geo(level1, arg)
-  arg$use_t <- set_use_t(level1, arg)
-
-  level1 <- subset_to_estimation_periods(level1, arg)
-  if (!is.null(arg$level2)) {
-    arg$level2 <- subset_to_estimation_periods(arg$level2, arg)
-  }
-
   # Create _gt. variables
+  # TODO: want to split the gt variables out into an integer matrix
   gt_table <- create_gt_variables(d = level1, .items = arg$items)
+  # TODO: bind_cols is dangerous ...
   level1 <- dplyr::bind_cols(level1, gt_table)
   level1 <- drop_rows_missing_items(level1, arg)
 
@@ -121,13 +133,17 @@ wrangle <- function(data = list(level1,
   }
   checks$observed_periods <- as.character(checks$observed_periods)
 
-  # Represent covariates in data as model frame
+  # FIXME: still needs to be cleaned up.
+  # f0 is used to create XX later
+  # f0_t to create MF_t -> xtab_t -> xtab
   f0 <- as.formula(paste("~", paste("0", arg$geo_id, paste0(arg$demo_id, collapse = " + "), sep = " + ")))
   f0_t <- as.formula(paste("~", paste("0", arg$geo_id, paste0(arg$demo_id, collapse = " + "), arg$time_id, sep = " + ")))
   MF_t <- model.frame(f0_t, data = level1, na.action = return)
   # Get frequency counts of factor combinations (reordered in factor order)
   xtab_t <- as.data.frame(table(MF_t))
   assertthat::assert_that(checks$observed_periods[1] %in% as.character(xtab_t[[arg$time_id]]))
+  # xtab gives the counts of covariate combinations (group counts)
+  # TODO: rename xtab as group_counts
   xtab <- xtab_t %>%
     dplyr::filter_(lazyeval::interp(~ x %in% y, x = as.name(arg$time_id),
       y = checks$observed_periods[1])) %>%
@@ -139,6 +155,7 @@ wrangle <- function(data = list(level1,
 
   ## GROUP LEVEL ##
 
+  # FIXME: all of this goes toward creating ns_long; pull it out
   # Create table of design effects
   design_effects <- summarize_design_effects(level1, arg)
   group_grid <- make_group_grid(level1, arg)
@@ -151,6 +168,7 @@ wrangle <- function(data = list(level1,
   # Create a summary table: for each period t, are there any nonmissing responses?
   trials_by_period <- summarize_trials_by_period(trial_counts, arg)
   # Giving us the periods in which we observe responses, which may be different from the periods we"ll use in estimation (given in arg$use_t)
+  # FIXME: is this used?
   checks$nonmissing_t <- trials_by_period %>%
     dplyr::filter_(~valid_items == TRUE) %>%
     dplyr::select_(arg$time_id) %>%
@@ -242,7 +260,8 @@ wrangle <- function(data = list(level1,
                 geo_id = arg$geo_id,
                 periods = arg$periods,
                 survey_id = arg$survey_id,
-                covariate_groups = ns_covariate_groups))
+                covariate_groups = ns_covariate_groups,
+                hier_names = dimnames(XX)[[2]]))
 
   # Check dimensions against what Stan will expect
   check_dimensions(stan_data)
@@ -588,10 +607,10 @@ update_use_geo <- function(.data, .arg) {
 }
 
 set_use_t <- function(.data, .arg) {
-  if (is.null(.arg$use_t)) {
+  if (is.null(.arg$periods)) {
     return(levels(.data[[.arg$time_id]]))
   } else {
-    return(.arg$use_t)
+    return(.arg$periods)
   }
 }
 
@@ -624,12 +643,9 @@ drop_rows_missing_covariates <- function(.data, .arg) {
 }
 
 drop_rows_missing_items <- function(.data, .arg) {
-  # Respondents should have at least one item response
-  n <- nrow(.data)
   item_filter <- rowSums(!is.na(.data[, .arg$items])) > 0
   .data <- .data %>% dplyr::filter(item_filter)
-  message(n - nrow(.data), " rows dropped for missingness in items")
-  droplevels(.data)
+  # droplevels(.data)
 }
 
 subset_to_observed_geo_periods <- function(.arg) {
@@ -643,7 +659,7 @@ subset_to_observed_geo_periods <- function(.arg) {
         geo = as.name(.arg$geo_id)))
     assertthat::not_empty(.arg$level2)
   }
-  .arg$level2[[.arg$geo_id]] <- droplevels(.arg$level2[[.arg$geo_id]])
+  # .arg$level2[[.arg$geo_id]] <- droplevels(.arg$level2[[.arg$geo_id]])
   return(.arg$level2)
 }
 
@@ -700,7 +716,7 @@ apply_restrictions <- function(.data, .checks, .arg) {
   assertthat::not_empty(.arg$items)
   assertthat::not_empty(.data)
 
-  .data <- add_survey_period_id(.data, .arg)
+  # .data <- add_survey_period_id(.data, .arg)
   .data <- drop_rare_items_over_polls(.data, .checks$q_rare.polls, .arg)
 
   return(.data)

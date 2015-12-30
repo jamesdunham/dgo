@@ -44,6 +44,7 @@ create_gt_variables <- function(d, .items){
     gt_cols <- lapply(gt_levels, function(gt) {
       values > as.numeric(gt)
     })
+    assertthat::assert_that(assertthat::not_empty(gt_cols))
     setNames(gt_cols, gt_names)
   })
   dplyr::bind_cols(out)
