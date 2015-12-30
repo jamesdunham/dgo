@@ -30,14 +30,11 @@ dgirt is an R package for dynamic group-level IRT models, as developed in [Caugh
 ## Installation
 
 ```{r, install-dgirt}
-if (packageVersion("devtools") < 1.6) {
-  install.packages("devtools")
-}
-devtools::install_github("jamesdunham/dgirt@milestone")
+devtools::install_github("jamesdunham/dgirt")
 ```
 
 Get updates by reinstalling. dgirt is in early stages and under development.
-See [NEWS](NEWS.md).
+See [NEWS](NEWS.md), last updated 2015-12-30.
 
 ## Quick start
 
@@ -48,7 +45,7 @@ See [NEWS](NEWS.md).
 ## Use
 
 `state_opinion` is a dataset included with `dgirt` in which rows correspond to survey
-responses from individuals. 
+responses from individuals.
 
 ```{r, load-and-attach}
 library(dgirt)
@@ -66,91 +63,112 @@ We'll use the `vars` argument to identify variables of importance in `data`
 (e.g. which represent item responses). `vars` is a list of named character
 vectors with (at least) these elements:
 
-  * `items`: Names of item response variables $y_{iq}$ in `data$level1`.
+  * `items`: Names of item response variables in `data$level1`.
   * `groups`: Names of respondent characteristic variables in `data$level1`.
      (Note: at this time, `wrangle` requires that the user exclude the
-     geographic indicator from `groups` and name it instead in `geo_id`. 
+     geographic indicator from `groups` and name it instead in `geo_id`.
      Modeling any group predictor is coming.)
   * `time_id`: Name of time period variable in `data$level1`.
   * `geo_id`: Name of geographic identifier variable in `data$level1`.
   * `survey_id`: Name of survey identifier variable in `data$level1`.
-  * `survey_weight`: Name of weight variable $w_i$ in `data$level1`.
+  * `survey_weight`: Name of weight variable in `data$level1`.
 
-The names of the item response variables start with "q\_", so we'll
+The names of the item response variables start with "Q\_", so we'll
 pass them using `grep`.
 
 ```{r, wrangle}
 state_opinion_fmt = wrangle(
   data = list(level1 = state_opinion),
   vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
-              groups = c("female", "race"),
+              groups = c("race"),
               time_id = "year",
               geo_id = "state",
               survey_id = "source",
-              survey_weight = "weight"))
+              survey_weight = "weight"),
+  filters = list(periods = as.character(2006:2010)))
 ```
 
 `wrangle` returns a list of objects that `dgirt` expects as its first argument.
 We'll also set its `n_iter` and `n_chain` arguments to minimize its run time,
 but otherwise rely on the defaults.
 
+`dgirt()` calls `rstan()`, which reports any problems it encounters when
+compiling the model and sampling. Reporting is verbose and not all messages
+indicate problems. If sampling is successful, `dgirt()` returns an object of
+class `stanfit`. (See rstan documentation.)
+
 ```{r, dgirt-rstan}
-dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 10, n_chain = 1)
+dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 100, n_chain = 1)
 ```
+To examine the the `dgirt()` results we can use `extract_dgirt()`, which
+attaches labels to the saved parameters according to the variable names
+originally passed to `wrangle()` and any factor levels. Right now,
+`extract_dgirt()` shows only the posterior means.
 
-`dgirt` calls `rstan`, which reports any problems it encounters when
-compiling the model and sampling. If sampling is successful, `dgirt` 
-returns a `stanfit` object. 
+Note that `dgirt()` returns a `stanfit` object when `method = "rstan"` (as
+above, the default) and a list of point estimates if `method = "optimize"`
+(details below); `extract_dgirt()` only works with `stanfit` objects. (The
+inconsistency in return types isn't desirable and will change in the future.)
 
-To extract samples from the result of `dgirt` we can use `extract_dgirt`, which
-returns a list whose elements are named arrays and matrices containing
-estimates of model parameters. We'll take a look at `theta_bar`, the group
-means ($\\bar{\\theta}_g$).
+The group means can be found as `theta_bar`.
 
 ```{r, dgirt-extract}
-dgirt_extract = extract_dgirt(dgirt_estimates)
-str(dgirt_extract$theta_bar)
+dgirt_extract = extract_dgirt(dgirt_estimates, state_opinion_fmt)
+head(dgirt_extract$theta_bar)
 ```
-
-`theta_bar` is 3 $\\times$ 9 $\\times$ 306:
-
-  * The first dimension of the array is indexed by sampler iteration. We ran
-    the sampler for 10 iterations and by default discarded 7 as warm-ups, so
-    this dimension is length-3.
-  * The array's second dimension is indexed by time period, here the nine years
-    2006-2014.
-  * The third dimension, indexed by covariate combination, is length-306, or
-    2 $\\times$ 3 $\\times$ 51. We have 2 levels in our first covariate
-    `D_gender`, 3 levels (excluding `NA`) in our second covariate `D_race_new`,
-    and 51 levels in the geographic identifier.
 
 ## `cmdstan`
 
 We can use the `method` argument of `dgirt` to choose an alternative to MCMC
 sampling if `cmdstan` is available. See
 http://mc-stan.org/interfaces/cmdstan.html for installation instructions. For
-example, setting `method = "optimize"` will call `cmdstan optimize`.
+example, setting `method = "optimize"` will call `cmdstan optimize`. Passing
+`optimize_algorithm = "newton"` will use Newton-Raphson instead of the default
+LFBGS.
 
 ```{r, dgirt-optimize}
-point_estimates = dgirt(state_opinion_fmt, n_iter = 100, method = "optimize",
-  init_range = 1)
+point_estimates = dgirt(state_opinion_fmt, n_iter = 20, method = "optimize",
+  optimize_algorithm = "newton", init_range = 0.5)
 head(point_estimates$theta_bar)
 ```
 
 ## `poststratify`
 
-```{r, load-demograhpics}
+The `state_demographics` dataset contains population proportions for demographic
+strata by year.
+
+```{r, load-demographics}
 data(state_demographics)
 head(state_demographics)
 ```
 
+`poststratify()` can use data like these with the `dgirt()` estimates to
+compute weighted means for groups or arbitrary aggregations of groups.
+
+At the moment, it's necessary to relabel the group factor levels in the
+`dgirt()` results to match those in the population proportion data. And the
+time variable in the `dgirt()` results needs to be recast as integer.
+
 ```{r, poststratify}
-# theta_bars = point_estimates$theta_bar %>%
-#   dplyr::rename(female = group_1, race = group_2, year = t) %>%
-#   dplyr::mutate(year = as.integer(year), state = as.factor(geo), female = as.factor(female), race = as.factor(race))
-# group_means = poststratify(
-#   group_means = theta_bars,
-#   targets =  state_demographics, 
-#   variables = "year",
-#   prop_var = "proportion")
+point_estimates$theta_bar$race = factor(point_estimates$theta_bar$race, labels = c("White or Hispanic", "Black", "Other"))
+point_estimates$theta_bar$year = as.integer(point_estimates$theta_bar$year)
+```
+
+Now we pass these data, the same `groups` argument as used originally with
+`wrangle`, and a vector of variable names as `strata` that define aggregations
+of interest in the data. For exposition we'll set two optional variables. We
+give the name of the variable in the demographic data for the population
+proportion as `prop_var`. And passing a variable name to `check_proportions`
+will test the demographic data for whether population proportions sum to one
+within groups defined by the values of that variable.
+
+```
+group_means = poststratify(
+  group_means = point_estimates$theta_bar,
+  targets =  state_demographics,
+  groups = c("race"),
+  strata = c("state", "year"),
+  prop_var = "proportion",
+  check_proportions = "year")
+head(group_means)
 ```

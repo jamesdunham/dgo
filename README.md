@@ -10,22 +10,19 @@ Installation
 ------------
 
 ``` r
-if (packageVersion("devtools") < 1.6) {
-  install.packages("devtools")
-}
-devtools::install_github("jamesdunham/dgirt@milestone")
-#> Downloading GitHub repo jamesdunham/dgirt@milestone
+devtools::install_github("jamesdunham/dgirt")
+#> Downloading GitHub repo jamesdunham/dgirt@master
 #> Installing dgirt
 #> '/Library/Frameworks/R.framework/Resources/bin/R' --no-site-file  \
 #>   --no-environ --no-save --no-restore CMD INSTALL  \
-#>   '/private/var/folders/2p/_d3c95qd6ljg28j1f5l2jqxm0000gn/T/RtmpsRsqv8/devtools45072cf00a11/jamesdunham-dgirt-a36dcf5'  \
+#>   '/private/var/folders/2p/_d3c95qd6ljg28j1f5l2jqxm0000gn/T/Rtmp8elqZK/devtools10b605e22a44e/jamesdunham-dgirt-0ba4f0e'  \
 #>   --library='/Library/Frameworks/R.framework/Versions/3.2/Resources/library'  \
 #>   --install-tests 
 #> 
 #> Reloading installed dgirt
 ```
 
-Get updates by reinstalling. dgirt is in early stages and under development. See [NEWS](NEWS.md).
+Get updates by reinstalling. dgirt is in early stages and under development. See [NEWS](NEWS.md), last updated 2015-12-30.
 
 Quick start
 -----------
@@ -48,106 +45,123 @@ Data formatted in this way need to be restructured with the `wrangle` function. 
 
 We'll use the `vars` argument to identify variables of importance in `data` (e.g. which represent item responses). `vars` is a list of named character vectors with (at least) these elements:
 
--   `items`: Names of item response variables \(y_{iq}\) in `data$level1`.
+-   `items`: Names of item response variables in `data$level1`.
 -   `groups`: Names of respondent characteristic variables in `data$level1`. (Note: at this time, `wrangle` requires that the user exclude the geographic indicator from `groups` and name it instead in `geo_id`. Modeling any group predictor is coming.)
 -   `time_id`: Name of time period variable in `data$level1`.
 -   `geo_id`: Name of geographic identifier variable in `data$level1`.
 -   `survey_id`: Name of survey identifier variable in `data$level1`.
--   `survey_weight`: Name of weight variable \(w_i\) in `data$level1`.
+-   `survey_weight`: Name of weight variable in `data$level1`.
 
-The names of the item response variables start with "q\_", so we'll pass them using `grep`.
+The names of the item response variables start with "Q\_", so we'll pass them using `grep`.
 
 ``` r
 state_opinion_fmt = wrangle(
   data = list(level1 = state_opinion),
   vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
-              groups = c("female", "race"),
+              groups = c("race"),
               time_id = "year",
               geo_id = "state",
               survey_id = "source",
-              survey_weight = "weight"))
+              survey_weight = "weight"),
+  filters = list(periods = as.character(2006:2010)))
+#> 5 rows dropped for missingness in covariates
+#> 0 rows have no responses
+#> 
+#> 
+#> 
+#> 0 rows have no responses
+#> 2 questions have no responses: Q_naes2000_jobdiscgays, Q_anwr_drilling
+#> 
+#> 
 #> 0 rows have no responses
 ```
 
 `wrangle` returns a list of objects that `dgirt` expects as its first argument. We'll also set its `n_iter` and `n_chain` arguments to minimize its run time, but otherwise rely on the defaults.
 
+`dgirt()` calls `rstan()`, which reports any problems it encounters when compiling the model and sampling. Reporting is verbose and not all messages indicate problems. If sampling is successful, `dgirt()` returns an object of class `stanfit`. (See rstan documentation.)
+
 ``` r
-dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 10, n_chain = 1)
-#> Started: Mon Dec 21 15:35:45 2015
-#> Running 10 iterations in each of 1 chains. Thinning at an interval of 1 with 7 adaptation iterations.
+dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 100, n_chain = 1)
+#> Started: Wed Dec 30 13:21:03 2015
+#> Running 100 iterations in each of 1 chains. Thinning at an interval of 1 with 75 adaptation iterations.
 #> 
 #> SAMPLING FOR MODEL '605ba6820a8c93e8038f6394fbb2c3e1' NOW (CHAIN 1).
 #> 
-#> Chain 1, Iteration: 1 / 10 [ 10%]  (Warmup)
-#> Chain 1, Iteration: 2 / 10 [ 20%]  (Warmup)
-#> Chain 1, Iteration: 3 / 10 [ 30%]  (Warmup)
-#> Chain 1, Iteration: 4 / 10 [ 40%]  (Warmup)
-#> Chain 1, Iteration: 5 / 10 [ 50%]  (Warmup)
-#> Chain 1, Iteration: 6 / 10 [ 60%]  (Warmup)
-#> Chain 1, Iteration: 7 / 10 [ 70%]  (Warmup)
-#> Chain 1, Iteration: 8 / 10 [ 80%]  (Sampling)
-#> Chain 1, Iteration: 9 / 10 [ 90%]  (Sampling)
-#> Chain 1, Iteration: 10 / 10 [100%]  (Sampling)
-#> #  Elapsed Time: 1.70047 seconds (Warm-up)
-#> #                0.311216 seconds (Sampling)
-#> #                2.01169 seconds (Total)
+#> Chain 1, Iteration:  1 / 100 [  1%]  (Warmup)
+#> Chain 1, Iteration: 10 / 100 [ 10%]  (Warmup)
+#> Chain 1, Iteration: 20 / 100 [ 20%]  (Warmup)
+#> Chain 1, Iteration: 30 / 100 [ 30%]  (Warmup)
+#> Chain 1, Iteration: 40 / 100 [ 40%]  (Warmup)
+#> Chain 1, Iteration: 50 / 100 [ 50%]  (Warmup)
+#> Chain 1, Iteration: 60 / 100 [ 60%]  (Warmup)
+#> Chain 1, Iteration: 70 / 100 [ 70%]  (Warmup)
+#> Chain 1, Iteration: 76 / 100 [ 76%]  (Sampling)
+#> Chain 1, Iteration: 85 / 100 [ 85%]  (Sampling)
+#> Chain 1, Iteration: 95 / 100 [ 95%]  (Sampling)
+#> Chain 1, Iteration: 100 / 100 [100%]  (Sampling)
+#> #  Elapsed Time: 4.26669 seconds (Warm-up)
+#> #                2.3589 seconds (Sampling)
+#> #                6.62559 seconds (Total)
 #> The following numerical problems occured the indicated number of times after warmup on chain 1
-#>                                                                                      count
-#> validate transformed params: disc[1] is nan, but must be greater than or equal to 0      4
-#> Exception thrown at line 196: normal_log: Scale parameter is 0, but must be > 0!         1
-#> validate transformed params: disc[18] is nan, but must be greater than or equal to 0     1
+#>                                                                                              count
+#> Exception thrown at line 193: lognormal_log: Location parameter is -inf, but must be finite!     2
+#> validate transformed params: disc[2] is nan, but must be greater than or equal to 0              2
+#> validate transformed params: disc[1] is nan, but must be greater than or equal to 0              1
 #> When a numerical problem occurs, the Metropolis proposal gets rejected.
 #> However, by design Metropolis proposals sometimes get rejected even when there are no numerical problems.
 #> Thus, if the number in the 'count' column is small, do not ask about this message on stan-users.
-#> Ended: Mon Dec 21 15:35:48 2015
+#> Ended: Wed Dec 30 13:21:10 2015
 ```
 
-`dgirt` calls `rstan`, which reports any problems it encounters when compiling the model and sampling. If sampling is successful, `dgirt` returns a `stanfit` object.
+To examine the the `dgirt()` results we can use `extract_dgirt()`, which attaches labels to the saved parameters according to the variable names originally passed to `wrangle()` and any factor levels. Right now, `extract_dgirt()` shows only the posterior means.
 
-To extract samples from the result of `dgirt` we can use `extract_dgirt`, which returns a list whose elements are named arrays and matrices containing estimates of model parameters. We'll take a look at `theta_bar`, the group means (\(\\bar{\\theta}_g\)).
+Note that `dgirt()` returns a `stanfit` object when `method = "rstan"` (as above, the default) and a list of point estimates if `method = "optimize"` (details below); `extract_dgirt()` only works with `stanfit` objects. (The inconsistency in return types isn't desirable and will change in the future.)
+
+The group means can be found as `theta_bar`.
 
 ``` r
-dgirt_extract = extract_dgirt(dgirt_estimates)
-str(dgirt_extract$theta_bar)
-#>  num [1:3, 1:9, 1:306] 0.566 0.566 0.566 0.369 0.369 ...
-#>  - attr(*, "dimnames")=List of 3
-#>   ..$ iterations: NULL
-#>   ..$           : chr [1:9] "2006" "2007" "2008" "2009" ...
-#>   ..$           : chr [1:306] "0_1_x_AK" "0_1_x_AL" "0_1_x_AR" "0_1_x_AZ" ...
+dgirt_extract = extract_dgirt(dgirt_estimates, state_opinion_fmt)
+head(dgirt_extract$theta_bar)
+#> Source: local data frame [6 x 6]
+#> 
+#>    Var1  Var2      value  year  state   race
+#>   (int) (int)      (dbl) (chr) (fctr) (fctr)
+#> 1     1     1 -1.6336106  2006     AK      1
+#> 2     2     1  1.1216332  2007     AK      1
+#> 3     3     1  0.7285415  2008     AK      1
+#> 4     4     1 -0.4120777  2009     AK      1
+#> 5     5     1  1.5876949  2010     AK      1
+#> 6     1     2  0.8217188  2006     AK      2
 ```
-
-`theta_bar` is 3 \(\\times\) 9 \(\\times\) 306:
-
--   The first dimension of the array is indexed by sampler iteration. We ran the sampler for 10 iterations and by default discarded 7 as warm-ups, so this dimension is length-3.
--   The array's second dimension is indexed by time period, here the nine years 2006-2014.
--   The third dimension, indexed by covariate combination, is length-306, or 2 \(\\times\) 3 \(\\times\) 51. We have 2 levels in our first covariate `D_gender`, 3 levels (excluding `NA`) in our second covariate `D_race_new`, and 51 levels in the geographic identifier.
 
 `cmdstan`
 ---------
 
-We can use the `method` argument of `dgirt` to choose an alternative to MCMC sampling if `cmdstan` is available. See <http://mc-stan.org/interfaces/cmdstan.html> for installation instructions. For example, setting `method = "optimize"` will call `cmdstan optimize`.
+We can use the `method` argument of `dgirt` to choose an alternative to MCMC sampling if `cmdstan` is available. See <http://mc-stan.org/interfaces/cmdstan.html> for installation instructions. For example, setting `method = "optimize"` will call `cmdstan optimize`. Passing `optimize_algorithm = "newton"` will use Newton-Raphson instead of the default LFBGS.
 
 ``` r
-point_estimates = dgirt(state_opinion_fmt, n_iter = 100, method = "optimize",
-  init_range = 1)
-#> Started: Mon Dec 21 15:35:48 2015
+point_estimates = dgirt(state_opinion_fmt, n_iter = 20, method = "optimize",
+  optimize_algorithm = "newton", init_range = 0.5)
+#> Started: Wed Dec 30 13:21:10 2015
 #> Reading results from disk.
-#> Ended: Mon Dec 21 15:37:00 2015
+#> Ended: Wed Dec 30 13:21:43 2015
 head(point_estimates$theta_bar)
-#> Source: local data frame [6 x 7]
+#> Source: local data frame [6 x 5]
 #> 
-#>           param    value index     t   geo group_1 group_2
-#>          (fctr)    (dbl) (chr) (chr) (chr)   (chr)   (chr)
-#> 1 theta_bar.1.1 1.989150   1.1  2006    AK       0       1
-#> 2 theta_bar.2.1 1.935640   2.1  2007    AK       0       1
-#> 3 theta_bar.3.1 0.808958   3.1  2008    AK       0       1
-#> 4 theta_bar.4.1 1.735320   4.1  2009    AK       0       1
-#> 5 theta_bar.5.1 4.015730   5.1  2010    AK       0       1
-#> 6 theta_bar.6.1 3.634120   6.1  2011    AK       0       1
+#>           param     value  year  state   race
+#>          (fctr)     (dbl) (chr) (fctr) (fctr)
+#> 1 theta_bar.1.1  0.936827  2006     AK      1
+#> 2 theta_bar.2.1  1.383390  2007     AK      1
+#> 3 theta_bar.3.1 -0.861442  2008     AK      1
+#> 4 theta_bar.4.1  4.353610  2009     AK      1
+#> 5 theta_bar.5.1  4.717860  2010     AK      1
+#> 6 theta_bar.1.2 -0.314308  2006     AK      2
 ```
 
 `poststratify`
 --------------
+
+The `state_demographics` dataset contains population proportions for demographic strata by year.
 
 ``` r
 data(state_demographics)
@@ -164,13 +178,22 @@ head(state_demographics)
 #> 6     CO  1960 White or Hispanic   Male         1     1 3.543790e-04
 ```
 
+`poststratify()` can use data like these with the `dgirt()` estimates to compute weighted means for groups or arbitrary aggregations of groups.
+
+At the moment, it's necessary to relabel the group factor levels in the `dgirt()` results to match those in the population proportion data. And the time variable in the `dgirt()` results needs to be recast as integer.
+
 ``` r
-# theta_bars = point_estimates$theta_bar %>%
-#   dplyr::rename(female = group_1, race = group_2, year = t) %>%
-#   dplyr::mutate(year = as.integer(year), state = as.factor(geo), female = as.factor(female), race = as.factor(race))
-# group_means = poststratify(
-#   group_means = theta_bars,
-#   targets =  state_demographics, 
-#   variables = "year",
-#   prop_var = "proportion")
+point_estimates$theta_bar$race = factor(point_estimates$theta_bar$race, labels = c("White or Hispanic", "Black", "Other"))
+point_estimates$theta_bar$year = as.integer(point_estimates$theta_bar$year)
 ```
+
+Now we pass these data, the same `groups` argument as used originally with `wrangle`, and a vector of variable names as `strata` that define aggregations of interest in the data. For exposition we'll set two optional variables. We give the name of the variable in the demographic data for the population proportion as `prop_var`. And passing a variable name to `check_proportions` will test the demographic data for whether population proportions sum to one within groups defined by the values of that variable.
+
+    group_means = poststratify(
+      group_means = point_estimates$theta_bar,
+      targets =  state_demographics,
+      groups = c("race"),
+      strata = c("state", "year"),
+      prop_var = "proportion",
+      check_proportions = "year")
+    head(group_means)
