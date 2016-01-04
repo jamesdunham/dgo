@@ -12,6 +12,7 @@
 #' @param check_proportions Optionally, variables within whose combinations the
 #'        population proportions in `targets` should sum to one, otherwise an error
 #'        will appear; a character vector.
+#' @export
 poststratify <- function(group_means, targets, strata = c('year', 'state'),
     groups, prop_var = 'proportion', check_proportions = NULL) {
   assertthat::assert_that(assertthat::not_empty(group_means))
