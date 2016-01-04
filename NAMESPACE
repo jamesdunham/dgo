@@ -2,5 +2,6 @@
 
 export(dgirt)
 export(extract_dgirt)
+export(poststratify)
 export(wrangle)
 import(rstan)

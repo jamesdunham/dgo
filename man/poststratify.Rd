@@ -26,6 +26,9 @@ proportion of each stratum; a length-one character vector.}
 population proportions in `targets` should sum to one, otherwise an error
 will appear; a character vector.}
 }
+\value{
+table of poststratified group means
+}
 \description{
 Poststratify dgirt group means
 }
