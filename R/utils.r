@@ -27,22 +27,23 @@ create_l2_design_matrix <- function(.XX, .arg) {
 
 # Create 'greater than' indicators
 create_gt_variables <- function(d, .items){
-  out <- lapply(.items, function(stub) {
-    if (is.factor(d[[stub]])) {
-      item_levels <- levels(d[[stub]])
-      values <- as.numeric(d[[stub]])
+  out <- lapply(.items, function(item) {
+    if (is.ordered(d[[item]])) {
+      item_levels <- na.omit(levels(d[[item]]))
+      values <- match(as.character(d[[item]]), item_levels)
+    } else if (is.numeric(d[[item]])) {
+      item_levels <- na.omit(unique(d[[item]]))
+      values <- match(d[[item]], item_levels)
     } else {
-      item_levels <- as.character(sort(unique(d[[stub]])))
-      values <- d[[stub]]
+      stop("each item should be an ordered factor or numeric")
     }
-    gt_levels <- item_levels[-length(item_levels)]
-    gt_names <- paste(stub, gt_levels, sep = "_gt")
+    gt_levels <- seq_along(item_levels)[-length(item_levels)]
+    if (length(gt_levels) < 1) stop("no variation in item ", deparse(item))
     gt_cols <- lapply(gt_levels, function(gt) {
-      values > as.numeric(gt)
+      ifelse(values > gt, 1L, 0L)
     })
-    # FIXME: there's a less-than-helpful error here if any item variable is
-    # entirely missing (which should be handled checking the data)
     assertthat::assert_that(assertthat::not_empty(gt_cols))
+    gt_names <- paste(item, gt_levels, sep = "_gt")
     setNames(gt_cols, gt_names)
   })
   dplyr::bind_cols(out)

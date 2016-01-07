@@ -1,3 +1,8 @@
+## 2015-01-06
+
+  * Bugfix: mean item outcomes could be calculated incorrectly, inflating
+    success counts toward trial counts.
+
 ## 2015-12-30
 
 Version bump to 0.0.10.
