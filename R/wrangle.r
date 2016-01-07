@@ -687,13 +687,6 @@ nlevels_vectorized <- function(data, varlist) {
   sapply(data[varlist], nlevels)
 }
 
-add_survey_period_id <- function(level1, .arg) {
-  level1 <- level1 %>% tidyr::unite_("survey_period_id",
-    c(.arg$survey_id, .arg$time_id), sep = "_x_", remove = FALSE)
-  level1 <- level1 %>% dplyr::mutate_(.dots =
-    setNames(list(~as.factor(survey_period_id)), "survey_period_id"))
-}
-
 handle_data <- function(.data, .arg) {
   .data <- as_tbl(.data)
   # Make all the variables given as strings factors
@@ -716,7 +709,6 @@ apply_restrictions <- function(.data, .checks, .arg) {
   assertthat::not_empty(.arg$items)
   assertthat::not_empty(.data)
 
-  # .data <- add_survey_period_id(.data, .arg)
   .data <- drop_rare_items_over_polls(.data, .checks$q_rare.polls, .arg)
 
   return(.data)
