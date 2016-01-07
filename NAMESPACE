@@ -2,6 +2,8 @@
 
 export(dgirt)
 export(extract_dgirt)
+export(plot_means)
 export(poststratify)
 export(wrangle)
+import(ggplot2)
 import(rstan)

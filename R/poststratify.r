@@ -60,7 +60,7 @@ poststratify <- function(group_means, targets, strata = c('year', 'state'),
 
   means <- props %>%
     dplyr::group_by_(.dots = strata) %>%
-    dplyr::summarise_(weighted_mean = ~sum(weighted_value)) %>%
+    dplyr::summarise_(value = ~sum(weighted_value)) %>%
     dplyr::ungroup()
 
   return(means)

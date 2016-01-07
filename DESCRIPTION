@@ -15,6 +15,7 @@ Imports:
     data.table,
     devtools,
     dplyr,
+    ggplot2,
     lazyeval,
     reshape2,
     stringi,
