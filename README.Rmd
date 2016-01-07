@@ -30,7 +30,7 @@ dgirt is an R package for dynamic group-level IRT models, as developed in [Caugh
 ## Installation
 
 ```{r, install-dgirt}
-devtools::install_github("jamesdunham/dgirt")
+# devtools::install_github("jamesdunham/dgirt")
 ```
 
 Get updates by reinstalling. dgirt is in early stages and under development.
@@ -162,7 +162,7 @@ proportion as `prop_var`. And passing a variable name to `check_proportions`
 will test the demographic data for whether population proportions sum to one
 within groups defined by the values of that variable.
 
-```
+```{r}
 group_means = poststratify(
   group_means = point_estimates$theta_bar,
   targets =  state_demographics,
@@ -171,4 +171,23 @@ group_means = poststratify(
   prop_var = "proportion",
   check_proportions = "year")
 head(group_means)
+```
+
+## `plot_means`
+
+We can quickly plot the estimates to check the model. `plot_means` takes the
+result of `poststratify` `theta_bar` in the result of `dgirt_extract`, or
+`theta_bar` in the result of `dgirt` with `method = "optimize"`.
+
+```{r}
+# The time variable needs to be numeric. At the moment only poststratify()
+# ensures this.
+point_estimates$theta_bar$year <- as.integer(optimized_theta_bars$year)
+dgirt_extract$theta_bar$year <- as.integer(dgirt_extract$theta_bar$year)
+```
+
+```{r}
+plot_means(group_means, "year", "state", jitter = TRUE)
+# plot_means(dgirt_extract$theta_bar, "year", "state", jitter = TRUE)
+# plot_means(point_estimates$theta_bar, "year", "state", jitter = TRUE)
 ```
