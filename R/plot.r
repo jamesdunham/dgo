@@ -20,7 +20,7 @@ plot_means <- function(theta_bars, time_id, facet_var, jitter = FALSE) {
   assertthat::assert_that(is.numeric(theta_bars[[time_id]]))
   assertthat::assert_that(is.numeric(theta_bars[["value"]]))
   p <- ggplot2::ggplot(theta_bars, ggplot2::aes_string(x = time_id, y = "value")) +
-    ggplot2::geom_smooth(se = FALSE, method = "gam") +
+    ggplot2::geom_smooth(se = FALSE) +
     ggplot2::facet_wrap(facet_var) +
     ggplot2::ylab('estimate') +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle=270, vjust=0.5))
