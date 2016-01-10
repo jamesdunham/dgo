@@ -29,16 +29,26 @@ create_l2_design_matrix <- function(.XX, .arg) {
 create_gt_variables <- function(d, .items){
   out <- lapply(.items, function(item) {
     if (is.ordered(d[[item]])) {
-      item_levels <- na.omit(levels(d[[item]]))
+      item_levels <- na.omit(levels(droplevels(d[[item]])))
       values <- match(as.character(d[[item]]), item_levels)
     } else if (is.numeric(d[[item]])) {
-      item_levels <- na.omit(unique(d[[item]]))
+      item_levels <- sort(na.omit(unique(d[[item]])))
       values <- match(d[[item]], item_levels)
     } else {
       stop("each item should be an ordered factor or numeric")
     }
+    message("'", item, "' is class '", class(d[[item]]), "' with ", length(item_levels),
+      " non-missing values: '", paste(item_levels, collapse = "', '"), "'")
     gt_levels <- seq_along(item_levels)[-length(item_levels)]
     if (length(gt_levels) < 1) stop("no variation in item ", deparse(item))
+    if (identical(length(gt_levels), 1L)) {
+      assertthat::assert_that(identical(length(item_levels), 2L))
+      message("\t considered binary with failure='", item_levels[1], "' and success='", item_levels[2], "'")
+    }
+    if (length(gt_levels) > 1L) {
+      assertthat::assert_that(length(item_levels) > 2L)
+      message("\t considered ordinal with levels '", paste(item_levels, collapse = "', '"), "' (ascending)")
+    }
     gt_cols <- lapply(gt_levels, function(gt) {
       ifelse(values > gt, 1L, 0L)
     })
