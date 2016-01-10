@@ -10,7 +10,16 @@ Installation
 ------------
 
 ``` r
-# devtools::install_github("jamesdunham/dgirt")
+devtools::install_github("jamesdunham/dgirt")
+#> Downloading GitHub repo jamesdunham/dgirt@master
+#> Installing dgirt
+#> '/Library/Frameworks/R.framework/Resources/bin/R' --no-site-file  \
+#>   --no-environ --no-save --no-restore CMD INSTALL  \
+#>   '/private/var/folders/2p/_d3c95qd6ljg28j1f5l2jqxm0000gn/T/RtmpZNIpjr/devtoolsb34548ab5ab/jamesdunham-dgirt-e0d88d6'  \
+#>   --library='/Library/Frameworks/R.framework/Versions/3.2/Resources/library'  \
+#>   --install-tests 
+#> 
+#> Reloading installed dgirt
 ```
 
 Get updates by reinstalling. dgirt is in early stages and under development. See [NEWS](NEWS.md), last updated 2015-12-30.
@@ -73,7 +82,7 @@ state_opinion_fmt = wrangle(
 
 ``` r
 dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 100, n_chain = 1)
-#> Started: Wed Jan  6 21:29:37 2016
+#> Started: Sun Jan 10 16:02:38 2016
 #> Running 100 iterations in each of 1 chains. Thinning at an interval of 1 with 75 adaptation iterations.
 #> 
 #> SAMPLING FOR MODEL '605ba6820a8c93e8038f6394fbb2c3e1' NOW (CHAIN 1).
@@ -90,9 +99,9 @@ dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 100, n_chain = 1)
 #> Chain 1, Iteration: 85 / 100 [ 85%]  (Sampling)
 #> Chain 1, Iteration: 95 / 100 [ 95%]  (Sampling)
 #> Chain 1, Iteration: 100 / 100 [100%]  (Sampling)
-#> #  Elapsed Time: 118.637 seconds (Warm-up)
-#> #                38.2838 seconds (Sampling)
-#> #                156.921 seconds (Total)
+#> #  Elapsed Time: 119.304 seconds (Warm-up)
+#> #                39.152 seconds (Sampling)
+#> #                158.456 seconds (Total)
 #> The following numerical problems occured the indicated number of times after warmup on chain 1
 #>                                                                                              count
 #> validate transformed params: disc[1] is nan, but must be greater than or equal to 0              3
@@ -101,7 +110,7 @@ dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 100, n_chain = 1)
 #> When a numerical problem occurs, the Metropolis proposal gets rejected.
 #> However, by design Metropolis proposals sometimes get rejected even when there are no numerical problems.
 #> Thus, if the number in the 'count' column is small, do not ask about this message on stan-users.
-#> Ended: Wed Jan  6 21:32:16 2016
+#> Ended: Sun Jan 10 16:05:18 2016
 ```
 
 To examine the the `dgirt()` results we can use `extract_dgirt()`, which attaches labels to the saved parameters according to the variable names originally passed to `wrangle()` and any factor levels. Right now, `extract_dgirt()` shows only the posterior means.
@@ -133,20 +142,20 @@ We can use the `method` argument of `dgirt` to choose an alternative to MCMC sam
 ``` r
 point_estimates = dgirt(state_opinion_fmt, n_iter = 20, method = "optimize",
   optimize_algorithm = "newton", init_range = 0.5)
-#> Started: Wed Jan  6 21:32:16 2016
+#> Started: Sun Jan 10 16:05:18 2016
 #> Reading results from disk.
-#> Ended: Wed Jan  6 21:32:46 2016
+#> Ended: Sun Jan 10 16:05:47 2016
 head(point_estimates$theta_bar)
 #> Source: local data frame [6 x 5]
 #> 
 #>           param      value  year  state   race
 #>          (fctr)      (dbl) (chr) (fctr) (fctr)
-#> 1 theta_bar.1.1 -0.0735449  2006     AK      1
-#> 2 theta_bar.2.1  0.2401940  2007     AK      1
-#> 3 theta_bar.3.1  0.5403370  2008     AK      1
-#> 4 theta_bar.4.1 -0.2016920  2009     AK      1
-#> 5 theta_bar.5.1 -0.5632870  2010     AK      1
-#> 6 theta_bar.1.2 -0.2784380  2006     AK      2
+#> 1 theta_bar.1.1 -0.1030800  2006     AK      1
+#> 2 theta_bar.2.1  0.1401800  2007     AK      1
+#> 3 theta_bar.3.1 -0.3460930  2008     AK      1
+#> 4 theta_bar.4.1 -0.6199390  2009     AK      1
+#> 5 theta_bar.5.1 -0.0667483  2010     AK      1
+#> 6 theta_bar.1.2 -0.2945820  2006     AK      2
 ```
 
 `poststratify`
@@ -196,12 +205,12 @@ head(group_means)
 #> 
 #>    state  year         value
 #>   (fctr) (int)         (dbl)
-#> 1     AK  2006  0.0001585285
-#> 2     AK  2007  0.0007284694
-#> 3     AK  2008  0.0013416907
-#> 4     AK  2009 -0.0006245552
-#> 5     AK  2010 -0.0015500220
-#> 6     AL  2006 -0.0111266499
+#> 1     AK  2006 -2.473858e-05
+#> 2     AK  2007  2.519670e-04
+#> 3     AK  2008 -6.534113e-04
+#> 4     AK  2009 -1.250092e-03
+#> 5     AK  2010 -2.503072e-04
+#> 6     AL  2006 -1.987406e-03
 ```
 
 `plot_means`
