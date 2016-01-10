@@ -1,3 +1,16 @@
+## 2015-01-10
+
+  * Handle item variables (defensively) as follows:
+    * A numeric item variable with two unique values or an ordered factor item
+      variable with two observed levels represents a binary choice in which the
+      higher value or level is "success" and the lower value or level "failure"
+    * Generally, numeric and ordered-factor item variables represent ascending
+      ordinal choices
+    * Other classes of item variable (e.g. factor, character) result in an
+      error
+    * Print messages explaining the handling of each item variable
+  * Remove dependency on `mcgv` in `plot_means()`
+
 ## 2015-01-06
 
   * Bugfix: mean item outcomes could be calculated incorrectly, inflating
