@@ -169,7 +169,7 @@ name_group_means <- function(thetas, vars) {
   assertthat::assert_that(assertthat::not_empty(vars))
   assertthat::assert_that(assertthat::not_empty(vars$covariate_groups))
   assertthat::assert_that(assertthat::not_empty(vars$use_t))
-  thetas[[vars$time_id]] <- rep(vars$use_t, nrow(vars$covariate_groups))
+  thetas[[vars$time_id]] <- rep(as.numeric(vars$use_t), nrow(vars$covariate_groups))
   thetas <- thetas %>%
     dplyr::bind_cols(vars$covariate_groups[rep(seq_len(nrow(vars$covariate_groups)),
       each = length(vars$use_t)), ])
