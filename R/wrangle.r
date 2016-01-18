@@ -456,13 +456,13 @@ summarize_trials_by_period <- function(trial_counts, .arg) {
 }
 
 make_ns_long_obs <- function(trial_counts, success_counts, .arg) {
-  trial_counts_melt <- wrap_melt(trial_counts,
+  trial_counts_melt <- wrap_melt(trial_counts, variable.name = "item",
     id.vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id), value.name = "n_grp")
-  success_counts_melt <- wrap_melt(success_counts,
+  success_counts_melt <- wrap_melt(success_counts, variable.name = "item",
     id.vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id), value.name = "s_grp")
   joined <- dplyr::left_join(trial_counts_melt, success_counts_melt,
-      by = c(.arg$geo_id, .arg$demo_id, .arg$time_id, "variable")) %>%
-    dplyr::arrange_(.dots = c("variable", .arg$time_id, .arg$demo_id, .arg$geo_id)) %>%
+      by = c(.arg$geo_id, .arg$demo_id, .arg$time_id, "item")) %>%
+    dplyr::arrange_(.dots = c("item", .arg$time_id, .arg$demo_id, .arg$geo_id)) %>%
     tidyr::unite_("name", c(.arg$geo_id, .arg$demo_id), sep = "_x_", remove = FALSE) %>%
     dplyr::filter_(~n_grp != 0) %>%
     dplyr::as.tbl()
@@ -471,7 +471,12 @@ make_ns_long_obs <- function(trial_counts, success_counts, .arg) {
 
 wrap_melt <- function(...) {
   melt <- reshape2::melt(...)
-  melt$variable <- as.character(melt$variable)
+  melt_args <- list(...)
+  if (length(melt_args$variable.name) > 0) {
+    melt[[melt_args$variable.name]] <- as.character(melt[[melt_args$variable.name]])
+  } else {
+    melt$variable <- as.character(melt$variable)
+  }
   return(melt)
 }
 
@@ -481,10 +486,12 @@ make_ns_long <- function(ns_long_obs, .arg) {
     dplyr::left_join(ns_long_obs, ., by = c("name", .arg$time_id)) %>%
     dplyr::mutate_(
       n_grp = ~replaceNA(n_grp),
-      name = ~paste(name, .arg$time_id, sep = "_x_"),
-      name = ~paste(name, variable, sep = " | ")) %>%
-    dplyr::arrange_(.arg$geo_id, .arg$demo_id, "variable", .arg$time_id)
-
+      period_name = lazyeval::interp(~period, period = as.name(.arg$time_id)),
+      name = ~paste(item, name, sep = " | "),
+      name = ~paste(period_name, name, sep = " | ")) %>%
+    # NOTE: arrange by time, item, group. Otherwise dgirt() output won't have
+    # the expected order.
+    dplyr::arrange_(.arg$time_id, "item", .arg$geo_id, .arg$demo_id)
   ns_long$s_grp[is.na(ns_long$s_grp)] <- 0
   ns_long$n_grp[is.na(ns_long$n_grp)] <- 0
   ns_long$s_grp <- as.integer(ns_long$s_grp)
@@ -498,13 +505,13 @@ get_missingness <- function(ns_long, group_grid, .arg) {
     # in the data because of unobserved use_t
     muffle_full_join(group_grid, by = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
     # Get missingness by group
-    dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id, "variable")) %>%
+    dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id, "item")) %>%
     dplyr::summarise_("m_grp" = ~as.integer(sum(n_grp, na.rm = TRUE) == 0)) %>%
     dplyr::ungroup()
 }
 
 cast_missingness <- function(missingness, .arg) {
-  acast_formula <- as.formula(paste0(.arg$time_id, "~ variable ~", paste(.arg$demo_id, collapse = "+"), "+", .arg$geo_id))
+  acast_formula <- as.formula(paste0(.arg$time_id, "~ item ~", paste(.arg$demo_id, collapse = "+"), "+", .arg$geo_id))
   MMM <- missingness %>%
     dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0("x_", geo), geo = as.name(.arg$geo_id))), .arg$geo_id)) %>%
     reshape2::acast(acast_formula, value.var = "m_grp", fill = 1)
