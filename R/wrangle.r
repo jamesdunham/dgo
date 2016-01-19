@@ -74,7 +74,7 @@ wrangle <- function(data = list(level1,
   # TODO: should require that time_id be numeric
   arg <- handle_arguments()
   level1 <- handle_data(arg$level1, arg)
-  if (!is.null(arg$level2)) {
+  if (length(arg$level2) > 0) {
     arg$level2 <- handle_data(arg$level2, arg)
   }
 
@@ -95,7 +95,7 @@ wrangle <- function(data = list(level1,
   level1 <- subset_to_estimation_periods(level1, arg)
 
   # TODO: should lapply this and like operations over all tables in the data list
-  if (!is.null(arg$level2)) {
+  if (length(arg$level2) > 0) {
     arg$level2 <- subset_to_estimation_periods(arg$level2, arg)
   }
 
@@ -108,7 +108,7 @@ wrangle <- function(data = list(level1,
   arg$items <- intersect(arg$items, names(level1))
 
   # Create weights from population targets
-  if (!is.null(arg$targets)) {
+  if (length(arg$targets) > 0) {
     level1 <- create_weights(level1, arg)
   }
 
@@ -270,7 +270,7 @@ wrangle <- function(data = list(level1,
 }
 
 as_tbl <- function(dataframe) {
-  if (is.null(dataframe)) {
+  if (!length(dataframe) > 0) {
     return(NULL)
   } else {
     return(dplyr::as.tbl(dataframe))
@@ -614,7 +614,7 @@ update_use_geo <- function(.data, .arg) {
 }
 
 set_use_t <- function(.data, .arg) {
-  if (is.null(.arg$periods)) {
+  if (!length(.arg$periods) > 0) {
     return(levels(.data[[.arg$time_id]]))
   } else {
     return(.arg$periods)
@@ -658,7 +658,7 @@ drop_rows_missing_items <- function(.data, .arg) {
 subset_to_observed_geo_periods <- function(.arg) {
   # Subset level-2 data to geographic units observed and time periods
   # specified
-  if (is.null(.arg$level2)) {
+  if (!length(.arg$level2) > 0) {
     return(NULL)
   } else {
     .arg$level2 <- .arg$level2 %>%
@@ -724,7 +724,7 @@ apply_restrictions <- function(.data, .checks, .arg) {
 count_level2_groups <- function(level2, xtab, .arg) {
   # Generate factor levels for combinations of demographic variables
   # Gl2 gives the number of level-2 modifier combinations
-  if (is.null(.arg$level2)) {
+  if (!length(.arg$level2) > 0) {
     l2.group <- gl(1, nrow(xtab))
     Gl2 <- nlevels(l2.group)
     return(Gl2)
