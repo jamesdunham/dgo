@@ -145,10 +145,10 @@ get_dump_path <- function() {
 
 get_group_names <- function(dgirt_data) {
   demo_geo_names <- dimnames(dgirt_data$MMM)[[3]]
-  n_groups <- length(gregexpr("_x_", demo_geo_names[1])[[1]]) + 1
+  n_groups <- length(gregexpr("__", demo_geo_names[1])[[1]]) + 1
   group_names <- tidyr::separate_(data.frame(demo_geo_names),
     "demo_geo_names", into = paste0("factor", seq.int(1, n_groups)),
-    sep = "_x_", fill = "right")
+    sep = "__", fill = "right")
   return(group_names)
 }
 
