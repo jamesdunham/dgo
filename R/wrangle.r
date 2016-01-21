@@ -25,7 +25,7 @@
 #'   }
 #' @param filters Named `list` of filters that will be applied to the data.
 #'   \describe{
-#'     \item{periods}{A character vector of time periods to be used in estimation,
+#'     \item{periods}{A numeric vector of time periods to be used in estimation,
 #'        including unobserved periods or excluding observed periods as desired.
 #'        Defaults to the values of the `vars$time_id` variable in the data.}
 #'     \item{geo_ids}{A character vector giving the subset of values of `vars$geo_id` in the data to be used in estimation.
@@ -186,7 +186,7 @@ wrangle <- function(data = list(level1,
   Gl2 <- count_level2_groups(arg$level2, xtab, arg)
   XX <- model.matrix(f0, xtab)
   dimnames(XX)[[1]] <- tidyr::unite_(xtab, "rowname",
-    c(arg$geo_id, arg$demo_id), sep = "_x_")$rowname
+    c(arg$geo_id, arg$demo_id), sep = "__")$rowname
 
   # NOTE: not implemented
   # Calculate G x T x Gl2 weight matrix
@@ -270,11 +270,8 @@ wrangle <- function(data = list(level1,
 }
 
 as_tbl <- function(dataframe) {
-  if (!length(dataframe) > 0) {
-    return(NULL)
-  } else {
-    return(dplyr::as.tbl(dataframe))
-  }
+  assertthat::assert_that(inherits(dataframe, "data.frame"))
+  return(dplyr::as.tbl(dataframe))
 }
 
 check_dimensions <- function(d) {
@@ -294,7 +291,7 @@ check_dimensions <- function(d) {
 check_restrictions <- function(level1, .arg) {
   checks <- list()
   # We need to find out which time periods are observed in the data
-  checks$observed_periods <- get_t(level1[[.arg$time_id]])
+  checks$observed_periods <- get_observed_t(level1[[.arg$time_id]])
 
   # And which question columns have no valid responses
   checks$q_all_missing <- get_missing_items(level1, .arg$items)
@@ -339,11 +336,11 @@ get_rare_items_over_polls <- function(.checks, ..arg) {
   lt_min_surveys
 }
 
-get_t <- function(t_data) {
+get_observed_t <- function(t_data) {
   observed_t <- unlist(t_data)
-  assertthat::assert_that(is.factor(observed_t))
-  observed_t <- droplevels(observed_t)
-  levels(observed_t)
+  assertthat::assert_that(is.numeric(observed_t))
+  assertthat::assert_that(assertthat::not_empty(observed_t))
+  unique(observed_t)
 }
 
 get_missing_items <- function(.data, item_names) {
@@ -362,20 +359,35 @@ get_missing_respondents <- function(item_data) {
 
 summarize_design_effects <- function(.data, .arg) {
   assertthat::assert_that(is.numeric(.data[[.arg$survey_weight]]))
+  assertthat::assert_that(assertthat::has_name(.data, .arg$survey_weight))
+  assertthat::assert_that(assertthat::has_name(.data, .arg$geo_id))
+  assertthat::assert_that(has_all_names(.data, .arg$demo_id))
+  assertthat::assert_that(assertthat::has_name(.data, .arg$time_id))
+
   de_table <- dplyr::as.tbl(.data) %>%
     dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
     dplyr::select_(.arg$survey_weight) %>%
-    dplyr::summarise_("def" = lazyeval::interp(~create_design_effects(w), w = as.name(.arg$survey_weight))) %>%
+    dplyr::summarise_("def" = lazyeval::interp(~create_design_effects(w),
+      w = as.name(.arg$survey_weight))) %>%
     dplyr::arrange_(.arg$geo_id, .arg$demo_id, .arg$time_id)
+
+  assertthat::assert_that(assertthat::has_name(de_table, "def"))
+  assertthat::assert_that(assertthat::has_name(de_table, .arg$geo_id))
+  assertthat::assert_that(assertthat::has_name(de_table, .arg$demo_id))
+  assertthat::assert_that(assertthat::has_name(de_table, .arg$time_id))
   return(de_table)
 }
 
 summarize_trial_counts <- function(.data, design_effects, group_grid, .arg) {
-  trial_counts <- .data %>%
+  assertthat::assert_that(assertthat::not_empty(.data))
+  assertthat::assert_that(length(grep("_gt\\d+$", colnames(.data))) > 0)
+  not_na_trial <- .data %>%
     # The _gt variables can take values of 0/1/NA
-    dplyr::mutate_each_(~notNA, ~matches("_gt\\d+$")) %>%
+    dplyr::mutate_each_(~notNA, ~matches("_gt\\d+$"))
     # For a respondent who only answered questions A and B, we now have
     #  T,   T,   T,   T,   T,   F,   F.
+  assertthat::assert_that(assertthat::not_empty(not_na_trial))
+  trial_counts <- not_na_trial %>%
     dplyr::mutate_each_(~. / n_responses, vars = ~matches("_gt\\d+$")) %>%
     # Dividing the booleans by n_responses = 5 calculated earlier gives us
     #.02, .02, .02, .02, .02,   0,   0.
@@ -391,9 +403,9 @@ summarize_trial_counts <- function(.data, design_effects, group_grid, .arg) {
     dplyr::mutate_each_(~ceiling(. / def), vars = ~matches("_gt\\d+$")) %>%
     # Dividing by the design effect gives us a design-effect-adjusted trial
     # count.
-    dplyr::select_(~-def) %>%
+    dplyr::select_(~-def)# %>%
     # Tidy up.
-    dplyr::mutate_each_(~as.character, vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id))
+    # dplyr::mutate_each_(~as.character, vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id))
 
   # A dplyr::full_join of trial_counts and group_grid will create rows for the desired
   # covariate combinations, where unobserved cells take NA values
@@ -418,8 +430,8 @@ summarize_mean_y <- function(level1, group_grid, .arg) {
       na.rm = TRUE), vars = "contains(\"_gt\")") %>%
     dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
     dplyr::mutate_each(~replaceNaN) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate_each_(~as.character, vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id))
+    dplyr::ungroup() # %>%
+    # dplyr::mutate_each_(~as.character, vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id))
 
   # As above, create rows for unobserved but desired covariate combinations,
   # but this time leave the values as NA
@@ -463,7 +475,7 @@ make_ns_long_obs <- function(trial_counts, success_counts, .arg) {
   joined <- dplyr::left_join(trial_counts_melt, success_counts_melt,
       by = c(.arg$geo_id, .arg$demo_id, .arg$time_id, "item")) %>%
     dplyr::arrange_(.dots = c("item", .arg$time_id, .arg$demo_id, .arg$geo_id)) %>%
-    tidyr::unite_("name", c(.arg$geo_id, .arg$demo_id), sep = "_x_", remove = FALSE) %>%
+    tidyr::unite_("name", c(.arg$geo_id, .arg$demo_id), sep = "__", remove = FALSE) %>%
     dplyr::filter_(~n_grp != 0) %>%
     dplyr::as.tbl()
   return(joined)
@@ -472,6 +484,8 @@ make_ns_long_obs <- function(trial_counts, success_counts, .arg) {
 wrap_melt <- function(...) {
   melt <- reshape2::melt(...)
   melt_args <- list(...)
+  # make the "variable" variable, whatever it's called, a character vector
+  # instead of factor
   if (length(melt_args$variable.name) > 0) {
     melt[[melt_args$variable.name]] <- as.character(melt[[melt_args$variable.name]])
   } else {
@@ -481,22 +495,17 @@ wrap_melt <- function(...) {
 }
 
 make_ns_long <- function(ns_long_obs, .arg) {
-  ns_long <- setNames(data.frame(expand.grid(unique(ns_long_obs$name), .arg$use_t)), c("name", .arg$time_id)) %>%
-    dplyr::mutate_each(~as.character) %>%
+  # The next two lines ensure that all possible groups appear in n_vec ...
+  setNames(dplyr::as_data_frame(expand.grid(unique(ns_long_obs$name), .arg$use_t, stringsAsFactors = FALSE)),
+      c("name", .arg$time_id)) %>%
     dplyr::left_join(ns_long_obs, ., by = c("name", .arg$time_id)) %>%
     dplyr::mutate_(
       n_grp = ~replaceNA(n_grp),
-      period_name = lazyeval::interp(~period, period = as.name(.arg$time_id)),
-      name = ~paste(item, name, sep = " | "),
-      name = ~paste(period_name, name, sep = " | ")) %>%
+      s_grp = ~replaceNA(s_grp),
+      name = lazyeval::interp(~paste(period, item, name, sep = " | "), period = as.name(.arg$time_id))) %>%
     # NOTE: arrange by time, item, group. Otherwise dgirt() output won't have
     # the expected order.
-    dplyr::arrange_(.arg$time_id, "item", .arg$geo_id, .arg$demo_id)
-  ns_long$s_grp[is.na(ns_long$s_grp)] <- 0
-  ns_long$n_grp[is.na(ns_long$n_grp)] <- 0
-  ns_long$s_grp <- as.integer(ns_long$s_grp)
-  ns_long$n_grp <- as.integer(ns_long$n_grp)
-  ns_long
+    dplyr::arrange_(.arg$time_id, "item", .arg$demo_id, .arg$geo_id)
 }
 
 get_missingness <- function(ns_long, group_grid, .arg) {
@@ -547,7 +556,7 @@ make_NNl2 <- function(level1, T, Q, Gl2, .arg) {
 
 factorize_arg_vars <- function(.data, .arg) {
   arg_vars <- intersect(names(.data),
-    c(.arg$time_id, .arg$groups, .arg$geo_id, .arg$survey_id))
+    c(.arg$groups, .arg$geo_id, .arg$survey_id))
   is_numeric_group <- apply(.data[, .arg$groups], 2, class) == "numeric"
   if (any(is_numeric_group)) {
     message("Defining groups via numeric variables is allowed, but output names won't be descriptive. Consider using factors.")
@@ -615,8 +624,9 @@ update_use_geo <- function(.data, .arg) {
 
 set_use_t <- function(.data, .arg) {
   if (!length(.arg$periods) > 0) {
-    return(levels(.data[[.arg$time_id]]))
+    return(unique(.data[[.arg$time_id]]))
   } else {
+    assertthat::assert_that(is.numeric(.arg$periods))
     return(.arg$periods)
   }
 }
@@ -625,10 +635,9 @@ subset_to_estimation_periods <- function(.data, .arg) {
   assertthat::assert_that(is.data.frame(.data))
   assertthat::assert_that(assertthat::not_empty(.data))
   assertthat::assert_that(is_valid_string(.arg$time_id))
-  assertthat::assert_that(is.factor(.data[[.arg$time_id]]))
-  assertthat::assert_that(all_valid_strings(.arg$use_t))
-  periods_filter <- as.character(.data[[.arg$time_id]]) %in%
-    as.character(.arg$use_t)
+  assertthat::assert_that(is.numeric(.data[[.arg$time_id]]))
+  assertthat::assert_that(is.numeric(.arg$use_t))
+  periods_filter <- .data[[.arg$time_id]] %in% .arg$use_t
   .data <- .data %>% dplyr::filter(periods_filter)
   assertthat::assert_that(assertthat::not_empty(.data))
   .data <- droplevels(.data)
@@ -737,13 +746,76 @@ count_level2_groups <- function(level2, xtab, .arg) {
 }
 
 make_group_grid <- function(level1, .arg) {
-  # The table just created excludes covariate combinations not observed in the
-  # data, but we want all combinations of the demographic and geographic
-  # covariates and specified periods
-  expand.grid(c(setNames(list(as.character(.arg$use_t)), .arg$time_id),
+  assertthat::assert_that(is.numeric(.arg$use_t))
+  assertthat::assert_that(assertthat::not_empty(.arg$use_t))
+  assertthat::assert_that(assertthat::is.string(.arg$geo_id))
+  assertthat::assert_that(assertthat::is.string(.arg$demo_id))
+  assertthat::assert_that(assertthat::is.string(.arg$time_id))
+  assertthat::assert_that(is.numeric(level1[[.arg$time_id]]))
+  expand.grid(c(
+    setNames(list(.arg$use_t), .arg$time_id),
     lapply(level1[, c(.arg$geo_id, .arg$demo_id)], function(x) sort(unique(x)))))
 }
 
 muffle_full_join <- function(...) {
   suppressWarnings(dplyr::full_join(...))
+}
+
+# Create summary table of design effects
+create_design_effects <- function(x) {
+  y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
+  ifelse(is.na(y), 1, y)
+}
+
+# Create design matrix for model of hierarchical coefficients
+create_l2_design_matrix <- function(.XX, .arg) {
+  if (is.null(.arg$level2_modifiers)) {
+    zz.names <- list(.arg$use_t, dimnames(.XX)[[2]], "Zero")
+    ZZ <- array(data = 0, dim = lapply(zz.names, length),
+      dimnames = zz.names)
+  } else {
+    assertthat::not_empty(.arg$level2)
+    assertthat::assert_that(is_subset(.arg$level2_modifiers, names(.arg$level2)))
+    level2 <- .arg$level2 %>% dplyr::select_(.arg$time_id, .arg$geo_id, .arg$level2_modifiers)
+    ZZ <- suppressWarnings(reshape2::melt(level2, id.vars = c(.arg$time_id, .arg$geo_id)))
+    assertthat::assert_that(is.numeric(ZZ$value))
+    ZZ <- suppressWarnings(reshape2::acast(ZZ, formula(paste(.arg$time_id,
+            .arg$geo_id, "variable", sep = " ~ "))))
+  }
+  assertthat::assert_that(all(notNA(ZZ)))
+  return(ZZ)
+}
+
+# Create 'greater than' indicators
+create_gt_variables <- function(d, .items){
+  out <- lapply(.items, function(item) {
+    if (is.ordered(d[[item]])) {
+      item_levels <- na.omit(levels(droplevels(d[[item]])))
+      values <- match(as.character(d[[item]]), item_levels)
+    } else if (is.numeric(d[[item]])) {
+      item_levels <- sort(na.omit(unique(d[[item]])))
+      values <- match(d[[item]], item_levels)
+    } else {
+      stop("each item should be an ordered factor or numeric")
+    }
+    message("'", item, "' is class '", class(d[[item]]), "' with ", length(item_levels),
+      " non-missing values: '", paste(item_levels, collapse = "', '"), "'")
+    gt_levels <- seq_along(item_levels)[-length(item_levels)]
+    if (length(gt_levels) < 1) stop("no variation in item ", deparse(item))
+    if (identical(length(gt_levels), 1L)) {
+      assertthat::assert_that(identical(length(item_levels), 2L))
+      message("\t considered binary with failure='", item_levels[1], "' and success='", item_levels[2], "'")
+    }
+    if (length(gt_levels) > 1L) {
+      assertthat::assert_that(length(item_levels) > 2L)
+      message("\t considered ordinal with levels '", paste(item_levels, collapse = "', '"), "' (ascending)")
+    }
+    gt_cols <- lapply(gt_levels, function(gt) {
+      ifelse(values > gt, 1L, 0L)
+    })
+    assertthat::assert_that(assertthat::not_empty(gt_cols))
+    gt_names <- paste(item, gt_levels, sep = "_gt")
+    setNames(gt_cols, gt_names)
+  })
+  dplyr::bind_cols(out)
 }

@@ -26,10 +26,10 @@ suppressMessages({
 
   context("Get observed time periods")
   rm(list = ls())
-  d <- dplyr::data_frame(time_id = factor(c("1991", "1992")))
+  d <- dplyr::data_frame(time_id = c(1991L, 1992))
 
-  expect_is(get_t(d$time_id), "character")
-  expect_equal(get_t(d$time_id), c("1991", "1992"))
+  expect_true(is.numeric(get_observed_t(d$time_id)))
+  expect_equal(get_observed_t(d$time_id), c(1991, 1992))
 
   context("Get missing items")
   rm(list = ls())

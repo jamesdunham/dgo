@@ -41,7 +41,7 @@ wrangle(data = list(level1, level2 = NULL, targets = NULL),
 
 \item{filters}{Named `list` of filters that will be applied to the data.
 \describe{
-  \item{periods}{A character vector of time periods to be used in estimation,
+  \item{periods}{A numeric vector of time periods to be used in estimation,
      including unobserved periods or excluding observed periods as desired.
      Defaults to the values of the `vars$time_id` variable in the data.}
   \item{geo_ids}{A character vector giving the subset of values of `vars$geo_id` in the data to be used in estimation.

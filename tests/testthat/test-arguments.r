@@ -2,7 +2,7 @@ context("Argument defaults")
 suppressMessages({
   context("Wrap dplyr::as.tbl")
 
-  expect_is(as_tbl(NULL), "NULL")
+  expect_error(as_tbl(NULL), "does not inherit from class data.frame")
   expect_is(as_tbl(data.frame()), "tbl")
 
   context("Factorize variables")
@@ -12,7 +12,7 @@ suppressMessages({
   a <- list(level1 = d, items = "q1", time_id = "t", geo_id = "geo",
     groups = "female", survey_id = "poll", survey_weight = "weight")
 
-  expect_is(factorize_arg_vars(d, a)$t, "factor")
+  expect_is(factorize_arg_vars(d, a)$t, "numeric")
   expect_is(factorize_arg_vars(d, a)$female, "factor")
   expect_is(factorize_arg_vars(d, a)$geo, "factor")
   expect_is(factorize_arg_vars(d, a)$poll, "factor")
