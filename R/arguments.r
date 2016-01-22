@@ -58,7 +58,7 @@ check_arg_names <- function(..arg) {
 check_arg_types <- function(..arg) {
   assertthat::assert_that(inherits(..arg$level1, "data.frame"))
   assertthat::not_empty(..arg$level1)
-  assertthat::is.numeric(..arg$level1[[..arg$time_id]])
+  assertthat::assert_that(is.numeric(..arg$level1[[..arg$time_id]]))
   if (!is.null(..arg$level2)) {
     assertthat::assert_that(inherits(..arg$level2, "data.frame"))
     assertthat::assert_that(all_valid_strings(..arg$level2_modifiers))

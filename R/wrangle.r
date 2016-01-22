@@ -80,8 +80,6 @@ wrangle <- function(data = list(level1,
 
   ## INDIVIDUAL LEVEL ##
 
-  arg$demo_id <- arg$groups
-
   # Filter data
   checks <- check_restrictions(level1, arg)
   # Find rows with no valid question responses
@@ -132,11 +130,11 @@ wrangle <- function(data = list(level1,
   #     period = as.name(arg$time_id),
   #     # FIXME: observed_periods should be numeric
   #     observed_periods = as.numeric(checks$observed_periods))) %>%
-  #   dplyr::select_(.dots = c(arg$geo_id, arg$demo_id)) %>%
-  #   dplyr::group_by_(.dots = c(arg$geo_id, arg$demo_id)) %>%
+  #   dplyr::select_(.dots = c(arg$geo_id, arg$groups)) %>%
+  #   dplyr::group_by_(.dots = c(arg$geo_id, arg$groups)) %>%
   #   dplyr::summarise_("Freq" = ~n()) %>%
   #   dplyr::ungroup() %>%
-  #   dplyr::arrange_(.dots = c(arg$geo_id, arg$demo_id))
+  #   dplyr::arrange_(.dots = c(arg$geo_id, arg$groups))
 
   # Create a variable counting the number of responses given by each respondent in the data
   level1$n_responses <- count_respondent_trials(level1)
@@ -191,17 +189,17 @@ wrangle <- function(data = list(level1,
   # FIXME: still necessary?
   # Extract group ordering from ns_long
   ns_covariate_groups = ns_long %>%
-    dplyr::select_(.dots = c(arg$geo_id, arg$demo_id)) %>%
+    dplyr::select_(.dots = c(arg$geo_id, arg$groups)) %>%
     dplyr::distinct()
 
   # missingness should be ordered as n_vec and s_vec but include missing groups;
   # to confirm this, omit its missing groups and then compare
   missingness_na_omitted <- dplyr::filter_(missingness, ~m_grp != 1) %>%
-    dplyr::select_(.dots = c(arg$geo_id, arg$demo_id)) %>%
+    dplyr::select_(.dots = c(arg$geo_id, arg$groups)) %>%
     distinct()
   assertthat::assert_that(identical(ns_covariate_groups, missingness_na_omitted))
   mmm_covariate_groups = missingness %>%
-    dplyr::select_(.dots = c(arg$geo_id, arg$demo_id)) %>%
+    dplyr::select_(.dots = c(arg$geo_id, arg$groups)) %>%
     dplyr::distinct()
   assertthat::assert_that(assertthat::noNA(mmm_covariate_groups))
 
@@ -348,19 +346,19 @@ summarize_design_effects <- function(.data, .arg) {
   assertthat::assert_that(is.numeric(.data[[.arg$survey_weight]]))
   assertthat::assert_that(assertthat::has_name(.data, .arg$survey_weight))
   assertthat::assert_that(assertthat::has_name(.data, .arg$geo_id))
-  assertthat::assert_that(has_all_names(.data, .arg$demo_id))
+  assertthat::assert_that(has_all_names(.data, .arg$groups))
   assertthat::assert_that(assertthat::has_name(.data, .arg$time_id))
 
   de_table <- dplyr::as.tbl(.data) %>%
-    dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
+    dplyr::group_by_(.dots = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
     dplyr::select_(.arg$survey_weight) %>%
     dplyr::summarise_("def" = lazyeval::interp(~create_design_effects(w),
       w = as.name(.arg$survey_weight))) %>%
-    dplyr::arrange_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id))
+    dplyr::arrange_(.dots = c(.arg$geo_id, .arg$groups, .arg$time_id))
 
   assertthat::assert_that(assertthat::has_name(de_table, "def"))
   assertthat::assert_that(assertthat::has_name(de_table, .arg$geo_id))
-  assertthat::assert_that(has_all_names(de_table, .arg$demo_id))
+  assertthat::assert_that(has_all_names(de_table, .arg$groups))
   assertthat::assert_that(assertthat::has_name(de_table, .arg$time_id))
   return(de_table)
 }
@@ -378,7 +376,7 @@ summarize_trial_counts <- function(.data, design_effects, group_grid, .arg) {
     dplyr::mutate_each_(~. / n_responses, vars = ~matches("_gt\\d+$")) %>%
     # Dividing the booleans by n_responses = 5 calculated earlier gives us
     #.02, .02, .02, .02, .02,   0,   0.
-    dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
+    dplyr::group_by_(.dots = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
     dplyr::summarise_each_(~sum, vars = ~matches("_gt\\d+$")) %>%
     dplyr::ungroup() %>%
     # Summing over respondents within the grouping variables gives the count
@@ -386,47 +384,47 @@ summarize_trial_counts <- function(.data, design_effects, group_grid, .arg) {
     # equally across the _gt indicators.
     # Joining the design effect table by the grouping variables attaches
     # the design effect associated with each variable combination.
-    muffle_full_join(design_effects, by = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
+    muffle_full_join(design_effects, by = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
     dplyr::mutate_each_(~ceiling(. / def), vars = ~matches("_gt\\d+$")) %>%
     # Dividing by the design effect gives us a design-effect-adjusted trial
     # count.
     dplyr::select_(~-def)# %>%
     # Tidy up.
-    # dplyr::mutate_each_(~as.character, vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id))
+    # dplyr::mutate_each_(~as.character, vars = c(.arg$geo_id, .arg$groups, .arg$time_id))
 
   # A dplyr::full_join of trial_counts and group_grid will create rows for the desired
   # covariate combinations, where unobserved cells take NA values
   trial_counts <- muffle_full_join(trial_counts, group_grid,
-    by = c(.arg$geo_id, .arg$demo_id, .arg$time_id))
+    by = c(.arg$geo_id, .arg$groups, .arg$time_id))
   # Replace the NA values in those rows representing unobserved covariate
   # combinations with zeroes
   trial_counts <- trial_counts %>% dplyr::mutate_each_(~replaceNA, ~matches("_gt\\d+$"))
   # NOTE: Order will matter in a moment
   trial_counts <- trial_counts %>%
-    dplyr::arrange_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
+    dplyr::arrange_(.dots = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
     dplyr::mutate_each_(~as.vector, ~matches("_gt\\d+$"))
   return(trial_counts)
 }
 
 summarize_mean_y <- function(level1, group_grid, .arg) {
   mean_y <- level1 %>%
-    dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
+    dplyr::group_by_(.dots = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
     dplyr::select_(~matches("_gt\\d+$"), ~n_responses, .arg$survey_weight) %>%
     dplyr::mutate_("weight" = lazyeval::interp(~ w / n,
       w = as.name(.arg$survey_weight), n = quote(n_responses))) %>%
     dplyr::summarise_each_(~weighted.mean(as.vector(.), weight,
       na.rm = TRUE), vars = "contains(\"_gt\")") %>%
-    dplyr::group_by_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
+    dplyr::group_by_(.dots = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
     dplyr::mutate_each(~replaceNaN) %>%
     dplyr::ungroup() # %>%
-    # dplyr::mutate_each_(~as.character, vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id))
+    # dplyr::mutate_each_(~as.character, vars = c(.arg$geo_id, .arg$groups, .arg$time_id))
 
   # As above, create rows for unobserved but desired covariate combinations,
   # but this time leave the values as NA
   mean_y <- muffle_full_join(mean_y, group_grid,
-    by = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
+    by = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
       # NOTE: Order will matter in a moment
-      dplyr::arrange_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
+      dplyr::arrange_(.dots = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
       dplyr::mutate_each_(~as.vector, ~matches("_gt\\d+$"))
   return(mean_y)
 }
@@ -434,17 +432,17 @@ summarize_mean_y <- function(level1, group_grid, .arg) {
 summarize_success_count <- function(trial_counts, mean_y, .arg) {
   # Confirm row order is identical before taking product
   assertthat::are_equal(
-      dplyr::select_(mean_y, .dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)),
-      dplyr::select_(trial_counts, .dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)))
+      dplyr::select_(mean_y, .dots = c(.arg$geo_id, .arg$groups, .arg$time_id)),
+      dplyr::select_(trial_counts, .dots = c(.arg$geo_id, .arg$groups, .arg$time_id)))
   success_counts <- get_gt(trial_counts) * get_gt(mean_y)
   success_counts <- success_counts %>%
     # Reattach our identifiers
-    dplyr::bind_cols(dplyr::select_(trial_counts, .dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)), .) %>%
+    dplyr::bind_cols(dplyr::select_(trial_counts, .dots = c(.arg$geo_id, .arg$groups, .arg$time_id)), .) %>%
     # Round off returning integers and replace NA with 0
     dplyr::ungroup() %>%
     dplyr::mutate_each_(~replaceNA, ~matches("_gt\\d+$")) %>%
     dplyr::mutate_each_(~round(., digits = 0), ~matches("_gt\\d+$")) %>%
-    dplyr::arrange_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id))
+    dplyr::arrange_(.dots = c(.arg$geo_id, .arg$groups, .arg$time_id))
   return(success_counts)
 }
 
@@ -466,13 +464,13 @@ summarize_trials_by_period <- function(trial_counts, .arg) {
 
 make_ns_long_obs <- function(trial_counts, success_counts, .arg) {
   trial_counts_melt <- wrap_melt(trial_counts, variable.name = "item",
-    id.vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id), value.name = "n_grp")
+    id.vars = c(.arg$geo_id, .arg$groups, .arg$time_id), value.name = "n_grp")
   success_counts_melt <- wrap_melt(success_counts, variable.name = "item",
-    id.vars = c(.arg$geo_id, .arg$demo_id, .arg$time_id), value.name = "s_grp")
+    id.vars = c(.arg$geo_id, .arg$groups, .arg$time_id), value.name = "s_grp")
   joined <- dplyr::left_join(trial_counts_melt, success_counts_melt,
-      by = c(.arg$geo_id, .arg$demo_id, .arg$time_id, "item")) %>%
-    dplyr::arrange_(.dots = c("item", .arg$time_id, .arg$demo_id, .arg$geo_id)) %>%
-    tidyr::unite_("name", c(.arg$geo_id, .arg$demo_id), sep = "__", remove = FALSE) %>%
+      by = c(.arg$geo_id, .arg$groups, .arg$time_id, "item")) %>%
+    dplyr::arrange_(.dots = c("item", .arg$time_id, .arg$groups, .arg$geo_id)) %>%
+    tidyr::unite_("name", c(.arg$geo_id, .arg$groups), sep = "__", remove = FALSE) %>%
     dplyr::filter_(~n_grp != 0) %>%
     dplyr::as.tbl()
   return(joined)
@@ -502,26 +500,26 @@ make_ns_long <- function(ns_long_obs, .arg) {
       name = lazyeval::interp(~paste(period, item, name, sep = " | "), period = as.name(.arg$time_id))) %>%
     # NOTE: arrange by time, item, group. Otherwise dgirt() output won't have
     # the expected order.
-    dplyr::arrange_(.dots = c(.arg$time_id, "item", .arg$demo_id, .arg$geo_id))
+    dplyr::arrange_(.dots = c(.arg$time_id, "item", .arg$groups, .arg$geo_id))
 }
 
 get_missingness <- function(ns_long, group_grid, .arg) {
   ns_long %>%
     # Include in the missingness array all group-variables that might not exist
     # in the data because of unobserved use_t
-    muffle_full_join(group_grid, by = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
+    muffle_full_join(group_grid, by = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
     # Get missingness by group
-    dplyr::group_by_(.dots = c("item", .arg$time_id, .arg$demo_id, .arg$geo_id)) %>%
+    dplyr::group_by_(.dots = c("item", .arg$time_id, .arg$groups, .arg$geo_id)) %>%
     dplyr::summarise_("m_grp" = ~as.integer(sum(n_grp, na.rm = TRUE) == 0)) %>%
     dplyr::ungroup() %>%
-    dplyr::arrange_(.dots = c(.arg$time_id, "item", .arg$demo_id, .arg$geo_id))
+    dplyr::arrange_(.dots = c(.arg$time_id, "item", .arg$groups, .arg$geo_id))
 }
 
 cast_missingness <- function(missingness, .arg) {
-  acast_formula <- as.formula(paste0(.arg$time_id, "~ item ~", paste(.arg$demo_id, collapse = "+"), "+", .arg$geo_id))
+  acast_formula <- as.formula(paste0(.arg$time_id, "~ item ~", paste(.arg$groups, collapse = "+"), "+", .arg$geo_id))
   MMM <- missingness %>%
     dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0("x_", geo), geo = as.name(.arg$geo_id))), .arg$geo_id)) %>%
-    dplyr::arrange_(.dots = c(.arg$time_id, "item", .arg$demo_id, .arg$geo_id)) %>%
+    dplyr::arrange_(.dots = c(.arg$time_id, "item", .arg$groups, .arg$geo_id)) %>%
     reshape2::acast(acast_formula, value.var = "m_grp", fill = 1)
   # But we don"t want to include the character string "NA" as a variable
   MMM <- MMM[!is.na(dimnames(MMM)[[1]]),
@@ -694,7 +692,7 @@ count_questions <- function(level1) {
 }
 
 count_covariate_combos <- function(level1, .arg) {
-  factor_levels <- nlevels_vectorized(level1, c(.arg$geo_id, .arg$demo_id))
+  factor_levels <- nlevels_vectorized(level1, c(.arg$geo_id, .arg$groups))
   Reduce(`*`, factor_levels)
 }
 
@@ -737,7 +735,7 @@ count_level2_groups <- function(level2, G, .arg) {
     Gl2 <- nlevels(l2.group)
     return(Gl2)
   } else {
-    Gl2 <- nlevels_vectorized(.arg$level2, .arg$demo_id)
+    Gl2 <- nlevels_vectorized(.arg$level2, .arg$groups)
     if (Gl2 == 0) Gl2 <- 1
     assertthat::assert_that(Gl2 > 0)
     return(Gl2)
@@ -748,12 +746,12 @@ make_group_grid <- function(level1, arg) {
   assertthat::assert_that(is.numeric(arg$use_t))
   assertthat::assert_that(assertthat::not_empty(arg$use_t))
   assertthat::assert_that(assertthat::is.string(arg$geo_id))
-  assertthat::assert_that(is.character(arg$demo_id))
+  assertthat::assert_that(is.character(arg$groups))
   assertthat::assert_that(assertthat::is.string(arg$time_id))
   assertthat::assert_that(is.numeric(level1[[arg$time_id]]))
   expand.grid(c(
     setNames(list(arg$use_t), arg$time_id),
-    lapply(level1[, c(arg$geo_id, arg$demo_id)], function(x) sort(unique(x)))))
+    lapply(level1[, c(arg$geo_id, arg$groups)], function(x) sort(unique(x)))))
 }
 
 muffle_full_join <- function(...) {

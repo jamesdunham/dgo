@@ -16,7 +16,7 @@ suppressMessages({
   expect_error(summarize_design_effects(items, list("survey_weight" = "weight")),
     "argument is of length zero")
 
-  items_args <- list("survey_weight" = "weight", "geo_id" = "state", "demo_id" =
+  items_args <- list("survey_weight" = "weight", "geo_id" = "state", "groups" =
     "race", "time_id" = "year", "use_t" = c(1, 2))
   items_design_fx = summarize_design_effects(items, items_args)
 
