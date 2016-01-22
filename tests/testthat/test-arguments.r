@@ -3,7 +3,7 @@ suppressMessages({
   context("Wrap dplyr::as.tbl")
 
   expect_error(as_tbl(NULL), "does not inherit from class data.frame")
-  expect_is(as_tbl(data.frame()), "tbl")
+  expect_is(as_tbl(as.data.frame(x = 1)), "tbl")
 
   context("Factorize variables")
   rm(list = ls())
