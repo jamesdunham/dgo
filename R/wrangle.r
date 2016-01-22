@@ -71,9 +71,9 @@ wrangle <- function(data = list(level1,
                                      innov_sd_delta_scale = 2.5,
                                      innov_sd_theta_scale = 2.5)) {
 
-  # TODO: should require that time_id be numeric
   arg <- handle_arguments()
   level1 <- handle_data(arg$level1, arg)
+  # FIXME: not necessarily "level 2"
   if (length(arg$level2) > 0) {
     arg$level2 <- handle_data(arg$level2, arg)
   }
@@ -89,16 +89,13 @@ wrangle <- function(data = list(level1,
   level1 <- apply_restrictions(level1, checks, arg)
   # Update arg$items
   arg$items <- intersect(arg$items, names(level1))
-
   arg$use_t <- set_use_t(level1, arg)
   arg$use_geo <- update_use_geo(level1, arg)
   level1 <- subset_to_estimation_periods(level1, arg)
-
   # TODO: should lapply this and like operations over all tables in the data list
   if (length(arg$level2) > 0) {
     arg$level2 <- subset_to_estimation_periods(arg$level2, arg)
   }
-
   # TODO: instead of reapplying once here, should loop over restrictions until no changes
   checks <- check_restrictions(level1, arg)
   level1 <- apply_restrictions(level1, checks, arg)
@@ -119,36 +116,27 @@ wrangle <- function(data = list(level1,
   level1 <- dplyr::bind_cols(level1, gt_table)
   level1 <- drop_rows_missing_items(level1, arg)
 
-  # Fix levels of variables after filtering
+  # Fix factor levels after filtering
   level1 <- droplevels(level1)
 
   arg$level2 <- subset_to_observed_geo_periods(arg)
+  nonmissing_t <-sort(unique(level1[[arg$time_id]]))
 
-  # Quick hack: observed periods should be be the periods observed after
-  # dropping observations
-  if (is.factor(level1[[arg$time_id]])) {
-    checks$observed_periods <- levels(droplevels(level1[[arg$time_id]]))
-  } else {
-    checks$observed_periods <- unique(level1[[arg$time_id]])
-  }
-  checks$observed_periods <- as.character(checks$observed_periods)
+  group_grid <- make_group_grid(level1, arg)
+  group_grid_t <- group_grid %>%
+    dplyr::select_(lazyeval::interp(~-one_of(v), v = arg$time_id)) %>%
+    dplyr::distinct()
 
-  # FIXME: still needs to be cleaned up.
-  # f0 is used to create XX later
-  # f0_t to create MF_t -> xtab_t -> xtab
-  f0 <- as.formula(paste("~", paste("0", arg$geo_id, paste0(arg$demo_id, collapse = " + "), sep = " + ")))
-  f0_t <- as.formula(paste("~", paste("0", arg$geo_id, paste0(arg$demo_id, collapse = " + "), arg$time_id, sep = " + ")))
-  MF_t <- model.frame(f0_t, data = level1, na.action = return)
-  # Get frequency counts of factor combinations (reordered in factor order)
-  xtab_t <- as.data.frame(table(MF_t))
-  assertthat::assert_that(checks$observed_periods[1] %in% as.character(xtab_t[[arg$time_id]]))
-  # xtab gives the counts of covariate combinations (group counts)
-  # TODO: rename xtab as group_counts
-  xtab <- xtab_t %>%
-    dplyr::filter_(lazyeval::interp(~ x %in% y, x = as.name(arg$time_id),
-      y = checks$observed_periods[1])) %>%
-    dplyr::select_(.dots = c(arg$geo_id, arg$demo_id, arg$time_id))
-  assertthat::not_empty(xtab)
+  # observed_groups <- level1 %>%
+  #   dplyr::filter_(lazyeval::interp(~ period %in% observed_periods,
+  #     period = as.name(arg$time_id),
+  #     # FIXME: observed_periods should be numeric
+  #     observed_periods = as.numeric(checks$observed_periods))) %>%
+  #   dplyr::select_(.dots = c(arg$geo_id, arg$demo_id)) %>%
+  #   dplyr::group_by_(.dots = c(arg$geo_id, arg$demo_id)) %>%
+  #   dplyr::summarise_("Freq" = ~n()) %>%
+  #   dplyr::ungroup() %>%
+  #   dplyr::arrange_(.dots = c(arg$geo_id, arg$demo_id))
 
   # Create a variable counting the number of responses given by each respondent in the data
   level1$n_responses <- count_respondent_trials(level1)
@@ -158,7 +146,6 @@ wrangle <- function(data = list(level1,
   # FIXME: all of this goes toward creating ns_long; pull it out
   # Create table of design effects
   design_effects <- summarize_design_effects(level1, arg)
-  group_grid <- make_group_grid(level1, arg)
   # Create table of (adjusted) trial counts by geographic, demographic, and time variable combination
   trial_counts <- summarize_trial_counts(level1, design_effects, group_grid, arg)
   # Create table of (weighted) average outcomes within combinations of geographic, demographic, and time variables.
@@ -169,10 +156,6 @@ wrangle <- function(data = list(level1,
   trials_by_period <- summarize_trials_by_period(trial_counts, arg)
   # Giving us the periods in which we observe responses, which may be different from the periods we"ll use in estimation (given in arg$use_t)
   # FIXME: is this used?
-  checks$nonmissing_t <- trials_by_period %>%
-    dplyr::filter_(~valid_items == TRUE) %>%
-    dplyr::select_(arg$time_id) %>%
-    unlist(as.character())
 
   # NOTE: use_t must match nonmissing t at the moment
 
@@ -183,10 +166,9 @@ wrangle <- function(data = list(level1,
   # G gives the number of covariate combinations
   G <- count_covariate_combos(level1, arg)
 
-  Gl2 <- count_level2_groups(arg$level2, xtab, arg)
-  XX <- model.matrix(f0, xtab)
-  dimnames(XX)[[1]] <- tidyr::unite_(xtab, "rowname",
-    c(arg$geo_id, arg$demo_id), sep = "__")$rowname
+  Gl2 <- count_level2_groups(arg$level2, G, arg)
+
+  group_design_matrix <- make_group_design_matrix(group_grid_t)
 
   # NOTE: not implemented
   # Calculate G x T x Gl2 weight matrix
@@ -196,21 +178,22 @@ wrangle <- function(data = list(level1,
   NNl2 <- make_NNl2(level1, T, Q, Gl2, arg)
   SSl2 <- NNl2
 
+  # TODO: combine
   ns_long_obs <- make_ns_long_obs(trial_counts, success_counts, arg)
   ns_long <- make_ns_long(ns_long_obs, arg)
-  n_vec <- unlist(ns_long$n_grp)
-  s_vec <- unlist(ns_long$s_grp)
-  names(n_vec) <- ns_long$name
-  names(s_vec) <- ns_long$name
+  n_vec <- setNames(ns_long$n_grp, ns_long$name)
+  s_vec <- setNames(ns_long$s_grp, ns_long$name)
 
   # Create missingness indicator array
   missingness <- get_missingness(ns_long, group_grid, arg)
   MMM <- cast_missingness(missingness, arg)
 
+  # FIXME: still necessary?
   # Extract group ordering from ns_long
   ns_covariate_groups = ns_long %>%
     dplyr::select_(.dots = c(arg$geo_id, arg$demo_id)) %>%
     dplyr::distinct()
+
   # missingness should be ordered as n_vec and s_vec but include missing groups;
   # to confirm this, omit its missing groups and then compare
   missingness_na_omitted <- dplyr::filter_(missingness, ~m_grp != 1) %>%
@@ -223,18 +206,19 @@ wrangle <- function(data = list(level1,
   assertthat::assert_that(assertthat::noNA(mmm_covariate_groups))
 
   # The indicator matrix for hierarchical variables, XX, has as many columns as geographic units; drop one
-  XX <- XX[, -1]
+  # TODO: deal with this in model.matrix?
+  group_design_matrix <- group_design_matrix[, -1]
 
   # Assemble data for the geographic model
-  ZZ <- create_l2_design_matrix(XX, arg)
-  ZZ_prior <- create_l2_design_matrix(XX, arg)
+  ZZ <- create_l2_design_matrix(group_design_matrix, arg)
+  ZZ_prior <- create_l2_design_matrix(group_design_matrix, arg)
 
   stan_data <- list(
-    n_vec = n_vec,      # trial counts
-    s_vec = s_vec,      # sums
+    n_vec = n_vec,
+    s_vec = s_vec,
     NNl2 = NNl2,
     SSl2 = SSl2,
-    XX = XX,
+    XX = group_design_matrix,
     ZZ = ZZ,            # geographic predictors
     ZZ_prior = ZZ_prior,
     MMM = MMM,          # missingness array (T x Q x G)
@@ -242,7 +226,7 @@ wrangle <- function(data = list(level1,
     Q = Q,              # number of questions (items)
     T = T,              # number of time units (years)
     N = length(n_vec),  # number of observed group-question cells
-    P = ncol(XX),       # number of hierarchical parameters
+    P = ncol(group_design_matrix),       # number of hierarchical parameters
     S = dim(ZZ)[[2]],   # number of geographic units
     H = dim(ZZ)[[3]],   # number of geographic-level predictors
     Hprior = dim(ZZ_prior)[[3]],
@@ -264,7 +248,7 @@ wrangle <- function(data = list(level1,
                 periods = arg$periods,
                 survey_id = arg$survey_id,
                 covariate_groups = ns_covariate_groups,
-                hier_names = dimnames(XX)[[2]]))
+                hier_names = dimnames(group_design_matrix)[[2]]))
 
   # Check dimensions against what Stan will expect
   check_dimensions(stan_data)
@@ -418,7 +402,8 @@ summarize_trial_counts <- function(.data, design_effects, group_grid, .arg) {
   # combinations with zeroes
   trial_counts <- trial_counts %>% dplyr::mutate_each_(~replaceNA, ~matches("_gt\\d+$"))
   # NOTE: Order will matter in a moment
-  trial_counts <- trial_counts %>% dplyr::arrange_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
+  trial_counts <- trial_counts %>%
+    dplyr::arrange_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id)) %>%
     dplyr::mutate_each_(~as.vector, ~matches("_gt\\d+$"))
   return(trial_counts)
 }
@@ -461,6 +446,15 @@ summarize_success_count <- function(trial_counts, mean_y, .arg) {
     dplyr::mutate_each_(~round(., digits = 0), ~matches("_gt\\d+$")) %>%
     dplyr::arrange_(.dots = c(.arg$geo_id, .arg$demo_id, .arg$time_id))
   return(success_counts)
+}
+
+make_group_design_matrix <- function(group_table) {
+  group_vars <- colnames(group_table)
+  design_formula <- as.formula(paste("~ 0", paste(group_vars, collapse = " + "), sep = " + "))
+  design_matrix <- model.matrix(design_formula, group_table)
+  group_names <- tidyr::unite_(group_table, "name", group_vars, sep = "__")$name
+  rownames(design_matrix) <- group_names
+  return(design_matrix)
 }
 
 summarize_trials_by_period <- function(trial_counts, .arg) {
@@ -527,6 +521,7 @@ cast_missingness <- function(missingness, .arg) {
   acast_formula <- as.formula(paste0(.arg$time_id, "~ item ~", paste(.arg$demo_id, collapse = "+"), "+", .arg$geo_id))
   MMM <- missingness %>%
     dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0("x_", geo), geo = as.name(.arg$geo_id))), .arg$geo_id)) %>%
+    dplyr::arrange_(.dots = c(.arg$time_id, "item", .arg$demo_id, .arg$geo_id)) %>%
     reshape2::acast(acast_formula, value.var = "m_grp", fill = 1)
   # But we don"t want to include the character string "NA" as a variable
   MMM <- MMM[!is.na(dimnames(MMM)[[1]]),
@@ -734,11 +729,11 @@ apply_restrictions <- function(.data, .checks, .arg) {
   return(.data)
 }
 
-count_level2_groups <- function(level2, xtab, .arg) {
+count_level2_groups <- function(level2, G, .arg) {
   # Generate factor levels for combinations of demographic variables
   # Gl2 gives the number of level-2 modifier combinations
   if (!length(.arg$level2) > 0) {
-    l2.group <- gl(1, nrow(xtab))
+    l2.group <- gl(1, G)
     Gl2 <- nlevels(l2.group)
     return(Gl2)
   } else {
@@ -749,16 +744,16 @@ count_level2_groups <- function(level2, xtab, .arg) {
   }
 }
 
-make_group_grid <- function(level1, .arg) {
-  assertthat::assert_that(is.numeric(.arg$use_t))
-  assertthat::assert_that(assertthat::not_empty(.arg$use_t))
-  assertthat::assert_that(assertthat::is.string(.arg$geo_id))
-  assertthat::assert_that(is.character(.arg$demo_id))
-  assertthat::assert_that(assertthat::is.string(.arg$time_id))
-  assertthat::assert_that(is.numeric(level1[[.arg$time_id]]))
+make_group_grid <- function(level1, arg) {
+  assertthat::assert_that(is.numeric(arg$use_t))
+  assertthat::assert_that(assertthat::not_empty(arg$use_t))
+  assertthat::assert_that(assertthat::is.string(arg$geo_id))
+  assertthat::assert_that(is.character(arg$demo_id))
+  assertthat::assert_that(assertthat::is.string(arg$time_id))
+  assertthat::assert_that(is.numeric(level1[[arg$time_id]]))
   expand.grid(c(
-    setNames(list(.arg$use_t), .arg$time_id),
-    lapply(level1[, c(.arg$geo_id, .arg$demo_id)], function(x) sort(unique(x)))))
+    setNames(list(arg$use_t), arg$time_id),
+    lapply(level1[, c(arg$geo_id, arg$demo_id)], function(x) sort(unique(x)))))
 }
 
 muffle_full_join <- function(...) {

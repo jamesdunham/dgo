@@ -26,16 +26,6 @@ check_arg_lengths <- function(.arg) {
   return(TRUE)
 }
 
-# Check argument ranges
-check_arg_ranges <- function(.arg) {
-  assertthat::assert_that(is_positive(.arg$delta_tbar_prior_sd))
-  assertthat::assert_that(is_positive(.arg$innov_sd_delta_scale))
-  assertthat::assert_that(is_positive(.arg$innov_sd_theta_scale))
-  assertthat::assert_that(assertthat::is.count(.arg$min_surveys))
-  assertthat::assert_that(assertthat::is.count(.arg$min_periods))
-  return(TRUE)
-}
-
 # Check that names given in arguments appear in data.frame arguments
 check_arg_names <- function(..arg) {
   assertthat::assert_that(has_all_names(..arg$level1, ..arg$items))
@@ -64,10 +54,11 @@ check_arg_names <- function(..arg) {
   return(TRUE)
 }
 
-  # Check argument types and throw an error if a check fails
+# Check argument types and throw an error if a check fails
 check_arg_types <- function(..arg) {
   assertthat::assert_that(inherits(..arg$level1, "data.frame"))
   assertthat::not_empty(..arg$level1)
+  assertthat::is.numeric(..arg$level1[[..arg$time_id]])
   if (!is.null(..arg$level2)) {
     assertthat::assert_that(inherits(..arg$level2, "data.frame"))
     assertthat::assert_that(all_valid_strings(..arg$level2_modifiers))
@@ -90,6 +81,16 @@ check_arg_types <- function(..arg) {
   assertthat::is.count(..arg$constant_item)
   assertthat::is.flag(..arg$separate_periods)
   assertthat::is.flag(..arg$silent)
+  return(TRUE)
+}
+
+# Check argument ranges
+check_arg_ranges <- function(.arg) {
+  assertthat::assert_that(is_positive(.arg$delta_tbar_prior_sd))
+  assertthat::assert_that(is_positive(.arg$innov_sd_delta_scale))
+  assertthat::assert_that(is_positive(.arg$innov_sd_theta_scale))
+  assertthat::assert_that(assertthat::is.count(.arg$min_surveys))
+  assertthat::assert_that(assertthat::is.count(.arg$min_periods))
   return(TRUE)
 }
 
