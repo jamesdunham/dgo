@@ -37,7 +37,6 @@
 #'   \describe{
 #'     \item{separate_periods}{Logical for whether estimates should be pooled over time. No pooling if `TRUE`.}
 #'     \item{constant_item}{Logical for whether item parameters should be constant over time.}
-#'     \item{difficulty_count}{Number of difficulty parameters.}
 #'     \item{delta_tbar_prior_mean}{Prior mean of $\\bar{\\delta_t}$.}
 #'     \item{delta_tbar_prior_sd}{Prior standard deviation of $\\bar{\\delta_t}$.}
 #'     \item{innov_sd_delta_scale}{Prior scale of innovation parameter for standard deviation of $\\bar{\\delta_t}$.}
@@ -64,7 +63,6 @@ wrangle <- function(data = list(level1,
                                       min_surveys = 1L,
                                       min_periods = 1L),
                        params = list(separate_periods = FALSE,
-                                     difficulty_count = 1L,
                                      constant_item = TRUE,
                                      delta_tbar_prior_mean = 0.5,
                                      delta_tbar_prior_sd = 0.5,
@@ -178,7 +176,7 @@ wrangle <- function(data = list(level1,
     Hprior = dim(ZZ_prior)[[3]],
     separate_t = as.integer(arg$separate_periods),  # if 1, no pooling over time
     constant_item = as.integer(arg$constant_item),  # if 1, item parameters constant
-    D = as.integer(arg$difficulty_count),           # number of difficulty parameters
+    D = ifelse(arg$constant_item, 1L, T),           # number of difficulty parameters
     WT = WT,            # weight matrix for calculating level-two mean
     l2_only = l2_only,
     Gl2 = Gl2,          # number of second-level groups
