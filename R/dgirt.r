@@ -112,8 +112,8 @@ name_output_dims <- function(stan_output, vars) {
   stan_output$gamma$t <- rep(vars$use_t, length(vars$hier_names))
   stan_output$gamma$p <- rep(vars$hier_names, each = length(vars$use_t))
 
-  stan_output$kappa$q <- vars$items
-  stan_output$sd_item$q <- vars$items
+  stan_output$kappa$q <- vars$gt_items
+  stan_output$sd_item$q <- vars$gt_items
   # stan_output$nu_geo$geo <- # T x H geographic predictor
 
   stan_output$theta_bar <- stan_output$theta_bar %>%
@@ -178,6 +178,7 @@ name_group_means <- function(thetas, vars) {
 }
 
 attach_t = function(element, use_t, time_id) {
+  assertthat::assert_that(identical(nrow(element), length(use_t)))
   element %>%
     dplyr::mutate_(.dots = setNames(list(use_t), time_id))
 }
