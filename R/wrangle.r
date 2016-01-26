@@ -185,6 +185,7 @@ wrangle <- function(data = list(level1,
     innov_sd_delta_scale = arg$innov_sd_delta_scale,
     innov_sd_theta_scale = arg$innov_sd_theta_scale,
     vars = list(items = arg$items,
+                gt_items = grep("_gt\\d+$", colnames(level1), value = TRUE),
                 groups = arg$groups,
                 time_id = arg$time_id,
                 use_t = arg$use_t,
@@ -497,13 +498,12 @@ make_dummy_weight_matrix <- function(T, Gl2, G) {
 }
 
 make_dummy_l2_only <- function(level1, arg) {
-  l2_only <- level1 %>%
-    dplyr::group_by_(arg$time_id) %>%
-    dplyr::summarise_each_(dplyr::funs(c(0)), ~contains("_gt"))
-  rownames(l2_only) <- l2_only[[arg$time_id]]
-  l2_only <- l2_only %>%
-    dplyr::select_(~contains("_gt"))
-  as.matrix(l2_only, rownames.force = TRUE)
+  gt_names <- grep("_gt\\d+$", colnames(level1), value = TRUE)
+  l2_only <- matrix(0L,
+    nrow = length(arg$use_t),
+    ncol = length(gt_names),
+    dimnames = list(arg$use_t, gt_names))
+  l2_only
 }
 
 make_dummy_l2_counts <- function(level1, T, Q, Gl2, .arg) {
