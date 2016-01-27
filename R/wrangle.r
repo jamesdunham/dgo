@@ -197,6 +197,7 @@ wrangle <- function(data = list(level1,
 
   # Check dimensions against what Stan will expect
   check_dimensions(stan_data)
+  check_values(stan_data)
 
   return(stan_data)
 }
@@ -424,6 +425,7 @@ make_group_design_matrix <- function(group_table) {
   rownames(design_matrix) <- group_names
   # We have an indicator for each geographic unit; drop one
   design_matrix <- design_matrix[, -1]
+  assertthat::assert_that(is_subset(as.vector(design_matrix), c(0, 1)))
   return(design_matrix)
 }
 
@@ -511,17 +513,21 @@ make_dummy_l2_counts <- function(level1, T, Q, Gl2, .arg) {
       grep("_gt", colnames(level1), fixed= TRUE, value = TRUE), NULL))
 }
 
-factorize_arg_vars <- function(.data, .arg) {
-  arg_vars <- intersect(names(.data),
+factorize_arg_vars <- function(tabular, .arg) {
+  arg_vars <- intersect(names(tabular),
     c(.arg$groups, .arg$geo_id, .arg$survey_id))
-  is_numeric_group <- apply(.data[, .arg$groups], 2, class) == "numeric"
+  is_numeric_group <- apply(tabular[, .arg$groups], 2, class) == "numeric"
   if (any(is_numeric_group)) {
     message("Defining groups via numeric variables is allowed, but output names won't be descriptive. Consider using factors.")
     for (varname in .arg$groups[is_numeric_group]) {
-      .data[[varname]] <- paste0(varname, as.character(.data[[varname]]))
+      tabular[[varname]] <- paste0(varname, as.character(tabular[[varname]]))
     }
   }
-  .data %>% dplyr::mutate_each_(dplyr::funs(factor), vars = arg_vars)
+  contrast_options = getOption("contrasts")
+  options("contrasts"= rep("contr.treatment", 2))
+  tabular <- tabular %>% dplyr::mutate_each_(dplyr::funs(factor), vars = arg_vars)
+  options("contrasts"= contrast_options)
+  tabular
 }
 
 drop_missing_respondents <- function(.data, .arg) {
@@ -709,9 +715,11 @@ make_group_grid <- function(level1, arg) {
   assertthat::assert_that(is.character(arg$groups))
   assert_is_string(arg$time_id)
   assertthat::assert_that(is.numeric(level1[[arg$time_id]]))
-  expand.grid(c(
+  group_grid <- expand.grid(c(
     setNames(list(arg$use_t), arg$time_id),
     lapply(level1[, c(arg$geo_id, arg$groups)], function(x) sort(unique(x)))))
+  assert_not_empty(group_grid)
+  group_grid
 }
 
 muffle_full_join <- function(...) {
