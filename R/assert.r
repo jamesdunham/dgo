@@ -13,6 +13,7 @@ assert_has_attr = function(x, which) {
 assert_is_count = function(x) {
   assertthat::assert_that(assertthat::is.count(x))
 }
+assert_are_counts = Vectorize(assertthat::is.count)
 assert_are_equal = function(x, y) {
   assertthat::assert_that(assertthat::are_equal(x, y))
 }
