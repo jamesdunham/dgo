@@ -9,9 +9,8 @@ wrangle(data = list(level1, level2 = NULL, targets = NULL),
   preweights = NULL, preweight_proportion = NULL, level2_modifiers = NULL,
   level2_period1_modifiers = NULL), filters = list(periods = NULL, geo_ids =
   NULL, min_surveys = 1L, min_periods = 1L), params = list(separate_periods =
-  FALSE, difficulty_count = 1L, constant_item = TRUE, delta_tbar_prior_mean =
-  0.5, delta_tbar_prior_sd = 0.5, innov_sd_delta_scale = 2.5,
-  innov_sd_theta_scale = 2.5))
+  FALSE, constant_item = TRUE, delta_tbar_prior_mean = 0.5, delta_tbar_prior_sd
+  = 0.5, innov_sd_delta_scale = 2.5, innov_sd_theta_scale = 2.5))
 }
 \arguments{
 \item{data}{Named `list` of `data.frame`s containing:
@@ -54,7 +53,6 @@ wrangle(data = list(level1, level2 = NULL, targets = NULL),
 \describe{
   \item{separate_periods}{Logical for whether estimates should be pooled over time. No pooling if `TRUE`.}
   \item{constant_item}{Logical for whether item parameters should be constant over time.}
-  \item{difficulty_count}{Number of difficulty parameters.}
   \item{delta_tbar_prior_mean}{Prior mean of $\\bar{\\delta_t}$.}
   \item{delta_tbar_prior_sd}{Prior standard deviation of $\\bar{\\delta_t}$.}
   \item{innov_sd_delta_scale}{Prior scale of innovation parameter for standard deviation of $\\bar{\\delta_t}$.}
