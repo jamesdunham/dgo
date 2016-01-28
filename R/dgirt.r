@@ -37,6 +37,8 @@ dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n_war
 
   vars = dgirt_data$vars
   dgirt_data$vars = NULL
+  group_counts = dgirt_data$group_counts
+  dgirt_data$group_counts = NULL
 
   assertthat::assert_that(is_subset(method, c("rstan", "optimize")))
   message("Started: ", date())
