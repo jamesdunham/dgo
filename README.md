@@ -27,6 +27,12 @@ Use
 
 ``` r
 library(dgirt)
+#> Loading required package: rstan
+#> Loading required package: ggplot2
+#> rstan (Version 2.9.0, packaged: 2016-01-05 16:17:47 UTC, GitRev: 05c3d0058b6a)
+#> For execution on a local, multicore CPU with excess RAM we recommend calling
+#> rstan_options(auto_write = TRUE)
+#> options(mc.cores = parallel::detectCores())
 data(state_opinion)
 ```
 
@@ -76,9 +82,9 @@ dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 10, n_chain = 1)
 #> Chain 1, Iteration: 8 / 10 [ 80%]  (Sampling)
 #> Chain 1, Iteration: 9 / 10 [ 90%]  (Sampling)
 #> Chain 1, Iteration: 10 / 10 [100%]  (Sampling)
-#> #  Elapsed Time: 2.12652 seconds (Warm-up)
-#> #                0.046305 seconds (Sampling)
-#> #                2.17282 seconds (Total)
+#> #  Elapsed Time: 2.35925 seconds (Warm-up)
+#> #                0.052493 seconds (Sampling)
+#> #                2.41174 seconds (Total)
 ```
 
 We omit verbose messages here. Now, a longer run:
@@ -132,7 +138,7 @@ First, a trial run.
 ``` r
 optimize_estimates = dgirt(state_opinion_fmt, n_iter = 20, method = "optimize",
   init_range = 0.5)
-#> Started: Thu Jan 21 09:49:01 2016
+#> Started: Thu Jan 28 13:09:56 2016
 #> Reading results from disk.
 #> Warning: Truncating vector to length 1
 
@@ -149,18 +155,18 @@ optimize_estimates = dgirt(state_opinion_fmt, n_iter = 20, method = "optimize",
 #> Warning: Truncating vector to length 1
 
 #> Warning: Truncating vector to length 1
-#> Ended: Thu Jan 21 09:49:03 2016
+#> Ended: Thu Jan 28 13:09:58 2016
 head(optimize_estimates$theta_bar)
 #> Source: local data frame [6 x 5]
 #> 
 #>           param     value  year  state   race
 #>          (fctr)     (dbl) (dbl) (fctr) (fctr)
-#> 1 theta_bar.1.1 -0.517930  2006     AK  white
-#> 2 theta_bar.2.1 -1.147970  2007     AK  white
-#> 3 theta_bar.3.1 -0.530355  2008     AK  white
-#> 4 theta_bar.4.1 -0.111352  2009     AK  white
-#> 5 theta_bar.5.1 -0.562063  2010     AK  white
-#> 6 theta_bar.1.2 -0.382143  2006     AL  white
+#> 1 theta_bar.1.1 -0.193723  2006     AK  white
+#> 2 theta_bar.2.1 -0.185212  2007     AK  white
+#> 3 theta_bar.3.1 -0.052772  2008     AK  white
+#> 4 theta_bar.4.1 -0.119272  2009     AK  white
+#> 5 theta_bar.5.1 -0.330503  2010     AK  white
+#> 6 theta_bar.1.2  0.308219  2006     AL  white
 ```
 
 And now a longer run.
@@ -239,14 +245,14 @@ optimize_group_means = poststratify(
 head(optimize_group_means)
 #> Source: local data frame [6 x 3]
 #> 
-#>    state  year        value
-#>   (fctr) (int)        (dbl)
-#> 1     AK  2006 -0.002496122
-#> 2     AK  2007 -0.003602109
-#> 3     AK  2008 -0.003149042
-#> 4     AK  2009 -0.002535193
-#> 5     AK  2010 -0.002642950
-#> 6     AL  2006 -0.015120944
+#>    state  year         value
+#>   (fctr) (int)         (dbl)
+#> 1     AK  2006 -0.0010407069
+#> 2     AK  2007 -0.0011886074
+#> 3     AK  2008 -0.0006462566
+#> 4     AK  2009 -0.0007266582
+#> 5     AK  2010 -0.0009961151
+#> 6     AL  2006 -0.0006533016
 ```
 
 `plot_means`
