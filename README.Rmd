@@ -30,12 +30,12 @@ dgirt is an R package for dynamic group-level IRT models, as developed in [Caugh
 
 ## Installation
 
-```
+```{r, install-dgirt, results = "hide"}
 devtools::install_github("jamesdunham/dgirt")
 ```
 
 Get updates by reinstalling. dgirt is in early stages and under development.
-See [NEWS](NEWS.md), last updated 2015-12-30.
+See [NEWS](NEWS.md), last updated 2016-01-28.
 
 ## Quick start
 

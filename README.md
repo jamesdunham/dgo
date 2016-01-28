@@ -9,9 +9,13 @@ dgirt is an R package for dynamic group-level IRT models, as developed in [Caugh
 Installation
 ------------
 
-    devtools::install_github("jamesdunham/dgirt")
+``` r
+devtools::install_github("jamesdunham/dgirt")
+#> Skipping install for github remote, the SHA1 (07bcc2cd) has not changed since last install.
+#>   Use `force = TRUE` to force installation
+```
 
-Get updates by reinstalling. dgirt is in early stages and under development. See [NEWS](NEWS.md), last updated 2015-12-30.
+Get updates by reinstalling. dgirt is in early stages and under development. See [NEWS](NEWS.md), last updated 2016-01-28.
 
 Quick start
 -----------
@@ -27,12 +31,6 @@ Use
 
 ``` r
 library(dgirt)
-#> Loading required package: rstan
-#> Loading required package: ggplot2
-#> rstan (Version 2.9.0, packaged: 2016-01-05 16:17:47 UTC, GitRev: 05c3d0058b6a)
-#> For execution on a local, multicore CPU with excess RAM we recommend calling
-#> rstan_options(auto_write = TRUE)
-#> options(mc.cores = parallel::detectCores())
 data(state_opinion)
 ```
 
@@ -82,9 +80,9 @@ dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 10, n_chain = 1)
 #> Chain 1, Iteration: 8 / 10 [ 80%]  (Sampling)
 #> Chain 1, Iteration: 9 / 10 [ 90%]  (Sampling)
 #> Chain 1, Iteration: 10 / 10 [100%]  (Sampling)
-#> #  Elapsed Time: 2.35925 seconds (Warm-up)
-#> #                0.052493 seconds (Sampling)
-#> #                2.41174 seconds (Total)
+#> #  Elapsed Time: 2.03918 seconds (Warm-up)
+#> #                0.046519 seconds (Sampling)
+#> #                2.0857 seconds (Total)
 ```
 
 We omit verbose messages here. Now, a longer run:
@@ -100,21 +98,6 @@ The group means can be found as `theta_bar`.
 
 ``` r
 dgirt_extract = extract_dgirt(dgirt_estimates, state_opinion_fmt)
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
 head(dgirt_extract$theta_bar)
 #> Source: local data frame [6 x 6]
 #> 
@@ -138,35 +121,20 @@ First, a trial run.
 ``` r
 optimize_estimates = dgirt(state_opinion_fmt, n_iter = 20, method = "optimize",
   init_range = 0.5)
-#> Started: Thu Jan 28 13:09:56 2016
+#> Started: Thu Jan 28 13:26:00 2016
 #> Reading results from disk.
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
-
-#> Warning: Truncating vector to length 1
-#> Ended: Thu Jan 28 13:09:58 2016
+#> Ended: Thu Jan 28 13:26:02 2016
 head(optimize_estimates$theta_bar)
 #> Source: local data frame [6 x 5]
 #> 
-#>           param     value  year  state   race
-#>          (fctr)     (dbl) (dbl) (fctr) (fctr)
-#> 1 theta_bar.1.1 -0.193723  2006     AK  white
-#> 2 theta_bar.2.1 -0.185212  2007     AK  white
-#> 3 theta_bar.3.1 -0.052772  2008     AK  white
-#> 4 theta_bar.4.1 -0.119272  2009     AK  white
-#> 5 theta_bar.5.1 -0.330503  2010     AK  white
-#> 6 theta_bar.1.2  0.308219  2006     AL  white
+#>           param       value  year  state   race
+#>          (fctr)       (dbl) (dbl) (fctr) (fctr)
+#> 1 theta_bar.1.1 -0.44094300  2006     AK  white
+#> 2 theta_bar.2.1 -0.69100500  2007     AK  white
+#> 3 theta_bar.3.1 -0.14584500  2008     AK  white
+#> 4 theta_bar.4.1  0.00806882  2009     AK  white
+#> 5 theta_bar.5.1 -0.10939000  2010     AK  white
+#> 6 theta_bar.1.2  0.15690400  2006     AL  white
 ```
 
 And now a longer run.
@@ -219,12 +187,12 @@ head(group_means)
 #> 
 #>    state  year       value
 #>   (fctr) (int)       (dbl)
-#> 1     AK  2006 -0.01504757
-#> 2     AK  2007 -0.02031446
-#> 3     AK  2008 -0.01584997
-#> 4     AK  2009 -0.01935265
-#> 5     AK  2010 -0.01149973
-#> 6     AL  2006 -0.03762232
+#> 1     AK  2006 -0.01401868
+#> 2     AK  2007 -0.01974274
+#> 3     AK  2008 -0.01353382
+#> 4     AK  2009 -0.01287266
+#> 5     AK  2010 -0.01036648
+#> 6     AL  2006 -0.03600276
 ```
 
 The same approach works after `dgirt()` if `method = "optimize")`.
@@ -247,12 +215,12 @@ head(optimize_group_means)
 #> 
 #>    state  year         value
 #>   (fctr) (int)         (dbl)
-#> 1     AK  2006 -0.0010407069
-#> 2     AK  2007 -0.0011886074
-#> 3     AK  2008 -0.0006462566
-#> 4     AK  2009 -0.0007266582
-#> 5     AK  2010 -0.0009961151
-#> 6     AL  2006 -0.0006533016
+#> 1     AK  2006 -0.0009395527
+#> 2     AK  2007 -0.0012730972
+#> 3     AK  2008 -0.0002819233
+#> 4     AK  2009  0.0001397374
+#> 5     AK  2010 -0.0003722671
+#> 6     AL  2006 -0.0036041118
 ```
 
 `plot_means`
