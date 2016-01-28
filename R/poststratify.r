@@ -22,7 +22,6 @@ poststratify <- function(group_means, targets, strata = c('year', 'state'),
   assertthat::assert_that(all_valid_strings(groups))
   assertthat::assert_that(assertthat::is.string(prop_var))
 
-  n <- nrow(group_means)
   targets_n <- nrow(dplyr::distinct_(targets, .dots = c(strata, groups)))
   if (nrow(targets) > targets_n) {
     warning("More rows of proportions than combinations of its strata and grouping variables. ",
@@ -38,8 +37,8 @@ poststratify <- function(group_means, targets, strata = c('year', 'state'),
 
   group_means_n <- nrow(group_means)
   props <- dplyr::inner_join(group_means, targets, by = c(strata, groups))
-  if (!identical(n, nrow(props))) {
-    warning("Dropped ", n - nrow(props), " group means not found in targets")
+  if (!identical(group_means_n, nrow(props))) {
+    warning("Dropped ", group_means_n - nrow(props), " group means not found in targets")
   }
 
   if (!is.null(check_proportions)) {
