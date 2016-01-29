@@ -9,13 +9,13 @@
 #'        a character vector.
 #' @param prop_var Variable in `targets` table that gives the population
 #'        proportion of each stratum; a length-one character vector.
-#' @param check_proportions Optionally, variables within whose combinations the
+#' @param summands Optionally, variables within whose combinations the
 #'        population proportions in `targets` should sum to one, otherwise an error
 #'        will appear; a character vector.
 #' @return table of poststratified group means
 #' @export
 poststratify <- function(group_means, targets, strata = c('year', 'state'),
-    groups, prop_var = 'proportion', check_proportions = NULL) {
+    groups, prop_var = 'proportion', summands = NULL) {
   assertthat::assert_that(assertthat::not_empty(group_means))
   assertthat::assert_that(assertthat::not_empty(targets))
   assertthat::assert_that(all_valid_strings(strata))
@@ -41,28 +41,38 @@ poststratify <- function(group_means, targets, strata = c('year', 'state'),
     warning("Dropped ", group_means_n - nrow(props), " group means not found in targets")
   }
 
-  if (!is.null(check_proportions)) {
-    assertthat::assert_that(assertthat::is.string(check_proportions))
-    prop_sums <- props %>%
-      dplyr::group_by_(.dots = check_proportions) %>%
-      dplyr::summarise_(proportion = lazyeval::interp(~sum(prop),
-        prop = as.name(prop_var)))
-    if (!all(round(unlist(prop_sums$proportion), 4) %in% 1L)) {
-      stop("not all proportions sum to 1 within", check_proportions)
-    }
-  }
+  strata_sums <- props %>%
+    dplyr::group_by_(.dots = strata) %>%
+    dplyr::summarise_(strata_sum = lazyeval::interp(~sum(prop), prop = as.name(prop_var)))
+
+  if (length(summands) > 1) check_proportions(props, prop_var, summands)
 
   props <- props %>%
-    dplyr::group_by_(.dots = strata) %>%
-    dplyr::mutate_(weighted_value = lazyeval::interp(~value * prop, prop =
-      as.name(prop_var)))
+    dplyr::left_join(strata_sums, by = strata) %>%
+    dplyr::mutate_(scaled_prop = lazyeval::interp(~prop / strata_sum, prop = as.name(prop_var)))
+  check_proportions(props, "scaled_prop", strata)
 
   means <- props %>%
     dplyr::group_by_(.dots = strata) %>%
+    dplyr::mutate_(weighted_value = ~value * scaled_prop) %>%
     dplyr::summarise_(value = ~sum(weighted_value)) %>%
     dplyr::ungroup()
 
   return(means)
+}
+
+check_proportions <- function(tabular, prop_var, summands) {
+  assertthat::assert_that(assertthat::is.string(prop_var))
+  assertthat::assert_that(is.character(summands) && all(nchar(summands) > 0))
+  sums <- tabular %>%
+    dplyr::group_by_(.dots = summands) %>%
+    dplyr::summarise_(proportion = lazyeval::interp(~sum(prop), prop = as.name(prop_var)))
+    if (!all(round(unlist(sums$proportion), 4) %in% 1)) {
+      stop("not all proportions sum to 1 within ", paste(summands, collapse = ", "))
+    }
+    else {
+      invisible(TRUE)
+    }
 }
 
 check_factor_levels <- function(variable, group_means, targets) {

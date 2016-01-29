@@ -5,7 +5,7 @@
 \title{Poststratify dgirt group means}
 \usage{
 poststratify(group_means, targets, strata = c("year", "state"), groups,
-  prop_var = "proportion", check_proportions = NULL)
+  prop_var = "proportion", summands = NULL)
 }
 \arguments{
 \item{group_means}{The `theta_bar` element of `dgirt` results; a data.frame.}
@@ -22,7 +22,7 @@ a character vector.}
 \item{prop_var}{Variable in `targets` table that gives the population
 proportion of each stratum; a length-one character vector.}
 
-\item{check_proportions}{Optionally, variables within whose combinations the
+\item{summands}{Optionally, variables within whose combinations the
 population proportions in `targets` should sum to one, otherwise an error
 will appear; a character vector.}
 }
