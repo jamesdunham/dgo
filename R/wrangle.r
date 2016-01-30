@@ -114,7 +114,9 @@ wrangle <- function(data = list(level1,
   level1 <- droplevels(level1)
 
   arg$level2 <- subset_to_observed_geo_periods(arg)
-  nonmissing_t <-sort(unique(level1[[arg$time_id]]))
+  nonmissing_t <- sort(unique(level1[[arg$time_id]]))
+
+  # sort_order = rev(c(arg$time_id, "item", arg$groups, arg$geo_id))
 
   group_grid <- make_group_grid(level1, arg)
   group_grid_t <- group_grid %>%
@@ -141,19 +143,8 @@ wrangle <- function(data = list(level1,
     dplyr::select_(.dots = c(arg$geo_id, arg$groups)) %>%
     dplyr::distinct()
 
-  # missingness should be ordered as n_vec and s_vec but include missing groups;
-  # to confirm this, omit its missing groups and then compare
-  # missingness_na_omitted <- dplyr::filter_(missingness, ~m_grp != 1) %>%
-  #   dplyr::select_(.dots = c(arg$geo_id, arg$groups)) %>%
-  #   distinct()
-  # assertthat::assert_that(identical(ns_covariate_groups, missingness_na_omitted))
-  # mmm_covariate_groups = missingness %>%
-  #   dplyr::select_(.dots = c(arg$geo_id, arg$groups)) %>%
-  #   dplyr::distinct()
-  # assert_no_na(mmm_covariate_groups)
-
   # NOTE: previously named XX
-  group_design_matrix <- make_group_design_matrix(group_grid_t)
+  group_design_matrix <- make_group_design_matrix(group_grid_t, arg)
   ZZ <- create_l2_design_matrix(group_design_matrix, arg)
   ZZ_prior <- create_l2_design_matrix(group_design_matrix, arg)
 
@@ -199,6 +190,7 @@ wrangle <- function(data = list(level1,
   # Check dimensions against what Stan will expect
   check_dimensions(stan_data)
   check_values(stan_data)
+  check_order(stan_data)
 
   return(stan_data)
 }
@@ -418,12 +410,16 @@ count_group_successes <- function(trial_counts, mean_y, .arg) {
   return(success_counts)
 }
 
-make_group_design_matrix <- function(group_table) {
-  group_vars <- colnames(group_table)
-  design_formula <- as.formula(paste("~ 0", paste(group_vars, collapse = " + "), sep = " + "))
-  design_matrix <- model.matrix(design_formula, group_table)
-  group_names <- tidyr::unite_(group_table, "name", group_vars, sep = "__")$name
-  rownames(design_matrix) <- group_names
+make_group_design_matrix <- function(group_grid_t, arg) {
+  design_formula <- as.formula(paste("~ 0", arg$geo_id, paste(arg$groups, collapse = " + "), sep = " + "))
+  design_matrix <- model.matrix(design_formula, group_grid_t)
+  design_matrix <- cbind(design_matrix, group_grid_t) %>%
+    dplyr::arrange_(.dots = c(arg$groups, arg$geo_id)) %>%
+    tidyr::unite_("group", arg$groups, sep = "_") %>%
+    tidyr::unite_("name", c("group", arg$geo_id), sep = "_x_")
+  rownames(design_matrix) <- design_matrix$name
+  design_matrix <- design_matrix %>% dplyr::select_(~-one_of("name")) %>%
+    as.matrix()
   # We have an indicator for each geographic unit; drop one
   design_matrix <- design_matrix[, -1]
   assertthat::assert_that(is_subset(as.vector(design_matrix), c(0, 1)))
