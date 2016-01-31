@@ -137,14 +137,9 @@ wrangle <- function(data = list(level1,
   NNl2 <- make_dummy_l2_counts(level1, T, Q, Gl2, arg)
   SSl2 <- make_dummy_l2_counts(level1, T, Q, Gl2, arg)
 
-  # FIXME: still necessary?
-  # Extract group ordering from group_counts
-  ns_covariate_groups = group_grid %>%
-    dplyr::select_(.dots = c(arg$geo_id, arg$groups)) %>%
-    dplyr::distinct()
-
   # NOTE: previously named XX
   group_design_matrix <- make_group_design_matrix(group_grid_t, arg)
+  ns_covariate_groups <- attr(group_design_matrix, "group_order")
   ZZ <- create_l2_design_matrix(group_design_matrix, arg)
   ZZ_prior <- create_l2_design_matrix(group_design_matrix, arg)
 
@@ -414,14 +409,18 @@ make_group_design_matrix <- function(group_grid_t, arg) {
   design_formula <- as.formula(paste("~ 0", arg$geo_id, paste(arg$groups, collapse = " + "), sep = " + "))
   design_matrix <- model.matrix(design_formula, group_grid_t)
   design_matrix <- cbind(design_matrix, group_grid_t) %>%
-    dplyr::arrange_(.dots = c(arg$groups, arg$geo_id)) %>%
-    tidyr::unite_("group", arg$groups, sep = "_") %>%
-    tidyr::unite_("name", c("group", arg$geo_id), sep = "_x_")
+    dplyr::arrange_(.dots = c(arg$groups, arg$geo_id))
+  design_matrix <- design_matrix %>%
+    tidyr::unite_("group_concat", arg$groups, sep = "_") %>%
+    tidyr::unite_("name", c("group_concat", arg$geo_id), sep = "_x_")
+  group_order <- design_matrix %>% dplyr::select_(.dots = c("name"))
   rownames(design_matrix) <- design_matrix$name
   design_matrix <- design_matrix %>% dplyr::select_(~-one_of("name")) %>%
     as.matrix()
   # We have an indicator for each geographic unit; drop one
   design_matrix <- design_matrix[, -1]
+  attr(design_matrix, "group_order") <- group_order
+  assertthat::assert_that(identical(rownames(design_matrix), group_order$name))
   assertthat::assert_that(is_subset(as.vector(design_matrix), c(0, 1)))
   return(design_matrix)
 }
