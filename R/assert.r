@@ -51,18 +51,6 @@ is_positive <- function(x) {
   assertthat::assert_that(is.numeric(x))
   x > 0
 }
-equal_length <- function(x, y) {
-  assertthat::assert_that(identical(length(x), length(y)))
-}
-
-is_subset <- function(x, y) {
-  assertthat::assert_that(all(unique(x) %in% unique(y)))
-}
-
-is_positive <- function(x) {
-  assertthat::assert_that(is.numeric(x))
-  x > 0
-}
 
 none_empty <- function(x) {
   assertthat::assert_that(assertthat::not_empty(x))
