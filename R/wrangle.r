@@ -118,10 +118,12 @@ wrangle <- function(data = list(level1,
 
   # sort_order = rev(c(arg$time_id, "item", arg$groups, arg$geo_id))
 
-  group_grid <- make_group_grid(level1, arg)
+  group_grid <- make_group_grid(level1, arg) %>%
+    dplyr::arrange_(.dots = c(arg$time_id, arg$groups, arg$geo_id))
   group_grid_t <- group_grid %>%
     dplyr::select_(lazyeval::interp(~-one_of(v), v = arg$time_id)) %>%
-    dplyr::distinct()
+    dplyr::distinct() %>%
+    dplyr::arrange_(.dots = c(arg$groups, arg$geo_id))
 
   group_counts <- make_group_counts(level1, group_grid, arg)
   MMM <- create_missingness_array(group_counts, group_grid, arg)
@@ -139,7 +141,6 @@ wrangle <- function(data = list(level1,
 
   # NOTE: previously named XX
   group_design_matrix <- make_group_design_matrix(group_grid_t, arg)
-  ns_covariate_groups <- attr(group_design_matrix, "group_order")
   ZZ <- create_l2_design_matrix(group_design_matrix, arg)
   ZZ_prior <- create_l2_design_matrix(group_design_matrix, arg)
 
@@ -179,7 +180,7 @@ wrangle <- function(data = list(level1,
                 geo_id = arg$geo_id,
                 periods = arg$periods,
                 survey_id = arg$survey_id,
-                covariate_groups = ns_covariate_groups,
+                covariate_groups = group_grid_t,
                 hier_names = dimnames(group_design_matrix)[[2]]))
 
   # Check dimensions against what Stan will expect
@@ -410,20 +411,33 @@ make_group_design_matrix <- function(group_grid_t, arg) {
   design_matrix <- model.matrix(design_formula, group_grid_t)
   design_matrix <- cbind(design_matrix, group_grid_t) %>%
     dplyr::arrange_(.dots = c(arg$groups, arg$geo_id))
-  design_matrix <- design_matrix %>%
-    tidyr::unite_("group_concat", arg$groups, sep = "_") %>%
-    tidyr::unite_("name", c("group_concat", arg$geo_id), sep = "_x_")
-  group_order <- design_matrix %>% dplyr::select_(.dots = c("name"))
+  group_names <- concat_groups(group_grid_t, arg, "name")
+  design_matrix <- concat_groups(design_matrix, arg, "name")
+  assertthat::assert_that(identical(group_names$name, design_matrix$name))
   rownames(design_matrix) <- design_matrix$name
   design_matrix <- design_matrix %>% dplyr::select_(~-one_of("name")) %>%
     as.matrix()
   # We have an indicator for each geographic unit; drop one
   design_matrix <- design_matrix[, -1]
-  attr(design_matrix, "group_order") <- group_order
-  assertthat::assert_that(identical(rownames(design_matrix), group_order$name))
+  assertthat::assert_that(identical(rownames(design_matrix), group_names$name))
   assertthat::assert_that(is_subset(as.vector(design_matrix), c(0, 1)))
   return(design_matrix)
 }
+
+concat_groups <- function(tabular, arg, name) {
+  has_all_names(tabular, c(arg$groups, arg$geo_id))
+  tabular %>%
+    tidyr::unite_("group_concat", arg$groups, sep = "_") %>%
+    tidyr::unite_(name, c("group_concat", arg$geo_id), sep = "_x_")
+}
+
+split_groups <- function(tabular, arg, name) {
+  assert_has_name(tabular, "name")
+  tabular %>%
+    tidyr::separate_(name, c("group_concat", arg$geo_id), sep = "_x_") %>%
+    tidyr::separate_("group_concat", arg$groups, sep = "_")
+}
+# split_groups(concat_groups(group_grid_t, arg, "name"), arg, "name")
 
 summarize_trials_by_period <- function(trial_counts, .arg) {
   dplyr::select_(trial_counts, ~matches("_gt\\d+$"), .arg$time_id) %>%
