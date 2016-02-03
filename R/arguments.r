@@ -46,7 +46,7 @@ check_arg_names <- function(..arg) {
           unlist(..arg$level2_period1_modifiers))))
   }
   if (length(..arg$targets) > 0) {
-    assertthat::assert_that(has_all_names(..arg$level2,
+    assertthat::assert_that(has_all_names(..arg$targets,
         c(..arg$time_id, unlist(..arg$groups), ..arg$geo_id,
           unlist(..arg$target_groups),
           unlist(..arg$target_proportion))))
