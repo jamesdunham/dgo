@@ -56,7 +56,6 @@ get_group_props <- function(tabular, target_groups, prop_var) {
   tabular
 }
 
-
 rake_weight <- function(level1, formula.list, target_design, arg) {
   ds <- survey::svydesign(ids = ~1, data = level1,
     weights = formula(paste0("~", arg$survey_weight)))

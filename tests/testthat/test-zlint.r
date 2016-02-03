@@ -2,6 +2,6 @@
 if (requireNamespace("lintr", quietly = TRUE)) {
   testthat::context("lints")
   testthat::test_that("Package Style", {
-    devtools::lint("../../dgirt", linters = lintr::with_defaults(line_length_linter = lintr::line_length_linter(110)))
+    devtools::lint(".", linters = lintr::with_defaults(line_length_linter = lintr::line_length_linter(110)))
   })
 }

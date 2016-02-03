@@ -6,7 +6,7 @@
 \usage{
 wrangle(data = list(level1, level2 = NULL, targets = NULL),
   vars = list(items, groups, time_id, geo_id, survey_id, survey_weight,
-  preweights = NULL, preweight_proportion = NULL, level2_modifiers = NULL,
+  target_groups = NULL, target_proportion = NULL, level2_modifiers = NULL,
   level2_period1_modifiers = NULL), filters = list(periods = NULL, geo_ids =
   NULL, min_surveys = 1L, min_periods = 1L), params = list(separate_periods =
   FALSE, constant_item = TRUE, delta_tbar_prior_mean = 0.5, delta_tbar_prior_sd
