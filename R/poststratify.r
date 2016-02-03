@@ -41,6 +41,17 @@ poststratify <- function(group_means, targets, strata = c('year', 'state'),
     warning("Dropped ", group_means_n - nrow(props), " group means not found in targets")
   }
 
+  props <- scale_props(props, prop_var, strata, summands)
+  means <- props %>%
+    dplyr::group_by_(.dots = strata) %>%
+    dplyr::mutate_(weighted_value = ~value * scaled_prop) %>%
+    dplyr::summarise_(value = ~sum(weighted_value)) %>%
+    dplyr::ungroup()
+
+  return(means)
+}
+
+scale_props <- function(props, prop_var, strata, summands) {
   strata_sums <- props %>%
     dplyr::group_by_(.dots = strata) %>%
     dplyr::summarise_(strata_sum = lazyeval::interp(~sum(prop), prop = as.name(prop_var)))
@@ -51,14 +62,7 @@ poststratify <- function(group_means, targets, strata = c('year', 'state'),
     dplyr::left_join(strata_sums, by = strata) %>%
     dplyr::mutate_(scaled_prop = lazyeval::interp(~prop / strata_sum, prop = as.name(prop_var)))
   check_proportions(props, "scaled_prop", strata)
-
-  means <- props %>%
-    dplyr::group_by_(.dots = strata) %>%
-    dplyr::mutate_(weighted_value = ~value * scaled_prop) %>%
-    dplyr::summarise_(value = ~sum(weighted_value)) %>%
-    dplyr::ungroup()
-
-  return(means)
+  props
 }
 
 check_proportions <- function(tabular, prop_var, summands) {
