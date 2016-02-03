@@ -30,7 +30,7 @@ dgirt is an R package for dynamic group-level IRT models, as developed in [Caugh
 
 ## Installation
 
-```{r, install-dgirt, results = "hide"}
+```{r, install-dgirt, results = "hide", message = FALSE}
 devtools::install_github("jamesdunham/dgirt")
 ```
 
@@ -48,7 +48,7 @@ See [NEWS](NEWS.md), last updated 2016-01-28.
 `state_opinion` is a dataset included with `dgirt` in which rows correspond to survey
 responses from individuals.
 
-```{r, load-and-attach}
+```{r, load-and-attach, results = "hide", message = FALSE}
 library(dgirt)
 data(state_opinion)
 ```
@@ -102,7 +102,7 @@ class `stanfit`. (See rstan documentation.)
 A short trial run is often a good idea.
 
 ```{r, dgirt-rstan-trial, message = FALSE}
-dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 10, n_chain = 1)
+dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 3, n_chain = 1)
 ```
 
 We omit verbose messages here. Now, a longer run:
@@ -176,7 +176,7 @@ Now we pass these data, the same `groups` argument as used originally with
 `wrangle`, and a vector of variable names as `strata` that define aggregations
 of interest in the data. For exposition we'll set two optional variables. We
 give the name of the variable in the demographic data for the population
-proportion as `prop_var`. And passing a variable name to `check_proportions`
+proportion as `prop_var`. And passing a variable name to `summands`
 will test the demographic data for whether population proportions sum to one
 within groups defined by the values of that variable.
 
@@ -189,7 +189,7 @@ group_means = poststratify(
   groups = c("race"),
   strata = c("state", "year"),
   prop_var = "proportion",
-  check_proportions = "year")
+  summands = "year")
 head(group_means)
 ```
 
@@ -204,7 +204,7 @@ optimize_group_means = poststratify(
   groups = c("race"),
   strata = c("state", "year"),
   prop_var = "proportion",
-  check_proportions = "year")
+  summands = "year")
 head(optimize_group_means)
 ```
 
