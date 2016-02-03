@@ -31,5 +31,5 @@ suppressMessages({
     race = as.factor(c("A", "B", NA, "D")),
     year = as.factor(c("A", "B", "C", NA)))
   arg <- list(geo_id = "state", groups = "race", time_id = "year")
-  expect_equal(drop_rows_missing_covariates(d, arg)$id, 1)
+  expect_equal(drop_rows_missing_covariates(d, c("race"), arg)$id, 1)
 })

@@ -70,10 +70,10 @@ wrangle <- function(data = list(level1,
                                      innov_sd_theta_scale = 2.5)) {
 
   arg <- handle_arguments()
-  level1 <- handle_data(arg$level1, arg)
+  level1 <- handle_data(arg$level1, c(arg$time_id, arg$geo_id, arg$groups, arg$survey_id), arg)
   # FIXME: not necessarily "level 2"
   if (length(arg$level2) > 0) {
-    arg$level2 <- handle_data(arg$level2, arg)
+    arg$level2 <- handle_data(arg$level2, c(arg$time_id, arg$geo_id, arg$level2_modifiers, arg$level2_period1_modifiers), arg)
   }
 
   ## INDIVIDUAL LEVEL ##
@@ -525,7 +525,7 @@ make_dummy_l2_counts <- function(level1, T, Q, Gl2, .arg) {
 
 factorize_arg_vars <- function(tabular, .arg) {
   arg_vars <- intersect(names(tabular),
-    c(.arg$groups, .arg$geo_id, .arg$survey_id))
+    c(.arg$groups, .arg$geo_id, .arg$survey_id, .arg$level2_modifiers, .arg$level2_period1_modifiers))
   is_numeric_group <- apply(tabular[, .arg$groups], 2, class) == "numeric"
   if (any(is_numeric_group)) {
     message("Defining groups via numeric variables is allowed, but output names won't be descriptive. Consider using factors.")
@@ -617,13 +617,13 @@ subset_to_estimation_periods <- function(.data, .arg) {
   return(.data)
 }
 
-drop_rows_missing_covariates <- function(.data, .arg) {
+drop_rows_missing_covariates <- function(.data, covariates, .arg) {
   n <- nrow(.data)
   .data <- .data %>%
     dplyr::filter_(lazyeval::interp(~!is.na(geo_name) & !is.na(time_name),
   geo_name = as.name(.arg$geo_id),
   time_name = as.name(.arg$time_id)))
-  for (v in .arg$groups) {
+  for (v in covariates) {
     .data <- .data %>%
       dplyr::filter_(lazyeval::interp(~!is.na(varname), varname = as.name(v)))
   }
@@ -676,11 +676,11 @@ nlevels_vectorized <- function(data, varlist) {
   sapply(data[varlist], nlevels)
 }
 
-handle_data <- function(.data, .arg) {
+handle_data <- function(.data, covariates, .arg) {
   .data <- as_tbl(.data)
   # Make all the variables given as strings factors
   # Drop rows lacking covariates, time variable, or geographic variable
-  .data <- drop_rows_missing_covariates(.data, .arg)
+  .data <- drop_rows_missing_covariates(.data, covariates, .arg)
   .data <- factorize_arg_vars(.data, .arg)
   return(.data)
 }
@@ -706,12 +706,12 @@ apply_restrictions <- function(.data, .checks, .arg) {
 count_level2_groups <- function(level2, G, .arg) {
   # Generate factor levels for combinations of demographic variables
   # Gl2 gives the number of level-2 modifier combinations
-  if (length(.arg$level2) < 1) {
+  if (length(level2) < 1) {
     l2.group <- gl(1, G)
     Gl2 <- nlevels(l2.group)
     return(Gl2)
   } else {
-    Gl2 <- nlevels_vectorized(.arg$level2, .arg$groups)
+    Gl2 <- nlevels_vectorized(.arg$level2, .arg$level2_modifiers)
     if (Gl2 == 0) Gl2 <- 1
     assertthat::assert_that(Gl2 > 0)
     return(Gl2)
