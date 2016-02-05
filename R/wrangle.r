@@ -70,10 +70,16 @@ wrangle <- function(data = list(level1,
                                      innov_sd_theta_scale = 2.5)) {
 
   arg <- handle_arguments()
-  level1 <- handle_data(arg$level1, c(arg$time_id, arg$geo_id, arg$groups, arg$survey_id), arg)
-  # FIXME: not necessarily "level 2"
+  level1 <- handle_data(arg$level1,
+    covariates = c(arg$time_id, arg$geo_id, arg$groups, arg$survey_id),
+    factorize = TRUE,
+    arg)
   if (length(arg$level2) > 0) {
-    arg$level2 <- handle_data(arg$level2, c(arg$time_id, arg$geo_id, arg$level2_modifiers, arg$level2_period1_modifiers), arg)
+    arg$level2 <- handle_data(arg$level2,
+      covariates = unique(c(arg$time_id, arg$geo_id, arg$level2_modifiers, arg$level2_period1_modifiers)),
+      # TODO: handle
+      factorize = FALSE,
+      arg)
   }
 
   ## INDIVIDUAL LEVEL ##
@@ -117,8 +123,7 @@ wrangle <- function(data = list(level1,
   nonmissing_t <- sort(unique(level1[[arg$time_id]]))
 
   # sort_order = rev(c(arg$time_id, "item", arg$groups, arg$geo_id))
-
-  group_grid <- make_group_grid(level1, arg) %>%
+  group_grid <- make_group_grid(level1, arg$groups, arg) %>%
     dplyr::arrange_(.dots = c(arg$time_id, arg$groups, arg$geo_id))
   group_grid_t <- group_grid %>%
     dplyr::select_(lazyeval::interp(~-one_of(v), v = arg$time_id)) %>%
@@ -133,16 +138,17 @@ wrangle <- function(data = list(level1,
   G <- count_covariate_combos(level1, arg)
 
   # Create placeholders
-  Gl2 <- count_level2_groups(arg$level2, G, arg)
+  # TODO: confirm that count_level2_groups works with > 1 group
+  # Gl2 <- count_level2_groups(arg$level2, G, arg)
+  Gl2 <- length(arg$level2_modifiers)
   WT <- make_dummy_weight_matrix(T, Gl2, G)
   l2_only <- make_dummy_l2_only(level1, arg)
-  NNl2 <- make_dummy_l2_counts(level1, T, Q, Gl2, arg)
-  SSl2 <- make_dummy_l2_counts(level1, T, Q, Gl2, arg)
+  NNl2 <- make_dummy_l2_counts(level1, T, Q, Gl2 = length(arg$level2_modifiers), arg$level2_modifiers, arg)
+  SSl2 <- make_dummy_l2_counts(level1, T, Q, Gl2 = length(arg$level2_modifiers), arg$level2_modifiers, arg)
 
-  # NOTE: previously named XX
-  group_design_matrix <- make_group_design_matrix(group_grid_t, arg)
-  ZZ <- create_l2_design_matrix(group_design_matrix, arg)
-  ZZ_prior <- create_l2_design_matrix(group_design_matrix, arg)
+  group_design_matrix <- make_design_matrix(group_grid_t, arg$groups, arg)
+  ZZ <- shape_hierarchical_data(arg$level2, arg$level2_modifiers, group_grid_t, arg)
+  ZZ_prior <- ZZ
 
   stan_data <- list(
     n_vec = setNames(group_counts$n_grp, group_counts$name),
@@ -189,6 +195,41 @@ wrangle <- function(data = list(level1,
   check_order(stan_data)
 
   return(stan_data)
+}
+
+shape_hierarchical_data <- function(level2, modifiers, group_grid_t, arg) {
+  # the array of hierarchical data ZZ should be T x P x H, where T is the number of time periods, P is the number of
+  # hierarchical parameters (including the geographic), and H is the number of predictors for geographic unit effects
+  modeled_params = c(arg$geo_id, arg$time_id, modifiers)
+  unmodeled_params = setdiff(c(arg$geo_id, arg$time_id, arg$groups), modeled_params)
+  # TODO: uniqueness checks on level2 data (state_demographics should not pass)
+  # TODO: confirm sort order of level2_modifiers
+  hier_frame <- level2 %>%
+    dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0(arg$geo_id, geo),
+      geo = as.name(arg$geo_id))), arg$geo_id)) %>%
+    dplyr::select_(.dots = c(modeled_params, arg$level2_modifiers)) %>%
+    dplyr::rename_("param" = arg$geo_id) %>%
+    dplyr::mutate_("param" = ~as.character(param))
+  modeled_param_names <- unique(unlist(dplyr::select_(hier_frame, "param")))
+  unmodeled_param_levels = lapply(unmodeled_params, function(x) {
+      paste0(x, levels(group_grid_t[, x])[-1])
+    }) %>% unlist()
+  param_levels <- c(modeled_param_names, unmodeled_param_levels)
+  unmodeled_frame <- expand.grid(list(
+      unmodeled_param_levels, 
+      sort(unique(unlist(dplyr::select_(level2, arg$time_id)))),
+      0)) %>%
+    setNames(c("param", arg$time_id, arg$level2_modifiers)) %>%
+    dplyr::arrange_(.dots = c("param", arg$time_id))
+  hier_frame <- dplyr::bind_rows(hier_frame, unmodeled_frame)
+  hier_melt <- wrap_melt(hier_frame, id.vars = c("param", arg$time_id), variable.name = "modifiers") %>%
+    dplyr::mutate_("param" = ~factor(param, levels = param_levels, ordered = TRUE))
+  assertthat::assert_that(all(modeled_param_names %in% unlist(hier_melt$param)))
+  assertthat::assert_that(all(unmodeled_param_levels %in% unlist(hier_melt$param)))
+  melt_formula <- as.formula(paste(arg$time_id, "param", "modifiers", sep = " ~ "))
+  zz <- reshape2::acast(hier_melt, melt_formula, drop = FALSE, value.var = "value")
+  zz <- zz[, -1, , drop = FALSE]
+  zz
 }
 
 add_gt_variables <- function(level1, arg) {
@@ -406,13 +447,13 @@ count_group_successes <- function(trial_counts, mean_y, .arg) {
   return(success_counts)
 }
 
-make_group_design_matrix <- function(group_grid_t, arg) {
-  design_formula <- as.formula(paste("~ 0", arg$geo_id, paste(arg$groups, collapse = " + "), sep = " + "))
-  design_matrix <- model.matrix(design_formula, group_grid_t)
-  design_matrix <- cbind(design_matrix, group_grid_t) %>%
-    dplyr::arrange_(.dots = c(arg$groups, arg$geo_id))
-  group_names <- concat_groups(group_grid_t, arg, "name")
-  design_matrix <- concat_groups(design_matrix, arg, "name")
+make_design_matrix <- function(grid_t, factors, arg) {
+  design_formula <- as.formula(paste("~ 0", arg$geo_id, paste(factors, collapse = " + "), sep = " + "))
+  design_matrix <- model.matrix(design_formula, grid_t)
+  design_matrix <- cbind(design_matrix, grid_t) %>%
+    dplyr::arrange_(.dots = c(factors, arg$geo_id))
+  group_names <- concat_groups(grid_t, factors, arg$geo_id, "name")
+  design_matrix <- concat_groups(design_matrix, factors, arg$geo_id, "name")
   assertthat::assert_that(identical(group_names$name, design_matrix$name))
   rownames(design_matrix) <- design_matrix$name
   design_matrix <- design_matrix %>% dplyr::select_(~-one_of("name")) %>%
@@ -424,20 +465,21 @@ make_group_design_matrix <- function(group_grid_t, arg) {
   return(design_matrix)
 }
 
-concat_groups <- function(tabular, arg, name) {
-  has_all_names(tabular, c(arg$groups, arg$geo_id))
+concat_groups <- function(tabular, group_names, geo_id, name) {
+  has_all_names(tabular, group_names)
+  has_all_names(tabular, geo_id)
   tabular %>%
-    tidyr::unite_("group_concat", arg$groups, sep = "_") %>%
-    tidyr::unite_(name, c("group_concat", arg$geo_id), sep = "_x_")
+    tidyr::unite_("group_concat", group_names, sep = "_") %>%
+    tidyr::unite_(name, c("group_concat", geo_id), sep = "_x_")
 }
 
-split_groups <- function(tabular, arg, name) {
+split_groups <- function(tabular, group_names, geo_id, name) {
   assert_has_name(tabular, "name")
   tabular %>%
-    tidyr::separate_(name, c("group_concat", arg$geo_id), sep = "_x_") %>%
-    tidyr::separate_("group_concat", arg$groups, sep = "_")
+    tidyr::separate_(name, c("group_concat", geo_id), sep = "_x_") %>%
+    tidyr::separate_("group_concat", group_names, sep = "_")
 }
-# split_groups(concat_groups(group_grid_t, arg, "name"), arg, "name")
+# split_groups(concat_groups(group_grid_t, arg$groups, arg$geo_id, "name"), arg$groups, arg$geo_id, "name")
 
 summarize_trials_by_period <- function(trial_counts, .arg) {
   dplyr::select_(trial_counts, ~matches("_gt\\d+$"), .arg$time_id) %>%
@@ -518,18 +560,18 @@ make_dummy_l2_only <- function(level1, arg) {
   l2_only
 }
 
-make_dummy_l2_counts <- function(level1, T, Q, Gl2, .arg) {
-  array(0, c(T, Q, Gl2), list(.arg$use_t,
-      grep("_gt", colnames(level1), fixed= TRUE, value = TRUE), NULL))
+make_dummy_l2_counts <- function(level1, T, Q, Gl2, level2_modifiers, arg) {
+  array(0, c(T, Q, Gl2), list(arg$use_t,
+      grep("_gt", colnames(level1), fixed= TRUE, value = TRUE), level2_modifiers))
 }
 
 factorize_arg_vars <- function(tabular, .arg) {
   arg_vars <- intersect(names(tabular),
     c(.arg$groups, .arg$geo_id, .arg$survey_id, .arg$level2_modifiers, .arg$level2_period1_modifiers))
-  is_numeric_group <- apply(tabular[, .arg$groups], 2, class) == "numeric"
-  if (any(is_numeric_group)) {
+  numeric_groups <- tabular %>% dplyr::summarize_each_(~is.numeric, vars = arg_vars) %>% unlist()
+  if (any(numeric_groups)) {
     message("Defining groups via numeric variables is allowed, but output names won't be descriptive. Consider using factors.")
-    for (varname in .arg$groups[is_numeric_group]) {
+    for (varname in names(numeric_groups)) {
       tabular[[varname]] <- paste0(varname, as.character(tabular[[varname]]))
     }
   }
@@ -676,12 +718,14 @@ nlevels_vectorized <- function(data, varlist) {
   sapply(data[varlist], nlevels)
 }
 
-handle_data <- function(.data, covariates, .arg) {
+handle_data <- function(.data, covariates, factorize, .arg) {
   .data <- as_tbl(.data)
   # Make all the variables given as strings factors
   # Drop rows lacking covariates, time variable, or geographic variable
   .data <- drop_rows_missing_covariates(.data, covariates, .arg)
-  .data <- factorize_arg_vars(.data, .arg)
+  if (factorize == TRUE) {
+    .data <- factorize_arg_vars(.data, .arg)
+  }
   return(.data)
 }
 
@@ -718,16 +762,16 @@ count_level2_groups <- function(level2, G, .arg) {
   }
 }
 
-make_group_grid <- function(level1, arg) {
+make_group_grid <- function(level, factors, arg) {
   assertthat::assert_that(is.numeric(arg$use_t))
   assert_not_empty(arg$use_t)
   assert_is_string(arg$geo_id)
-  assertthat::assert_that(is.character(arg$groups))
+  assertthat::assert_that(is.character(factors))
   assert_is_string(arg$time_id)
-  assertthat::assert_that(is.numeric(level1[[arg$time_id]]))
+  assertthat::assert_that(is.numeric(level[[arg$time_id]]))
   group_grid <- expand.grid(c(
     setNames(list(arg$use_t), arg$time_id),
-    lapply(level1[, c(arg$geo_id, arg$groups)], function(x) sort(unique(x)))))
+    lapply(level[, c(arg$geo_id, factors)], function(x) sort(unique(x)))))
   assert_not_empty(group_grid)
   group_grid
 }
@@ -743,19 +787,13 @@ create_design_effects <- function(x) {
 }
 
 # Create design matrix for model of hierarchical coefficients
-create_l2_design_matrix <- function(.XX, .arg) {
-  if (is.null(.arg$level2_modifiers)) {
-    zz.names <- list(.arg$use_t, dimnames(.XX)[[2]], "Zero")
+create_l2_design_matrix <- function(group_design_matrix, arg) {
+  if (is.null(arg$level2_modifiers)) {
+    zz.names <- list(arg$use_t, dimnames(group_design_matrix)[[2]], "Zero")
     ZZ <- array(data = 0, dim = lapply(zz.names, length),
       dimnames = zz.names)
   } else {
-    assert_not_empty(.arg$level2)
-    assertthat::assert_that(is_subset(.arg$level2_modifiers, names(.arg$level2)))
-    level2 <- .arg$level2 %>% dplyr::select_(.arg$time_id, .arg$geo_id, .arg$level2_modifiers)
-    ZZ <- suppressWarnings(reshape2::melt(level2, id.vars = c(.arg$time_id, .arg$geo_id)))
-    assertthat::assert_that(is.numeric(ZZ$value))
-    ZZ <- suppressWarnings(reshape2::acast(ZZ, formula(paste(.arg$time_id,
-            .arg$geo_id, "variable", sep = " ~ "))))
+
   }
   assertthat::assert_that(all(notNA(ZZ)))
   return(ZZ)
