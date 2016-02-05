@@ -87,13 +87,18 @@ stan_code <- "
       }
       if (t > 1 && separate_t == 0) {
         if (t == 2) {
+          ## 2016-02-05: need to think more about nu_geo_prior; make it different for geographic and demographic
+          ## parameters
+          ##
           ## In the second year, agian use uniformative prior for gamma, rather
           ## than one centered on its lagged value, because gamma is likely to be
-          ## very different in periods 1 and 2 because in only in 2 is
+          ## very different in periods 1 and 2 because only in 2 is
           ## theta_bar[t - 1] used to inform theta_bar[t].
           mu_gamma[t] <- ZZ_prior[t] * nu_geo_prior;
           gamma[t] <- mu_gamma[t] + sd_gamma * gamma_raw[t];
         } else {
+          ## 2016-02-05: maybe delta_gamma should differ for geographic and demographic parameters ;
+          ## could do random walk DLM for demographic parameters
           mu_gamma[t] <- gamma[t - 1] * delta_gamma[t] + ZZ[t] * nu_geo[t];
           gamma[t] <- mu_gamma[t] + sd_innov_gamma * gamma_raw[t];
         }
