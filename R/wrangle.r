@@ -209,7 +209,8 @@ shape_hierarchical_data <- function(level2, modifiers, group_grid_t, arg) {
       geo = as.name(arg$geo_id))), arg$geo_id)) %>%
     dplyr::select_(.dots = c(modeled_params, arg$level2_modifiers)) %>%
     dplyr::rename_("param" = arg$geo_id) %>%
-    dplyr::mutate_("param" = ~as.character(param))
+    dplyr::mutate_("param" = ~as.character(param)) %>%
+    dplyr::arrange_(.dots = c("param", arg$time_id))
   modeled_param_names <- unique(unlist(dplyr::select_(hier_frame, "param")))
   unmodeled_param_levels = lapply(unmodeled_params, function(x) {
       paste0(x, levels(group_grid_t[, x])[-1])
