@@ -43,7 +43,7 @@ create_weights <- function(.level1, .arg) {
 
   .level1 <- .level1 %>%
     dplyr::group_by_(.dots = .arg$t_var) %>%
-    dplyr::mutate_(preweight = ~preweight / mean(new_weight, na.rm = TRUE)) %>%
+    dplyr::mutate_(preweight = ~preweight / mean(preweight, na.rm = TRUE)) %>%
     dplyr::ungroup()
 
   return(.level1)
