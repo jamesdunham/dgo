@@ -70,16 +70,17 @@ wrangle <- function(data = list(level1,
                                      innov_sd_theta_scale = 2.5)) {
 
   arg <- handle_arguments()
-  level1 <- handle_data(arg$level1,
-    covariates = c(arg$time_id, arg$geo_id, arg$groups, arg$survey_id),
-    factorize = TRUE,
-    arg)
+  level1 <- handle_data(.data = arg$level1,
+                        covariates = c(arg$time_id, arg$geo_id, arg$groups, arg$survey_id),
+                        factorize = TRUE,
+                        .arg = arg)
   if (length(arg$level2) > 0) {
-    arg$level2 <- handle_data(arg$level2,
-      covariates = unique(c(arg$time_id, arg$geo_id, arg$level2_modifiers, arg$level2_period1_modifiers)),
-      # TODO: handle
-      factorize = FALSE,
-      arg)
+    arg$level2 <- handle_data(.data = arg$level2,
+                              covariates = unique(c(arg$time_id, arg$geo_id, arg$level2_modifiers,
+                                  arg$level2_period1_modifiers)),
+                              # TODO: handle
+                              factorize = FALSE,
+                              .arg = arg)
   }
 
   ## INDIVIDUAL LEVEL ##
@@ -140,14 +141,14 @@ wrangle <- function(data = list(level1,
   # Create placeholders
   # TODO: confirm that count_level2_groups works with > 1 group
   # Gl2 <- count_level2_groups(arg$level2, G, arg)
-  Gl2 <- length(arg$level2_modifiers)
+  Gl2 <- count_level2_groups(arg$level2, G, arg)
   WT <- make_dummy_weight_matrix(T, Gl2, G)
   l2_only <- make_dummy_l2_only(level1, arg)
-  NNl2 <- make_dummy_l2_counts(level1, T, Q, Gl2 = length(arg$level2_modifiers), arg$level2_modifiers, arg)
-  SSl2 <- make_dummy_l2_counts(level1, T, Q, Gl2 = length(arg$level2_modifiers), arg$level2_modifiers, arg)
+  NNl2 <- make_dummy_l2_counts(level1, T, Q, Gl2 = Gl2, arg$level2_modifiers, arg)
+  SSl2 <- make_dummy_l2_counts(level1, T, Q, Gl2 = Gl2, arg$level2_modifiers, arg)
 
   group_design_matrix <- make_design_matrix(group_grid_t, arg$groups, arg)
-  ZZ <- shape_hierarchical_data(arg$level2, arg$level2_modifiers, group_grid_t, arg)
+  ZZ <- make_hierarchical_array(level1, arg$level2, arg$level2_modifiers, group_design_matrix, group_grid_t, arg) 
   ZZ_prior <- ZZ
 
   stan_data <- list(
@@ -197,6 +198,16 @@ wrangle <- function(data = list(level1,
   return(stan_data)
 }
 
+make_hierarchical_array <- function(level1, level2, level2_modifiers, group_design_matrix, group_grid_t, arg) {
+  if (length(arg$level2) > 0) {
+    ZZ <- shape_hierarchical_data(level2, level2_modifiers, group_grid_t, arg)
+  } else {
+    zz.names <- list(arg$use_t, dimnames(group_design_matrix)[[2]], "")
+    ZZ <- array(data = 0, dim = lapply(zz.names, length), dimnames = zz.names)
+  }
+  ZZ
+}
+
 shape_hierarchical_data <- function(level2, modifiers, group_grid_t, arg) {
   # the array of hierarchical data ZZ should be T x P x H, where T is the number of time periods, P is the number of
   # hierarchical parameters (including the geographic), and H is the number of predictors for geographic unit effects
@@ -204,8 +215,7 @@ shape_hierarchical_data <- function(level2, modifiers, group_grid_t, arg) {
   unmodeled_params = setdiff(c(arg$geo_id, arg$time_id, arg$groups), modeled_params)
   # TODO: uniqueness checks on level2 data (state_demographics should not pass)
   # TODO: confirm sort order of level2_modifiers
-  hier_frame <- level2 %>%
-    dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0(arg$geo_id, geo),
+  hier_frame <- level2 %>% dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0(arg$geo_id, geo),
       geo = as.name(arg$geo_id))), arg$geo_id)) %>%
     dplyr::select_(.dots = c(modeled_params, arg$level2_modifiers)) %>%
     dplyr::rename_("param" = arg$geo_id) %>%
@@ -748,17 +758,14 @@ apply_restrictions <- function(.data, .checks, .arg) {
   return(.data)
 }
 
-count_level2_groups <- function(level2, G, .arg) {
-  # Generate factor levels for combinations of demographic variables
-  # Gl2 gives the number of level-2 modifier combinations
+count_level2_groups <- function(level2, G, arg) {
   if (length(level2) < 1) {
     l2.group <- gl(1, G)
     Gl2 <- nlevels(l2.group)
     return(Gl2)
   } else {
-    Gl2 <- nlevels_vectorized(.arg$level2, .arg$level2_modifiers)
-    if (Gl2 == 0) Gl2 <- 1
-    assertthat::assert_that(Gl2 > 0)
+    Gl2 <- nlevels_vectorized(arg$level2, arg$level2_modifiers)
+    Gl2 <- max(unlist(Gl2), 1)
     return(Gl2)
   }
 }
