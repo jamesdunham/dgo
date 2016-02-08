@@ -37,7 +37,7 @@ suppressMessages({
 
   context("Get factor combinations")
 
-  items_grid = make_group_grid(items, items_args)
+  items_grid = make_group_grid(items, items_args$groups, items_args)
   expect_equal(dim(items_grid), c(12, 3))
   expect_equal(items_grid$year, rep(c(1,2), 6))
   expect_equal(items_grid$state, as.factor(rep(c("AK", "AL", "AZ"),
