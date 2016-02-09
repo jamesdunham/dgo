@@ -100,6 +100,12 @@ wrangle <- function(data = list(level1,
   # TODO: should lapply this and like operations over all tables in the data list
   if (length(arg$level2) > 0) {
     arg$level2 <- subset_to_estimation_periods(arg$level2, arg)
+    time_diff <- setdiff(
+        unlist(dplyr::select_(level1, arg$time_id)),
+        unlist(dplyr::select_(arg$level2, arg$time_id)))
+    if (length(time_diff) > 0) {
+      stop("missing hierarchical data in ", paste(time_diff, collapse = ", "))
+    }
   }
   # TODO: instead of reapplying once here, should loop over restrictions until no changes
   checks <- check_restrictions(level1, arg)
@@ -120,7 +126,7 @@ wrangle <- function(data = list(level1,
   # Fix factor levels after filtering
   level1 <- droplevels(level1)
 
-  arg$level2 <- subset_to_observed_geo_periods(arg)
+  arg$level2 <- subset_to_observed_geo_periods(arg$level2, arg)
   nonmissing_t <- sort(unique(level1[[arg$time_id]]))
 
   # sort_order = rev(c(arg$time_id, "item", arg$groups, arg$geo_id))
@@ -140,7 +146,6 @@ wrangle <- function(data = list(level1,
 
   # Create placeholders
   # TODO: confirm that count_level2_groups works with > 1 group
-  # Gl2 <- count_level2_groups(arg$level2, G, arg)
   Gl2 <- count_level2_groups(arg$level2, G, arg)
   WT <- make_dummy_weight_matrix(T, Gl2, G)
   l2_only <- make_dummy_l2_only(level1, arg)
@@ -199,7 +204,7 @@ wrangle <- function(data = list(level1,
 }
 
 make_hierarchical_array <- function(level1, level2, level2_modifiers, group_design_matrix, group_grid_t, arg) {
-  if (length(arg$level2) > 0) {
+  if (length(level2) > 0) {
     ZZ <- shape_hierarchical_data(level2, level2_modifiers, group_grid_t, arg)
   } else {
     zz.names <- list(arg$use_t, dimnames(group_design_matrix)[[2]], "")
@@ -211,27 +216,49 @@ make_hierarchical_array <- function(level1, level2, level2_modifiers, group_desi
 shape_hierarchical_data <- function(level2, modifiers, group_grid_t, arg) {
   # the array of hierarchical data ZZ should be T x P x H, where T is the number of time periods, P is the number of
   # hierarchical parameters (including the geographic), and H is the number of predictors for geographic unit effects
-  modeled_params = c(arg$geo_id, arg$time_id, modifiers)
+  # TODO: make flexible; as written we must model geo x t
+  modeled_params = c(arg$geo_id, arg$time_id)
   unmodeled_params = setdiff(c(arg$geo_id, arg$time_id, arg$groups), modeled_params)
   # TODO: uniqueness checks on level2 data (state_demographics should not pass)
   # TODO: confirm sort order of level2_modifiers
+  missing_level2_geo <- setdiff(
+    unique(unlist(dplyr::select_(group_grid_t, arg$geo_id))),
+    unique(unlist(dplyr::select_(level2, arg$geo_id))))
+  if (length(missing_level2_geo) > 0) stop("no hierarchical data for geo in item data: ", missing_level2_geo)
+  missing_level2_t <- setdiff(arg$use_t, unlist(dplyr::select_(level2, arg$time_id)))
+  if (length(missing_level2_t) > 0) stop("missing hierarchical data for t in item data: ", missing_level2_t)
+
   hier_frame <- level2 %>% dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0(arg$geo_id, geo),
       geo = as.name(arg$geo_id))), arg$geo_id)) %>%
     dplyr::select_(.dots = c(modeled_params, arg$level2_modifiers)) %>%
     dplyr::rename_("param" = arg$geo_id) %>%
     dplyr::mutate_("param" = ~as.character(param)) %>%
     dplyr::arrange_(.dots = c("param", arg$time_id))
+
   modeled_param_names <- unique(unlist(dplyr::select_(hier_frame, "param")))
   unmodeled_param_levels = lapply(unmodeled_params, function(x) {
       paste0(x, levels(group_grid_t[, x])[-1])
     }) %>% unlist()
   param_levels <- c(modeled_param_names, unmodeled_param_levels)
-  unmodeled_frame <- expand.grid(list(
+
+  unmodeled_frame <- expand.grid(c(list(
       unmodeled_param_levels, 
-      sort(unique(unlist(dplyr::select_(level2, arg$time_id)))),
-      0)) %>%
-    setNames(c("param", arg$time_id, arg$level2_modifiers)) %>%
+      sort(unique(unlist(dplyr::select_(level2, arg$time_id))))),
+      rep(list(0), length(modifiers)))) %>%
+    setNames(c("param", arg$time_id, modifiers)) %>%
     dplyr::arrange_(.dots = c("param", arg$time_id))
+
+  unmodeled_factors <- hier_frame %>%
+    dplyr::select_(~-one_of("param")) %>%
+    dplyr::summarise_each(~class(.) %in% c("character", "factor")) %>%
+    unlist()
+  unmodeled_factors <- names(unmodeled_factors)[which(unmodeled_factors)]
+  if (length(unmodeled_factors) > 0) {
+    unmodeled_frame <- unmodeled_frame %>%
+      dplyr::mutate_each_(~as.character, vars = unmodeled_factors)
+  }
+
+  assertthat::assert_that(identical(names(hier_frame), names(unmodeled_frame)))
   hier_frame <- dplyr::bind_rows(hier_frame, unmodeled_frame)
   hier_melt <- wrap_melt(hier_frame, id.vars = c("param", arg$time_id), variable.name = "modifiers") %>%
     dplyr::mutate_("param" = ~factor(param, levels = param_levels, ordered = TRUE))
@@ -458,21 +485,24 @@ count_group_successes <- function(trial_counts, mean_y, .arg) {
   return(success_counts)
 }
 
-make_design_matrix <- function(grid_t, factors, arg) {
+make_design_matrix <- function(group_grid_t, factors, arg) {
   design_formula <- as.formula(paste("~ 0", arg$geo_id, paste(factors, collapse = " + "), sep = " + "))
-  design_matrix <- model.matrix(design_formula, grid_t)
-  design_matrix <- cbind(design_matrix, grid_t) %>%
+  design_matrix <- with_contr.treatment(model.matrix(design_formula, group_grid_t))
+  design_matrix <- cbind(design_matrix, group_grid_t) %>%
     dplyr::arrange_(.dots = c(factors, arg$geo_id))
-  group_names <- concat_groups(grid_t, factors, arg$geo_id, "name")
+  group_names <- concat_groups(group_grid_t, factors, arg$geo_id, "name")
   design_matrix <- concat_groups(design_matrix, factors, arg$geo_id, "name")
-  assertthat::assert_that(identical(group_names$name, design_matrix$name))
+  assertthat::assert_that(all.equal(group_names$name, design_matrix$name))
   rownames(design_matrix) <- design_matrix$name
   design_matrix <- design_matrix %>% dplyr::select_(~-one_of("name")) %>%
     as.matrix()
   # We have an indicator for each geographic unit; drop one
   design_matrix <- design_matrix[, -1]
   assertthat::assert_that(identical(rownames(design_matrix), group_names$name))
-  assertthat::assert_that(is_subset(as.vector(design_matrix), c(0, 1)))
+  invalid_values <- setdiff(as.vector(design_matrix), c(0, 1))
+  if (length(invalid_values) > 0) {
+    stop("design matrix values should be in (0, 1); found ", paste(sort(invalid_values), collapse = ", "))
+  }
   return(design_matrix)
 }
 
@@ -586,11 +616,16 @@ factorize_arg_vars <- function(tabular, .arg) {
       tabular[[varname]] <- paste0(varname, as.character(tabular[[varname]]))
     }
   }
+  tabular <- with_contr.treatment(tabular %>% dplyr::mutate_each_(dplyr::funs(factor), vars = arg_vars))
+  tabular
+}
+
+with_contr.treatment <- function(...) {
   contrast_options = getOption("contrasts")
   options("contrasts"= rep("contr.treatment", 2))
-  tabular <- tabular %>% dplyr::mutate_each_(dplyr::funs(factor), vars = arg_vars)
+  res <- eval(...)
   options("contrasts"= contrast_options)
-  tabular
+  res
 }
 
 drop_missing_respondents <- function(.data, .arg) {
@@ -657,13 +692,25 @@ set_use_t <- function(.data, .arg) {
   }
 }
 
-subset_to_estimation_periods <- function(.data, .arg) {
+subset_geos <- function(tabular, arg) {
+  assert_not_empty(tabular)
+  assertthat::assert_that(is.data.frame(tabular))
+  assertthat::assert_that(is.character(arg$geo_id))
+  geo_filter <- tabular[[arg$geo_id]] %in% arg$geo_ids
+  tabular <- tabular %>% dplyr::filter(geo_filter)
+  assert_not_empty(tabular)
+  tabular <- droplevels(tabular)
+  return(tabular)
+}
+
+
+subset_to_estimation_periods <- function(.data, arg) {
   assertthat::assert_that(is.data.frame(.data))
   assert_not_empty(.data)
-  assertthat::assert_that(is_valid_string(.arg$time_id))
-  assertthat::assert_that(is.numeric(.data[[.arg$time_id]]))
-  assertthat::assert_that(is.numeric(.arg$use_t))
-  periods_filter <- .data[[.arg$time_id]] %in% .arg$use_t
+  assertthat::assert_that(is_valid_string(arg$time_id))
+  assertthat::assert_that(is.numeric(.data[[arg$time_id]]))
+  assertthat::assert_that(is.numeric(arg$use_t))
+  periods_filter <- .data[[arg$time_id]] %in% arg$use_t
   .data <- .data %>% dplyr::filter(periods_filter)
   assert_not_empty(.data)
   .data <- droplevels(.data)
@@ -690,19 +737,17 @@ drop_rows_missing_items <- function(.data, .arg) {
   # droplevels(.data)
 }
 
-subset_to_observed_geo_periods <- function(.arg) {
+subset_to_observed_geo_periods <- function(level2, arg) {
   # Subset level-2 data to geographic units observed and time periods
   # specified
-  if (!length(.arg$level2) > 0) {
+  if (length(arg$level2) < 1) {
     return(NULL)
   } else {
-    .arg$level2 <- .arg$level2 %>%
-      dplyr::filter_(lazyeval::interp(~geo %in% .arg$use_geo,
-    geo = as.name(.arg$geo_id)))
-    assert_not_empty(.arg$level2)
+    level2 <- level2 %>%
+      dplyr::filter_(lazyeval::interp(~geo %in% arg$use_geo, geo = as.name(arg$geo_id)))
+    assert_not_empty(level2)
   }
-  # .arg$level2[[.arg$geo_id]] <- droplevels(.arg$level2[[.arg$geo_id]])
-  return(.arg$level2)
+  return(level2)
 }
 
 get_gt <- function(level1) {
@@ -741,6 +786,9 @@ handle_data <- function(.data, covariates, factorize, .arg) {
 }
 
 apply_restrictions <- function(.data, .checks, .arg) {
+  # Apply geo filter
+  .data <- subset_geos(.data, .arg)
+
   # Drop rows with no valid question responses
   .data <- drop_missing_respondents(.data, .arg)
 
@@ -764,7 +812,7 @@ count_level2_groups <- function(level2, G, arg) {
     Gl2 <- nlevels(l2.group)
     return(Gl2)
   } else {
-    Gl2 <- nlevels_vectorized(arg$level2, arg$level2_modifiers)
+    Gl2 <- length(arg$level2_modifiers)
     Gl2 <- max(unlist(Gl2), 1)
     return(Gl2)
   }

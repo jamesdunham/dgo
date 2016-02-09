@@ -14,14 +14,20 @@ handle_arguments <- function() {
   return(arg)
 }
 
-check_arg_lengths <- function(.arg) {
-  assertthat::not_empty(.arg$items)
-  assertthat::is.string(.arg$time_id)
-  assertthat::is.string(.arg$geo_id)
-  assertthat::is.string(.arg$survey_weight)
-  assertthat::is.string(.arg$survey_id)
-  if (length(.arg$target_proportion) > 0) {
-    assertthat::is.string(.arg$target_proportion)
+check_arg_lengths <- function(arg) {
+  if (!length(arg$items) > 0) stop("at least one item variable required ('items')")
+  if (!length(arg$groups) > 0) stop("at least one grouping variable required ('groups'); NB: until future version")
+  if (!identical(length(arg$time_id), 1L)) stop("single time identifier required ('time_id')")
+  if (!identical(length(arg$geo_id), 1L)) stop("single geographic identifier required ('geo_id')")
+  if (!identical(length(arg$survey_id), 1L)) stop("single survey identifier required ('survey_id')")
+  if (!identical(length(arg$survey_weight), 1L)) stop("single survey weight variable required ('survey_weight')")
+  if (length(arg$level2) > 0) {
+    if (!length(arg$level2_modifiers) > 0) stop("at least one modifier variable ('level2_modifier') required with hierarchical data ('level2')")
+    if (!length(arg$level2_period1_modifiers) > 0) stop("at least one first-period modifier variable ('level2_period1_modifier') required with hierarchical data ('level2')")
+  }
+  if (length(arg$targets) > 0) {
+    if (!identical(length(arg$target_proportion), 1L)) stop("single proportion variable ('target_proportion') required with target data ('targets')")
+    if (!length(arg$target_groups) > 0) stop("at least one stratifying variable ('target_groups') required with target data ('targets')")
   }
   return(TRUE)
 }
@@ -47,7 +53,7 @@ check_arg_names <- function(..arg) {
   }
   if (length(..arg$targets) > 0) {
     assertthat::assert_that(has_all_names(..arg$targets,
-        c(..arg$time_id, unlist(..arg$groups), ..arg$geo_id,
+        c(..arg$time_id, ..arg$geo_id,
           unlist(..arg$target_groups),
           unlist(..arg$target_proportion))))
   }
