@@ -1,7 +1,7 @@
 context("Argument defaults")
 suppressMessages({
 
-  expect_error(as_tbl(NULL), "has an empty dimension")
+  expect_error(as_tbl(NULL), "empty dimension in")
   expect_is(as_tbl(as.data.frame(x = 1)), "tbl")
 
   context("Factorize variables")

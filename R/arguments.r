@@ -67,13 +67,13 @@ check_arg_types <- function(..arg) {
   assertthat::assert_that(is.numeric(..arg$level1[[..arg$time_id]]))
   if (!is.null(..arg$level2)) {
     assertthat::assert_that(inherits(..arg$level2, "data.frame"))
-    assertthat::assert_that(all_valid_strings(..arg$level2_modifiers))
-    assertthat::assert_that(all_valid_strings(..arg$level2_period1_modifiers))
+    assertthat::assert_that(all_strings(..arg$level2_modifiers))
+    assertthat::assert_that(all_strings(..arg$level2_period1_modifiers))
   }
   if (!is.null(..arg$targets)) {
     assertthat::assert_that(inherits(..arg$targets, "data.frame"))
     assertthat::is.string(..arg$target_proportion)
-    assertthat::assert_that(all_valid_strings(..arg$target_groups))
+    assertthat::assert_that(all_strings(..arg$target_groups))
   }
   assertthat::is.string(..arg$items)
   assertthat::is.string(..arg$time_id)

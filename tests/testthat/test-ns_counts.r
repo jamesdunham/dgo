@@ -1,4 +1,7 @@
 suppressMessages({
+
+  context("Compute design effects")
+
   items <- data.frame("state" = state.abb[c(1, 2, 2, 3, 3, 3)],
     "weight" = treering[1:6],
     "year" = rep(1:2, each = 3),
@@ -11,10 +14,8 @@ suppressMessages({
   # AK x 1 x A (N=2)
   # AZ x 2 x B (n-3)
 
-  context("Compute design effects")
-
   expect_error(compute_group_design_effects(items,
-    list("survey_weight" = "weight")), "argument is of length zero")
+    list("survey_weight" = "weight")), "are not all positive-length strings")
 
   items_args <- list("survey_weight" = "weight", "geo_id" = "state", "groups" =
     "race", "time_id" = "year", "use_t" = c(1, 2))

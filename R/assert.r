@@ -1,6 +1,4 @@
-assert <- function(...) {
-  assertthat::assert_that(...)
-}
+assert <- assertthat::assert_that
 
 all_equal <- function(x, y) {
   isTRUE(all.equal(x, y))
@@ -121,6 +119,7 @@ assertthat::on_failure(has_all_names) <- function(call, env) {
 }
 
 all_strings <- function(x) {
+  if (length(x) < 1) return(FALSE)
   which_strings <- vapply(x, function(i) {
     assertthat::is.string(i) && nchar(i) > 0
   }, logical(1))

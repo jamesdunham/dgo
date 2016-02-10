@@ -258,12 +258,12 @@ shape_hierarchical_data <- function(level2, modifiers, group_grid_t, arg) {
       dplyr::mutate_each_(~as.character, vars = unmodeled_factors)
   }
 
-  assertthat::assert_that(identical(names(hier_frame), names(unmodeled_frame)))
+  assertthat::assert_that(names_match(hier_frame, unmodeled_frame))
   hier_frame <- dplyr::bind_rows(hier_frame, unmodeled_frame)
   hier_melt <- wrap_melt(hier_frame, id.vars = c("param", arg$time_id), variable.name = "modifiers") %>%
     dplyr::mutate_("param" = ~factor(param, levels = param_levels, ordered = TRUE))
-  assertthat::assert_that(all(modeled_param_names %in% unlist(hier_melt$param)))
-  assertthat::assert_that(all(unmodeled_param_levels %in% unlist(hier_melt$param)))
+  assertthat::assert_that(names_subset(modeled_param_names, unlist(hier_melt$param)))
+  assertthat::assert_that(names_subset(unmodeled_param_levels, unlist(hier_melt$param)))
   melt_formula <- as.formula(paste(arg$time_id, "param", "modifiers", sep = " ~ "))
   zz <- reshape2::acast(hier_melt, melt_formula, drop = FALSE, value.var = "value")
   zz <- zz[, -1, , drop = FALSE]
@@ -293,23 +293,24 @@ create_missingness_array <- function(group_counts, group_grid, arg) {
   cast_missingness(missingness, arg)
 }
 
-as_tbl <- function(dataframe) {
-  assertthat::assert_that(inherits(dataframe, "data.frame"))
-  return(dplyr::as.tbl(dataframe))
+as_tbl <- function(x) {
+  # assertthat::assert_that(not_empty(x), is.data.frame(x))
+  assertthat::assert_that(not_empty(x), is.data.frame(x))
+  dplyr::as.tbl(x)
 }
 
 check_dimensions <- function(d) {
-    assertthat::assert_that(equal_length(d$n_vec, d$s_vec))
-    assert_are_equal(dim(d$NNl2), as.integer(c(d$T, d$Q, d$Gl2)))
-    assert_are_equal(dim(d$SSl2), as.integer(c(d$T, d$Q, d$Gl2)))
-    assert_are_equal(dim(d$MMM), c(d$T, d$Q, d$G))
-    assert_are_equal(dim(d$WT), as.integer(c(d$T, d$Gl2, d$G)))
-    assert_are_equal(dim(d$l2_only), c(d$T, d$Q))
-    assert_are_equal(dim(d$XX), c(d$G, d$P))
-    assert_are_equal(dim(d$ZZ), c(d$T, d$P, d$H))
-    assert_are_equal(dim(d$ZZ_prior), c(d$T, d$P, d$H))
-    assert_not_empty(d$constant_item)
-    assert_not_empty(d$separate_t)
+  assertthat::assert_that(equal_length(d$n_vec, d$s_vec))
+  assertthat::assert_that(all_equal(dim(d$NNl2), as.integer(c(d$T, d$Q, d$Gl2))))
+  assertthat::assert_that(all_equal(dim(d$SSl2), as.integer(c(d$T, d$Q, d$Gl2))))
+  assertthat::assert_that(all_equal(dim(d$MMM), c(d$T, d$Q, d$G)))
+  assertthat::assert_that(all_equal(dim(d$WT), as.integer(c(d$T, d$Gl2, d$G))))
+  assertthat::assert_that(all_equal(dim(d$l2_only), c(d$T, d$Q)))
+  assertthat::assert_that(all_equal(dim(d$XX), c(d$G, d$P)))
+  assertthat::assert_that(all_equal(dim(d$ZZ), c(d$T, d$P, d$H)))
+  assertthat::assert_that(all_equal(dim(d$ZZ_prior), c(d$T, d$P, d$H)))
+  assertthat::assert_that(not_empty((d$constant_item)))
+  assertthat::assert_that(not_empty((d$separate_t)))
 }
 
 check_restrictions <- function(level1, .arg) {
@@ -337,8 +338,12 @@ get_question_periods <- function(.data, .arg) {
     dplyr::summarise_each_(~anyValid, vars = .arg$items)
 }
 
+# checks <- list(q_when_asked = get_question_periods(d, a))
+# .arg = list(time_id = "t", min_periods = 1L)
+# get_rare_items_over_t(checks, .arg)
+
 get_rare_items_over_t <- function(.checks, .arg) {
-  assertthat::assert_that(is.integer(.arg$min_periods))
+  assertthat::assert_that(is_count(.arg$min_periods))
   q_t_count <- colSums(dplyr::select_(.checks$q_when_asked,
     lazyeval::interp(~-one_of(v), v = .arg$time_id)))
   q_rare <- names(q_t_count)[q_t_count < .arg$min_periods]
@@ -362,8 +367,7 @@ get_rare_items_over_polls <- function(.checks, ..arg) {
 
 get_observed_t <- function(t_data) {
   observed_t <- unlist(t_data)
-  assertthat::assert_that(is.numeric(observed_t))
-  assert_not_empty(observed_t)
+  assertthat::assert_that(is.numeric(observed_t), not_empty(observed_t))
   unique(observed_t)
 }
 
@@ -382,11 +386,10 @@ get_missing_respondents <- function(item_data) {
 }
 
 compute_group_design_effects <- function(.data, .arg) {
-  assertthat::assert_that(is.numeric(.data[[.arg$survey_weight]]))
-  assert_has_name(.data, .arg$survey_weight)
-  assert_has_name(.data, .arg$geo_id)
-  assertthat::assert_that(has_all_names(.data, .arg$groups))
-  assert_has_name(.data, .arg$time_id)
+  assertthat::assert_that(is_numeric(.data[[.arg$survey_weight]]))
+  assertthat::assert_that(all_strings(c(.arg$survey_weight, .arg$geo_id, .arg$time_id)), all_strings(.arg$groups))
+  assertthat::assert_that(has_all_names(.data, c(.arg$survey_weight, .arg$geo_id, .arg$time_id)),
+    has_all_names(.data, .arg$groups))
 
   de_table <- dplyr::as.tbl(.data) %>%
     dplyr::group_by_(.dots = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
@@ -395,22 +398,18 @@ compute_group_design_effects <- function(.data, .arg) {
   w = as.name(.arg$survey_weight))) %>%
     dplyr::arrange_(.dots = c(.arg$geo_id, .arg$groups, .arg$time_id))
 
-  assert_has_name(de_table, "def")
-  assert_has_name(de_table, .arg$geo_id)
-  assertthat::assert_that(has_all_names(de_table, .arg$groups))
-  assert_has_name(de_table, .arg$time_id)
+  assertthat::assert_that(has_all_names(de_table, c("def", .arg$geo_id, .arg$groups, .arg$time_id)))
   return(de_table)
 }
 
 count_group_trials <- function(.data, design_effects, group_grid, .arg) {
-  assert_not_empty(.data)
-  assertthat::assert_that(length(grep("_gt\\d+$", colnames(.data))) > 0)
+  assertthat::assert_that(not_empty(.data), length(grep("_gt\\d+$", colnames(.data))) > 0)
   not_na_trial <- .data %>%
     # The _gt variables can take values of 0/1/NA
     dplyr::mutate_each_(~notNA, ~matches("_gt\\d+$"))
     # For a respondent who only answered questions A and B, we now have
     #  T,   T,   T,   T,   T,   F,   F.
-  assert_not_empty(not_na_trial)
+  assertthat::assert_that(not_empty(not_na_trial))
   trial_counts <- not_na_trial %>%
     dplyr::mutate_each_(~. / n_responses, vars = ~matches("_gt\\d+$")) %>%
     # Dividing the booleans by n_responses = 5 calculated earlier gives us
@@ -470,9 +469,9 @@ compute_mean_group_outcome <- function(level1, group_grid, .arg) {
 
 count_group_successes <- function(trial_counts, mean_y, .arg) {
   # Confirm row order is identical before taking product
-  assert_are_equal(
+  assertthat::assert_that(all_equal(
       dplyr::select_(mean_y, .dots = c(.arg$geo_id, .arg$groups, .arg$time_id)),
-      dplyr::select_(trial_counts, .dots = c(.arg$geo_id, .arg$groups, .arg$time_id)))
+      dplyr::select_(trial_counts, .dots = c(.arg$geo_id, .arg$groups, .arg$time_id))))
   success_counts <- get_gt(trial_counts) * get_gt(mean_y)
   success_counts <- success_counts %>%
     # Reattach our identifiers
@@ -492,7 +491,7 @@ make_design_matrix <- function(group_grid_t, factors, arg) {
     dplyr::arrange_(.dots = c(factors, arg$geo_id))
   group_names <- concat_groups(group_grid_t, factors, arg$geo_id, "name")
   design_matrix <- concat_groups(design_matrix, factors, arg$geo_id, "name")
-  assertthat::assert_that(all.equal(group_names$name, design_matrix$name))
+  assertthat::assert_that(all_equal(group_names$name, design_matrix$name))
   rownames(design_matrix) <- design_matrix$name
   design_matrix <- design_matrix %>% dplyr::select_(~-one_of("name")) %>%
     as.matrix()
@@ -515,7 +514,7 @@ concat_groups <- function(tabular, group_names, geo_id, name) {
 }
 
 split_groups <- function(tabular, group_names, geo_id, name) {
-  assert_has_name(tabular, "name")
+  assertthat::assert_that(has_name(tabular, "name"))
   tabular %>%
     tidyr::separate_(name, c("group_concat", geo_id), sep = "_x_") %>%
     tidyr::separate_("group_concat", group_names, sep = "_")
@@ -584,7 +583,7 @@ cast_missingness <- function(missingness, .arg) {
     !(dimnames(MMM)[[2]] == "NA"),
     !(dimnames(MMM)[[3]] == "NA")]
   # No cells should be NA either
-  assert_no_na(MMM)
+  assertthat::assert_that(all_in(MMM, c(0, 1)))
   return(MMM)
 }
 
@@ -693,26 +692,25 @@ set_use_t <- function(.data, .arg) {
 }
 
 subset_geos <- function(tabular, arg) {
-  assert_not_empty(tabular)
-  assertthat::assert_that(is.data.frame(tabular))
-  assertthat::assert_that(is.character(arg$geo_id))
+  assertthat::assert_that(not_empty(tabular), is.data.frame(tabular), is_string(arg$geo_id))
+  if (length(arg$geo_ids) < 1) {
+    arg$geo_ids <- tabular[[arg$geo_id]]
+  }
+  assertthat::assert_that(not_empty(arg$geo_ids))
   geo_filter <- tabular[[arg$geo_id]] %in% arg$geo_ids
   tabular <- tabular %>% dplyr::filter(geo_filter)
-  assert_not_empty(tabular)
+  assertthat::assert_that(not_empty(tabular))
   tabular <- droplevels(tabular)
   return(tabular)
 }
 
 
 subset_to_estimation_periods <- function(.data, arg) {
-  assertthat::assert_that(is.data.frame(.data))
-  assert_not_empty(.data)
-  assertthat::assert_that(is_valid_string(arg$time_id))
-  assertthat::assert_that(is.numeric(.data[[arg$time_id]]))
-  assertthat::assert_that(is.numeric(arg$use_t))
+  assertthat::assert_that(is.data.frame(.data), not_empty(.data)) 
+  assertthat::assert_that(is_string(arg$time_id), is.numeric(.data[[arg$time_id]]), is.numeric(arg$use_t))
   periods_filter <- .data[[arg$time_id]] %in% arg$use_t
   .data <- .data %>% dplyr::filter(periods_filter)
-  assert_not_empty(.data)
+  assertthat::assert_that(not_empty(.data))
   .data <- droplevels(.data)
   return(.data)
 }
@@ -745,14 +743,14 @@ subset_to_observed_geo_periods <- function(level2, arg) {
   } else {
     level2 <- level2 %>%
       dplyr::filter_(lazyeval::interp(~geo %in% arg$use_geo, geo = as.name(arg$geo_id)))
-    assert_not_empty(level2)
+    assertthat::assert_that(not_empty(level2))
   }
   return(level2)
 }
 
 get_gt <- function(level1) {
   gts <- level1 %>% dplyr::select_(lazyeval::interp(~matches(x), x = "_gt\\d+$"))
-  assert_not_empty(gts)
+  assertthat::assert_that(not_empty(gts))
   return(gts)
 }
 
@@ -788,22 +786,15 @@ handle_data <- function(.data, covariates, factorize, .arg) {
 apply_restrictions <- function(.data, .checks, .arg) {
   # Apply geo filter
   .data <- subset_geos(.data, .arg)
-
   # Drop rows with no valid question responses
   .data <- drop_missing_respondents(.data, .arg)
-
   # Drop variables columns with no valid responses
   .data <- drop_missing_items(.data, .checks$q_all_missing, .arg)
-
   # Drop variables that don"t satisfy min_periods requirement
   .data <- drop_rare_items_over_t(.data, .checks$q_rare.t, .arg)
-
-  assert_not_empty(.arg$items)
-  assert_not_empty(.data)
-
+  assertthat::assert_that(not_empty(.data), not_empty(.arg$items))
   .data <- drop_rare_items_over_polls(.data, .checks$q_rare_polls, .arg)
-
-  return(.data)
+  .data
 }
 
 count_level2_groups <- function(level2, G, arg) {
@@ -819,16 +810,12 @@ count_level2_groups <- function(level2, G, arg) {
 }
 
 make_group_grid <- function(level, factors, arg) {
-  assertthat::assert_that(is.numeric(arg$use_t))
-  assert_not_empty(arg$use_t)
-  assert_is_string(arg$geo_id)
-  assertthat::assert_that(is.character(factors))
-  assert_is_string(arg$time_id)
-  assertthat::assert_that(is.numeric(level[[arg$time_id]]))
+  assertthat::assert_that(is.numeric(arg$use_t), not_empty((arg$use_t)), is_string(arg$geo_id), is.character(factors))
+  assertthat::assert_that(is_string(arg$time_id), is.numeric(level[[arg$time_id]]))
   group_grid <- expand.grid(c(
     setNames(list(arg$use_t), arg$time_id),
     lapply(level[, c(arg$geo_id, factors)], function(x) sort(unique(x)))))
-  assert_not_empty(group_grid)
+  assertthat::assert_that(not_empty(group_grid))
   group_grid
 }
 
@@ -851,7 +838,7 @@ create_l2_design_matrix <- function(group_design_matrix, arg) {
   } else {
 
   }
-  assertthat::assert_that(all(notNA(ZZ)))
+  assertthat::assert_that(none_in(ZZ, NA))
   return(ZZ)
 }
 
@@ -872,7 +859,7 @@ create_gt_variables <- function(d, .items){
     gt_levels <- seq_along(item_levels)[-length(item_levels)]
     if (length(gt_levels) < 1) stop("no variation in item ", deparse(item))
     if (identical(length(gt_levels), 1L)) {
-      assertthat::assert_that(identical(length(item_levels), 2L))
+      assertthat::assert_that(has_length(item_levels, 2))
       message("\t considered binary with failure='", item_levels[1], "' and success='", item_levels[2], "'")
     }
     if (length(gt_levels) > 1L) {
@@ -882,7 +869,7 @@ create_gt_variables <- function(d, .items){
     gt_cols <- lapply(gt_levels, function(gt) {
       ifelse(values > gt, 1L, 0L)
     })
-    assert_not_empty(gt_cols)
+    assertthat::assert_that(not_empty(gt_cols))
     gt_names <- paste(item, gt_levels, sep = "_gt")
     setNames(gt_cols, gt_names)
   })

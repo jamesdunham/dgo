@@ -18,9 +18,4 @@ plot_means(theta_bars, time_id, facet_var, jitter = FALSE)
 \description{
 Plot group means
 }
-\examples{
-data(optimized_theta_bars)
-optimized_theta_bars$year <- as.integer(optimized_theta_bars$year)
-plot_means(optimized_theta_bars, "year", "state", jitter = TRUE)
-}
 

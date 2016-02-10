@@ -37,6 +37,7 @@ expect_silent(assert(none_empty(c(1:2, 3:4))))
 
 expect_silent(assert(all_strings(list("foo", "bar"))))
 expect_error(assert(all_strings(list("foo", 1))), "not all positive-length strings")
+expect_error(assert(all_strings(list()$foo)), "not all positive-length strings")
 
 expect_silent(assert(has_all_names(data.frame(a = 1), "a")))
 expect_error(assert(has_all_names(data.frame(a = 1), "b"), "not all .* are names in"))
