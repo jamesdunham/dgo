@@ -89,7 +89,7 @@ name_cmdstan_output <- function(stan_output, dgirt_data, save_pars, vars) {
   output_names <- dimnames(stan_output)[[2]]
   par_regex <- paste0("^(", paste0(save_pars, collapse = "|"), ")(_raw)*[.0-9]*$")
   parameter_names <- grep(par_regex, output_names, perl = TRUE, value = TRUE)
-  assertthat::assert_that(all_valid_strings(parameter_names))
+  assertthat::assert_that(all_strings(parameter_names))
   stan_output <- stan_output %>% dplyr::select_(~one_of(parameter_names))
   parname_stubs <- sort(unique(gsub(par_regex, "\\1", parameter_names, perl = TRUE)))
   stan_output <- lapply(parname_stubs, function(parname) {

@@ -18,8 +18,8 @@ poststratify <- function(group_means, targets, strata = c('year', 'state'),
     groups, prop_var = 'proportion', summands = NULL) {
   assertthat::assert_that(assertthat::not_empty(group_means))
   assertthat::assert_that(assertthat::not_empty(targets))
-  assertthat::assert_that(all_valid_strings(strata))
-  assertthat::assert_that(all_valid_strings(groups))
+  assertthat::assert_that(all_strings(strata))
+  assertthat::assert_that(all_strings(groups))
   assertthat::assert_that(assertthat::is.string(prop_var))
 
   targets_n <- nrow(dplyr::distinct_(targets, .dots = c(strata, groups)))
