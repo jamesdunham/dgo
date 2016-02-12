@@ -239,7 +239,7 @@ shape_hierarchical_data <- function(level2, modifiers, group_grid_t, arg) {
 
   modeled_param_names <- unique(unlist(dplyr::select_(hier_frame, "param")))
   unmodeled_param_levels = lapply(unmodeled_params, function(x) {
-      paste0(x, levels(group_grid_t[, x, drop = FALSE])[-1])
+      paste0(x, levels(group_grid_t[[x]]))[-1]
     }) %>% unlist()
   param_levels <- c(modeled_param_names, unmodeled_param_levels)
 
@@ -260,8 +260,8 @@ shape_hierarchical_data <- function(level2, modifiers, group_grid_t, arg) {
       dplyr::mutate_each_(~as.character, vars = unmodeled_factors)
   }
 
-  assertthat::assert_that(names_match(hier_frame, unmodeled_frame))
-  hier_frame <- dplyr::bind_rows(hier_frame, unmodeled_frame)
+  hier_frame <- dplyr::bind_rows(hier_frame, unmodeled_frame) %>%
+    dplyr::mutate_each_(~ifelse(is.na(.), 0, .), vars = arg$level2_modifiers)
   hier_melt <- wrap_melt(hier_frame, id.vars = c("param", arg$time_id), variable.name = "modifiers") %>%
     dplyr::mutate_("param" = ~factor(param, levels = param_levels, ordered = TRUE))
   assertthat::assert_that(names_subset(modeled_param_names, unlist(hier_melt$param)))
@@ -713,7 +713,7 @@ subset_to_estimation_periods <- function(.data, arg) {
   assertthat::assert_that(is_string(arg$time_id), is.numeric(.data[[arg$time_id]]), is.numeric(arg$use_t))
   periods_filter <- .data[[arg$time_id]] %in% arg$use_t
   .data <- .data %>% dplyr::filter(periods_filter)
-  assertthat::assert_that(not_empty(.data))
+  if (!nrow(.data) > 0) stop("no item data after restriction to estimation periods")
   .data <- droplevels(.data)
   return(.data)
 }
