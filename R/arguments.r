@@ -42,6 +42,7 @@ check_arg_names <- function(..arg) {
   assertthat::assert_that(assertthat::has_name(..arg$level1, ..arg$survey_id))
   if (length(..arg$level2_modifiers) > 0
     || length(..arg$level2_period1_modifiers) > 0) {
+    if (!length(..arg$level2) > 0) stop("modifier variables given without hierarchical ('level2') data")
     assertthat::assert_that(inherits(..arg$level2, "data.frame"))
     assertthat::not_empty(..arg$level2)
   }
@@ -62,6 +63,7 @@ check_arg_names <- function(..arg) {
 
 # Check argument types and throw an error if a check fails
 check_arg_types <- function(..arg) {
+  if (!length(..arg$level1) > 0) stop("no item ('level1') data")
   assertthat::assert_that(inherits(..arg$level1, "data.frame"))
   assertthat::not_empty(..arg$level1)
   assertthat::assert_that(is.numeric(..arg$level1[[..arg$time_id]]))
