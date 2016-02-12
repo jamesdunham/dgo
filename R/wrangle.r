@@ -618,7 +618,9 @@ factorize_arg_vars <- function(tabular, .arg) {
       tabular[[varname]] <- paste0(varname, as.character(tabular[[varname]]))
     }
   }
-  tabular <- with_contr.treatment(tabular %>% dplyr::mutate_each_(dplyr::funs(factor), vars = arg_vars))
+  tabular <- with_contr.treatment(tabular %>% 
+    dplyr::arrange_(.dots = arg_vars) %>%
+    dplyr::mutate_each_(dplyr::funs(factor(., levels = sort(unique(as.character(.))))), vars = arg_vars))
   tabular
 }
 
