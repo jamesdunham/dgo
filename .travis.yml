@@ -12,3 +12,7 @@ r_packages:
 
 after_success:
   - Rscript -e 'covr::codecov()'
+
+notifications:
+  email:
+    - jdunham@mit.edu
