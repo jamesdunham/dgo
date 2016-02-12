@@ -4,12 +4,12 @@
 \alias{create_weights}
 \title{Create individual survey weights from population targets}
 \usage{
-create_weights(.level1, .arg)
+create_weights(level1, arg)
 }
 \arguments{
-\item{.level1}{\code{data.frame} with survey responses at the lowest level of aggregation.}
+\item{level1}{\code{data.frame} with survey responses at the lowest level of aggregation.}
 
-\item{.arg}{Arguments to `wrangle`}
+\item{arg}{Arguments to `wrangle`}
 }
 \value{
 \code{data_frame} of survey responses with new weights normalized to have mean 1 in each period.
