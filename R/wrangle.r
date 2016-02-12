@@ -90,14 +90,13 @@ wrangle <- function(data = list(level1,
   # while (!length(checks) > 0 || !all(checks))
   checks <- check_restrictions(level1, arg)
   # Find rows with no valid question responses
-  level1$none_valid <- get_missing_respondents(level1[, arg$items])
+  level1$none_valid <- get_missing_respondents(level1[, arg$items, drop = FALSE])
   level1 <- apply_restrictions(level1, checks, arg)
   # Update arg$items
   arg$items <- intersect(arg$items, names(level1))
   arg$use_t <- set_use_t(level1, arg)
   arg$use_geo <- update_use_geo(level1, arg)
   level1 <- subset_to_estimation_periods(level1, arg)
-  # TODO: should lapply this and like operations over all tables in the data list
   if (length(arg$level2) > 0) {
     arg$level2 <- subset_to_estimation_periods(arg$level2, arg)
     time_diff <- setdiff(
@@ -125,17 +124,20 @@ wrangle <- function(data = list(level1,
 
   # Fix factor levels after filtering
   level1 <- droplevels(level1)
-
   arg$level2 <- subset_to_observed_geo_periods(arg$level2, arg)
   nonmissing_t <- sort(unique(level1[[arg$time_id]]))
 
-  # sort_order = rev(c(arg$time_id, "item", arg$groups, arg$geo_id))
   group_grid <- make_group_grid(level1, arg$groups, arg) %>%
     dplyr::arrange_(.dots = c(arg$time_id, arg$groups, arg$geo_id))
   group_grid_t <- group_grid %>%
     dplyr::select_(lazyeval::interp(~-one_of(v), v = arg$time_id)) %>%
     dplyr::distinct() %>%
     dplyr::arrange_(.dots = c(arg$groups, arg$geo_id))
+
+  group_levels <- vapply(arg$groups, function(i) length(levels(group_grid_t[[i]])), numeric(1))
+  if (any(group_levels < 2)) {
+    stop("no variation in group variable: ", paste(names(which(group_levels < 2)), collapse = ", "))
+  }
 
   group_counts <- make_group_counts(level1, group_grid, arg)
   MMM <- create_missingness_array(group_counts, group_grid, arg)
@@ -237,7 +239,7 @@ shape_hierarchical_data <- function(level2, modifiers, group_grid_t, arg) {
 
   modeled_param_names <- unique(unlist(dplyr::select_(hier_frame, "param")))
   unmodeled_param_levels = lapply(unmodeled_params, function(x) {
-      paste0(x, levels(group_grid_t[, x])[-1])
+      paste0(x, levels(group_grid_t[, x, drop = FALSE])[-1])
     }) %>% unlist()
   param_levels <- c(modeled_param_names, unmodeled_param_levels)
 
@@ -496,7 +498,7 @@ make_design_matrix <- function(group_grid_t, factors, arg) {
   design_matrix <- design_matrix %>% dplyr::select_(~-one_of("name")) %>%
     as.matrix()
   # We have an indicator for each geographic unit; drop one
-  design_matrix <- design_matrix[, -1]
+  design_matrix <- design_matrix[, -1, drop = FALSE]
   assertthat::assert_that(identical(rownames(design_matrix), group_names$name))
   invalid_values <- setdiff(as.vector(design_matrix), c(0, 1))
   if (length(invalid_values) > 0) {
@@ -560,28 +562,29 @@ wrap_melt <- function(...) {
   return(melt)
 }
 
-get_missingness <- function(group_counts, group_grid, .arg) {
+get_missingness <- function(group_counts, group_grid, arg) {
   group_counts %>%
     # Include in the missingness array all group-variables that might not exist
     # in the data because of unobserved use_t
-    muffle_full_join(group_grid, by = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
+    muffle_full_join(group_grid, by = c(arg$geo_id, arg$groups, arg$time_id)) %>%
     # Get missingness by group
-    dplyr::group_by_(.dots = c("item", .arg$time_id, .arg$groups, .arg$geo_id)) %>%
+    dplyr::group_by_(.dots = c("item", arg$time_id, arg$groups, arg$geo_id)) %>%
     dplyr::summarise_("m_grp" = ~as.integer(sum(n_grp, na.rm = TRUE) == 0)) %>%
     dplyr::ungroup() %>%
-    dplyr::arrange_(.dots = c(.arg$time_id, "item", .arg$groups, .arg$geo_id))
+    dplyr::arrange_(.dots = c(arg$time_id, "item", arg$groups, arg$geo_id))
 }
 
-cast_missingness <- function(missingness, .arg) {
-  acast_formula <- as.formula(paste0(.arg$time_id, "~ item ~", paste(.arg$groups, collapse = "+"), "+", .arg$geo_id))
+cast_missingness <- function(missingness, arg) {
+  acast_formula <- as.formula(paste0(arg$time_id, "~ item ~", paste(arg$groups, collapse = "+"), "+", arg$geo_id))
   MMM <- missingness %>%
-    dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0("x_", geo), geo = as.name(.arg$geo_id))), .arg$geo_id)) %>%
-    dplyr::arrange_(.dots = c(.arg$time_id, "item", .arg$groups, .arg$geo_id)) %>%
+    dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0("x_", geo), geo = as.name(arg$geo_id))), arg$geo_id)) %>%
+    dplyr::arrange_(.dots = c(arg$time_id, "item", arg$groups, arg$geo_id)) %>%
     reshape2::acast(acast_formula, value.var = "m_grp", fill = 1)
   # But we don"t want to include the character string "NA" as a variable
-  MMM <- MMM[!is.na(dimnames(MMM)[[1]]),
+  MMM <- MMM[
+    !(dimnames(MMM)[[1]] == "NA"),
     !(dimnames(MMM)[[2]] == "NA"),
-    !(dimnames(MMM)[[3]] == "NA")]
+    !(dimnames(MMM)[[3]] == "NA"), drop = FALSE]
   # No cells should be NA either
   assertthat::assert_that(all_in(MMM, c(0, 1)))
   return(MMM)
@@ -621,7 +624,7 @@ factorize_arg_vars <- function(tabular, .arg) {
 
 with_contr.treatment <- function(...) {
   contrast_options = getOption("contrasts")
-  options("contrasts"= rep("contr.treatment", 2))
+  options("contrasts"= c(unordered = "contr.treatment", ordered = "contr.treatment"))
   res <- eval(...)
   options("contrasts"= contrast_options)
   res
@@ -730,7 +733,7 @@ drop_rows_missing_covariates <- function(.data, covariates, .arg) {
 }
 
 drop_rows_missing_items <- function(.data, .arg) {
-  item_filter <- rowSums(!is.na(.data[, .arg$items])) > 0
+  item_filter <- rowSums(!is.na(.data[, .arg$items, drop = FALSE])) > 0
   .data <- .data %>% dplyr::filter(item_filter)
   # droplevels(.data)
 }
@@ -814,7 +817,7 @@ make_group_grid <- function(level, factors, arg) {
   assertthat::assert_that(is_string(arg$time_id), is.numeric(level[[arg$time_id]]))
   group_grid <- expand.grid(c(
     setNames(list(arg$use_t), arg$time_id),
-    lapply(level[, c(arg$geo_id, factors)], function(x) sort(unique(x)))))
+    lapply(level[, c(arg$geo_id, factors), drop = FALSE], function(x) sort(unique(x)))))
   assertthat::assert_that(not_empty(group_grid))
   group_grid
 }
