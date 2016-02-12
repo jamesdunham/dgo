@@ -168,8 +168,7 @@ recast as integer.
 ```{r, load-demographics}
 data(state_demographics)
 head(state_demographics)
-optimize_estimates$theta_bar$race = factor(optimize_estimates$theta_bar$race, labels = c("White or Hispanic", "Black", "Other"))
-optimize_estimates$theta_bar$year = as.integer(optimize_estimates$theta_bar$year)
+state_demographics$race = factor(state_demographics$race, labels = c("white", "black", "other"))
 ```
 
 Now we pass these data, the same `groups` argument as used originally with
@@ -181,7 +180,6 @@ will test the demographic data for whether population proportions sum to one
 within groups defined by the values of that variable.
 
 ```{r}
-dgirt_extract$theta_bar$race = factor(dgirt_extract$theta_bar$race, labels = c("White or Hispanic", "Black", "Other"))
 dgirt_extract$theta_bar$year = as.integer(dgirt_extract$theta_bar$year)
 group_means = poststratify(
   group_means = dgirt_extract$theta_bar,
@@ -196,7 +194,6 @@ head(group_means)
 The same approach works after `dgirt()` if `method = "optimize")`.
 
 ```{r}
-optimize_estimates$theta_bar$race = factor(optimize_estimates$theta_bar$race, labels = c("White or Hispanic", "Black", "Other"))
 optimize_estimates$theta_bar$year = as.integer(optimize_estimates$theta_bar$year)
 optimize_group_means = poststratify(
   group_means = optimize_estimates$theta_bar,

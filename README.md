@@ -66,14 +66,14 @@ A short trial run is often a good idea.
 ``` r
 dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 3, n_chain = 1)
 #> 
-#> SAMPLING FOR MODEL '605ba6820a8c93e8038f6394fbb2c3e1' NOW (CHAIN 1).
+#> SAMPLING FOR MODEL '84f408a951e786210b324c1e54eefa8c' NOW (CHAIN 1).
 #> 
 #> Chain 1, Iteration: 1 / 3 [ 33%]  (Warmup)
 #> Chain 1, Iteration: 2 / 3 [ 66%]  (Warmup)
 #> Chain 1, Iteration: 3 / 3 [100%]  (Sampling)# 
-#> #  Elapsed Time: 0.114359 seconds (Warm-up)
-#> #                0.013396 seconds (Sampling)
-#> #                0.127755 seconds (Total)
+#> #  Elapsed Time: 0.116442 seconds (Warm-up)
+#> #                0.013135 seconds (Sampling)
+#> #                0.129577 seconds (Total)
 #> #
 ```
 
@@ -113,20 +113,20 @@ First, a trial run.
 ``` r
 optimize_estimates = dgirt(state_opinion_fmt, n_iter = 20, method = "optimize",
   init_range = 0.5)
-#> Started: Fri Feb  5 00:14:12 2016
+#> Started: Thu Feb 11 17:55:07 2016
 #> Reading results from disk.
-#> Ended: Fri Feb  5 00:14:14 2016
+#> Ended: Thu Feb 11 17:55:09 2016
 head(optimize_estimates$theta_bar)
 #> Source: local data frame [6 x 5]
 #> 
 #>           param      value  year  state   race
 #>          (fctr)      (dbl) (dbl) (fctr) (fctr)
-#> 1 theta_bar.1.1  0.5326900  2006     AK  white
-#> 2 theta_bar.2.1  0.2321760  2007     AK  white
-#> 3 theta_bar.3.1  0.1361580  2008     AK  white
-#> 4 theta_bar.4.1  0.0899160  2009     AK  white
-#> 5 theta_bar.5.1  0.0553031  2010     AK  white
-#> 6 theta_bar.1.2 -0.1966250  2006     AL  white
+#> 1 theta_bar.1.1  0.1403160  2006     AK  white
+#> 2 theta_bar.2.1  0.6005720  2007     AK  white
+#> 3 theta_bar.3.1  0.0361441  2008     AK  white
+#> 4 theta_bar.4.1  0.0527501  2009     AK  white
+#> 5 theta_bar.5.1  0.2141070  2010     AK  white
+#> 6 theta_bar.1.2 -0.4816380  2006     AL  white
 ```
 
 And now a longer run.
@@ -155,14 +155,12 @@ head(state_demographics)
 #> 4     AZ  1960 White or Hispanic   Male         1     1 3.518153e-04
 #> 5     CA  1960 White or Hispanic   Male         1     1 3.463380e-03
 #> 6     CO  1960 White or Hispanic   Male         1     1 3.543790e-04
-optimize_estimates$theta_bar$race = factor(optimize_estimates$theta_bar$race, labels = c("White or Hispanic", "Black", "Other"))
-optimize_estimates$theta_bar$year = as.integer(optimize_estimates$theta_bar$year)
+state_demographics$race = factor(state_demographics$race, labels = c("white", "black", "other"))
 ```
 
 Now we pass these data, the same `groups` argument as used originally with `wrangle`, and a vector of variable names as `strata` that define aggregations of interest in the data. For exposition we'll set two optional variables. We give the name of the variable in the demographic data for the population proportion as `prop_var`. And passing a variable name to `summands` will test the demographic data for whether population proportions sum to one within groups defined by the values of that variable.
 
 ``` r
-dgirt_extract$theta_bar$race = factor(dgirt_extract$theta_bar$race, labels = c("White or Hispanic", "Black", "Other"))
 dgirt_extract$theta_bar$year = as.integer(dgirt_extract$theta_bar$year)
 group_means = poststratify(
   group_means = dgirt_extract$theta_bar,
@@ -190,7 +188,6 @@ head(group_means)
 The same approach works after `dgirt()` if `method = "optimize")`.
 
 ``` r
-optimize_estimates$theta_bar$race = factor(optimize_estimates$theta_bar$race, labels = c("White or Hispanic", "Black", "Other"))
 optimize_estimates$theta_bar$year = as.integer(optimize_estimates$theta_bar$year)
 optimize_group_means = poststratify(
   group_means = optimize_estimates$theta_bar,
@@ -205,14 +202,14 @@ optimize_group_means = poststratify(
 head(optimize_group_means)
 #> Source: local data frame [6 x 3]
 #> 
-#>    state  year      value
-#>   (fctr) (int)      (dbl)
-#> 1     AK  2006 0.47766086
-#> 2     AK  2007 0.23682464
-#> 3     AK  2008 0.17131902
-#> 4     AK  2009 0.07447566
-#> 5     AK  2010 0.07326571
-#> 6     AL  2006 0.34817007
+#>    state  year       value
+#>   (fctr) (int)       (dbl)
+#> 1     AK  2006  0.16658420
+#> 2     AK  2007  0.51675482
+#> 3     AK  2008  0.06536689
+#> 4     AK  2009  0.04741589
+#> 5     AK  2010  0.17950634
+#> 6     AL  2006 -0.02765865
 ```
 
 `plot_means`
