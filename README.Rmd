@@ -16,17 +16,19 @@ knitr::opts_chunk$set(
   fig.path = "README-",
   cache = FALSE)
 ```
+[![Build Status](https://travis-ci.org/jamesdunham/dgirt.svg?branch=master)](https://travis-ci.org/jamesdunham/dgirt)
+
 dgirt is an R package for dynamic group-level IRT models, as developed in [Caughey and Warshaw
 2014](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html):
 
 > Over the past eight decades, millions of people have been surveyed on their political opinions. Until recently,
-> however, polls rarely included enough questions in a given domain to apply scaling techniques such as IRT
-> models at the individual level, preventing scholars from taking full advantage of historical survey data. To
-> address this problem, we develop a Bayesian group-level IRT approach that models latent traits at the level
-> of demographic and/or geographic groups rather than individuals. We use a hierarchical model to borrow
-> strength cross-sectionally and dynamic linear models to do so across time. The group-level estimates can
-> be weighted to generate estimates for geographic units. This framework opens up vast new areas of
-> research on historical public opinion, especially at the subnational level.
+> however, polls rarely included enough questions in a given domain to apply scaling techniques such as IRT models at
+> the individual level, preventing scholars from taking full advantage of historical survey data. To address this
+> problem, we develop a Bayesian group-level IRT approach that models latent traits at the level of demographic and/or
+> geographic groups rather than individuals. We use a hierarchical model to borrow strength cross-sectionally and
+> dynamic linear models to do so across time. The group-level estimates can be weighted to generate estimates for
+> geographic units. This framework opens up vast new areas of research on historical public opinion, especially at the
+> subnational level.
 
 ## Installation
 
@@ -53,29 +55,24 @@ library(dgirt)
 data(state_opinion)
 ```
 
-Data formatted in this way need to be restructured with the `wrangle` function.
-We'll pass `state_opinion` to `wrangle`'s `data` argument, which takes a list of data
-to be used in modeling. Our table of survey responses will be an element named
-`level1`, for the lowest hierarchical level in the model. (Note: at the moment,
-there are limitations on model specifications. Level-one data is required and a
-second hierarchical level is optional.)
+Data formatted in this way need to be restructured with the `wrangle` function.  We'll pass `state_opinion` to
+`wrangle`'s `data` argument, which takes a list of data to be used in modeling. Our table of survey responses will be an
+element named `level1`, for the lowest hierarchical level in the model. (Note: at the moment, there are limitations on
+model specifications. Level-one data is required and a second hierarchical level is optional.)
 
-We'll use the `vars` argument to identify variables of importance in `data`
-(e.g. which represent item responses). `vars` is a list of named character
-vectors with (at least) these elements:
+We'll use the `vars` argument to identify variables of importance in `data` (e.g. which represent item responses).
+`vars` is a list of named character vectors with (at least) these elements:
 
   * `items`: Names of item response variables in `data$level1`.
-  * `groups`: Names of respondent characteristic variables in `data$level1`.
-     (Note: at this time, `wrangle` requires that the user exclude the
-     geographic indicator from `groups` and name it instead in `geo_id`.
-     Modeling any group predictor is coming.)
+  * `groups`: Names of respondent characteristic variables in `data$level1`.  (Note: at this time, `wrangle` requires
+    that the user exclude the geographic indicator from `groups` and name it instead in `geo_id`.  Modeling any group
+    predictor is coming.)
   * `time_id`: Name of time period variable in `data$level1`.
   * `geo_id`: Name of geographic identifier variable in `data$level1`.
   * `survey_id`: Name of survey identifier variable in `data$level1`.
   * `survey_weight`: Name of weight variable in `data$level1`.
 
-The names of the item response variables start with "Q\_", so we'll
-pass them using `grep`.
+The names of the item response variables start with "Q\_", so we'll pass them using `grep`.
 
 ```{r, wrangle, message = FALSE}
 state_opinion_fmt = wrangle(
@@ -89,15 +86,12 @@ state_opinion_fmt = wrangle(
   filters = list(periods = c(2006:2010)))
 ```
 
-This output omits verbose messages. `wrangle` returns a list of objects that
-`dgirt` expects as its first argument.  We'll also set its `n_iter` and
-`n_chain` arguments to minimize its run time, but otherwise rely on the
-defaults.
+This output omits verbose messages. `wrangle` returns a list of objects that `dgirt` expects as its first argument.
+We'll also set its `n_iter` and `n_chain` arguments to minimize its run time, but otherwise rely on the defaults.
 
-`dgirt()` calls `rstan()`, which reports any problems it encounters when
-compiling the model and sampling. Reporting is verbose and not all messages
-indicate problems. If sampling is successful, `dgirt()` returns an object of
-class `stanfit`. (See rstan documentation.)
+`dgirt()` calls `rstan()`, which reports any problems it encounters when compiling the model and sampling. Reporting is
+verbose and not all messages indicate problems. If sampling is successful, `dgirt()` returns an object of class
+`stanfit`. (See rstan documentation.)
 
 A short trial run is often a good idea.
 
@@ -112,14 +106,12 @@ We omit verbose messages here. Now, a longer run:
 dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 2000, n_chain = 4)
 ```
 
-To examine the the `dgirt()` results we can use `extract_dgirt()`, which
-attaches labels to the saved parameters according to the variable names
-originally passed to `wrangle()` and any factor levels. Right now,
-`extract_dgirt()` shows only the posterior means.
+To examine the the `dgirt()` results we can use `extract_dgirt()`, which attaches labels to the saved parameters
+according to the variable names originally passed to `wrangle()` and any factor levels. Right now, `extract_dgirt()`
+shows only the posterior means.
 
-Note that `dgirt()` returns a `stanfit` object when `method = "rstan"` (as
-above, the default) and a list of point estimates if `method = "optimize"`
-(details below); `extract_dgirt()` only works with `stanfit` objects. (The
+Note that `dgirt()` returns a `stanfit` object when `method = "rstan"` (as above, the default) and a list of point
+estimates if `method = "optimize"` (details below); `extract_dgirt()` only works with `stanfit` objects. (The
 inconsistency in return types isn't desirable and will change in the future.)
 
 The group means can be found as `theta_bar`.
@@ -131,10 +123,9 @@ head(dgirt_extract$theta_bar)
 
 ## `cmdstan`
 
-We can use the `method` argument of `dgirt` to choose an alternative to MCMC
-sampling if `cmdstan` is available. See
-http://mc-stan.org/interfaces/cmdstan.html for installation instructions. For
-example, setting `method = "optimize"` will call `cmdstan optimize`.
+We can use the `method` argument of `dgirt` to choose an alternative to MCMC sampling if `cmdstan` is available. See
+http://mc-stan.org/interfaces/cmdstan.html for installation instructions. For example, setting `method = "optimize"`
+will call `cmdstan optimize`.
 
 First, a trial run.
 
@@ -154,16 +145,11 @@ optimize_estimates = dgirt(state_opinion_fmt, n_iter = 20000,
 
 ## `poststratify`
 
-`poststratify()` can reweight estimates from `dgirt()` (if `method =
-"optimize"`) or `extract_dgirt()` (if `method = "rstan"`, the default).
-`postratify()` returns weighted means for groups or arbitrary aggregations of
-groups.
+`poststratify()` can reweight estimates from `dgirt()` (if `method = "optimize"`) or `extract_dgirt()` (if `method =
+"rstan"`, the default).  `postratify()` returns weighted means for groups or arbitrary aggregations of groups.
 
-The `state_demographics` dataset contains population proportions for
-demographic strata by year. At the moment, it's necessary to relabel the group
-factor levels in the `dgirt()` results to match those in the population
-proportion data. And the time variable in the `dgirt()` results needs to be
-recast as integer.
+The `state_demographics` dataset contains population proportions for demographic strata by year. At the moment, it's
+necessary to relabel the group factor levels in the `dgirt()` results to match those in the population proportion data.
 
 ```{r, load-demographics}
 data(state_demographics)
@@ -171,13 +157,11 @@ head(state_demographics)
 state_demographics$race = factor(state_demographics$race, labels = c("white", "black", "other"))
 ```
 
-Now we pass these data, the same `groups` argument as used originally with
-`wrangle`, and a vector of variable names as `strata` that define aggregations
-of interest in the data. For exposition we'll set two optional variables. We
-give the name of the variable in the demographic data for the population
-proportion as `prop_var`. And passing a variable name to `summands`
-will test the demographic data for whether population proportions sum to one
-within groups defined by the values of that variable.
+Now we pass these data, the same `groups` argument as used originally with `wrangle`, and a vector of variable names as
+`strata` that define aggregations of interest in the data. For exposition we'll set two optional variables. We give the
+name of the variable in the demographic data for the population proportion as `prop_var`. And passing a variable name to
+`summands` will test the demographic data for whether population proportions sum to one within groups defined by the
+values of that variable.
 
 ```{r}
 dgirt_extract$theta_bar$year = as.integer(dgirt_extract$theta_bar$year)
@@ -191,7 +175,7 @@ group_means = poststratify(
 head(group_means)
 ```
 
-The same approach works after `dgirt()` if `method = "optimize")`.
+The same approach works after `dgirt()` if `method = "optimize"`.
 
 ```{r}
 optimize_estimates$theta_bar$year = as.integer(optimize_estimates$theta_bar$year)
@@ -207,8 +191,8 @@ head(optimize_group_means)
 
 ## `plot_means`
 
-We can quickly plot group means with `plot_means`. It can handle the `theta_bar`
-element of the value of `poststratify()`. (Figures omitted.)
+We can quickly plot group means with `plot_means`. It can handle the `theta_bar` element of the value of
+`poststratify()`. (Figures omitted.)
 
 ```{r, results = "hide", warning = FALSE, message = FALSE, fig.show = 'hide'}
 plot_means(group_means, "year", "state", jitter = TRUE)

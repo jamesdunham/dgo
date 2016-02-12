@@ -2,6 +2,8 @@
 dgirt
 =====
 
+[![Build Status](https://travis-ci.org/jamesdunham/dgirt.svg?branch=master)](https://travis-ci.org/jamesdunham/dgirt)
+
 dgirt is an R package for dynamic group-level IRT models, as developed in [Caughey and Warshaw 2014](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html):
 
 > Over the past eight decades, millions of people have been surveyed on their political opinions. Until recently, however, polls rarely included enough questions in a given domain to apply scaling techniques such as IRT models at the individual level, preventing scholars from taking full advantage of historical survey data. To address this problem, we develop a Bayesian group-level IRT approach that models latent traits at the level of demographic and/or geographic groups rather than individuals. We use a hierarchical model to borrow strength cross-sectionally and dynamic linear models to do so across time. The group-level estimates can be weighted to generate estimates for geographic units. This framework opens up vast new areas of research on historical public opinion, especially at the subnational level.
@@ -71,9 +73,9 @@ dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 3, n_chain = 1)
 #> Chain 1, Iteration: 1 / 3 [ 33%]  (Warmup)
 #> Chain 1, Iteration: 2 / 3 [ 66%]  (Warmup)
 #> Chain 1, Iteration: 3 / 3 [100%]  (Sampling)# 
-#> #  Elapsed Time: 0.116442 seconds (Warm-up)
-#> #                0.013135 seconds (Sampling)
-#> #                0.129577 seconds (Total)
+#> #  Elapsed Time: 0.123141 seconds (Warm-up)
+#> #                0.013794 seconds (Sampling)
+#> #                0.136935 seconds (Total)
 #> #
 ```
 
@@ -113,20 +115,20 @@ First, a trial run.
 ``` r
 optimize_estimates = dgirt(state_opinion_fmt, n_iter = 20, method = "optimize",
   init_range = 0.5)
-#> Started: Thu Feb 11 17:55:07 2016
+#> Started: Fri Feb 12 09:51:42 2016
 #> Reading results from disk.
-#> Ended: Thu Feb 11 17:55:09 2016
+#> Ended: Fri Feb 12 09:51:44 2016
 head(optimize_estimates$theta_bar)
 #> Source: local data frame [6 x 5]
 #> 
-#>           param      value  year  state   race
-#>          (fctr)      (dbl) (dbl) (fctr) (fctr)
-#> 1 theta_bar.1.1  0.1403160  2006     AK  white
-#> 2 theta_bar.2.1  0.6005720  2007     AK  white
-#> 3 theta_bar.3.1  0.0361441  2008     AK  white
-#> 4 theta_bar.4.1  0.0527501  2009     AK  white
-#> 5 theta_bar.5.1  0.2141070  2010     AK  white
-#> 6 theta_bar.1.2 -0.4816380  2006     AL  white
+#>           param    value  year  state   race
+#>          (fctr)    (dbl) (dbl) (fctr) (fctr)
+#> 1 theta_bar.1.1 0.821362  2006     AK  white
+#> 2 theta_bar.2.1 1.200950  2007     AK  white
+#> 3 theta_bar.3.1 0.238978  2008     AK  white
+#> 4 theta_bar.4.1 0.225778  2009     AK  white
+#> 5 theta_bar.5.1 0.539578  2010     AK  white
+#> 6 theta_bar.1.2 0.649381  2006     AL  white
 ```
 
 And now a longer run.
@@ -140,7 +142,7 @@ And now a longer run.
 
 `poststratify()` can reweight estimates from `dgirt()` (if `method = "optimize"`) or `extract_dgirt()` (if `method = "rstan"`, the default). `postratify()` returns weighted means for groups or arbitrary aggregations of groups.
 
-The `state_demographics` dataset contains population proportions for demographic strata by year. At the moment, it's necessary to relabel the group factor levels in the `dgirt()` results to match those in the population proportion data. And the time variable in the `dgirt()` results needs to be recast as integer.
+The `state_demographics` dataset contains population proportions for demographic strata by year. At the moment, it's necessary to relabel the group factor levels in the `dgirt()` results to match those in the population proportion data.
 
 ``` r
 data(state_demographics)
@@ -149,12 +151,12 @@ head(state_demographics)
 #> 
 #>    state  year              race female education   age   proportion
 #>   (fctr) (int)            (fctr) (fctr)     (int) (int)        (dbl)
-#> 1     AK  1960 White or Hispanic   Male         1     1 8.857296e-05
-#> 2     AL  1960 White or Hispanic   Male         1     1 6.986948e-04
-#> 3     AR  1960 White or Hispanic   Male         1     1 3.831912e-04
-#> 4     AZ  1960 White or Hispanic   Male         1     1 3.518153e-04
-#> 5     CA  1960 White or Hispanic   Male         1     1 3.463380e-03
-#> 6     CO  1960 White or Hispanic   Male         1     1 3.543790e-04
+#> 1     AK  1960 white or hispanic   male         1     1 8.857296e-05
+#> 2     AL  1960 white or hispanic   male         1     1 6.986948e-04
+#> 3     AR  1960 white or hispanic   male         1     1 3.831912e-04
+#> 4     AZ  1960 white or hispanic   male         1     1 3.518153e-04
+#> 5     CA  1960 white or hispanic   male         1     1 3.463380e-03
+#> 6     CO  1960 white or hispanic   male         1     1 3.543790e-04
 state_demographics$race = factor(state_demographics$race, labels = c("white", "black", "other"))
 ```
 
@@ -177,15 +179,15 @@ head(group_means)
 #> 
 #>    state  year       value
 #>   (fctr) (int)       (dbl)
-#> 1     AK  2006 -1.30783959
-#> 2     AK  2007  0.53182331
-#> 3     AK  2008  0.21339533
-#> 4     AK  2009 -0.04634266
-#> 5     AK  2010  1.10630610
-#> 6     AL  2006  0.60320186
+#> 1     AK  2006  0.01213206
+#> 2     AK  2007 -0.68538500
+#> 3     AK  2008 -0.38938174
+#> 4     AK  2009  0.98444936
+#> 5     AK  2010  1.18867906
+#> 6     AL  2006  1.15451333
 ```
 
-The same approach works after `dgirt()` if `method = "optimize")`.
+The same approach works after `dgirt()` if `method = "optimize"`.
 
 ``` r
 optimize_estimates$theta_bar$year = as.integer(optimize_estimates$theta_bar$year)
@@ -202,14 +204,14 @@ optimize_group_means = poststratify(
 head(optimize_group_means)
 #> Source: local data frame [6 x 3]
 #> 
-#>    state  year       value
-#>   (fctr) (int)       (dbl)
-#> 1     AK  2006  0.16658420
-#> 2     AK  2007  0.51675482
-#> 3     AK  2008  0.06536689
-#> 4     AK  2009  0.04741589
-#> 5     AK  2010  0.17950634
-#> 6     AL  2006 -0.02765865
+#>    state  year     value
+#>   (fctr) (int)     (dbl)
+#> 1     AK  2006 1.3835744
+#> 2     AK  2007 0.5601803
+#> 3     AK  2008 0.7081640
+#> 4     AK  2009 0.2544385
+#> 5     AK  2010 1.1107925
+#> 6     AL  2006 0.9187339
 ```
 
 `plot_means`
