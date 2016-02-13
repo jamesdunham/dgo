@@ -265,6 +265,7 @@ shape_hierarchical_data <- function(level2, modifiers, group_grid_t, arg) {
     dplyr::mutate_each_(~ifelse(is.na(.), 0, .), vars = arg$level2_modifiers)
   hier_melt <- wrap_melt(hier_frame, id.vars = c("param", arg$time_id), variable.name = "modifiers") %>%
     dplyr::mutate_("param" = ~factor(param, levels = param_levels, ordered = TRUE))
+  if (!inherits(hier_melt$value, "numeric")) stop("non-numeric values in hierarchical data. Factor handling probably failed. Possible quickfix: omit or manually dummy out any factors in 'level2_modifiers' or 'level2_period1_modifiers'.")
   assertthat::assert_that(names_subset(modeled_param_names, unlist(hier_melt$param)))
   assertthat::assert_that(names_subset(unmodeled_param_levels, unlist(hier_melt$param)))
   melt_formula <- as.formula(paste(arg$time_id, "param", "modifiers", sep = " ~ "))
