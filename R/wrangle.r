@@ -124,6 +124,7 @@ wrangle <- function(data = list(level1,
 
   # Fix factor levels after filtering
   level1 <- droplevels(level1)
+  arg$use_geo <- update_use_geo(level1, arg)
   arg$level2 <- subset_to_observed_geo_periods(arg$level2, arg)
   nonmissing_t <- sort(unique(level1[[arg$time_id]]))
 
