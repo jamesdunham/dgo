@@ -5,20 +5,21 @@
 #' to `dgirt`.
 #' @param stan_output Return value of `dgirt`.
 #' @param stan_data Return value of `wrangle`.
+#' @param fun A function that can be applied to a scalar vector without arguments (e.g. `mean`).
 #' @return Return value of `rstan::extract` with names attached to its elements.
 #' @export
-extract_dgirt <- function(stan_output, stan_data) {
+extract_dgirt <- function(stan_output, stan_data, fun = mean) {
   assertthat::assert_that(inherits(stan_output, "stanfit"))
   assertthat::assert_that(assertthat::not_empty(stan_data$vars))
 
   dgirt_extract <- rstan::extract(stan_output)
   vars <- stan_data$vars
 
-  dgirt_means = lapply(dgirt_extract, function(element) {
+  dgirt_summary = lapply(dgirt_extract, function(element) {
     assertthat::assert_that(assertthat::not_empty(element))
     if (!is.null(dim(element)) && length(dim(element)) > 1) {
       over_dims = seq.int(2, length(dim(element)))
-      out = apply(element, over_dims, mean)
+      out = apply(element, over_dims, fun)
     } else {
       out = mean(element)
     }
@@ -28,7 +29,7 @@ extract_dgirt <- function(stan_output, stan_data) {
     return(out)
   })
 
-  dgirt_means = name_output_dims(dgirt_means, vars)
+  dgirt_summary = name_output_dims(dgirt_summary, vars)
 
-  return(dgirt_means)
+  return(dgirt_summary)
 }

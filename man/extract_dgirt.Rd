@@ -4,12 +4,14 @@
 \alias{extract_dgirt}
 \title{Extract and name parameters}
 \usage{
-extract_dgirt(stan_output, stan_data)
+extract_dgirt(stan_output, stan_data, fun)
 }
 \arguments{
 \item{stan_output}{Return value of `dgirt`.}
 
 \item{stan_data}{Return value of `wrangle`.}
+
+\item{fun}{A function that can be applied to a scalar vector without arguments (e.g. `mean`).}
 }
 \value{
 Return value of `rstan::extract` with names attached to its elements.
