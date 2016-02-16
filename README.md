@@ -73,9 +73,9 @@ dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 3, n_chain = 1)
 #> Chain 1, Iteration: 1 / 3 [ 33%]  (Warmup)
 #> Chain 1, Iteration: 2 / 3 [ 66%]  (Warmup)
 #> Chain 1, Iteration: 3 / 3 [100%]  (Sampling)# 
-#> #  Elapsed Time: 0.123141 seconds (Warm-up)
-#> #                0.013794 seconds (Sampling)
-#> #                0.136935 seconds (Total)
+#> #  Elapsed Time: 0.116099 seconds (Warm-up)
+#> #                0.013264 seconds (Sampling)
+#> #                0.129363 seconds (Total)
 #> #
 ```
 
@@ -97,12 +97,12 @@ head(dgirt_extract$theta_bar)
 #> 
 #>    Var1  Var2      value  year  state   race
 #>   (int) (int)      (dbl) (dbl) (fctr) (fctr)
-#> 1     1     1 -1.7944927  2006     AK  white
-#> 2     2     1  1.0435053  2007     AK  white
-#> 3     3     1  0.4599502  2008     AK  white
-#> 4     4     1 -0.4227409  2009     AK  white
-#> 5     5     1  1.0708391  2010     AK  white
-#> 6     1     2  0.2298131  2006     AL  white
+#> 1     1     1 -1.8427288  2006     AK  black
+#> 2     2     1  1.0055756  2007     AK  black
+#> 3     3     1  0.4272677  2008     AK  black
+#> 4     4     1 -0.3506091  2009     AK  black
+#> 5     5     1  0.9051608  2010     AK  black
+#> 6     1     2  0.1439138  2006     AL  black
 ```
 
 `cmdstan`
@@ -115,20 +115,20 @@ First, a trial run.
 ``` r
 optimize_estimates = dgirt(state_opinion_fmt, n_iter = 20, method = "optimize",
   init_range = 0.5)
-#> Started: Fri Feb 12 09:51:42 2016
+#> Started: Tue Feb 16 12:16:43 2016
 #> Reading results from disk.
-#> Ended: Fri Feb 12 09:51:44 2016
+#> Ended: Tue Feb 16 12:16:45 2016
 head(optimize_estimates$theta_bar)
 #> Source: local data frame [6 x 5]
 #> 
-#>           param    value  year  state   race
-#>          (fctr)    (dbl) (dbl) (fctr) (fctr)
-#> 1 theta_bar.1.1 0.821362  2006     AK  white
-#> 2 theta_bar.2.1 1.200950  2007     AK  white
-#> 3 theta_bar.3.1 0.238978  2008     AK  white
-#> 4 theta_bar.4.1 0.225778  2009     AK  white
-#> 5 theta_bar.5.1 0.539578  2010     AK  white
-#> 6 theta_bar.1.2 0.649381  2006     AL  white
+#>           param      value  year  state   race
+#>          (fctr)      (dbl) (dbl) (fctr) (fctr)
+#> 1 theta_bar.1.1  0.5279930  2006     AK  black
+#> 2 theta_bar.2.1 -0.0231967  2007     AK  black
+#> 3 theta_bar.3.1  0.3284820  2008     AK  black
+#> 4 theta_bar.4.1  0.8574990  2009     AK  black
+#> 5 theta_bar.5.1  1.3164900  2010     AK  black
+#> 6 theta_bar.1.2  0.6745130  2006     AL  black
 ```
 
 And now a longer run.
@@ -174,17 +174,19 @@ group_means = poststratify(
 #> Warning in poststratify(group_means = dgirt_extract$theta_bar, targets =
 #> state_demographics, : More rows of proportions than combinations of its
 #> strata and grouping variables. Summing proportions over other variables.
+#> Warning in inner_join_impl(x, y, by$x, by$y): joining factors with
+#> different levels, coercing to character vector
 head(group_means)
 #> Source: local data frame [6 x 3]
 #> 
 #>    state  year       value
 #>   (fctr) (int)       (dbl)
-#> 1     AK  2006  0.01213206
-#> 2     AK  2007 -0.68538500
-#> 3     AK  2008 -0.38938174
-#> 4     AK  2009  0.98444936
-#> 5     AK  2010  1.18867906
-#> 6     AL  2006  1.15451333
+#> 1     AK  2006 -0.22472674
+#> 2     AK  2007  0.18481747
+#> 3     AK  2008 -0.02252691
+#> 4     AK  2009  1.04186499
+#> 5     AK  2010  0.79236440
+#> 6     AL  2006  1.42507746
 ```
 
 The same approach works after `dgirt()` if `method = "optimize"`.
@@ -201,17 +203,19 @@ optimize_group_means = poststratify(
 #> Warning in poststratify(group_means = optimize_estimates$theta_bar, targets
 #> = state_demographics, : More rows of proportions than combinations of its
 #> strata and grouping variables. Summing proportions over other variables.
+#> Warning in inner_join_impl(x, y, by$x, by$y): joining factors with
+#> different levels, coercing to character vector
 head(optimize_group_means)
 #> Source: local data frame [6 x 3]
 #> 
-#>    state  year     value
-#>   (fctr) (int)     (dbl)
-#> 1     AK  2006 1.3835744
-#> 2     AK  2007 0.5601803
-#> 3     AK  2008 0.7081640
-#> 4     AK  2009 0.2544385
-#> 5     AK  2010 1.1107925
-#> 6     AL  2006 0.9187339
+#>    state  year      value
+#>   (fctr) (int)      (dbl)
+#> 1     AK  2006 0.41113213
+#> 2     AK  2007 0.07350468
+#> 3     AK  2008 0.22178749
+#> 4     AK  2009 0.57646164
+#> 5     AK  2010 0.90082746
+#> 6     AL  2006 0.11206140
 ```
 
 `plot_means`
