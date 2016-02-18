@@ -8,7 +8,7 @@
 #' @param fun A function that can be applied to a scalar vector without arguments (e.g. `mean`).
 #' @return Return value of `rstan::extract` with names attached to its elements.
 #' @export
-extract_dgirt <- function(stan_output, stan_data, fun = mean) {
+extract_dgirt <- function(stan_output, stan_data, fun = mean.default) {
   assertthat::assert_that(inherits(stan_output, "stanfit"))
   assertthat::assert_that(assertthat::not_empty(stan_data$vars))
 
@@ -21,7 +21,7 @@ extract_dgirt <- function(stan_output, stan_data, fun = mean) {
       over_dims = seq.int(2, length(dim(element)))
       out = apply(element, over_dims, fun)
     } else {
-      out = mean(element)
+      out = fun(element)
     }
     if (length(out) > 1) {
       out = reshape2::melt(out)
