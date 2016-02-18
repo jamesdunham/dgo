@@ -1,19 +1,19 @@
-#' Extract and name parameters
+#' Summarize dgirt samples
 #'
-#' `extract_dgirt` is a wrapper for rstan::extract that attaches
-#' names to parameters according to the values of the data passed
-#' to `dgirt`.
-#' @param stan_output Return value of `dgirt`.
-#' @param stan_data Return value of `wrangle`.
-#' @param fun A function that can be applied to a scalar vector without arguments (e.g. `mean`).
-#' @return Return value of `rstan::extract` with names attached to its elements.
+#' `apply_dgirt` applies a scalar function over dgirt sampler iterations for each parameter that appears in the `stanfit`
+#' object returned by `dgirt`.
+#' 
+#' @param dgirt_output Return value of `dgirt`, a `stanfit` object.
+#' @param dgirt_input Return value of `wrangle`.
+#' @param fun A single scalar function like `mean`.
+#' @return A list of tables summarizing the posterior distribution of each model parameter.
 #' @export
-extract_dgirt <- function(stan_output, stan_data, fun = mean.default) {
-  assertthat::assert_that(inherits(stan_output, "stanfit"))
-  assertthat::assert_that(assertthat::not_empty(stan_data$vars))
+apply_dgirt <- function(dgirt_output, dgirt_input, fun = mean.default) {
+  assertthat::assert_that(inherits(dgirt_output, "stanfit"))
+  assertthat::assert_that(assertthat::not_empty(dgirt_input$vars))
 
-  dgirt_extract <- rstan::extract(stan_output)
-  vars <- stan_data$vars
+  dgirt_extract <- rstan::extract(dgirt_output)
+  vars <- dgirt_input$vars
 
   dgirt_summary = lapply(dgirt_extract, function(element) {
     assertthat::assert_that(assertthat::not_empty(element))
