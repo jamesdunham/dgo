@@ -33,7 +33,7 @@ dgirt is an R package for dynamic group-level IRT models, as developed in [Caugh
 ## Installation
 
 ```{r, install-dgirt, results = "hide", message = FALSE}
-devtools::install_github("jamesdunham/dgirt")
+# devtools::install_github("jamesdunham/dgirt")
 ```
 
 Get updates by reinstalling. dgirt is in early stages and under development.
@@ -51,7 +51,8 @@ See [NEWS](NEWS.md), last updated 2016-01-28.
 responses from individuals.
 
 ```{r, load-and-attach, results = "hide", message = FALSE}
-library(dgirt)
+# library(dgirt)
+devtools::load_all()
 data(state_opinion)
 ```
 
@@ -75,7 +76,7 @@ We'll use the `vars` argument to identify variables of importance in `data` (e.g
 The names of the item response variables start with "Q\_", so we'll pass them using `grep`.
 
 ```{r, wrangle, message = FALSE}
-state_opinion_fmt = wrangle(
+wrangle_output = wrangle(
   data = list(level1 = state_opinion),
   vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
               groups = c("race"),
@@ -93,32 +94,31 @@ We'll also set its `n_iter` and `n_chain` arguments to minimize its run time, bu
 verbose and not all messages indicate problems. If sampling is successful, `dgirt()` returns an object of class
 `stanfit`. (See rstan documentation.)
 
-A short trial run is often a good idea.
-
 ```{r, dgirt-rstan-trial, message = FALSE}
-dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 3, n_chain = 1)
+dgirt_output = dgirt(wrangle_output, n_iter = 10, n_chain = 1)
 ```
 
-We omit verbose messages here. Now, a longer run:
+Before examining the `dgirt()` output we might want to name its elements.
 
+```{r, dgirt-name}
+named_dgirt_output = name(dgirt_output, wrangle_output)
 ```
-# Not run
-dgirt_estimates = dgirt(state_opinion_fmt, n_iter = 2000, n_chain = 4)
+
+The group means can be found as an array `theta_bar`, which is samples x periods x groups. We can `apply` over the
+sampler iterations (just the 3 in 10 kept from our short run, in this example) to summarize the posterior.
+
+```{r, apply}
+str(named_dgirt_output$theta_bar)
+group_posterior_means = apply(named_dgirt_output$theta_bar, 2:3, mean)
+group_posterior_means[2:3, 1:5]
 ```
 
-To examine the the `dgirt()` results we can use `extract_dgirt()`, which attaches labels to the saved parameters
-according to the variable names originally passed to `wrangle()` and any factor levels. Right now, `extract_dgirt()`
-shows only the posterior means.
+Alternatively, `apply_dgirt()` can apply a function like `mean` over the posteriors of all `dgirt` parameters at
+once.
 
-Note that `dgirt()` returns a `stanfit` object when `method = "rstan"` (as above, the default) and a list of point
-estimates if `method = "optimize"` (details below); `extract_dgirt()` only works with `stanfit` objects. (The
-inconsistency in return types isn't desirable and will change in the future.)
-
-The group means can be found as `theta_bar`.
-
-```{r, dgirt-extract}
-dgirt_extract = extract_dgirt(dgirt_estimates, state_opinion_fmt)
-head(dgirt_extract$theta_bar)
+```{r, dgirt-apply}
+posterior_means = apply_dgirt(dgirt_output, wrangle_output, fun = 'mean')
+posterior_means$theta_bar
 ```
 
 ## `cmdstan`
@@ -127,20 +127,9 @@ We can use the `method` argument of `dgirt` to choose an alternative to MCMC sam
 http://mc-stan.org/interfaces/cmdstan.html for installation instructions. For example, setting `method = "optimize"`
 will call `cmdstan optimize`.
 
-First, a trial run.
-
 ```{r, dgirt-optimize}
-optimize_estimates = dgirt(state_opinion_fmt, n_iter = 20, method = "optimize",
-  init_range = 0.5)
-head(optimize_estimates$theta_bar)
-```
-
-And now a longer run.
-
-```
-# Not run
-optimize_estimates = dgirt(state_opinion_fmt, n_iter = 20000,
-  method = "optimize", init_range = 0.5)
+optimize_output = dgirt(wrangle_output, n_iter = 20, method = "optimize", init_range = 0.5)
+head(optimize_output$theta_bar)
 ```
 
 ## `poststratify`
@@ -164,29 +153,29 @@ name of the variable in the demographic data for the population proportion as `p
 values of that variable.
 
 ```{r}
-dgirt_extract$theta_bar$year = as.integer(dgirt_extract$theta_bar$year)
-group_means = poststratify(
-  group_means = dgirt_extract$theta_bar,
+posterior_means$theta_bar$year = as.integer(posterior_means$theta_bar$year)
+poststratify_output = poststratify(
+  group_means = posterior_means$theta_bar,
   targets =  state_demographics,
   groups = c("race"),
   strata = c("state", "year"),
   prop_var = "proportion",
   summands = "year")
-head(group_means)
+head(poststratify_output)
 ```
 
 The same approach works after `dgirt()` if `method = "optimize"`.
 
 ```{r}
-optimize_estimates$theta_bar$year = as.integer(optimize_estimates$theta_bar$year)
-optimize_group_means = poststratify(
-  group_means = optimize_estimates$theta_bar,
+optimize_output$theta_bar$year = as.integer(optimize_output$theta_bar$year)
+optimize_poststratify_output = poststratify(
+  group_means = optimize_output$theta_bar,
   targets =  state_demographics,
   groups = c("race"),
   strata = c("state", "year"),
   prop_var = "proportion",
   summands = "year")
-head(optimize_group_means)
+head(optimize_poststratify_output)
 ```
 
 ## `plot_means`
@@ -195,17 +184,17 @@ We can quickly plot group means with `plot_means`. It can handle the `theta_bar`
 `poststratify()`. (Figures omitted.)
 
 ```{r, results = "hide", warning = FALSE, message = FALSE, fig.show = 'hide'}
-plot_means(group_means, "year", "state", jitter = TRUE)
+plot_means(poststratify_output, "year", "state", jitter = TRUE)
 ```
 
-Or that of `dgirt_extract()` where dgirt(`method = "rstan"`),
+Or that of `apply_dgirt()` where dgirt(`method = "rstan"`),
 
 ```{r, results = "hide", warning = FALSE, message = FALSE, fig.show = 'hide'}
-plot_means(dgirt_extract$theta_bar, "year", "state", jitter = TRUE)
+plot_means(posterior_means$theta_bar, "year", "state", jitter = TRUE)
 ```
 
 Or the value of `dgirt()` in the case of `method = "optimize"`.
 
 ```{r, results = "hide", warning = FALSE, message = FALSE, fig.show = 'hide'}
-plot_means(optimize_estimates$theta_bar, "year", "state", jitter = TRUE)
+plot_means(optimize_output$theta_bar, "year", "state", jitter = TRUE)
 ```
