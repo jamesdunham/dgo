@@ -275,7 +275,7 @@ shape_hierarchical_data <- function(level2, modifiers, group_grid_t, arg) {
 }
 
 add_gt_variables <- function(level1, arg) {
-  gt_table <- create_gt_variables(d = level1, .items = arg$items)
+  gt_table <- create_gt_variables(d = level1, items = arg$items)
   level1 <- dplyr::bind_cols(level1, gt_table)
   return(level1)
 }
@@ -510,22 +510,6 @@ make_design_matrix <- function(group_grid_t, factors, arg) {
   }
   return(design_matrix)
 }
-
-concat_groups <- function(tabular, group_names, geo_id, name) {
-  has_all_names(tabular, group_names)
-  has_all_names(tabular, geo_id)
-  tabular %>%
-    tidyr::unite_("group_concat", group_names, sep = "_") %>%
-    tidyr::unite_(name, c("group_concat", geo_id), sep = "_x_")
-}
-
-split_groups <- function(tabular, group_names, geo_id, name) {
-  assertthat::assert_that(has_name(tabular, "name"))
-  tabular %>%
-    tidyr::separate_(name, c("group_concat", geo_id), sep = "_x_") %>%
-    tidyr::separate_("group_concat", group_names, sep = "_")
-}
-# split_groups(concat_groups(group_grid_t, arg$groups, arg$geo_id, "name"), arg$groups, arg$geo_id, "name")
 
 summarize_trials_by_period <- function(trial_counts, .arg) {
   dplyr::select_(trial_counts, ~matches("_gt\\d+$"), .arg$time_id) %>%
@@ -852,8 +836,11 @@ create_l2_design_matrix <- function(group_design_matrix, arg) {
 }
 
 # Create 'greater than' indicators
-create_gt_variables <- function(d, .items){
-  out <- lapply(.items, function(item) {
+# gt_table <- create_gt_variables(d = level1, items = arg$items)
+create_gt_variables <- function(d, items){
+  widths <- c("item" = 30, "class" = 10, "levels" = 12, "responses" = 16)
+  print_varinfo_header(widths)
+  out <- lapply(items, function(item) {
     if (is.ordered(d[[item]])) {
       item_levels <- na.omit(levels(droplevels(d[[item]])))
       values <- match(as.character(d[[item]]), item_levels)
@@ -863,18 +850,15 @@ create_gt_variables <- function(d, .items){
     } else {
       stop("each item should be an ordered factor or numeric")
     }
-    message("'", item, "' is class '", class(d[[item]]), "' with ", length(item_levels),
-      " non-missing values: '", paste(item_levels, collapse = "', '"), "'")
     gt_levels <- seq_along(item_levels)[-length(item_levels)]
     if (length(gt_levels) < 1) stop("no variation in item ", deparse(item))
     if (identical(length(gt_levels), 1L)) {
       assertthat::assert_that(has_length(item_levels, 2))
-      message("\t considered binary with failure='", item_levels[1], "' and success='", item_levels[2], "'")
     }
     if (length(gt_levels) > 1L) {
       assertthat::assert_that(length(item_levels) > 2L)
-      message("\t considered ordinal with levels '", paste(item_levels, collapse = "', '"), "' (ascending)")
     }
+    print_varinfo(d, item, item_levels = item_levels, gt_levels = gt_levels, widths)
     gt_cols <- lapply(gt_levels, function(gt) {
       ifelse(values > gt, 1L, 0L)
     })
@@ -882,5 +866,31 @@ create_gt_variables <- function(d, .items){
     gt_names <- paste(item, gt_levels, sep = "_gt")
     setNames(gt_cols, gt_names)
   })
+  print_varinfo_rule(widths)
   dplyr::bind_cols(out)
+}
+
+print_varinfo_header <- function(widths) {
+  pad_side <- c("right", rep("left", length(widths) - 1))
+  message(concat_varinfo(widths, names(widths), pad_side))
+  print_varinfo_rule(widths)
+}
+
+print_varinfo_rule <- function(widths) {
+  message(paste0(rep('-', sum(widths)), collapse = ''))
+}
+
+print_varinfo <- function(d, item, item_levels, gt_levels, widths) {
+  item_name = ifelse(nchar(item) > 30, paste0(stringi::stri_sub(item, 1, 26), '...'), item)
+  responses = format(sum(!is.na(d[[item]])), big.mark = ",")
+  values <- c("item" = item_name, "class" = class(d[[item]]), "levels" = length(item_levels), responses = responses)
+  pad_side <- c("right", rep("left", length(values) - 1))
+  assertthat::assert_that(identical(length(widths), length(values)))
+  message(concat_varinfo(widths, values, pad_side))
+}
+
+concat_varinfo = function(widths, values, pad_side) {
+  mapply(function(width, value, side) {
+      paste0(stringi::stri_pad(value, width, side = side), collapse = '')
+    }, widths, values, pad_side)
 }
