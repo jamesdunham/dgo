@@ -83,12 +83,12 @@ read_cmdstan_output <- function(path, save_pars) {
   message("Reading results from disk.")
   csv <- scan(path, what = "character", sep = ",", quiet = TRUE, comment.char = "#", multi.line = FALSE)
   len <- length(csv)
-  parnames <- csv[1:(len / 2)]
-  values <- csv[(len / 2 + 1):len]
-  assertthat::assert_that(equal_length(parnames, values))
-  values <- as.numeric(values)
+  param <- csv[1:(len / 2)]
+  value <- csv[(len / 2 + 1):len]
+  assertthat::assert_that(equal_length(param, value))
+  value <- as.numeric(value)
 
-  cmdstan_output <- dplyr::data_frame(parnames, values)
+  cmdstan_output <- dplyr::data_frame(param, value)
   assertthat::assert_that(assertthat::not_empty(cmdstan_output))
   assertthat::assert_that(assertthat::noNA(cmdstan_output))
 
@@ -97,16 +97,16 @@ read_cmdstan_output <- function(path, save_pars) {
 
 filter_cmdstan_output <- function(stan_output, save_pars) {
   save_par_regex <- paste0("^(", paste0(save_pars, collapse = "|"), ")(_raw)*[.0-9]*$")
-  stan_output <- stan_output %>% dplyr::filter_(~grepl(save_par_regex, parnames))
+  stan_output <- stan_output %>% dplyr::filter_(~grepl(save_par_regex, param))
   if (!assertthat::not_empty(stan_output)) {
     stop("output does not contain estimates for the parameters in save_pars")
   }
 
-  output_stubs <- sort(unique(gsub(save_par_regex, "\\1", stan_output$parnames, perl = TRUE)))
+  output_stubs <- sort(unique(gsub(save_par_regex, "\\1", stan_output$param, perl = TRUE)))
 
   split_output <- lapply(output_stubs, function(stub) {
     this_par <- stan_output %>%
-      dplyr::filter_(~grepl(paste0("^", stub, "[0-9.]*$"), parnames))
+      dplyr::filter_(~grepl(paste0("^", stub, "[0-9.]*$"), param))
     return(this_par)
   })
   names(split_output) <- output_stubs
