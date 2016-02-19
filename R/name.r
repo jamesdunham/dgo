@@ -13,8 +13,10 @@ name <- function(dgirt_output, dgirt_input) {
   dgirt_extract <- rstan::extract(dgirt_output)
 
   vars <- dgirt_input$vars
-  dim2_indexed_t = c('theta_bar', 'xi', 'gamma', 'delta_gamma', 'delta_tbar', 'nu_geo', 'sd_theta', 'sd_theta_bar',
+  dim2_indexed_t <- c('theta_bar', 'xi', 'gamma', 'delta_gamma', 'delta_tbar', 'nu_geo', 'sd_theta', 'sd_theta_bar',
     'sd_total', 'theta_l2', 'var_theta_bar_l2')
+  if (!as.logical(dgirt_input$constant_item)) dim2_indexed_t <- c(dim2_indexed_t, "kappa")
+
   for (i in dim2_indexed_t) {
     names(attributes(dgirt_extract[[i]])$dimnames)[2] <- 'time'
     assertthat::assert_that(identical(dim(dgirt_extract[[i]])[2], length(vars$use_t)))
@@ -31,12 +33,12 @@ name <- function(dgirt_output, dgirt_input) {
   dimnames(dgirt_extract[['gamma']])[[3]] <- vars$hier_names
 
   names(attributes(dgirt_extract[['kappa']])$dimnames)[3] <- 'item'
-  assertthat::assert_that(identical(dim(dgirt_extract[['kappa']])[3], length(vars$items)))
-  dimnames(dgirt_extract[['kappa']])[[3]] <- vars$items
+  assertthat::assert_that(identical(dim(dgirt_extract[['kappa']])[3], length(vars$gt_items)))
+  dimnames(dgirt_extract[['kappa']])[[3]] <- vars$gt_items
 
   names(attributes(dgirt_extract[['sd_item']])$dimnames)[2] <- 'item'
-  assertthat::assert_that(identical(dim(dgirt_extract[['sd_item']])[2], length(vars$items)))
-  dimnames(dgirt_extract[['sd_item']])[[2]] <- vars$items
+  assertthat::assert_that(identical(dim(dgirt_extract[['sd_item']])[2], length(vars$gt_items)))
+  dimnames(dgirt_extract[['sd_item']])[[2]] <- vars$gt_items
 
   dgirt_extract
 }
