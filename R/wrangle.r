@@ -71,16 +71,16 @@ wrangle <- function(data = list(level1,
 
   arg <- handle_arguments()
   level1 <- handle_data(.data = arg$level1,
-                        covariates = c(arg$time_id, arg$geo_id, arg$groups, arg$survey_id),
-                        factorize = TRUE,
-                        .arg = arg)
+    covariates = c(arg$time_id, arg$geo_id, arg$groups, arg$survey_id),
+    factorize = TRUE,
+    .arg = arg)
   if (length(arg$level2) > 0) {
     arg$level2 <- handle_data(.data = arg$level2,
-                              covariates = unique(c(arg$time_id, arg$geo_id, arg$level2_modifiers,
-                                  arg$level2_period1_modifiers)),
-                              # TODO: handle
-                              factorize = FALSE,
-                              .arg = arg)
+      covariates = unique(c(arg$time_id, arg$geo_id, arg$level2_modifiers,
+          arg$level2_period1_modifiers)),
+      # TODO: handle
+      factorize = FALSE,
+      .arg = arg)
   }
 
   ## INDIVIDUAL LEVEL ##
@@ -451,18 +451,20 @@ count_group_trials <- function(.data, design_effects, group_grid, .arg) {
 compute_mean_group_outcome <- function(level1, group_grid, .arg) {
   mean_y <- level1 %>%
     dplyr::group_by_(.dots = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
+    # subset to identifiers and items
     dplyr::select_(~matches("_gt\\d+$"), ~n_responses, .arg$survey_weight) %>%
+    # weight by n_responses
     dplyr::mutate_("weight" = lazyeval::interp(~ w / n,
       w = as.name(.arg$survey_weight), n = quote(n_responses))) %>%
+    # take weighted mean of item responses within geo, group, time
     dplyr::summarise_each_(~weighted.mean(as.vector(.), weight,
       na.rm = TRUE), vars = "contains(\"_gt\")") %>%
     dplyr::group_by_(.dots = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
+    # replace NaN
     dplyr::mutate_each(~replaceNaN) %>%
-    dplyr::ungroup() # %>%
-    # dplyr::mutate_each_(~as.character, vars = c(.arg$geo_id, .arg$groups, .arg$time_id))
+    dplyr::ungroup()
 
-  # As above, create rows for unobserved but desired covariate combinations,
-  # but this time leave the values as NA
+  # make sure missing group appear as NA
   mean_y <- muffle_full_join(mean_y, group_grid,
     by = c(.arg$geo_id, .arg$groups, .arg$time_id)) %>%
       # NOTE: Order will matter in a moment
