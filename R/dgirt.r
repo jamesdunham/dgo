@@ -35,6 +35,8 @@ dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n_war
       options(mc.cores = parallel::detectCores())
   }
 
+  if (length(save_pars) < 1) stop("save_pars gives no parameters to save")
+
   vars = dgirt_data$vars
   dgirt_data$vars = NULL
   group_counts = dgirt_data$group_counts
@@ -67,8 +69,9 @@ use_cmdstan <- function(dgirt_data, optimize_algorithm, n_iter, init_range, save
   system2(get_dgirt_path(), stan_args)
   unlink(get_dump_path())
   if (file.exists(get_output_path())) {
-    stan_output <- read_cmdstan_output(get_output_path())
-    stan_output <- name_cmdstan_output(stan_output, dgirt_data, save_pars, vars)
+    stan_output <- read_cmdstan_output(get_output_path(), save_pars)
+    stan_output <- filter_cmdstan_output(stan_output, save_pars)
+    stan_output <- name_output_dims(stan_output, vars)
     return(stan_output)
   } else {
     warning("cmdstan didn't write an output file; check its output for errors.")
@@ -76,50 +79,63 @@ use_cmdstan <- function(dgirt_data, optimize_algorithm, n_iter, init_range, save
   }
 }
 
-read_cmdstan_output <- function(path) {
+read_cmdstan_output <- function(path, save_pars) {
   message("Reading results from disk.")
-  cmdstan_output <- data.table::fread(path, skip = "lp__", sep = ",",
-    header = TRUE)
+  csv <- scan(path, what = "character", sep = ",", quiet = TRUE, comment.char = "#", multi.line = FALSE)
+  len <- length(csv)
+  parnames <- csv[1:(len / 2)]
+  values <- csv[(len / 2 + 1):len]
+  assertthat::assert_that(equal_length(parnames, values))
+  values <- as.numeric(values)
+
+  cmdstan_output <- dplyr::data_frame(parnames, values)
   assertthat::assert_that(assertthat::not_empty(cmdstan_output))
-  assertthat::assert_that(identical(nrow(cmdstan_output), 1L))
+  assertthat::assert_that(assertthat::noNA(cmdstan_output))
+
   return(cmdstan_output)
 }
 
-name_cmdstan_output <- function(stan_output, dgirt_data, save_pars, vars) {
-  output_names <- dimnames(stan_output)[[2]]
-  par_regex <- paste0("^(", paste0(save_pars, collapse = "|"), ")(_raw)*[.0-9]*$")
-  parameter_names <- grep(par_regex, output_names, perl = TRUE, value = TRUE)
-  assertthat::assert_that(all_strings(parameter_names))
-  stan_output <- stan_output %>% dplyr::select_(~one_of(parameter_names))
-  parname_stubs <- sort(unique(gsub(par_regex, "\\1", parameter_names, perl = TRUE)))
-  stan_output <- lapply(parname_stubs, function(parname) {
+filter_cmdstan_output <- function(stan_output, save_pars) {
+  save_par_regex <- paste0("^(", paste0(save_pars, collapse = "|"), ")(_raw)*[.0-9]*$")
+  stan_output <- stan_output %>% dplyr::filter_(~grepl(save_par_regex, parnames))
+  if (!assertthat::not_empty(stan_output)) {
+    stop("output does not contain estimates for the parameters in save_pars")
+  }
+
+  output_stubs <- sort(unique(gsub(save_par_regex, "\\1", stan_output$parnames, perl = TRUE)))
+
+  split_output <- lapply(output_stubs, function(stub) {
     this_par <- stan_output %>%
-      dplyr::select_(~matches(paste0("^", parname, "[0-9.]*$"))) %>%
-      reshape2::melt(id.vars = NULL, variable.name = "param") %>%
-      dplyr::as.tbl()
+      dplyr::filter_(~grepl(paste0("^", stub, "[0-9.]*$"), parnames))
     return(this_par)
   })
-  names(stan_output) <- parname_stubs
-  stan_output <- name_output_dims(stan_output, vars)
-
-  return(stan_output)
+  names(split_output) <- output_stubs
+  split_output
 }
 
 name_output_dims <- function(stan_output, vars) {
-  indexed_t = c("delta_gamma", "delta_tbar", "sd_total", "nu_geo", "sd_theta_bar",
-    "theta_l2", "var_theta_bar_l2", "xi")
+  indexed_t = intersect(c("delta_gamma", "delta_tbar", "sd_total", "nu_geo", "sd_theta_bar",
+    "theta_l2", "var_theta_bar_l2", "xi"), names(stan_output))
   stan_output[indexed_t] = lapply(stan_output[indexed_t], attach_t,
     vars$use_t, vars$time_id)
 
-  stan_output$gamma$t <- rep(vars$use_t, length(vars$hier_names))
-  stan_output$gamma$p <- rep(vars$hier_names, each = length(vars$use_t))
+  if (length(stan_output$gamma) > 0) {
+    stan_output$gamma$t <- rep(vars$use_t, length(vars$hier_names))
+    stan_output$gamma$p <- rep(vars$hier_names, each = length(vars$use_t))
+  }
 
-  stan_output$kappa$q <- vars$gt_items
-  stan_output$sd_item$q <- vars$gt_items
-  # stan_output$nu_geo$geo <- # T x H geographic predictor
+  if (length(stan_output$kappa) > 0) {
+    stan_output$kappa$q <- vars$gt_items
+  }
 
+  if (length(stan_output$sd_item) > 0) {
+    stan_output$sd_item$q <- vars$gt_items
+  }
+
+  if (length(stan_output$theta_bar) > 0) {
   stan_output$theta_bar <- stan_output$theta_bar %>%
     name_group_means(vars)
+  }
   return(stan_output)
 }
 

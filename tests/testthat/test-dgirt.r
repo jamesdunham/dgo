@@ -27,7 +27,34 @@ suppressMessages({
   expect_true(stringi::stri_length(get_dump_path()) >
     stringi::stri_length("/dgirt_data.Rdump"))
 
-  context("Run cmdstan")
+  context("Read optimize output")
 
-  expect_error(read_cmdstan_output("\n"))
+  # create output
+  save_pars = c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar", "nu_geo",
+    "nu_geo_prior", "kappa", "sd_item", "sd_theta", "sd_theta_bar", "sd_gamma", "sd_innov_gamma",
+    "sd_innov_delta", "sd_innov_logsd", "sd_total", "theta_l2", "var_theta_bar_l2")
+  d = expand.grid(save_pars, 1:2, 1:2) %>%
+    dplyr::mutate_("parname" = ~paste(Var1, Var2, Var3, sep = '.'),
+                   "value" = ~rnorm(n = length(parname))) %>%
+    dplyr::select_(.dots = c("parname", "value")) %>%
+    reshape2::dcast(. ~ parname) %>% dplyr::select_(~-one_of("."))
+  write.csv(d, "test_output.csv", row.names = FALSE)
+
+  expect_silent(suppressMessages(read_cmdstan_output("test_output.csv", save_pars)))
+  output = read_cmdstan_output("test_output.csv", save_pars)
+  expect_true(identical(colnames(output), c("parnames", "values")))
+  expect_true(identical(dim(output), c(length(save_pars) * 2L * 2L, 2L)))
+  expect_true(inherits(output$parnames, "character"))
+  expect_true(inherits(output$values, "numeric"))
+
+  context("Filter optimize output")
+
+  param_filter = c("theta_bar", "xi")
+  expect_silent(filter_cmdstan_output(output, param_filter))
+  filtered_output = filter_cmdstan_output(output, param_filter)
+  expect_equal(length(filtered_output), length(param_filter))
+  expect_equal(names(filtered_output), param_filter)
+  expect_equal(dim(filtered_output[[param_filter[1]]]), c(4L, 2L))
+  expect_equal(dim(filtered_output[[param_filter[2]]]), c(4L, 2L))
+  expect_error(filter_cmdstan_output(output, "foo"), "output does not contain estimates")
 })

@@ -1,9 +1,10 @@
 ^.*\.Rproj$
-^\.Rproj\.user$
+^.*\.png$
+^README.Rmd$
 ^\.DS_Store$
-^packrat/
 ^\.Rprofile$
+^\.Rproj\.user$
 ^\.travis.yml$
+^packrat/
 ^todo.txt$
 ^wercker.yml$
-^README.Rmd$
