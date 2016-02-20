@@ -6,7 +6,7 @@
 #' @param dgirt_input Return value of `wrangle`.
 #' @return What `rstan::extract` returns, but with dimension names.
 #' @export
-name <- function(dgirt_output, dgirt_input) {
+name_pars <- function(dgirt_output, dgirt_input) {
   assertthat::assert_that(inherits(dgirt_output, "stanfit"))
   assertthat::assert_that(assertthat::not_empty(dgirt_input$vars))
 

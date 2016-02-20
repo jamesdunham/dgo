@@ -2,7 +2,7 @@
 
 export(apply_dgirt)
 export(dgirt)
-export(name)
+export(name_pars)
 export(plot_means)
 export(poststratify)
 export(wrangle)
