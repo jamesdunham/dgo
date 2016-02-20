@@ -42,10 +42,10 @@ suppressMessages({
 
   expect_silent(suppressMessages(read_cmdstan_output("test_output.csv", save_pars)))
   output = read_cmdstan_output("test_output.csv", save_pars)
-  expect_true(identical(colnames(output), c("parnames", "values")))
+  expect_true(identical(colnames(output), c("param", "value")))
   expect_true(identical(dim(output), c(length(save_pars) * 2L * 2L, 2L)))
-  expect_true(inherits(output$parnames, "character"))
-  expect_true(inherits(output$values, "numeric"))
+  expect_true(inherits(output$param, "character"))
+  expect_true(inherits(output$value, "numeric"))
 
   context("Filter optimize output")
 
