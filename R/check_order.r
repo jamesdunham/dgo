@@ -13,4 +13,5 @@ check_order <- function(d) {
   assertthat::assert_that(all(n_vec_groups %in% rownames(d$XX)))
   nonmissing_xx_rows <- rownames(d$XX)[rownames(d$XX) %in% n_vec_groups]
   # assertthat::assert_that(identical(n_vec_groups, nonmissing_xx_rows))
+  TRUE
 }
