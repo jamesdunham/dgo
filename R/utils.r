@@ -1,25 +1,21 @@
 `%>%` <- magrittr::`%>%`
+`%<>%` <- magrittr::`%<>%`
 
-# Replace NA in a vector with 0
-replaceNA <- function(x) {
+na_to_zero <- function(x) {
   replace(x, is.na(x), 0)
 }
 
-# Replace NaN in a vector with NA
-replaceNaN <- function(x) {
-    replace(x, is.nan(x), NA)
+nan_to_na <- function(x) {
+  replace(x, is.nan(x), NA)
 }
 
-# Get count of non-NA values over x
-countValid <- function(x) {
-    sum(!is.na(x))
-}
-
-anyValid <- function(x) {
+any_not_na <- function(x) {
   any(!is.na(x))
 }
 
-# Check element-wise if !is.na over x
-notNA <- function(x) {
-    !is.na(x)
-}
+"%c%" <- function(...) paste0(unlist(list(...)))
+"%c+%" <- function(...) paste(unlist(list(...)))
+"%c+%" <- function(...) paste(unlist(list(...)), collapse = " + ", sep = " + ")
+"%c,%" <- function(...) paste(unlist(list(...)), collapse = ", ", sep = ", ")
+"%c|%" <- function(...) paste(unlist(list(...)), collapse = " | ", sep = " | ")
+"%c~%" <- function(...) paste(unlist(list(...)), collapse = " ~ ", sep = " ~ ")

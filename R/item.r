@@ -1,139 +1,3 @@
-setClass("ItemVar", contains="character")
-# setGeneric(".Data", function(x) standardGeneric(".Data"))
-# setGeneric(".Data<-", function(x, value) standardGeneric(".Data<-"))
-setMethod("initialize", "ItemVar", function(.Object, .Data) {
-  if (!missing(.Data)) {
-    if (!all(nchar(.Data) > 0)) stop("variable name is not a positive-length character")
-    if (!length(.Data) > 0) stop("variable name is NULL")
-    if (any(duplicated(.Data))) stop("duplicate variable name")
-    .Object@.Data <- .Data
-  }
-  .Object
-})
-
-set_tbl <- function(x) {
-  if (!missing(x) && length(x) > 0) {
-    tbl_ <<- x
-    tbl_name <- tolower(class(.self))
-    if (!inherits(x, "data.frame")) {
-      stop(tbl_name, " data must inherit from data.frame")
-    }
-    if (!all(dim(x) > 0)) {
-      stop(tbl_name, " data has an empty dimension")
-    } else {
-      for (s in .self$get_names()) {
-        if (!s %in% names(x)) {
-          stop(s, " is not a variable in ", tbl_name, " data")
-        }
-      }
-    } 
-  } else {
-    tbl_
-  }
-}
-
-set_items <- function(x) {
-    if (!missing(x)) {
-      if (!length(x) < 1)  {
-        if (is.character(x)) {
-          x <- new("ItemVar", x)
-        }
-        .self$test_names(x)
-      }
-      items_ <<- x
-    } else {
-      items_
-    }
-}
-
-set_groups <- function(x) {
-    if (!missing(x) && length(x) > 0) {
-      groups_ <<- x
-      .self$test_names(x)
-    } else {
-      groups_
-    }
-}
-
-set_time <- function(x) {
-    if (!missing(x) && length(x) > 0) {
-      time_ <<- x
-      .self$test_names(x)
-    } else {
-      time_
-    }
-}
-
-set_geo <- function(x) {
-    if (!missing(x) && length(x) > 0) {
-      geo_ <<- x
-      .self$test_names(x)
-    } else {
-      geo_
-    }
-}
-
-set_survey <- function(x) {
-    if (!missing(x) && length(x) > 0) {
-      survey_ <<- x
-      .self$test_names(x)
-    } else {
-      survey_
-    }
-}
-
-set_weight <- function(x) {
-    if (!missing(x) && length(x) > 0) {
-      weight_ <<- x
-      .self$test_names(x)
-    } else {
-      weight_
-    }
-}
-
-get_t <- function() {
-  length(.self$filters$t)
-}
-
-get_q <- function() {
-  sum(grepl("_gt", colnames(.self$tbl), fixed = TRUE))
-}
-
-get_g <- function() {
-  factor_levels <- sapply(.self$tbl[, c(.self$geo, .self$groups)], nlevels)
-  Reduce(`*`, factor_levels)
-}
-
-get_n = function() {
-  nrow(.self$group_counts)
-}
-
-Targets <- setRefClass("Targets",
-  fields = list(
-    tbl = "data.frame",
-    strata = "formula",
-    prop = "ItemVar"
-  )
-)
-
-# filters = list(periods = c(2006:2010))
-Filters <- setRefClass("Filters",
-  fields = list(
-    t = "numeric",
-    geo = "character",
-    min_t = "numeric",
-    min_survey = "numeric")
-)
-
-Control <- setRefClass("Control",
-  fields = list(
-    constant_item = "integer",
-    separate_t = "integer",
-    delta_tbar_prior_mean = "numeric",
-    delta_tbar_prior_sd = "numeric",
-    innov_sd_delta_scale = "numeric",
-    innov_sd_theta_scale = "numeric"))
-
 set_modifiers <- function(x) {
     if (!missing(x) && length(x) > 0) {
       modifiers_ <<- x
@@ -152,150 +16,6 @@ set_t1_modifiers <- function(x) {
     }
 }
 
-
-get_p = function() {
-  ncol(.self$group_design_matrix)
-}
-
-get_s = function() {
-  dim(.self$ZZ)[[2]]
-}
-get_h = function() {
-  dim(.self$ZZ)[[3]]
-}
-
-get_h_prior = function() {
-  dim(.self$ZZ_prior)[[3]]   
-}
-
-Modifier <- setRefClass("Modifier",
-  fields = list(
-    tbl = set_tbl,
-    tbl_ = "ANY",
-    modifiers = set_modifiers,
-    modifiers_ = "ItemVar",
-    t1_modifiers = set_t1_modifiers,
-    t1_modifiers_ = "ItemVar",
-    time = set_time,
-    time_ = "ItemVar",
-    geo = set_geo,
-    geo_ = "ItemVar",
-    Gl2 = "integer",
-    WT = "array",
-    l2_only = "array",
-    NNl2 = "array",
-    SSl2 = "array",
-    group_design_matrix = "matrix",
-    P = get_p,
-    ZZ = "array",
-    ZZ_prior = "array",
-    H = get_h,
-    S = get_s,
-    H_prior = get_h_prior))
-
-Item <- setRefClass("Item",
-  fields = list(
-    tbl = set_tbl,
-    tbl_ = "ANY",
-    items = set_items,
-    items_ = "ItemVar",
-    groups = set_groups,
-    groups_ = "ItemVar",
-    time = set_time,
-    time_ = "ItemVar",
-    geo = set_geo,
-    geo_ = "ItemVar",
-    survey = set_survey,
-    survey_ = "ItemVar",
-    weight = set_weight,
-    weight_ = "ItemVar",
-    filters = "Filters",
-    targets = "Targets",
-    modifier = "Modifier",
-    control = "Control",
-    T = get_t,
-    Q = get_q,
-    G = get_g,
-    N = get_n,
-    group_grid = "data.frame",
-    group_grid_t = "data.frame",
-    group_counts = "data.frame",
-    MMM = "array"))
-
-Item$methods(has_hierarchy = function() {
-  !inherits(item$modifier$tbl, "uninitializedField")
-})
-
-Item$methods(make_WT = function() {
-  .self$modifier$WT <- array(1, dim = c(.self$T, .self$modifier$Gl2, .self$G))
-})
-
-Item$methods(make_modifier_group_n = function() {
-  .self$modifier$Gl2 <- count_modifier_groups(.self)
-})
-
-Item$methods(get_names = function() {
-  nm = Map(function(i) .self[[i]], names(Item$fields())[grep("ItemVar", Item$fields())])
-  unique(unlist(nm))
-})
-
-Item$methods(test_names = function(x) {
-  stopifnot(inherits(x, "ItemVar"))
-  for (s in x) {
-    if (!s %in% names(.self$tbl)) {
-      stop(s, " is not a variable in item data")
-    }
-  }
-})
-
-Item$methods(restrict = function() {
-  .self <- restrict_items(.self)
-  .self <- restrict_modifier(.self)
-  tbl <<- droplevels(.self$tbl)
-})
-
-Item$methods(reweight = function() {
-  if (!length(.self$targets$tbl) < 1) {
-    .self <- weight(.self)
-  }
-})
-
-Item$methods(make_gt_variables = function() {
-  gt_table <- create_gt_variables(.self)
-  .self$tbl <- dplyr::bind_cols(.self$tbl, gt_table)
-})
-
-Item$methods(find_missingness = function() {
-  .self$MMM <- make_missingness_array(item)
-})
-
-Item$methods(get_group_grid = function() {
-  .self$group_grid <- make_group_grid(item)
-})
-
-Item$methods(make_l2_only = function() {
-  .self$modifier$l2_only <- make_dummy_l2_only(.self)
-})
-
-Item$methods(make_NNl2 = function() {
-  .self$modifier$NNl2 <- make_dummy_l2_counts(.self)
-})
-
-Item$methods(make_SSl2 = function() {
-  .self$modifier$SSl2 <- make_dummy_l2_counts(.self)
-})
-
-Item$methods(make_group_design = function() {
-    .self$modifier$group_design_matrix <- make_design_matrix(.self)
-})
-
-Item$methods(make_ZZ = function() {
-  .self$modifier$ZZ <- make_hierarchical_array(.self)
-})
-
-Item$methods(make_ZZ_prior = function() {
-  .self$modifier$ZZ_prior <- make_hierarchical_array(.self)
-})
 
 make_hierarchical_array <- function(item) {
   if (item$has_hierarchy()) {
@@ -365,20 +85,6 @@ concat_varinfo = function(widths, values, pad_side) {
     }, widths, values, pad_side)
 }
 
-
-
-Item$methods(check_groups = function(group_grid_t) {
-  for (s in .self$groups) {
-    if (length(levels(group_grid_t[[s]])) < 2) {
-      stop("no variation in group variable ", s)
-    }
-  }
-})
-
-Item$methods(list_groups = function() {
-  group_grid <<- make_group_grid(.self)
-})
-
 make_group_grid <- function(item) {
   group_grid <- expand.grid(c(
     setNames(list(item$filters$t), item$time),
@@ -388,10 +94,6 @@ make_group_grid <- function(item) {
 }
 
 
-Item$methods(list_groups_t = function() {
-  group_grid_t <<- make_group_grid_t(.self)
-})
-
 make_group_grid_t <- function(item) {
   group_grid_t <- item$group_grid %>%
     dplyr::select_(lazyeval::interp(~-one_of(v), v = item$time)) %>%
@@ -400,10 +102,6 @@ make_group_grid_t <- function(item) {
   item$check_groups(group_grid_t)
   group_grid_t
 }
-
-Item$methods(group_n = function() {
-  group_counts <<- make_group_counts(.self)
-})
 
 restrict_items <- function(item) {
   item <- factorize_arg_vars(item)
@@ -494,6 +192,8 @@ drop_itemless_respondents <- function(item) {
   item
 }
 
+dplyr::as.tbl(cars) %>% dplyr::select_(.dots = c("speed", "dist"))
+
 drop_responseless_items <- function(item) {
   responseless_items <- get_responseless_items(item)
   item$items <- setdiff(item$items, responseless_items)
@@ -577,14 +277,14 @@ get_items_rare_in_polls <- function(item) {
 get_question_polls <- function(item) {
   question_polls <- item$tbl %>%
     dplyr::group_by_(item$survey) %>%
-    dplyr::summarise_each_(dplyr::funs(anyValid), vars = item$items)
+    dplyr::summarise_each_(dplyr::funs(any_not_na), vars = item$items)
   question_polls
 }
 
 get_question_periods <- function(item) {
   question_periods <- item$tbl %>%
     dplyr::group_by_(item$time) %>%
-    dplyr::summarise_each_(~anyValid, vars = ~one_of(item$items))
+    dplyr::summarise_each_(~any_not_na, vars = ~one_of(item$items))
   question_periods
 }
 

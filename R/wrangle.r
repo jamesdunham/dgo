@@ -55,28 +55,6 @@ vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
             survey_weight = "weight")
 filters = list(periods = c(2006:2010))
 
-shape <- function(item) {
-  item$restrict()
-  item$reweight()
-  item$make_gt_variables()
-  item$list_groups()
-  item$list_groups_t()
-  item$group_n()
-  item$find_missingness()
-  item$make_WT()
-  item$make_l2_only()
-  item$make_modifier_group_n()  
-  item$make_WT()
-  item$make_l2_only()
-  item$make_NNl2()
-  item$make_SSl2()
-  item$make_group_design()
-  item$make_ZZ()
-  item$make_ZZ_prior()
-  stan_data <- tostan(item)
-  check(stan_data)
-  stan_data
-}
 
 wrangle <- function(data = list(level1,
                                 level2 = NULL,
@@ -101,22 +79,10 @@ wrangle <- function(data = list(level1,
                                      delta_tbar_prior_sd = 0.5,
                                      innov_sd_delta_scale = 2.5,
                                      innov_sd_theta_scale = 2.5)) {
-  library(microbenchmark)
-  # library(profvis)
-  # profvis({
-    microbenchmark(times = 20, {
     arg <- handle_arguments()
     item <- wrangle_to_shape(arg)
     stan_data <- shape(item)
     stan_data
-    })
-  # })
-}
-
-check <- function(stan_data) {
-  check_dimensions(stan_data)
-  check_values(stan_data)
-  check_order(stan_data)
 }
 
 make_hierarchical_array <- function(item) {
@@ -204,7 +170,7 @@ check_dimensions <- function(d) {
 get_question_periods <- function(item) {
   question_periods <- item$tbl %>%
     dplyr::group_by_(item$time) %>%
-    dplyr::summarise_each_(~anyValid, vars = item$items)
+    dplyr::summarise_each_(~any_not_na, vars = item$items)
   question_periods
 }
 
@@ -254,7 +220,7 @@ count_trials <- function(item, design_effects) {
     by = c(item$geo, item$groups, item$time))
   # Replace the NA values in those rows representing unobserved covariate
   # combinations with zeroes
-  trial_counts <- trial_counts %>% dplyr::mutate_each_(~replaceNA, ~matches("_gt\\d+$"))
+  trial_counts <- trial_counts %>% dplyr::mutate_each_(~na_to_zero, ~matches("_gt\\d+$"))
   # NOTE: Order will matter in a moment
   trial_counts <- trial_counts %>%
     dplyr::arrange_(.dots = c(item$geo, item$groups, item$time)) %>%
@@ -276,7 +242,7 @@ make_group_means <- function(item) {
       na.rm = TRUE), vars = "contains(\"_gt\")") %>%
     dplyr::group_by_(.dots = c(item$geo, item$groups, item$time)) %>%
     # replace NaN
-    dplyr::mutate_each(~replaceNaN) %>%
+    dplyr::mutate_each(~nan_to_na) %>%
     dplyr::ungroup()
 
   # make sure missing group appear as NA
@@ -299,7 +265,7 @@ count_successes <- function(trial_counts, mean_group_outcome) {
     dplyr::bind_cols(dplyr::select_(trial_counts, .dots = c(item$geo, item$groups, item$time)), .) %>%
     # Round off returning integers and replace NA with 0
     dplyr::ungroup() %>%
-    dplyr::mutate_each_(~replaceNA, ~matches("_gt\\d+$")) %>%
+    dplyr::mutate_each_(~na_to_zero, ~matches("_gt\\d+$")) %>%
     dplyr::mutate_each_(~round(., digits = 0), ~matches("_gt\\d+$")) %>%
     dplyr::arrange_(.dots = c(item$geo, item$groups, item$time))
   success_counts
@@ -343,8 +309,8 @@ format_counts <- function(trial_counts, success_counts) {
     tidyr::unite_("name", c(item$geo, item$groups), sep = "__", remove = FALSE) %>%
     dplyr::filter_(~n_grp != 0) %>%
     dplyr::mutate_(
-      n_grp = ~replaceNA(n_grp),
-      s_grp = ~replaceNA(s_grp),
+      n_grp = ~na_to_zero(n_grp),
+      s_grp = ~na_to_zero(s_grp),
       name = lazyeval::interp(~paste(period, item, name, sep = " | "), period = as.name(item$time))) %>%
       # NOTE: arrange by time, item, group. Otherwise dgirt() output won't have
       # the expected order.
