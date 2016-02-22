@@ -79,9 +79,9 @@ dgirt_output = dgirt(wrangle_output, n_iter = 10, n_chain = 1)
 #> Chain 1, Iteration: 8 / 10 [ 80%]  (Sampling)
 #> Chain 1, Iteration: 9 / 10 [ 90%]  (Sampling)
 #> Chain 1, Iteration: 10 / 10 [100%]  (Sampling)# 
-#> #  Elapsed Time: 0.394312 seconds (Warm-up)
-#> #                1.18672 seconds (Sampling)
-#> #                1.58103 seconds (Total)
+#> #  Elapsed Time: 0.395197 seconds (Warm-up)
+#> #                1.21418 seconds (Sampling)
+#> #                1.60938 seconds (Total)
 #> #
 ```
 
@@ -111,7 +111,7 @@ group_posterior_means[2:3, 1:5]
 Alternatively, `apply_dgirt()` can apply a function like `mean` over the posteriors of all `dgirt` parameters at once.
 
 ``` r
-posterior_means = apply_dgirt(dgirt_output, wrangle_output, fun = 'mean')
+posterior_means = apply_dgirt(dgirt_output, wrangle_output, fun = mean)
 posterior_means$theta_bar
 #> Source: local data frame [765 x 6]
 #> 
@@ -133,24 +133,32 @@ posterior_means$theta_bar
 `cmdstan`
 ---------
 
-We can use the `method` argument of `dgirt` to choose an alternative to MCMC sampling if `cmdstan` is available. See <http://mc-stan.org/interfaces/cmdstan.html> for installation instructions. For example, setting `method = "optimize"` will call `cmdstan optimize`.
+We can use the `method` argument of `dgirt` to choose an alternative to MCMC sampling if `cmdstan` is available. See <http://mc-stan.org/interfaces/cmdstan.html> for installation instructions.
+
+`method = "optimize"` calls `cmdstan optimize`; `method = "variational"` calls `cmdstan variational`. An optional `algorithm` argument can change the default algorithm from `lbgfs` and `meanfield`, respectively.
 
 ``` r
 optimize_output = dgirt(wrangle_output, n_iter = 20, method = "optimize", init_range = 0.5)
-#> Started: Thu Feb 18 15:52:19 2016
+#> Started: Mon Feb 22 09:52:54 2016
 #> Reading results from disk.
-#> Ended: Thu Feb 18 15:52:21 2016
+#> Ended: Mon Feb 22 09:52:55 2016
 head(optimize_output$theta_bar)
 #> Source: local data frame [6 x 5]
 #> 
-#>           param     value  year  state   race
-#>          (fctr)     (dbl) (dbl) (fctr) (fctr)
-#> 1 theta_bar.1.1 1.1278800  2006     AK  black
-#> 2 theta_bar.2.1 1.1025000  2007     AK  black
-#> 3 theta_bar.3.1 0.6897520  2008     AK  black
-#> 4 theta_bar.4.1 0.0971638  2009     AK  black
-#> 5 theta_bar.5.1 0.8052460  2010     AK  black
-#> 6 theta_bar.1.2 0.6783520  2006     AL  black
+#>           param    value  year  state   race
+#>           (chr)    (dbl) (dbl) (fctr) (fctr)
+#> 1 theta_bar.1.1 1.243990  2006     AK  black
+#> 2 theta_bar.2.1 1.088970  2007     AK  black
+#> 3 theta_bar.3.1 0.968045  2008     AK  black
+#> 4 theta_bar.4.1 0.901639  2009     AK  black
+#> 5 theta_bar.5.1 1.166980  2010     AK  black
+#> 6 theta_bar.1.2 0.906685  2006     AL  black
+```
+
+``` r
+# NOTE: std::domain_error with state_opinion data and near-default options
+# variational_output = dgirt(wrangle_output, n_iter = 20000, method = "variational", algorithm = "meanfield", init_range = 0.01)
+# head(variational_output$theta_bar)
 ```
 
 `poststratify`
@@ -226,12 +234,12 @@ head(optimize_poststratify_output)
 #> 
 #>    state  year       value
 #>   (fctr) (int)       (dbl)
-#> 1     AK  2006 0.591092039
-#> 2     AK  2007 0.329401870
-#> 3     AK  2008 0.258412869
-#> 4     AK  2009 0.002827527
-#> 5     AK  2010 0.394233455
-#> 6     AL  2006 0.113420651
+#> 1     AK  2006  0.61404431
+#> 2     AK  2007 -0.01840852
+#> 3     AK  2008  0.01752277
+#> 4     AK  2009 -0.09910671
+#> 5     AK  2010  0.26717581
+#> 6     AL  2006 -0.00791460
 ```
 
 `plot_means`

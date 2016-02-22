@@ -117,19 +117,26 @@ Alternatively, `apply_dgirt()` can apply a function like `mean` over the posteri
 once.
 
 ```{r, dgirt-apply}
-posterior_means = apply_dgirt(dgirt_output, wrangle_output, fun = 'mean')
+posterior_means = apply_dgirt(dgirt_output, wrangle_output, fun = mean)
 posterior_means$theta_bar
 ```
 
 ## `cmdstan`
 
 We can use the `method` argument of `dgirt` to choose an alternative to MCMC sampling if `cmdstan` is available. See
-http://mc-stan.org/interfaces/cmdstan.html for installation instructions. For example, setting `method = "optimize"`
-will call `cmdstan optimize`.
+http://mc-stan.org/interfaces/cmdstan.html for installation instructions.
+
+`method = "optimize"` calls `cmdstan optimize`; `method = "variational"` calls `cmdstan variational`. An optional
+`algorithm` argument can change the default algorithm from `lbgfs` and `meanfield`, respectively.
 
 ```{r, dgirt-optimize}
 optimize_output = dgirt(wrangle_output, n_iter = 20, method = "optimize", init_range = 0.5)
 head(optimize_output$theta_bar)
+
+```{r, dgirt-variational}
+# NOTE: std::domain_error with state_opinion data and near-default options
+# variational_output = dgirt(wrangle_output, n_iter = 20000, method = "variational", algorithm = "meanfield", init_range = 0.01)
+# head(variational_output$theta_bar)
 ```
 
 ## `poststratify`
