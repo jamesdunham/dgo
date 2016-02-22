@@ -93,10 +93,9 @@ make_group_grid <- function(item) {
   group_grid %>% dplyr::arrange_(.dots = c(item$time, item$groups, item$geo))
 }
 
-
 make_group_grid_t <- function(item) {
   group_grid_t <- item$group_grid %>%
-    dplyr::select_(lazyeval::interp(~-one_of(v), v = item$time)) %>%
+    dplyr::select_(~-one_of(item$time)) %>%
     dplyr::distinct() %>%
     dplyr::arrange_(.dots = c(item$groups, item$geo))
   item$check_groups(group_grid_t)
@@ -192,14 +191,12 @@ drop_itemless_respondents <- function(item) {
   item
 }
 
-dplyr::as.tbl(cars) %>% dplyr::select_(.dots = c("speed", "dist"))
-
 drop_responseless_items <- function(item) {
   responseless_items <- get_responseless_items(item)
   item$items <- setdiff(item$items, responseless_items)
   if (length(responseless_items) > 0) {
     item$tbl <- item$tbl %>%
-      dplyr::select_(lazyeval::interp(~-one_of(v), v = responseless_items))
+      dplyr::select_(.dots = responseless_items)
     message(sprintf(ngettext(length(responseless_items),
           "\tDropped %i item for lack of responses",
           "\tDropped %i items for lack of responses"),
@@ -212,8 +209,7 @@ drop_items_rare_in_time <- function(item) {
   q_rare <- get_items_rare_in_time(item)
   item$items <- setdiff(item$items, q_rare)
   if (length(q_rare) > 0) {
-    item$tbl <- item$tbl %>% dplyr::select_(lazyeval::interp(~-one_of(v),
-        v = q_rare))
+    item$tbl <- item$tbl %>% dplyr::select_(.dots =  q_rare)
     message(sprintf(ngettext(length(q_rare),
           "\tDropped %i items for failing min_t requirement (%i)",
           "\tDropped %i items for failing min_t requirement (%i)"),
@@ -224,7 +220,7 @@ drop_items_rare_in_time <- function(item) {
 
 get_responseless_items <- function(item) {
   n_item_responses <- item$tbl %>%
-    dplyr::summarise_each_(~sum(!is.na(.)), vars = ~one_of(item$items)) %>%
+    dplyr::summarise_each_(~sum(!is.na(.)), vars = item$items) %>%
     wrap_melt(id.vars = NULL, value.name = "n_responses")
   responseless_items <- n_item_responses %>%
     dplyr::filter_(~n_responses == 0L)
@@ -236,14 +232,13 @@ get_responseless_items <- function(item) {
 get_itemless_respondents <- function(item) {
   if (length(item$items) < 1) stop("no remaining items")
   not_na <- !is.na(item$tbl %>%
-    dplyr::select_(~one_of(item$items)))
+    dplyr::select_(.dots = item$items))
   rowSums(not_na) == 0
 }
 
 get_items_rare_in_time <- function(item) {
   q_when_asked <- get_question_periods(item)
-  q_t_count <- colSums(dplyr::select_(q_when_asked,
-    lazyeval::interp(~-one_of(v), v = item$time)))
+  q_t_count <- colSums(dplyr::select_(q_when_asked, ~-one_of(item$time)))
   q_rare <- names(q_t_count)[q_t_count < item$filters$min_t]
   q_rare
 }
@@ -253,7 +248,7 @@ drop_items_rare_in_polls <- function(item) {
   item$items <- setdiff(item$items, lt_min_surveys)
   if (length(lt_min_surveys) > 0) {
     item$tbl <- item$tbl %>%
-      dplyr::select_(lazyeval::interp(~-one_of(v), v = lt_min_surveys))
+      dplyr::select_(~-one_of(lt_min_surveys))
   }
   assertthat::assert_that(assertthat::not_empty(setdiff(item$items, lt_min_surveys)))
   item
@@ -261,8 +256,7 @@ drop_items_rare_in_polls <- function(item) {
 
 get_items_rare_in_polls <- function(item) {
   q_which_asked <- get_question_polls(item)
-  q_counts <- q_which_asked %>% dplyr::select_(lazyeval::interp(~-one_of(v),
-      v = item$survey)) %>%
+  q_counts <- q_which_asked %>% dplyr::select_(~-one_of(item$survey)) %>%
     dplyr::summarise_each(~sum)
   lt_min_surveys <- colnames(q_counts)[unlist(q_counts) < item$filters$min_survey]
   if (length(lt_min_surveys) > 0) {
@@ -284,7 +278,7 @@ get_question_polls <- function(item) {
 get_question_periods <- function(item) {
   question_periods <- item$tbl %>%
     dplyr::group_by_(item$time) %>%
-    dplyr::summarise_each_(~any_not_na, vars = ~one_of(item$items))
+    dplyr::summarise_each_(~any_not_na, vars = item$items)
   question_periods
 }
 
