@@ -19,3 +19,11 @@ any_not_na <- function(x) {
 "%c,%" <- function(...) paste(unlist(list(...)), collapse = ", ", sep = ", ")
 "%c|%" <- function(...) paste(unlist(list(...)), collapse = " | ", sep = " | ")
 "%c~%" <- function(...) paste(unlist(list(...)), collapse = " ~ ", sep = " ~ ")
+
+deselect <- function(x, cols = "", ...) {
+  dplyr::select_(x, ..., ~-one_of(cols))
+}
+
+arrange <- function(x, cols = "", ...) {
+  dplyr::arrange_(x, ..., .dots = cols)
+}
