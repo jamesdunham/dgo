@@ -1,6 +1,5 @@
 handle_arguments <- function() {
-  arg <- mget(names(formals(wrangle)), parent.frame(),
-    ifnotfound = list(rep(NULL, length(formals(wrangle)))))
+  arg <- mget(names(formals(wrangle)), parent.frame(2L), ifnotfound = list(rep(NULL, length(formals(wrangle)))))
   arg <- unlist(arg, recursive = FALSE)
   assertthat::not_empty(names(arg))
   names(arg) <- sub("^(data|vars|filters|params)\\.", "", names(arg))

@@ -55,6 +55,7 @@ vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
             survey_weight = "weight")
 filters = list(periods = c(2006:2010))
 
+# wrangle(data = data, vars = vars, filters = filters)
 
 wrangle <- function(data = list(level1,
                                 level2 = NULL,
@@ -79,8 +80,7 @@ wrangle <- function(data = list(level1,
                                      delta_tbar_prior_sd = 0.5,
                                      innov_sd_delta_scale = 2.5,
                                      innov_sd_theta_scale = 2.5)) {
-    arg <- handle_arguments()
-    item <- wrangle_to_shape(arg)
+    item <- wrangle_to_shape()
     stan_data <- shape(item)
     stan_data
 }

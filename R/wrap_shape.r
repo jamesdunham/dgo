@@ -1,5 +1,7 @@
 # Transitional functions
-wrangle_to_shape <- function(arg) {
+wrangle_to_shape <- function() {
+  arg <- handle_arguments()
+
   item <- Item$new()
   item$modifier <- Modifier$new()
   item$filters <- Filters$new()
