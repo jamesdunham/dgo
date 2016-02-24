@@ -89,7 +89,7 @@ Item <- setRefClass("Item",
     MMM = "array"))
 
 Item$methods(has_hierarchy = function() {
-  !inherits(item$modifier$tbl, "uninitializedField")
+  !inherits(.self$modifier$tbl, "uninitializedField")
 })
 
 Item$methods(make_WT = function() {
@@ -132,11 +132,11 @@ Item$methods(make_gt_variables = function() {
 })
 
 Item$methods(find_missingness = function() {
-  .self$MMM <- make_missingness_array(item)
+  .self$MMM <- make_missingness_array(.self)
 })
 
 Item$methods(get_group_grid = function() {
-  .self$group_grid <- make_group_grid(item)
+  .self$group_grid <- make_group_grid(.self)
 })
 
 Item$methods(make_l2_only = function() {

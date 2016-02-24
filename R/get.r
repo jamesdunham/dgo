@@ -20,12 +20,15 @@ get_p = function() {
 }
 
 get_s = function() {
-  dim(.self$ZZ)[[2]]
+  if (length(.self$ZZ) > 0) dim(.self$ZZ)[[2]]
+  else NULL
 }
 get_h = function() {
-  dim(.self$ZZ)[[3]]
+  if (length(.self$ZZ) > 0) dim(.self$ZZ)[[3]]
+  else NULL
 }
 
 get_h_prior = function() {
-  dim(.self$ZZ_prior)[[3]]   
+  if (length(.self$ZZ) > 0) dim(.self$ZZ_prior)[[3]]   
+  else NULL
 }

@@ -55,7 +55,7 @@ vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
             survey_weight = "weight")
 filters = list(periods = c(2006:2010))
 
-# wrangle(data = data, vars = vars, filters = filters)
+# x = wrangle(data = data, vars = vars, filters = list(periods = 2010:2014))
 
 wrangle <- function(data = list(level1,
                                 level2 = NULL,
@@ -191,7 +191,7 @@ count_trials <- function(item, design_effects) {
   assertthat::assert_that(not_empty(item$tbl), length(grep("_gt\\d+$", colnames(item$tbl))) > 0)
   not_na_trial <- item$tbl %>%
     # The _gt variables can take values of 0/1/NA
-    dplyr::mutate_each_(~notNA, ~matches("_gt\\d+$"))
+    dplyr::mutate_each_(~not_na, ~matches("_gt\\d+$"))
     # For a respondent who only answered questions A and B, we now have
     #  T,   T,   T,   T,   T,   F,   F.
   assertthat::assert_that(not_empty(not_na_trial))
@@ -254,7 +254,7 @@ make_group_means <- function(item) {
   mean_y
 }
 
-count_successes <- function(trial_counts, mean_group_outcome) {
+count_successes <- function(item, trial_counts, mean_group_outcome) {
   # Confirm row order is identical before taking product
   assertthat::assert_that(all_equal(
       dplyr::select_(mean_group_outcome, .dots = c(item$geo, item$groups, item$time)),
@@ -299,7 +299,7 @@ summarize_trials_by_period <- function(trial_counts) {
     dplyr::summarise_(valid_items = ~sum(value, na.rm = TRUE) > 0)
 }
 
-format_counts <- function(trial_counts, success_counts) {
+format_counts <- function(item, trial_counts, success_counts) {
   trial_counts_melt <- wrap_melt(trial_counts, variable.name = "item",
     id.vars = c(item$geo, item$groups, item$time), value.name = "n_grp")
   success_counts_melt <- wrap_melt(success_counts, variable.name = "item",
@@ -343,7 +343,7 @@ get_missingness <- function(item) {
     dplyr::arrange_(.dots = c(item$time, "item", item$groups, item$geo))
 }
 
-cast_missingness <- function(missingness) {
+cast_missingness <- function(item, missingness) {
   acast_formula <- as.formula(paste0(item$time, "~ item ~", paste(item$groups, collapse = "+"), "+", item$geo))
   MMM <- missingness %>%
     dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0("x_", geo), geo = as.name(item$geo))), item$geo)) %>%
@@ -459,7 +459,7 @@ tostan <- function(item) {
       time_id = item$time,
       use_t = item$filters$t,
       geo_id = item$geo,
-      periods = arg$periods,
+      periods = item$filters$t,
       survey_id = item$survey,
       covariate_groups = item$group_grid_t,
       hier_names = dimnames(item$modifier$group_design_matrix)[[2]]))

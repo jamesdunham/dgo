@@ -35,7 +35,7 @@ create_gt_variables <- function(item){
       i_levels <- na.omit(levels(droplevels(item$tbl[[i]])))
       values <- match(as.character(item$tbl[[i]]), i_levels)
     } else if (is.numeric(item$tbl[[i]])) {
-      i_levels <- sort(na.omit(unique(item$tbl[[i]])))
+      i_levels <- sort.int(na.omit(unique.default(item$tbl[[i]])))
       values <- match(item$tbl[[i]], i_levels)
     } else {
       stop("each item should be an ordered factor or numeric")
@@ -287,13 +287,13 @@ make_group_counts <- function(item) {
   design_effects <- make_design_effects(item)
   trial_counts <- count_trials(item, design_effects)
   group_means <- make_group_means(item)
-  success_counts <- count_successes(trial_counts, group_means)
-  format_counts(trial_counts, success_counts)
+  success_counts <- count_successes(item, trial_counts, group_means)
+  format_counts(item, trial_counts, success_counts)
 }
 
 make_missingness_array <- function(item) {
   missingness <- get_missingness(item)
-  cast_missingness(missingness)
+  cast_missingness(item, missingness)
 }
 
 restrict_modifier <- function(item) {

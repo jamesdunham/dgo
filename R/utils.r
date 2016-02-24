@@ -13,6 +13,10 @@ any_not_na <- function(x) {
   any(!is.na(x))
 }
 
+not_na <- function(x) {
+  !is.na(x)
+}
+
 "%c%" <- function(...) paste0(unlist(list(...)))
 "%c+%" <- function(...) paste(unlist(list(...)))
 "%c+%" <- function(...) paste(unlist(list(...)), collapse = " + ", sep = " + ")
