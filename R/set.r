@@ -1,80 +1,95 @@
-set_tbl <- function(x) {
-  if (!missing(x) && length(x) > 0) {
-    tbl_ <<- x
-    tbl_name <- tolower(class(.self))
-    if (!inherits(x, "data.frame")) {
+set_tbl <- function(value) {
+  if (!missing(value) && length(value) > 0) {
+    self$tbl_ <- value
+    tbl_name <- tolower(class(self)[1])
+    if (!inherits(value, "data.frame")) {
       stop(tbl_name, " data must inherit from data.frame")
     }
-    if (!all(dim(x) > 0)) {
+    if (!all(dim(value) > 0)) {
       stop(tbl_name, " data has an empty dimension")
-    } else {
-      for (s in .self$get_names()) {
-        if (!s %in% names(x)) {
-          stop(s, " is not a variable in ", tbl_name, " data")
-        }
-      }
+    # } else {
+    #   for (s in self$get_names()) {
+    #     if (!s %in% names(value)) {
+    #       stop(s, " is not a variable in ", tbl_name, " data")
+    #     }
+    #   }
     } 
   } else {
-    tbl_
+    self$tbl_
   }
 }
 
-set_items <- function(x) {
-    if (!missing(x)) {
-      if (!length(x) < 1)  {
-        if (is.character(x)) {
-          x <- new("ItemVar", x)
-        }
-        .self$test_names(x)
+set_items <- function(value) {
+    if (!missing(value)) {
+      if (!length(value) < 1)  {
+        value <- new("ItemVar", value)
+        self$test_names(value)
       }
-      items_ <<- x
+      self$items_ <- value
     } else {
-      items_
+      self$items_
     }
 }
 
-set_groups <- function(x) {
-    if (!missing(x) && length(x) > 0) {
-      groups_ <<- x
-      .self$test_names(x)
+set_groups <- function(value) {
+    if (!missing(value) && length(value) > 0) {
+      self$groups_ <- value
+      self$test_names(value)
     } else {
-      groups_
+      self$groups_
     }
 }
 
-set_time <- function(x) {
-    if (!missing(x) && length(x) > 0) {
-      time_ <<- x
-      .self$test_names(x)
+set_time <- function(value) {
+    if (!missing(value) && length(value) > 0) {
+      self$time_ <- value
+      self$test_names(value)
     } else {
-      time_
+      self$time_
     }
 }
 
-set_geo <- function(x) {
-    if (!missing(x) && length(x) > 0) {
-      geo_ <<- x
-      .self$test_names(x)
+set_geo <- function(value) {
+    if (!missing(value) && length(value) > 0) {
+      self$geo_ <- value
+      self$test_names(value)
     } else {
-      geo_
+      self$geo_
     }
 }
 
-set_survey <- function(x) {
-    if (!missing(x) && length(x) > 0) {
-      survey_ <<- x
-      .self$test_names(x)
+set_survey <- function(value) {
+    if (!missing(value) && length(value) > 0) {
+      self$survey_ <- value
+      self$test_names(value)
     } else {
-      survey_
+      self$survey_
     }
 }
 
-set_weight <- function(x) {
-    if (!missing(x) && length(x) > 0) {
-      weight_ <<- x
-      .self$test_names(x)
+set_weight <- function(value) {
+    if (!missing(value) && length(value) > 0) {
+      self$weight_ <- value
+      self$test_names(value)
     } else {
-      weight_
+      self$weight_
     }
 }
 
+set_modifiers <- function(value) {
+    if (!missing(value) && length(value) > 0) {
+      self$modifiers_ <- value
+      self$test_names(value)
+    } else {
+      self$modifiers_
+    }
+}
+
+set_t1_modifiers <- function(value) {
+    if (!missing(value) && length(value) > 0) {
+      self$t1_modifiers_ <- value
+      self$test_names(value)
+    } else {
+      self$t1_modifiers_
+    }
+}

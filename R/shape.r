@@ -8,7 +8,6 @@ shape <- function(item) {
   item$find_missingness()
   item$make_WT()
   item$make_l2_only()
-  item$make_modifier_group_n()  
   item$make_WT()
   item$make_l2_only()
   item$make_NNl2()

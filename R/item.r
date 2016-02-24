@@ -1,24 +1,5 @@
-set_modifiers <- function(x) {
-    if (!missing(x) && length(x) > 0) {
-      modifiers_ <<- x
-      .self$test_names(x)
-    } else {
-      modifiers_
-    }
-}
-
-set_t1_modifiers <- function(x) {
-    if (!missing(x) && length(x) > 0) {
-      t1_modifiers_ <<- x
-      .self$test_names(x)
-    } else {
-      t1_modifiers_
-    }
-}
-
-
 make_hierarchical_array <- function(item) {
-  if (item$has_hierarchy()) {
+  if (item$has_hierarchy) {
     ZZ <- shape_hierarchical_data(item)
   } else {
     zz.names <- list(item$filters$t, dimnames(item$modifier$group_design_matrix)[[2]], "")
@@ -62,6 +43,7 @@ create_gt_variables <- function(item){
 
 print_varinfo_header <- function(widths) {
   pad_side <- c("right", rep("left", length(widths) - 1))
+  message()
   message(concat_varinfo(widths, names(widths), pad_side))
   print_varinfo_rule(widths)
 }
@@ -139,7 +121,7 @@ factorize_arg_vars <- function(item) {
       item$tbl[[varname]] <- paste0(varname, as.character(item$tbl[[varname]]))
     }
   }
-  item$tbl <- with_contr.treatment(item$tbl %>% 
+  item$tbl <- with_contr.treatment(item$tbl %>%
     dplyr::arrange_(.dots = arg_vars) %>%
     dplyr::mutate_each_(dplyr::funs(factor(., levels = sort(unique(as.character(.))))), vars = arg_vars))
   item
@@ -196,7 +178,7 @@ drop_responseless_items <- function(item) {
   item$items <- setdiff(item$items, responseless_items)
   if (length(responseless_items) > 0) {
     item$tbl <- item$tbl %>%
-      dplyr::select_(.dots = responseless_items)
+      dplyr::select_(~-one_of(responseless_items))
     message(sprintf(ngettext(length(responseless_items),
           "\tDropped %i item for lack of responses",
           "\tDropped %i items for lack of responses"),
@@ -303,7 +285,7 @@ restrict_modifier <- function(item) {
     item$modifier$tbl <- item$modifier$tbl %>%
       dplyr::filter_(lazyeval::interp(~modifier_geo %in% item$filter$geo
         && modifier_t %in% item$filter$t, modifier_geo = as.name(item$modifier$geo),
-          modifier_t = as.name(item$modifier$t)))
+          modifier_t = as.name(item$modifier$time)))
     final_nrow <- nrow(item$modifier$tbl)
     message("\tDropped ", initial_nrow - final_nrow, " rows")
     message("Remaining: ", format(final_nrow, big.mark = ","), " rows")

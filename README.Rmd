@@ -101,7 +101,7 @@ dgirt_output = dgirt(wrangle_output, n_iter = 10, n_chain = 1)
 Before examining the `dgirt()` output we might want to name its elements.
 
 ```{r, dgirt-name}
-named_dgirt_output = name(dgirt_output, wrangle_output)
+named_dgirt_output = name_pars(dgirt_output, wrangle_output)
 ```
 
 The group means can be found as an array `theta_bar`, which is samples x periods x groups. We can `apply` over the
@@ -117,7 +117,7 @@ Alternatively, `apply_dgirt()` can apply a function like `mean` over the posteri
 once.
 
 ```{r, dgirt-apply}
-posterior_means = apply_dgirt(dgirt_output, wrangle_output, fun = 'mean')
+posterior_means = apply_dgirt(dgirt_output, wrangle_output, fun = mean)
 posterior_means$theta_bar
 ```
 

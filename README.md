@@ -79,23 +79,23 @@ dgirt_output = dgirt(wrangle_output, n_iter = 10, n_chain = 1)
 #> Chain 1, Iteration: 8 / 10 [ 80%]  (Sampling)
 #> Chain 1, Iteration: 9 / 10 [ 90%]  (Sampling)
 #> Chain 1, Iteration: 10 / 10 [100%]  (Sampling)# 
-#> #  Elapsed Time: 0.394312 seconds (Warm-up)
-#> #                1.18672 seconds (Sampling)
-#> #                1.58103 seconds (Total)
+#> #  Elapsed Time: 0.392859 seconds (Warm-up)
+#> #                1.19315 seconds (Sampling)
+#> #                1.58601 seconds (Total)
 #> #
 ```
 
 Before examining the `dgirt()` output we might want to name its elements.
 
 ``` r
-named_dgirt_output = name(dgirt_output, wrangle_output)
+named_dgirt_output = name_pars(dgirt_output, wrangle_output)
 ```
 
 The group means can be found as an array `theta_bar`, which is samples x periods x groups. We can `apply` over the sampler iterations (just the 3 in 10 kept from our short run, in this example) to summarize the posterior.
 
 ``` r
 str(named_dgirt_output$theta_bar)
-#>  num [1:3, 1:5, 1:153] 7.39 7.22 7.27 14.45 12.93 ...
+#>  num [1:3, 1:5, 1:153] 7.27 7.22 7.39 13.13 12.93 ...
 #>  - attr(*, "dimnames")=List of 3
 #>   ..$ iterations: NULL
 #>   ..$ time      : chr [1:5] "2006" "2007" "2008" "2009" ...
@@ -111,7 +111,7 @@ group_posterior_means[2:3, 1:5]
 Alternatively, `apply_dgirt()` can apply a function like `mean` over the posteriors of all `dgirt` parameters at once.
 
 ``` r
-posterior_means = apply_dgirt(dgirt_output, wrangle_output, fun = 'mean')
+posterior_means = apply_dgirt(dgirt_output, wrangle_output, fun = mean)
 posterior_means$theta_bar
 #> Source: local data frame [765 x 6]
 #> 
@@ -137,20 +137,20 @@ We can use the `method` argument of `dgirt` to choose an alternative to MCMC sam
 
 ``` r
 optimize_output = dgirt(wrangle_output, n_iter = 20, method = "optimize", init_range = 0.5)
-#> Started: Thu Feb 18 15:52:19 2016
+#> Started: Wed Feb 24 16:23:37 2016
 #> Reading results from disk.
-#> Ended: Thu Feb 18 15:52:21 2016
+#> Ended: Wed Feb 24 16:23:38 2016
 head(optimize_output$theta_bar)
 #> Source: local data frame [6 x 5]
 #> 
-#>           param     value  year  state   race
-#>          (fctr)     (dbl) (dbl) (fctr) (fctr)
-#> 1 theta_bar.1.1 1.1278800  2006     AK  black
-#> 2 theta_bar.2.1 1.1025000  2007     AK  black
-#> 3 theta_bar.3.1 0.6897520  2008     AK  black
-#> 4 theta_bar.4.1 0.0971638  2009     AK  black
-#> 5 theta_bar.5.1 0.8052460  2010     AK  black
-#> 6 theta_bar.1.2 0.6783520  2006     AL  black
+#>           param    value  year  state   race
+#>           (chr)    (dbl) (dbl) (fctr) (fctr)
+#> 1 theta_bar.1.1 0.858772  2006     AK  black
+#> 2 theta_bar.2.1 1.082220  2007     AK  black
+#> 3 theta_bar.3.1 1.054750  2008     AK  black
+#> 4 theta_bar.4.1 1.020780  2009     AK  black
+#> 5 theta_bar.5.1 2.135180  2010     AK  black
+#> 6 theta_bar.1.2 0.632626  2006     AL  black
 ```
 
 `poststratify`
@@ -224,14 +224,14 @@ optimize_poststratify_output = poststratify(
 head(optimize_poststratify_output)
 #> Source: local data frame [6 x 3]
 #> 
-#>    state  year       value
-#>   (fctr) (int)       (dbl)
-#> 1     AK  2006 0.591092039
-#> 2     AK  2007 0.329401870
-#> 3     AK  2008 0.258412869
-#> 4     AK  2009 0.002827527
-#> 5     AK  2010 0.394233455
-#> 6     AL  2006 0.113420651
+#>    state  year     value
+#>   (fctr) (int)     (dbl)
+#> 1     AK  2006 0.7825600
+#> 2     AK  2007 0.9820947
+#> 3     AK  2008 1.0784201
+#> 4     AK  2009 0.5760629
+#> 5     AK  2010 1.2925507
+#> 6     AL  2006 0.9020099
 ```
 
 `plot_means`

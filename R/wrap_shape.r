@@ -4,17 +4,19 @@ wrangle_to_shape <- function() {
 
   item <- Item$new()
   item$modifier <- Modifier$new()
-  item$filters <- Filters$new()
-  item$targets <- Targets$new()
+  item$filters <- Filter$new()
+  item$targets <- Target$new()
   item$control <- Control$new()
 
   item$tbl <- arg$level1
+  # item$tbl <- data.frame(a = 1)
+
   item$items <- new("ItemVar", arg$items)
   item$groups <- new("ItemVar", arg$groups)
   item$geo <- new("ItemVar", arg$geo_id)
   item$time <- new("ItemVar", arg$time_id)
   item$survey <- new("ItemVar", arg$survey_id)
-  item$weight <- new("ItemVar", arg$survey_weight) 
+  item$weight <- new("ItemVar", arg$survey_weight)
 
   if (!length(arg$level2) < 1) {
     item$modifier$tbl <- arg$level2
@@ -45,7 +47,7 @@ wrangle_to_shape <- function() {
   item$control$innov_sd_theta_scale <- arg$innov_sd_theta_scale
 
   item
-} 
+}
 
 set_use_t <- function(item, arg) {
   if (!length(arg$periods) > 0) {

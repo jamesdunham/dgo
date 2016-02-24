@@ -57,6 +57,18 @@ filters = list(periods = c(2006:2010))
 
 # x = wrangle(data = data, vars = vars, filters = list(periods = 2010:2014))
 
+data(state_opinion)
+data = list(level1 = state_opinion, level2 = state_opinion)
+vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
+            groups = c("race"),
+            time_id = "year",
+            geo_id = "state",
+            survey_id = "source",
+            survey_weight = "weight",
+            level2_modifiers = "race",
+            level2_period1_modifiers = "race")
+filters = list(periods = c(2006:2010))
+
 wrangle <- function(data = list(level1,
                                 level2 = NULL,
                                 targets = NULL),
@@ -124,7 +136,7 @@ shape_hierarchical_data <- function(item) {
   param_levels <- c(modeled_param_names, unmodeled_param_levels)
 
   unmodeled_frame <- expand.grid(c(list(
-      unmodeled_param_levels, 
+      unmodeled_param_levels,
       sort(unique(unlist(dplyr::select_(item$modifier$tbl, item$modifier$time))))),
       rep(list(0), length(item$modifier$modifiers)))) %>%
     setNames(c("param", item$time, item$modifier$modifiers)) %>%
@@ -369,7 +381,7 @@ make_dummy_l2_only <- function(item) {
 }
 
 make_dummy_l2_counts <- function(item) {
-  array(0, c(item$T, item$Q, item$modifier$Gl2), list(item$filters$t,
+  array(0, c(item$T, item$Q, item$G_hier), list(item$filters$t,
       grep("_gt", colnames(item$tbl), fixed= TRUE, value = TRUE), item$modifier$modifiers))
 }
 
@@ -388,16 +400,6 @@ get_gt <- function(tbl) {
 count_responses <- function(item) {
   gts <- get_gt(item$tbl)
   rowSums(!is.na(as.matrix(gts)), na.rm = TRUE)
-}
-
-count_modifier_groups <- function(item) {
-  if (!item$has_hierarchy()) {
-    hierarchical_group <- gl(1L, item$G)
-    Gl2 <- nlevels(hierarchical_group)
-  } else {
-    Gl2 <- length(item$modifier$modifiers)
-    Gl2 <- max(unlist(Gl2), 1L)
-  }
 }
 
 muffle_full_join <- function(...) {
@@ -447,7 +449,7 @@ tostan <- function(item) {
     D = ifelse(item$control$constant_item, 1L, item$T),           # number of difficulty parameters
     WT = item$modifier$WT,            # weight matrix for calculating level-two mean
     l2_only = item$modifier$l2_only,
-    Gl2 = item$modifier$Gl2,          # number of second-level groups
+    Gl2 = item$G_hier,          # number of second-level groups
     delta_tbar_prior_mean = item$control$delta_tbar_prior_mean,
     delta_tbar_prior_sd = item$control$delta_tbar_prior_sd,
     innov_sd_delta_scale = item$control$innov_sd_delta_scale,
