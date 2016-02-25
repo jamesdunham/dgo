@@ -1,4 +1,4 @@
-shape <- function(item) {
+shape <- function(item, control = list(...)) {
   item$restrict()
   item$reweight()
   item$make_gt_variables()

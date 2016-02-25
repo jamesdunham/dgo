@@ -45,15 +45,15 @@
 #' @return \code{list} List formatted for `dgirt`.
 #' @export
 
-data(state_opinion)
-data = list(level1 = state_opinion)
-vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
-            groups = c("race"),
-            time_id = "year",
-            geo_id = "state",
-            survey_id = "source",
-            survey_weight = "weight")
-filters = list(periods = c(2006:2010))
+# data(state_opinion)
+# data = list(level1 = state_opinion)
+# vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
+#             groups = c("race"),
+#             time_id = "year",
+#             geo_id = "state",
+#             survey_id = "source",
+#             survey_weight = "weight")
+# filters = list(periods = c(2006:2010))
 
 # x = wrangle(data = data, vars = vars, filters = list(periods = 2010:2014))
 
@@ -441,10 +441,10 @@ tostan <- function(item) {
     Q = item$Q,              # number of questions (items)
     T = item$T,              # number of time units (years)
     N = item$N,  # number of observed group-question cells
-    P = item$modifier$P,       # number of hierarchical parameters
-    S = item$modifier$S,   # number of geographic units
-    H = item$modifier$H,   # number of geographic-level predictors
-    Hprior = item$modifier$H_prior,
+    P = item$P,       # number of hierarchical parameters
+    S = item$S,   # number of geographic units
+    H = item$H,   # number of geographic-level predictors
+    Hprior = item$H_prior,
     separate_t = item$control$separate_t,  # if 1, no pooling over time
     constant_item = item$control$constant_item,  # if 1, item parameters constant
     D = ifelse(item$control$constant_item, 1L, item$T),           # number of difficulty parameters

@@ -12,24 +12,24 @@ get_G <- function() {
 }
 
 get_N = function() {
-  nrow(self$group_counts)
+  nrow(self$modifier$group_counts)
 }
 
 get_P = function() {
-  ncol(self$group_design_matrix)
+  ncol(self$modifier$group_design_matrix)
 }
 
 get_S = function() {
-  if (length(self$ZZ) > 0) dim(self$ZZ)[[2]]
+  if (length(self$modifier$ZZ) > 0) dim(self$modifier$ZZ)[[2]]
   else NULL
 }
 get_H = function() {
-  if (length(self$ZZ) > 0) dim(self$ZZ)[[3]]
+  if (length(self$modifier$ZZ) > 0) dim(self$modifier$ZZ)[[3]]
   else NULL
 }
 
 get_H_prior = function() {
-  if (length(self$ZZ) > 0) dim(self$ZZ_prior)[[3]]
+  if (length(self$modifier$ZZ) > 0) dim(self$modifier$ZZ_prior)[[3]]
   else NULL
 }
 

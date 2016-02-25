@@ -13,7 +13,7 @@ set_tbl <- function(value) {
     #       stop(s, " is not a variable in ", tbl_name, " data")
     #     }
     #   }
-    } 
+    }
   } else {
     self$tbl_
   }
@@ -33,10 +33,10 @@ set_items <- function(value) {
 
 set_groups <- function(value) {
     if (!missing(value) && length(value) > 0) {
-      self$groups_ <- value
+      self$control$groups <- value
       self$test_names(value)
     } else {
-      self$groups_
+      self$control$groups
     }
 }
 
@@ -69,10 +69,10 @@ set_survey <- function(value) {
 
 set_weight <- function(value) {
     if (!missing(value) && length(value) > 0) {
-      self$weight_ <- value
-      self$test_names(value)
+      self$targets$weight <- value
+      self$targets$test_names(value)
     } else {
-      self$weight_
+      self$targets$weight
     }
 }
 
