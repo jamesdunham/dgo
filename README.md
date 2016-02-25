@@ -79,9 +79,9 @@ dgirt_output = dgirt(wrangle_output, n_iter = 10, n_chain = 1)
 #> Chain 1, Iteration: 8 / 10 [ 80%]  (Sampling)
 #> Chain 1, Iteration: 9 / 10 [ 90%]  (Sampling)
 #> Chain 1, Iteration: 10 / 10 [100%]  (Sampling)# 
-#> #  Elapsed Time: 0.395197 seconds (Warm-up)
-#> #                1.21418 seconds (Sampling)
-#> #                1.60938 seconds (Total)
+#> #  Elapsed Time: 0.420373 seconds (Warm-up)
+#> #                1.24729 seconds (Sampling)
+#> #                1.66766 seconds (Total)
 #> #
 ```
 
@@ -139,20 +139,20 @@ We can use the `method` argument of `dgirt` to choose an alternative to MCMC sam
 
 ``` r
 optimize_output = dgirt(wrangle_output, n_iter = 20, method = "optimize", init_range = 0.5)
-#> Started: Mon Feb 22 09:52:54 2016
+#> Started: Wed Feb 24 22:04:54 2016
 #> Reading results from disk.
-#> Ended: Mon Feb 22 09:52:55 2016
+#> Ended: Wed Feb 24 22:04:55 2016
 head(optimize_output$theta_bar)
 #> Source: local data frame [6 x 5]
 #> 
-#>           param    value  year  state   race
-#>           (chr)    (dbl) (dbl) (fctr) (fctr)
-#> 1 theta_bar.1.1 1.243990  2006     AK  black
-#> 2 theta_bar.2.1 1.088970  2007     AK  black
-#> 3 theta_bar.3.1 0.968045  2008     AK  black
-#> 4 theta_bar.4.1 0.901639  2009     AK  black
-#> 5 theta_bar.5.1 1.166980  2010     AK  black
-#> 6 theta_bar.1.2 0.906685  2006     AL  black
+#>           param     value  year  state   race
+#>           (chr)     (dbl) (dbl) (fctr) (fctr)
+#> 1 theta_bar.1.1 0.6392590  2006     AK  black
+#> 2 theta_bar.2.1 0.4483870  2007     AK  black
+#> 3 theta_bar.3.1 0.1975450  2008     AK  black
+#> 4 theta_bar.4.1 0.0704735  2009     AK  black
+#> 5 theta_bar.5.1 0.1774500  2010     AK  black
+#> 6 theta_bar.1.2 0.3650880  2006     AL  black
 ```
 
 ``` r
@@ -234,12 +234,12 @@ head(optimize_poststratify_output)
 #> 
 #>    state  year       value
 #>   (fctr) (int)       (dbl)
-#> 1     AK  2006  0.61404431
-#> 2     AK  2007 -0.01840852
-#> 3     AK  2008  0.01752277
-#> 4     AK  2009 -0.09910671
-#> 5     AK  2010  0.26717581
-#> 6     AL  2006 -0.00791460
+#> 1     AK  2006  0.60713758
+#> 2     AK  2007  0.62770463
+#> 3     AK  2008  0.19774833
+#> 4     AK  2009  0.02688326
+#> 5     AK  2010  0.34658530
+#> 6     AL  2006 -0.13683946
 ```
 
 `plot_means`

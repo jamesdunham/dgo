@@ -197,6 +197,6 @@ name_group_means <- function(thetas, vars) {
 }
 
 attach_t = function(element, use_t, time_id) {
-  assertthat::assert_that(identical(nrow(element), length(use_t)))
-  dplyr::mutate_(element, .dots = setNames(list(~use_t), time_id))
+  assertthat::assert_that(identical(nrow(element) %% length(use_t), 0L))
+  dplyr::mutate_(element, .dots = setNames(list(~rep(use_t, nrow(element) / length(use_t))), time_id))
 }
