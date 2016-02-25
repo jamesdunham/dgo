@@ -13,28 +13,28 @@ setMethod("initialize", "ItemVar", function(.Object, .Data) {
 
 Target <- R6Class("Target",
   public = list(
-    tbl = "data.frame",
-    strata = "formula",
-    prop = "ItemVar"
+    tbl = NULL,
+    strata = NULL,
+    prop = NULL
   )
 )
 
 Filter <- R6Class("Filters",
   public = list(
-    t = "numeric",
-    geo = "character",
-    min_t = "numeric",
-    min_survey = "numeric")
+    time = NULL,
+    geo = NULL,
+    min_t = NULL,
+    min_survey = NULL)
 )
 
-Control <- R6Class("Control",
+Control <- R6Class(NULL,
   public = list(
-    constant_item = "integer",
-    separate_t = "integer",
-    delta_tbar_prior_mean = "numeric",
-    delta_tbar_prior_sd = "numeric",
-    innov_sd_delta_scale = "numeric",
-    innov_sd_theta_scale = "numeric"))
+    constant_item = NULL,
+    separate_t = NULL,
+    delta_tbar_prior_mean = NULL,
+    delta_tbar_prior_sd = NULL,
+    innov_sd_delta_scale = NULL,
+    innov_sd_theta_scale = NULL))
 
 Modifier <- R6Class("Modifier",
   public = list(
@@ -64,21 +64,21 @@ Modifier <- R6Class("Modifier",
 
 Item <- R6Class("Item",
   public = list(
-    MMM = "array",
-    control = "Control",
-    filters = "Filter",
-    geo_ = "ItemVar",
-    group_counts = "data.frame",
-    group_grid = "data.frame",
-    group_grid_t = "data.frame",
-    groups_ = "ItemVar",
-    items_ = "ItemVar",
-    modifier = "Modifier",
-    survey_ = "ItemVar",
-    targets = "Target",
-    tbl_ = "ANY",
-    time_ = "ItemVar",
-    weight_ = "ItemVar"),
+    MMM = NULL,
+    control = NULL,
+    filters = NULL,
+    geo_ = NULL,
+    group_counts = NULL,
+    group_grid = NULL,
+    group_grid_t = NULL,
+    groups_ = NULL,
+    items_ = NULL,
+    modifier = NULL,
+    survey_ = NULL,
+    targets = NULL,
+    tbl_ = NULL,
+    time_ = NULL,
+    weight_ = NULL),
   active = list(
     G = get_G,
     G_hier = get_G_hier,
@@ -115,10 +115,19 @@ Item$set("public", "test_names", function(x) {
   }
 })
 
+Modifier$set("public", "test_names", function(x) {
+  stopifnot(inherits(x, "ItemVar"))
+  for (s in x) {
+    if (!s %in% names(self$tbl)) {
+      stop(s, " is not a variable in item data")
+    }
+  }
+})
+
 Item$set("public", "restrict", function() {
   self <- restrict_items(self)
   self <- restrict_modifier(self)
-  tbl <<- droplevels(self$tbl)
+  self$tbl <- droplevels(self$tbl)
 })
 
 Item$set("public", "reweight", function() {

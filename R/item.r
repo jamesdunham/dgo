@@ -2,7 +2,7 @@ make_hierarchical_array <- function(item) {
   if (item$has_hierarchy) {
     ZZ <- shape_hierarchical_data(item)
   } else {
-    zz.names <- list(item$filters$t, dimnames(item$modifier$group_design_matrix)[[2]], "")
+    zz.names <- list(item$filters$time, dimnames(item$modifier$group_design_matrix)[[2]], "")
     ZZ <- array(data = 0, dim = lapply(zz.names, length), dimnames = zz.names)
   }
   ZZ
@@ -69,7 +69,7 @@ concat_varinfo = function(widths, values, pad_side) {
 
 make_group_grid <- function(item) {
   group_grid <- expand.grid(c(
-    setNames(list(item$filters$t), item$time),
+    setNames(list(item$filters$time), item$time),
     lapply(item$tbl[, c(item$geo, item$groups), drop = FALSE], function(x) sort(unique(x)))))
   assertthat::assert_that(not_empty(group_grid))
   group_grid %>% dplyr::arrange_(.dots = c(item$time, item$groups, item$geo))
@@ -85,7 +85,9 @@ make_group_grid_t <- function(item) {
 }
 
 restrict_items <- function(item) {
-  item <- factorize_arg_vars(item)
+  item <- arrange_item_factors(item)
+  item <- rename_numeric_groups(item)
+  item <- arrange_item_factors(item)
   initial_dim <- dim(item$tbl)
   final_dim <- c()
   iter <- 1L
@@ -111,9 +113,8 @@ restrict_items <- function(item) {
   item
 }
 
-factorize_arg_vars <- function(item) {
-  arg_vars <- intersect(names(item$tbl),
-    c(item$groups, item$geo, item$survey, item$modifier$modifiers, item$modifier$t1_modifiers))
+rename_numeric_groups <- function(item) {
+  arg_vars <- intersect(names(item$tbl), c(item$groups, item$geo, item$modifier$modifiers, item$modifier$t1_modifiers, item$modifier$geo))
   numeric_groups <- item$tbl %>% dplyr::summarize_each_(~is.numeric, vars = arg_vars) %>% unlist()
   if (any(numeric_groups)) {
     message("Defining groups via numeric variables is allowed, but output names won't be descriptive. Consider using factors.")
@@ -121,10 +122,25 @@ factorize_arg_vars <- function(item) {
       item$tbl[[varname]] <- paste0(varname, as.character(item$tbl[[varname]]))
     }
   }
-  item$tbl <- with_contr.treatment(item$tbl %>%
-    dplyr::arrange_(.dots = arg_vars) %>%
-    dplyr::mutate_each_(dplyr::funs(factor(., levels = sort(unique(as.character(.))))), vars = arg_vars))
   item
+}
+
+arrange_item_factors <- function(item) {
+  vars <- intersect(names(item$tbl), c(item$groups, item$geo, item$survey))
+  item$tbl <- arrange_factors(item$tbl, vars)
+  item
+}
+
+arrange_modifier_factors <- function(item) {
+  vars <- intersect(names(item$modifier$tbl), c(item$modifier$geo))
+  item$modifier$tbl <- arrange_factors(item$modifier$tbl, vars)
+  item
+}
+
+arrange_factors <- function(tbl, vars) {
+  with_contr.treatment(tbl %>%
+    dplyr::arrange_(.dots = vars) %>%
+    dplyr::mutate_each_(dplyr::funs(factor(., levels = sort(unique(as.character(.))))), vars = vars))
 }
 
 drop_rows_missing_covariates <- function(item) {
@@ -154,7 +170,7 @@ with_contr.treatment <- function(...) {
 
 keep_t <- function(item) {
   item$tbl <- item$tbl %>%
-    dplyr::filter_(lazyeval::interp(~observed_t %in% keep_t, observed_t = as.name(item$time), keep_t = item$filters$t))
+    dplyr::filter_(lazyeval::interp(~observed_t %in% keep_t, observed_t = as.name(item$time), keep_t = item$filters$time))
   not_empty(item$tbl)
   item
 }
@@ -280,15 +296,22 @@ make_missingness_array <- function(item) {
 
 restrict_modifier <- function(item) {
   if (item$has_hierarchy()) {
-  message("Restricting modifier data to time and geo observed in item data...")
-    inital_nrow <- nrow(item$modifier$tbl)
+    message()
+    message("Restricting modifier data to time and geo observed in item data...")
+    item <- arrange_modifier_factors(item)
+    initial_nrow <- nrow(item$modifier$tbl)
     item$modifier$tbl <- item$modifier$tbl %>%
-      dplyr::filter_(lazyeval::interp(~modifier_geo %in% item$filter$geo
-        && modifier_t %in% item$filter$t, modifier_geo = as.name(item$modifier$geo),
-          modifier_t = as.name(item$modifier$time)))
+      dplyr::filter_(lazyeval::interp(~modifier_geo %in% item$filters$geo & modifier_t %in% filter_t,
+        modifier_geo = as.name(item$modifier$geo),
+        modifier_t = as.name(item$modifier$time),
+        filter_t = item$filters$time))
     final_nrow <- nrow(item$modifier$tbl)
     message("\tDropped ", initial_nrow - final_nrow, " rows")
     message("Remaining: ", format(final_nrow, big.mark = ","), " rows")
+    distinct_nrow <- item$modifier$tbl %>%
+      dplyr::distinct_(item$modifier$modifiers, item$modifier$geo, item$modifier$time) %>%
+      nrow()
+    if (!identical(final_nrow, distinct_nrow)) stop("time and geo identifiers don't uniquely identify modifier data observations")
   }
   item
 }

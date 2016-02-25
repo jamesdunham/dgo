@@ -8,8 +8,6 @@ shape <- function(item) {
   item$find_missingness()
   item$make_WT()
   item$make_l2_only()
-  item$make_WT()
-  item$make_l2_only()
   item$make_NNl2()
   item$make_SSl2()
   item$make_group_design()

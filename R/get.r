@@ -1,5 +1,5 @@
 get_T <- function() {
-  length(self$filters$t)
+  length(self$filters$time)
 }
 
 get_Q <- function() {
@@ -29,18 +29,18 @@ get_H = function() {
 }
 
 get_H_prior = function() {
-  if (length(self$ZZ) > 0) dim(self$ZZ_prior)[[3]]   
+  if (length(self$ZZ) > 0) dim(self$ZZ_prior)[[3]]
   else NULL
 }
 
 get_G_hier = function() {
-  if (!length(self$modifier$G_hier_)) { 
-    if (!inherits(self$tbl, "data.frame")) {
+  if (!length(self$modifier$G_hier_) > 0) {
+    if (!self$has_hierarchy()) {
       hierarchical_group <- gl(1L, self$G)
       self$modifier$G_hier_ <- nlevels(hierarchical_group)
     } else {
       self$modifier$G_hier_ <- max(unlist(length(self$modifier$modifiers)), 1L)
     }
-    self$modifier$G_hier_
   }
+  self$modifier$G_hier_
 }

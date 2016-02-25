@@ -58,15 +58,15 @@ filters = list(periods = c(2006:2010))
 # x = wrangle(data = data, vars = vars, filters = list(periods = 2010:2014))
 
 data(state_opinion)
-data = list(level1 = state_opinion, level2 = state_opinion)
+data = list(level1 = state_opinion, level2 = dplyr::mutate(state_opinion, education = sample(1:2, nrow(state_opinion), replace = TRUE)) %>% dplyr::distinct(state, year))
 vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
             groups = c("race"),
             time_id = "year",
             geo_id = "state",
             survey_id = "source",
             survey_weight = "weight",
-            level2_modifiers = "race",
-            level2_period1_modifiers = "race")
+            level2_modifiers = "education",
+            level2_period1_modifiers = "education")
 filters = list(periods = c(2006:2010))
 
 wrangle <- function(data = list(level1,
@@ -101,7 +101,7 @@ make_hierarchical_array <- function(item) {
   if (item$has_hierarchy()) {
     ZZ <- shape_hierarchical_data(item)
   } else {
-    zz.names <- list(item$filters$t, dimnames(item$modifier$group_design_matrix)[[2]], "")
+    zz.names <- list(item$filters$time, dimnames(item$modifier$group_design_matrix)[[2]], "")
     ZZ <- array(data = 0, dim = lapply(zz.names, length), dimnames = zz.names)
   }
   ZZ
@@ -119,14 +119,14 @@ shape_hierarchical_data <- function(item) {
     unique(unlist(dplyr::select_(item$group_grid_t, item$geo))),
     unique(unlist(dplyr::select_(item$modifier$tbl, item$modifier$geo))))
   if (length(missing_modifier_geo) > 0) stop("no hierarchical data for geo in item data: ", missing_modifier_geo)
-  missing_modifier_t <- setdiff(item$filters$t, unlist(dplyr::select_(item$modifier$tbl, item$time)))
+  missing_modifier_t <- setdiff(item$filters$time, unlist(dplyr::select_(item$modifier$tbl, item$time)))
   if (length(missing_modifier_t) > 0) stop("missing hierarchical data for t in item data: ", missing_modifier_t)
 
   hier_frame <- item$modifier$tbl %>% dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0(item$geo, geo),
       geo = as.name(item$geo))), item$geo)) %>%
     dplyr::select_(.dots = c(modeled_params, item$modifier$modifiers)) %>%
     dplyr::rename_("param" = item$geo) %>%
-    dplyr::mutate_("param" = ~as.character(param)) %>%
+    dplyr::mutate_("param" = ~paste0(item$geo, as.character(param))) %>%
     dplyr::arrange_(.dots = c("param", item$time))
 
   modeled_param_names <- unique(unlist(dplyr::select_(hier_frame, "param")))
@@ -144,7 +144,7 @@ shape_hierarchical_data <- function(item) {
 
   unmodeled_factors <- hier_frame %>%
     dplyr::select_(~-one_of("param")) %>%
-    dplyr::summarise_each(~class(.) %in% c("character", "factor")) %>%
+    dplyr::summarise_each(~class(.)[1] %in% c("character", "factor", "ordered")) %>%
     unlist()
   unmodeled_factors <- names(unmodeled_factors)[which(unmodeled_factors)]
   if (length(unmodeled_factors) > 0) {
@@ -154,6 +154,7 @@ shape_hierarchical_data <- function(item) {
 
   hier_frame <- dplyr::bind_rows(hier_frame, unmodeled_frame) %>%
     dplyr::mutate_each_(~ifelse(is.na(.), 0, .), vars = item$modifier$modifiers)
+
   hier_melt <- wrap_melt(hier_frame, id.vars = c("param", item$time), variable.name = "modifiers") %>%
     dplyr::mutate_("param" = ~factor(param, levels = param_levels, ordered = TRUE))
   if (!inherits(hier_melt$value, "numeric")) stop("non-numeric values in hierarchical data. Factor handling probably failed. Possible quickfix: omit or manually dummy out any factors in modifiers.")
@@ -374,14 +375,14 @@ cast_missingness <- function(item, missingness) {
 make_dummy_l2_only <- function(item) {
   gt_names <- grep("_gt\\d+$", colnames(item$tbl), value = TRUE)
   l2_only <- matrix(0L,
-    nrow = length(item$filters$t),
+    nrow = length(item$filters$time),
     ncol = length(gt_names),
-    dimnames = list(item$filters$t, gt_names))
+    dimnames = list(item$filters$time, gt_names))
   l2_only
 }
 
 make_dummy_l2_counts <- function(item) {
-  array(0, c(item$T, item$Q, item$G_hier), list(item$filters$t,
+  array(0, c(item$T, item$Q, item$G_hier), list(item$filters$time,
       grep("_gt", colnames(item$tbl), fixed= TRUE, value = TRUE), item$modifier$modifiers))
 }
 
@@ -459,9 +460,9 @@ tostan <- function(item) {
       gt_items = grep("_gt\\d+$", colnames(item$tbl), value = TRUE),
       groups = item$groups,
       time_id = item$time,
-      use_t = item$filters$t,
+      use_t = item$filters$time,
       geo_id = item$geo,
-      periods = item$filters$t,
+      periods = item$filters$time,
       survey_id = item$survey,
       covariate_groups = item$group_grid_t,
       hier_names = dimnames(item$modifier$group_design_matrix)[[2]]))

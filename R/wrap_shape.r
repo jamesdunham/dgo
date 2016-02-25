@@ -18,7 +18,7 @@ wrangle_to_shape <- function() {
   item$survey <- new("ItemVar", arg$survey_id)
   item$weight <- new("ItemVar", arg$survey_weight)
 
-  if (!length(arg$level2) < 1) {
+  if (length(arg$level2) > 0) {
     item$modifier$tbl <- arg$level2
     item$modifier$modifiers <- new("ItemVar", arg$level2_modifiers)
     item$modifier$t1_modifiers <- new("ItemVar", arg$level2_period1_modifiers)
@@ -26,12 +26,12 @@ wrangle_to_shape <- function() {
     item$modifier$geo <- new("ItemVar", item$geo)
   }
 
-  item$filters$t <- set_use_t(item, arg)
+  item$filters$time <- set_use_t(item, arg)
   item$filters$geo <- update_use_geo(item)
   item$filters$min_t <- arg$min_periods
   item$filters$min_survey <- arg$min_surveys
 
-  if (!length(arg$targets) < 1) {
+  if (length(arg$targets) > 0) {
     item$targets$tbl <- arg$targets
     item$targets$strata <- new("ItemVar", arg$target_groups)
     item$targets$prop <- new("ItemVar", arg$target_proportion)
