@@ -17,6 +17,7 @@ Imports:
     ggplot2,
     lazyeval,
     reshape2,
+    R6,
     stringi,
     survey,
     tidyr
