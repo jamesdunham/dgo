@@ -1,5 +1,3 @@
-library("R6")
-
 setClass("ItemVar", contains="character")
 setMethod("initialize", "ItemVar", function(.Object, .Data) {
   if (!missing(.Data)) {

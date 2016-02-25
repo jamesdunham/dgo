@@ -55,8 +55,6 @@
 #             survey_weight = "weight")
 # filters = list(periods = c(2006:2010))
 
-# x = wrangle(data = data, vars = vars, filters = list(periods = 2010:2014))
-
 data(state_opinion)
 data = list(level1 = state_opinion, level2 = dplyr::mutate(state_opinion, education = sample(1:2, nrow(state_opinion), replace = TRUE)) %>% dplyr::distinct(state, year))
 vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
@@ -97,373 +95,182 @@ wrangle <- function(data = list(level1,
     stan_data
 }
 
-make_hierarchical_array <- function(item) {
-  if (item$has_hierarchy()) {
-    ZZ <- shape_hierarchical_data(item)
-  } else {
-    zz.names <- list(item$filters$time, dimnames(item$modifier$group_design_matrix)[[2]], "")
-    ZZ <- array(data = 0, dim = lapply(zz.names, length), dimnames = zz.names)
-  }
-  ZZ
-}
+wrangle_to_shape <- function() {
+  arg <- handle_arguments()
 
-shape_hierarchical_data <- function(item) {
-  # the array of hierarchical data ZZ should be T x P x H, where T is the number of time periods, P is the number of
-  # hierarchical parameters (including the geographic), and H is the number of predictors for geographic unit effects
-  # TODO: make flexible; as written we must model geo x t
-  modeled_params = c(item$geo, item$time)
-  unmodeled_params = setdiff(c(item$geo, item$time, item$groups), modeled_params)
-  # TODO: uniqueness checks on level2 data (state_demographics should not pass)
-  # TODO: confirm sort order of level2_modifier
-  missing_modifier_geo <- setdiff(
-    unique(unlist(dplyr::select_(item$group_grid_t, item$geo))),
-    unique(unlist(dplyr::select_(item$modifier$tbl, item$modifier$geo))))
-  if (length(missing_modifier_geo) > 0) stop("no hierarchical data for geo in item data: ", missing_modifier_geo)
-  missing_modifier_t <- setdiff(item$filters$time, unlist(dplyr::select_(item$modifier$tbl, item$time)))
-  if (length(missing_modifier_t) > 0) stop("missing hierarchical data for t in item data: ", missing_modifier_t)
+  item <- Item$new()
+  item$modifier <- Modifier$new()
+  item$filters <- Filter$new()
+  item$targets <- Target$new()
+  item$control <- Control$new()
 
-  hier_frame <- item$modifier$tbl %>% dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0(item$geo, geo),
-      geo = as.name(item$geo))), item$geo)) %>%
-    dplyr::select_(.dots = c(modeled_params, item$modifier$modifiers)) %>%
-    dplyr::rename_("param" = item$geo) %>%
-    dplyr::mutate_("param" = ~paste0(item$geo, as.character(param))) %>%
-    dplyr::arrange_(.dots = c("param", item$time))
+  item$tbl <- arg$level1
+  # item$tbl <- data.frame(a = 1)
 
-  modeled_param_names <- unique(unlist(dplyr::select_(hier_frame, "param")))
-  unmodeled_param_levels = lapply(unmodeled_params, function(x) {
-      paste0(x, levels(item$group_grid_t[[x]]))[-1]
-    }) %>% unlist()
-  param_levels <- c(modeled_param_names, unmodeled_param_levels)
+  item$items <- new("ItemVar", arg$items)
+  item$groups <- new("ItemVar", arg$groups)
+  item$geo <- new("ItemVar", arg$geo_id)
+  item$time <- new("ItemVar", arg$time_id)
+  item$survey <- new("ItemVar", arg$survey_id)
+  item$weight <- new("ItemVar", arg$survey_weight)
 
-  unmodeled_frame <- expand.grid(c(list(
-      unmodeled_param_levels,
-      sort(unique(unlist(dplyr::select_(item$modifier$tbl, item$modifier$time))))),
-      rep(list(0), length(item$modifier$modifiers)))) %>%
-    setNames(c("param", item$time, item$modifier$modifiers)) %>%
-    dplyr::arrange_(.dots = c("param", item$time))
-
-  unmodeled_factors <- hier_frame %>%
-    dplyr::select_(~-one_of("param")) %>%
-    dplyr::summarise_each(~class(.)[1] %in% c("character", "factor", "ordered")) %>%
-    unlist()
-  unmodeled_factors <- names(unmodeled_factors)[which(unmodeled_factors)]
-  if (length(unmodeled_factors) > 0) {
-    unmodeled_frame <- unmodeled_frame %>%
-      dplyr::mutate_each_(~as.character, vars = unmodeled_factors)
+  if (length(arg$level2) > 0) {
+    item$modifier$tbl <- arg$level2
+    item$modifier$modifiers <- new("ItemVar", arg$level2_modifiers)
+    item$modifier$t1_modifiers <- new("ItemVar", arg$level2_period1_modifiers)
+    item$modifier$time <- new("ItemVar", item$time)
+    item$modifier$geo <- new("ItemVar", item$geo)
   }
 
-  hier_frame <- dplyr::bind_rows(hier_frame, unmodeled_frame) %>%
-    dplyr::mutate_each_(~ifelse(is.na(.), 0, .), vars = item$modifier$modifiers)
+  item$filters$time <- set_use_t(item, arg)
+  item$filters$geo <- update_use_geo(item)
+  item$filters$min_t <- arg$min_periods
+  item$filters$min_survey <- arg$min_surveys
 
-  hier_melt <- wrap_melt(hier_frame, id.vars = c("param", item$time), variable.name = "modifiers") %>%
-    dplyr::mutate_("param" = ~factor(param, levels = param_levels, ordered = TRUE))
-  if (!inherits(hier_melt$value, "numeric")) stop("non-numeric values in hierarchical data. Factor handling probably failed. Possible quickfix: omit or manually dummy out any factors in modifiers.")
-  assertthat::assert_that(names_subset(modeled_param_names, unlist(hier_melt$param)))
-  assertthat::assert_that(names_subset(unmodeled_param_levels, unlist(hier_melt$param)))
-  melt_formula <- as.formula(paste(item$time, "param", "modifiers", sep = " ~ "))
-  zz <- reshape2::acast(hier_melt, melt_formula, drop = FALSE, value.var = "value")
-  zz <- zz[, -1, , drop = FALSE]
-  zz
-}
-
-check_dimensions <- function(d) {
-  assertthat::assert_that(equal_length(d$n_vec, d$s_vec))
-  assertthat::assert_that(all_equal(dim(d$NNl2), as.integer(c(d$T, d$Q, d$Gl2))))
-  assertthat::assert_that(all_equal(dim(d$SSl2), as.integer(c(d$T, d$Q, d$Gl2))))
-  assertthat::assert_that(all_equal(dim(d$MMM), c(d$T, d$Q, d$G)))
-  assertthat::assert_that(all_equal(dim(d$WT), as.integer(c(d$T, d$Gl2, d$G))))
-  assertthat::assert_that(all_equal(dim(d$l2_only), c(d$T, d$Q)))
-  assertthat::assert_that(all_equal(dim(d$XX), c(d$G, d$P)))
-  assertthat::assert_that(all_equal(dim(d$ZZ), c(d$T, d$P, d$H)))
-  assertthat::assert_that(all_equal(dim(d$ZZ_prior), c(d$T, d$P, d$H)))
-  assertthat::assert_that(not_empty((d$constant_item)))
-  assertthat::assert_that(not_empty((d$separate_t)))
-}
-
-get_question_periods <- function(item) {
-  question_periods <- item$tbl %>%
-    dplyr::group_by_(item$time) %>%
-    dplyr::summarise_each_(~any_not_na, vars = item$items)
-  question_periods
-}
-
-make_design_effects <- function(item) {
-  de_table <- item$tbl %>%
-    dplyr::group_by_(.dots = c(item$geo, item$groups, item$time)) %>%
-    dplyr::select_(item$weight)
-  de_table <- de_table %>%
-    dplyr::summarise_("def" = lazyeval::interp(
-      ~calc_design_effects(w), w = as.name(item$weight))) %>%
-    dplyr::arrange_(.dots = c(item$geo, item$groups, item$time))
-
-  assertthat::assert_that(has_all_names(de_table, c("def", item$geo, item$groups, item$time)))
-  de_table
-}
-
-count_trials <- function(item, design_effects) {
-  assertthat::assert_that(not_empty(item$tbl), length(grep("_gt\\d+$", colnames(item$tbl))) > 0)
-  not_na_trial <- item$tbl %>%
-    # The _gt variables can take values of 0/1/NA
-    dplyr::mutate_each_(~not_na, ~matches("_gt\\d+$"))
-    # For a respondent who only answered questions A and B, we now have
-    #  T,   T,   T,   T,   T,   F,   F.
-  assertthat::assert_that(not_empty(not_na_trial))
-  trial_counts <- not_na_trial %>%
-    dplyr::mutate_each_(~. / n_responses, vars = ~matches("_gt\\d+$")) %>%
-    # Dividing the booleans by n_responses = 5 calculated earlier gives us
-    #.02, .02, .02, .02, .02,   0,   0.
-    dplyr::group_by_(.dots = c(item$geo, item$groups, item$time)) %>%
-    dplyr::summarise_each_(~sum, vars = ~matches("_gt\\d+$")) %>%
-    dplyr::ungroup()
-    # Summing over respondents within the grouping variables gives the count
-    # of trials for each combination of geo, demo, and time variables, divided
-    # equally across the _gt indicators.
-    # Joining the design effect table by the grouping variables attaches
-    # the design effect associated with each variable combination.
-  trial_counts <- trial_counts %>%
-    muffle_full_join(design_effects, by = c(item$geo, item$groups, item$time)) %>%
-    dplyr::mutate_each_(~ceiling(. / def), vars = ~matches("_gt\\d+$")) %>%
-    # Dividing by the design effect gives us a design-effect-adjusted trial
-    # count.
-    dplyr::select_(~-def)
-
-  # A dplyr::full_join of trial_counts and group_grid will create rows for the desired
-  # covariate combinations, where unobserved cells take NA values
-  trial_counts <- muffle_full_join(trial_counts, item$group_grid,
-    by = c(item$geo, item$groups, item$time))
-  # Replace the NA values in those rows representing unobserved covariate
-  # combinations with zeroes
-  trial_counts <- trial_counts %>% dplyr::mutate_each_(~na_to_zero, ~matches("_gt\\d+$"))
-  # NOTE: Order will matter in a moment
-  trial_counts <- trial_counts %>%
-    dplyr::arrange_(.dots = c(item$geo, item$groups, item$time)) %>%
-    dplyr::mutate_each_(~as.vector, ~matches("_gt\\d+$"))
-  trial_counts
-}
-
-make_group_means <- function(item) {
-  weighted_responses <- item$tbl %>%
-    dplyr::group_by_(.dots = c(item$geo, item$groups, item$time)) %>%
-    # subset to identifiers and items
-    dplyr::select_(~matches("_gt\\d+$"), ~n_responses, item$weight) %>%
-    # weight by n_responses
-    dplyr::mutate_("weight" = lazyeval::interp(~ w / n,
-      w = as.name(item$weight), n = quote(n_responses)))
-    # take weighted mean of item responses within geo, group, time
-  mean_y <- weighted_responses %>%
-    dplyr::summarise_each_(~weighted.mean(as.vector(.), weight,
-      na.rm = TRUE), vars = "contains(\"_gt\")") %>%
-    dplyr::group_by_(.dots = c(item$geo, item$groups, item$time)) %>%
-    # replace NaN
-    dplyr::mutate_each(~nan_to_na) %>%
-    dplyr::ungroup()
-
-  # make sure missing group appear as NA
-  mean_y <- muffle_full_join(mean_y, item$group_grid,
-    by = c(item$geo, item$groups, item$time)) %>%
-      # NOTE: Order will matter in a moment
-      dplyr::arrange_(.dots = c(item$geo, item$groups, item$time)) %>%
-      dplyr::mutate_each_(~as.vector, ~matches("_gt\\d+$"))
-  mean_y
-}
-
-count_successes <- function(item, trial_counts, mean_group_outcome) {
-  # Confirm row order is identical before taking product
-  assertthat::assert_that(all_equal(
-      dplyr::select_(mean_group_outcome, .dots = c(item$geo, item$groups, item$time)),
-      dplyr::select_(trial_counts, .dots = c(item$geo, item$groups, item$time))))
-  success_counts <- get_gt(trial_counts) * get_gt(mean_group_outcome)
-  success_counts <- success_counts %>%
-    # Reattach our identifiers
-    dplyr::bind_cols(dplyr::select_(trial_counts, .dots = c(item$geo, item$groups, item$time)), .) %>%
-    # Round off returning integers and replace NA with 0
-    dplyr::ungroup() %>%
-    dplyr::mutate_each_(~na_to_zero, ~matches("_gt\\d+$")) %>%
-    dplyr::mutate_each_(~round(., digits = 0), ~matches("_gt\\d+$")) %>%
-    dplyr::arrange_(.dots = c(item$geo, item$groups, item$time))
-  success_counts
-}
-
-make_design_matrix <- function(item) {
-  design_formula <- as.formula(paste("~ 0", item$geo, paste(item$groups, collapse = " + "), sep = " + "))
-  design_matrix <- with_contr.treatment(model.matrix(design_formula, item$group_grid_t))
-  design_matrix <- cbind(design_matrix, item$group_grid_t) %>%
-    dplyr::arrange_(.dots = c(item$groups, item$geo))
-  group_names <- concat_groups(item$group_grid_t, item$groups, item$geo, "name")
-  design_matrix <- concat_groups(design_matrix, item$groups, item$geo, "name")
-  assertthat::assert_that(all_equal(group_names$name, design_matrix$name))
-  rownames(design_matrix) <- design_matrix$name
-  design_matrix <- design_matrix %>% dplyr::select_(~-one_of("name")) %>%
-    as.matrix()
-  # We have an indicator for each geographic unit; drop one
-  design_matrix <- design_matrix[, -1, drop = FALSE]
-  assertthat::assert_that(identical(rownames(design_matrix), group_names$name))
-  invalid_values <- setdiff(as.vector(design_matrix), c(0, 1))
-  if (length(invalid_values) > 0) {
-    stop("design matrix values should be in (0, 1); found ", paste(sort(invalid_values), collapse = ", "))
+  if (length(arg$targets) > 0) {
+    item$targets$tbl <- arg$targets
+    item$targets$strata <- new("ItemVar", arg$target_groups)
+    item$targets$prop <- new("ItemVar", arg$target_proportion)
+    item$targets$geo <- new("ItemVar", item$geo)
+    item$targets$time <- new("ItemVar", item$time)
   }
-  return(design_matrix)
-}
 
-summarize_trials_by_period <- function(trial_counts) {
-  dplyr::select_(trial_counts, ~matches("_gt\\d+$"), item$time) %>%
-    reshape2::melt(id.vars = item$time) %>%
-    dplyr::group_by_(item$time) %>%
-    dplyr::summarise_(valid_items = ~sum(value, na.rm = TRUE) > 0)
-}
+  item$control$separate_t <- as.integer(arg$separate_periods)
+  item$control$constant_item <- as.integer(arg$constant_item)
+  item$control$delta_tbar_prior_mean <- arg$delta_tbar_prior_mean
+  item$control$delta_tbar_prior_sd <- arg$delta_tbar_prior_sd
+  item$control$innov_sd_delta_scale <- arg$innov_sd_delta_scale
+  item$control$innov_sd_theta_scale <- arg$innov_sd_theta_scale
 
-format_counts <- function(item, trial_counts, success_counts) {
-  trial_counts_melt <- wrap_melt(trial_counts, variable.name = "item",
-    id.vars = c(item$geo, item$groups, item$time), value.name = "n_grp")
-  success_counts_melt <- wrap_melt(success_counts, variable.name = "item",
-    id.vars = c(item$geo, item$groups, item$time), value.name = "s_grp")
-  joined <- dplyr::left_join(trial_counts_melt, success_counts_melt,
-      by = c(item$geo, item$groups, item$time, "item")) %>%
-    tidyr::unite_("name", c(item$geo, item$groups), sep = "__", remove = FALSE) %>%
-    dplyr::filter_(~n_grp != 0) %>%
-    dplyr::mutate_(
-      n_grp = ~na_to_zero(n_grp),
-      s_grp = ~na_to_zero(s_grp),
-      name = lazyeval::interp(~paste(period, item, name, sep = " | "), period = as.name(item$time))) %>%
-      # NOTE: arrange by time, item, group. Otherwise dgirt() output won't have
-      # the expected order.
-    dplyr::arrange_(.dots = c(item$time, "item", item$groups, item$geo))
-  joined
-}
-
-wrap_melt <- function(...) {
-  melt <- reshape2::melt(...)
-  melt_args <- list(...)
-  # make the "variable" variable, whatever it's called, a character vector
-  # instead of factor
-  if (length(melt_args$variable.name) > 0) {
-    melt[[melt_args$variable.name]] <- as.character(melt[[melt_args$variable.name]])
-  } else {
-    melt$variable <- as.character(melt$variable)
-  }
-  melt
-}
-
-get_missingness <- function(item) {
- item$group_counts %>%
-    # Include in the missingness array all group-variables that might not exist
-    # in the data because of unobserved use_t
-    muffle_full_join(item$group_grid, by = c(item$geo, item$groups, item$time)) %>%
-    # Get missingness by group
-    dplyr::group_by_(.dots = c("item", item$time, item$groups, item$geo)) %>%
-    dplyr::summarise_("m_grp" = ~as.integer(sum(n_grp, na.rm = TRUE) == 0)) %>%
-    dplyr::ungroup() %>%
-    dplyr::arrange_(.dots = c(item$time, "item", item$groups, item$geo))
-}
-
-cast_missingness <- function(item, missingness) {
-  acast_formula <- as.formula(paste0(item$time, "~ item ~", paste(item$groups, collapse = "+"), "+", item$geo))
-  MMM <- missingness %>%
-    dplyr::mutate_(.dots = setNames(list(lazyeval::interp(~paste0("x_", geo), geo = as.name(item$geo))), item$geo)) %>%
-    dplyr::arrange_(.dots = c(item$time, "item", item$groups, item$geo)) %>%
-    reshape2::acast(acast_formula, value.var = "m_grp", fill = 1)
-  # But we don"t want to include the character string "NA" as a variable
-  MMM <- MMM[
-    !(dimnames(MMM)[[1]] == "NA"),
-    !(dimnames(MMM)[[2]] == "NA"),
-    !(dimnames(MMM)[[3]] == "NA"), drop = FALSE]
-  # No cells should be NA either
-  assertthat::assert_that(all_in(MMM, c(0, 1)))
-  MMM
-}
-
-make_dummy_l2_only <- function(item) {
-  gt_names <- grep("_gt\\d+$", colnames(item$tbl), value = TRUE)
-  l2_only <- matrix(0L,
-    nrow = length(item$filters$time),
-    ncol = length(gt_names),
-    dimnames = list(item$filters$time, gt_names))
-  l2_only
-}
-
-make_dummy_l2_counts <- function(item) {
-  array(0, c(item$T, item$Q, item$G_hier), list(item$filters$time,
-      grep("_gt", colnames(item$tbl), fixed= TRUE, value = TRUE), item$modifier$modifiers))
-}
-
-drop_rows_missing_items <- function(item) {
-  item_filter <- rowSums(!is.na(item$tbl[, item$items, drop = FALSE])) > 0
-  item$tbl <- item$tbl %>% dplyr::filter(item_filter)
-  item$tbl <- droplevels(item$tbl)
   item
 }
 
-get_gt <- function(tbl) {
-  gts <- tbl %>% dplyr::select_(lazyeval::interp(~matches(x), x = "_gt\\d+$"))
-  return(gts)
+set_use_t <- function(item, arg) {
+  if (!length(arg$periods) > 0) {
+    return(unique(item$tbl[[item$time]]))
+  } else {
+    assertthat::assert_that(is.numeric(arg$periods))
+    return(arg$periods)
+  }
 }
 
-count_responses <- function(item) {
-  gts <- get_gt(item$tbl)
-  rowSums(!is.na(as.matrix(gts)), na.rm = TRUE)
+update_use_geo <- function(item, arg) {
+  levels(unlist(item$tbl[[item$geo]]))
 }
 
-muffle_full_join <- function(...) {
-  suppressWarnings(dplyr::full_join(...))
+handle_arguments <- function() {
+  arg <- mget(names(formals(wrangle)), parent.frame(2L), ifnotfound = list(rep(NULL, length(formals(wrangle)))))
+  arg <- unlist(arg, recursive = FALSE)
+  assertthat::not_empty(names(arg))
+  names(arg) <- sub("^(data|vars|filters|params)\\.", "", names(arg))
+  arg <- set_arg_defaults(arg)
+  check_arg_lengths(arg)
+  check_arg_names(arg)
+  check_arg_types(arg)
+  check_arg_ranges(arg)
+  arg$min_periods <- as.integer(arg$min_periods)
+  arg$min_surveys <- as.integer(arg$min_surveys)
+  return(arg)
 }
 
-calc_design_effects <- function(x) {
-  y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
-  ifelse(is.na(y), 1, y)
+check_arg_lengths <- function(arg) {
+  if (!length(arg$items) > 0) stop("at least one item variable required ('items')")
+  if (!length(arg$groups) > 0) stop("at least one grouping variable required ('groups'); NB: until future version")
+  if (!identical(length(arg$time_id), 1L)) stop("single time identifier required ('time_id')")
+  if (!identical(length(arg$geo_id), 1L)) stop("single geographic identifier required ('geo_id')")
+  if (!identical(length(arg$survey_id), 1L)) stop("single survey identifier required ('survey_id')")
+  if (!identical(length(arg$survey_weight), 1L)) stop("single survey weight variable required ('survey_weight')")
+  if (length(arg$level2) > 0) {
+    if (!length(arg$level2_modifiers) > 0) stop("at least one modifier variable ('level2_modifier') required with hierarchical data ('level2')")
+    if (!length(arg$level2_period1_modifiers) > 0) stop("at least one first-period modifier variable ('level2_period1_modifier') required with hierarchical data ('level2')")
+  }
+  if (length(arg$targets) > 0) {
+    if (!identical(length(arg$target_proportion), 1L)) stop("single proportion variable ('target_proportion') required with target data ('targets')")
+    if (!length(arg$target_groups) > 0) stop("at least one stratifying variable ('target_groups') required with target data ('targets')")
+  }
+  return(TRUE)
 }
 
-concat_groups <- function(tabular, group_names, geo_id, name) {
-  has_all_names(tabular, group_names)
-  has_all_names(tabular, geo_id)
-  tabular %>%
-    tidyr::unite_("group_concat", group_names, sep = "_") %>%
-    tidyr::unite_(name, c("group_concat", geo_id), sep = "_x_")
+# Check that names given in arguments appear in data.frame arguments
+check_arg_names <- function(arg) {
+  assertthat::assert_that(has_all_names(arg$level1, arg$items))
+  assertthat::assert_that(has_all_names(arg$level1, arg$groups))
+  assertthat::assert_that(assertthat::has_name(arg$level1, arg$time_id))
+  assertthat::assert_that(assertthat::has_name(arg$level1, arg$geo_id))
+  assertthat::assert_that(assertthat::has_name(arg$level1, arg$survey_weight))
+  assertthat::assert_that(assertthat::has_name(arg$level1, arg$survey_id))
+  if (length(arg$level2_modifiers) > 0
+    || length(arg$level2_period1_modifiers) > 0) {
+    if (!length(arg$level2) > 0) stop("modifier variables given without hierarchical ('level2') data")
+    assertthat::assert_that(inherits(arg$level2, "data.frame"))
+    assertthat::not_empty(arg$level2)
+  }
+  # If level2 exists, these variables must exist in it
+  if (length(arg$level2) > 0) {
+    assertthat::assert_that(has_all_names(arg$level2, c(arg$time_id,
+          arg$geo_id, unlist(arg$level2_modifiers),
+          unlist(arg$level2_period1_modifiers))))
+  }
+  if (length(arg$targets) > 0) {
+    assertthat::assert_that(has_all_names(arg$targets,
+        c(arg$time_id, arg$geo_id,
+          unlist(arg$target_groups),
+          unlist(arg$target_proportion))))
+  }
+  return(TRUE)
 }
 
-split_groups <- function(tabular, group_names, geo_id, name) {
-  assertthat::assert_that(has_name(tabular, "name"))
-  tabular %>%
-    tidyr::separate_(name, c("group_concat", geo_id), sep = "_x_") %>%
-    tidyr::separate_("group_concat", group_names, sep = "_")
+# Check argument types and throw an error if a check fails
+check_arg_types <- function(arg) {
+  if (!length(arg$level1) > 0) stop("no item ('level1') data")
+  assertthat::assert_that(inherits(arg$level1, "data.frame"))
+  assertthat::not_empty(arg$level1)
+  assertthat::assert_that(is.numeric(arg$level1[[arg$time_id]]))
+  if (!is.null(arg$level2)) {
+    assertthat::assert_that(inherits(arg$level2, "data.frame"))
+    assertthat::assert_that(all_strings(arg$level2_modifiers))
+    assertthat::assert_that(all_strings(arg$level2_period1_modifiers))
+  }
+  if (!is.null(arg$targets)) {
+    assertthat::assert_that(inherits(arg$targets, "data.frame"))
+    assertthat::is.string(arg$target_proportion)
+    assertthat::assert_that(all_strings(arg$target_groups))
+  }
+  assertthat::is.string(arg$items)
+  assertthat::is.string(arg$time_id)
+  assertthat::is.string(arg$groups)
+  assertthat::is.string(arg$geo_id)
+  assertthat::is.string(arg$survey_weight)
+  assertthat::is.string(arg$survey_id)
+  assertthat::is.count(arg$difficulty_count)
+  assertthat::is.count(arg$min_surveys)
+  assertthat::is.count(arg$min_periods)
+  assertthat::is.count(arg$constant_item)
+  assertthat::is.flag(arg$separate_periods)
+  assertthat::is.flag(arg$silent)
+  return(TRUE)
 }
 
-tostan <- function(item) {
-  list(
-    n_vec = setNames(item$group_counts$n_grp, item$group_counts$name),
-    s_vec = setNames(item$group_counts$s_grp, item$group_counts$name),
-    NNl2 = item$modifier$NNl2,
-    SSl2 = item$modifier$SSl2,
-    XX = item$modifier$group_design_matrix,
-    ZZ = item$modifier$ZZ,            # geographic predictors
-    ZZ_prior = item$modifier$ZZ_prior,
-    MMM = item$MMM,          # missingness array (T x Q x G)
-    G = item$G,              # number of covariate groups
-    Q = item$Q,              # number of questions (items)
-    T = item$T,              # number of time units (years)
-    N = item$N,  # number of observed group-question cells
-    P = item$P,       # number of hierarchical parameters
-    S = item$S,   # number of geographic units
-    H = item$H,   # number of geographic-level predictors
-    Hprior = item$H_prior,
-    separate_t = item$control$separate_t,  # if 1, no pooling over time
-    constant_item = item$control$constant_item,  # if 1, item parameters constant
-    D = ifelse(item$control$constant_item, 1L, item$T),           # number of difficulty parameters
-    WT = item$modifier$WT,            # weight matrix for calculating level-two mean
-    l2_only = item$modifier$l2_only,
-    Gl2 = item$G_hier,          # number of second-level groups
-    delta_tbar_prior_mean = item$control$delta_tbar_prior_mean,
-    delta_tbar_prior_sd = item$control$delta_tbar_prior_sd,
-    innov_sd_delta_scale = item$control$innov_sd_delta_scale,
-    innov_sd_theta_scale = item$control$innov_sd_theta_scale,
-    group_counts = item$group_counts,
-    vars = list(items = item$items,
-      gt_items = grep("_gt\\d+$", colnames(item$tbl), value = TRUE),
-      groups = item$groups,
-      time_id = item$time,
-      use_t = item$filters$time,
-      geo_id = item$geo,
-      periods = item$filters$time,
-      survey_id = item$survey,
-      covariate_groups = item$group_grid_t,
-      hier_names = dimnames(item$modifier$group_design_matrix)[[2]]))
+# Check argument ranges
+check_arg_ranges <- function(arg) {
+  assertthat::assert_that(is_positive(arg$delta_tbar_prior_sd))
+  assertthat::assert_that(is_positive(arg$innov_sd_delta_scale))
+  assertthat::assert_that(is_positive(arg$innov_sd_theta_scale))
+  assertthat::assert_that(assertthat::is.count(arg$min_surveys))
+  assertthat::assert_that(assertthat::is.count(arg$min_periods))
+  return(TRUE)
+}
+
+set_arg_defaults <- function(arg) {
+  if (is.null(arg$separate_periods)) arg$separate_periods <- FALSE
+  if (is.null(arg$difficulty_count)) arg$difficulty_count <- 1L
+  if (is.null(arg$min_surveys)) arg$min_surveys <- 1L
+  if (is.null(arg$min_periods)) arg$min_periods <- 1L
+  if (is.null(arg$constant_item)) arg$constant_item <- TRUE
+  if (is.null(arg$silent)) arg$silent <- FALSE
+  if (is.null(arg$delta_tbar_prior_mean)) arg$delta_tbar_prior_mean <- 0.5
+  if (is.null(arg$delta_tbar_prior_sd)) arg$delta_tbar_prior_sd <- 0.5
+  if (is.null(arg$innov_sd_delta_scale)) arg$innov_sd_delta_scale <- 2.5
+  if (is.null(arg$innov_sd_theta_scale)) arg$innov_sd_theta_scale <- 2.5
+  return(arg)
 }
