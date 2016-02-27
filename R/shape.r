@@ -1,3 +1,5 @@
+#' Shape item response data for modeling with dgirt
+#' @export
 shape <- function(item, control = list(...)) {
   item$restrict()
   item$reweight()

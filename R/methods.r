@@ -1,25 +1,3 @@
-has_hierarchy <- function() {
-  length(self$modifier$tbl) > 0
-}
-
-make_WT <- function() {
-  self$modifier$WT <- array(1, dim = c(self$T, self$G_hier, self$G))
-}
-
-get_names <- function() {
-  nm = Map(function(i) self[[i]], names(Item$public_fields)[grep("ItemVar", Item$public_fields)])
-  unique(unlist(nm))
-}
-
-test_names <- function(x) {
-  stopifnot(inherits(x, "ItemVar"))
-  for (s in x) {
-    if (!s %in% names(self$tbl)) {
-      stop(s, " is not a variable in item data")
-    }
-  }
-}
-
 restrict <- function() {
   self <- restrict_items(self)
   self <- restrict_modifier(self)
@@ -37,12 +15,24 @@ make_gt_variables <- function() {
   self$tbl <- dplyr::bind_cols(self$tbl, gt_table)
 }
 
+list_groups <- function() {
+  self$group_grid <- make_group_grid(self)
+}
+
+list_groups_t <- function() {
+  self$group_grid_t <- make_group_grid_t(self)
+}
+
+group_n <- function() {
+  self$group_counts <- make_group_counts(self)
+}
+
 find_missingness <- function() {
   self$MMM <- make_missingness_array(self)
 }
 
-get_group_grid <- function() {
-  self$group_grid <- make_group_grid(self)
+make_WT <- function() {
+  self$modifier$WT <- array(1, dim = c(self$T, self$G_hier, self$G))
 }
 
 make_l2_only <- function() {
@@ -77,14 +67,20 @@ check_groups <- function(group_grid_t) {
   }
 }
 
-list_groups <- function() {
-  self$group_grid <- make_group_grid(self)
+has_hierarchy <- function() {
+  length(self$modifier$tbl) > 0
 }
 
-list_groups_t <- function() {
-  self$group_grid_t <- make_group_grid_t(self)
+get_names <- function() {
+  nm = Map(function(i) self[[i]], names(Item$public_fields)[grep("ItemVar", Item$public_fields)])
+  unique(unlist(nm))
 }
 
-group_n <- function() {
-  self$group_counts <- make_group_counts(self)
+test_names <- function(x) {
+  stopifnot(inherits(x, "ItemVar"))
+  for (s in x) {
+    if (!s %in% names(self$tbl)) {
+      stop(s, " is not a variable in item data")
+    }
+  }
 }
