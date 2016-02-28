@@ -17,6 +17,8 @@ Imports:
     ggplot2,
     lazyeval,
     reshape2,
+    Rcpp,
+    RcppArmadillo,
     R6,
     stringi,
     survey,
@@ -27,4 +29,5 @@ Suggests:
     lintr,
     rmarkdown,
     testthat
+LinkingTo: Rcpp, RcppArmadillo
 VignetteBuilder: knitr

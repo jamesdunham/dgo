@@ -59,7 +59,8 @@ create_gt_variables <- function(item){
     }
     print_varinfo(item$tbl, i, item_levels = i_levels, gt_levels = gt_levels, widths)
     gt_cols <- lapply(gt_levels, function(gt) {
-      ifelse(values > gt, 1L, 0L)
+      make_gt(values, gt)
+      # ifelse(values > gt, 1L, 0L)
     })
     assertthat::assert_that(not_empty(gt_cols))
     gt_names <- paste(i, gt_levels, sep = "_gt")
@@ -115,7 +116,6 @@ make_group_grid_t <- function(item) {
 restrict_items <- function(item) {
   item <- arrange_item_factors(item)
   item <- rename_numeric_groups(item)
-  item <- arrange_item_factors(item)
   initial_dim <- dim(item$tbl)
   final_dim <- c()
   iter <- 1L
