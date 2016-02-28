@@ -56,7 +56,7 @@
 # filters = list(periods = c(2006:2010))
 
 data(state_opinion)
-data = list(level1 = state_opinion, level2 = dplyr::mutate(state_opinion, education = sample(1:2, nrow(state_opinion), replace = TRUE)) %>% dplyr::distinct(state, year))
+data = list(level1 = state_opinion,level2 = dplyr::mutate(state_opinion, education = sample(1:2, nrow(state_opinion), replace = TRUE)) %>% dplyr::distinct(state, year))
 vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
             groups = c("race"),
             time_id = "year",
@@ -91,7 +91,7 @@ wrangle <- function(data = list(level1,
                                      innov_sd_delta_scale = 2.5,
                                      innov_sd_theta_scale = 2.5)) {
     item <- wrangle_to_shape()
-    stan_data <- shape(item)
+    stan_data <- shape(item, item$control)
     stan_data
 }
 
@@ -112,7 +112,7 @@ wrangle_to_shape <- function() {
   item$geo <- new("ItemVar", arg$geo_id)
   item$time <- new("ItemVar", arg$time_id)
   item$survey <- new("ItemVar", arg$survey_id)
-  item$weight <- new("ItemVar", arg$survey_weight)
+  item$targets$weight <- new("ItemVar", arg$survey_weight)
 
   if (length(arg$level2) > 0) {
     item$modifier$tbl <- arg$level2

@@ -7,16 +7,9 @@ bind_tbl <- function(value) {
     }
     if (!all(dim(value) > 0)) {
       stop(tbl_name, " data has an empty dimension")
-    # } else {
-    #   for (s in self$get_names()) {
-    #     if (!s %in% names(value)) {
-    #       stop(s, " is not a variable in ", tbl_name, " data")
-    #     }
-    #   }
     }
-  } else {
-    private$tbl_
   }
+  private$tbl_
 }
 
 bind_items <- function(value) {
@@ -31,73 +24,96 @@ bind_items <- function(value) {
     value <- new("ItemVar", value)
     # test that the new names appear in the data
     self$test_names(value)
-  }
+    private$items_ <- value
+  } 
   # with or without an argument,return the field value
-  private$items_ <- value
+  private$items_
 }
 
 bind_groups <- function(value) {
-    if (!missing(value) && length(value) > 0) {
-      self$control$groups <- value
-      self$test_names(value)
-    } else {
-      self$control$groups
-    }
+  if (!missing(value) && length(value) > 0) {
+    self$control$groups <- value
+    self$test_names(value)
+  } 
+  self$control$groups
+}
+
+bind_group_grid <- function(value) {
+  if (!missing(value) && length(value) > 0) {
+    private$group_grid_ <- value
+  } 
+  private$group_grid_
+}
+
+bind_group_grid_t <- function(value) {
+  if (!missing(value) && length(value) > 0) {
+    private$group_grid_t_ <- value
+  } 
+  private$group_grid_t_
+}
+
+bind_group_counts <- function(value) {
+  if (!missing(value) && length(value) > 0) {
+    private$group_counts_ <- value
+  } 
+  private$group_counts_
 }
 
 bind_time <- function(value) {
-    if (!missing(value) && length(value) > 0) {
-      private$time_ <- value
-      self$test_names(value)
-    } else {
-      private$time_
-    }
+  if (!missing(value) && length(value) > 0) {
+    private$time_ <- value
+    self$test_names(value)
+  }
+  private$time_
 }
 
 bind_geo <- function(value) {
-    if (!missing(value) && length(value) > 0) {
-      private$geo_ <- value
-      self$test_names(value)
-    } else {
-      private$geo_
-    }
+  if (!missing(value) && length(value) > 0) {
+    private$geo_ <- value
+    self$test_names(value)
+  }
+  private$geo_
 }
 
 bind_survey <- function(value) {
-    if (!missing(value) && length(value) > 0) {
-      private$survey_ <- value
-      self$test_names(value)
-    } else {
-      private$survey_
-    }
+  if (!missing(value) && length(value) > 0) {
+    private$survey_ <- value
+    self$test_names(value)
+  }
+  private$survey_
 }
 
 bind_weight <- function(value) {
-    if (!missing(value) && length(value) > 0) {
-      self$targets$weight <- value
-      self$targets$test_names(value)
-    } else {
-      self$targets$weight
-    }
+  if (!missing(value) && length(value) > 0) {
+    self$targets$weight <- value
+    self$targets$test_names(value)
+  }
+  self$targets$weight
 }
 
 bind_modifiers <- function(value) {
-    if (!missing(value) && length(value) > 0) {
-      private$modifiers_ <- value
-      self$test_names(value)
-    } else {
-      private$modifiers_
-    }
+  if (!missing(value) && length(value) > 0) {
+    private$modifiers_ <- value
+    self$test_names(value)
+  }
+  private$modifiers_
 }
 
 bind_t1_modifiers <- function(value) {
-    if (!missing(value) && length(value) > 0) {
-      self$t1_modifiers_ <- value
-      self$test_names(value)
-    } else {
-      self$t1_modifiers_
-    }
+  if (!missing(value) && length(value) > 0) {
+    private$t1_modifiers_ <- value
+    self$test_names(value)
+  }
+  private$t1_modifiers_
 }
+
+bind_l2_only <- function(value) {
+  if (!missing(value) && length(value) > 0) {
+    private$l2_only_ <- value
+  }
+  private$l2_only_
+}
+
 
 bind_T <- function() {
   length(self$filters$time)
@@ -135,13 +151,13 @@ bind_H_prior = function() {
 }
 
 bind_G_hier = function() {
-  if (!length(self$modifier$G_hier_) > 0) {
+  if (!length(self$G_hier_) > 0) {
     if (!self$has_hierarchy()) {
       hierarchical_group <- gl(1L, self$G)
-      self$modifier$G_hier_ <- nlevels(hierarchical_group)
+      private$G_hier_ <- nlevels(hierarchical_group)
     } else {
-      self$modifier$G_hier_ <- max(unlist(length(self$modifier$modifiers)), 1L)
+      private$G_hier_ <- max(unlist(length(self$modifier$modifiers)), 1L)
     }
   }
-  self$modifier$G_hier_
+  private$G_hier_
 }
