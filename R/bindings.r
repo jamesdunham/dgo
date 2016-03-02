@@ -129,7 +129,7 @@ bind_G <- function() {
 }
 
 bind_N = function() {
-  nrow(self$modifier$group_counts)
+  nrow(private$group_counts_)
 }
 
 bind_P = function() {
@@ -146,8 +146,7 @@ bind_H = function() {
 }
 
 bind_H_prior = function() {
-  if (length(self$modifier$ZZ) > 0) dim(self$modifier$ZZ_prior)[[3]]
-  else NULL
+  dim(self$ZZ_prior)[[3]]
 }
 
 bind_G_hier = function() {

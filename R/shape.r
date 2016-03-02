@@ -210,8 +210,8 @@ drop_itemless_respondents <- function(item) {
   if (any(item$tbl$none_valid)) {
     item$tbl <- item$tbl %>% dplyr::filter_(lazyeval::interp(~!none_valid))
     message(sprintf(ngettext(sum(item$tbl$none_valid),
-          "\tDropped  %i row for lack of item responses",
-          "\tDropped %i rows for lack of item responses"),
+          "\tDropped  %s row for lack of item responses",
+          "\tDropped %s rows for lack of item responses"),
         format(sum(item$tbl$none_valid), big.mark = ",")))
   }
   item
@@ -691,7 +691,7 @@ tostan <- function(item) {
     P = item$P,       # number of hierarchical parameters
     S = item$S,   # number of geographic units
     H = item$H,   # number of geographic-level predictors
-    Hprior = item$H_prior,
+    Hprior = item$modifier$H_prior,
     separate_t = item$control$separate_t,  # if 1, no pooling over time
     constant_item = item$control$constant_item,  # if 1, item parameters constant
     D = ifelse(item$control$constant_item, 1L, item$T),           # number of difficulty parameters
