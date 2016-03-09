@@ -40,5 +40,8 @@ name <- function(dgirt_output, dgirt_input) {
   assertthat::assert_that(identical(dim(dgirt_extract[['sd_item']])[2], length(vars$gt_items)))
   dimnames(dgirt_extract[['sd_item']])[[2]] <- vars$gt_items
 
+  dgirt_extract <- lapply(dgirt_extract, reshape2::melt)
+  dgirt_extract <- lapply(dgirt_extract, dplyr::rename, iteration = iterations)
+
   dgirt_extract
 }
