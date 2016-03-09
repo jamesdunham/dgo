@@ -1,17 +1,14 @@
-# item = items(state_opinion, ids(state, year, "source"), starts_with("Q_"), controls(groups = "race"))
-# item$groups
-# shape(item)
-
-# handle <- function(ex) {
-#   res = ifelse(is.symbol(lazyeval::lazy(ex)$expr), lazyeval::interp(ex)$expr, ex)
-#   as.character(unlist(res))
-# }
-
+#  
+# .data = state_opinion
+# ids = ids(state, year, "source")
+# items = "Q_cces2006_minimumwage"
+# control = controls(groups = 'race')
+#
 #' Define item response data 
 #' @export
-items <- function(.data, ids, items, control, modifiers = NULL, targets = NULL, filters = NULL) {
+items <- function(.data, ids, items, control, hierarchical = NULL, targets = NULL, item_filter = NULL) {
   item <- Item$new()
-  item$tbl <- .data
+  item$tbl <- data.table::as.data.table(.data)
   vars <- names(.data)
 
   if (is.character(ids)) ids <- ids(ids)
@@ -21,7 +18,7 @@ items <- function(.data, ids, items, control, modifiers = NULL, targets = NULL, 
 
   item$items <- new("ItemVar", dplyr::select_vars_(vars, handle(lazyeval::lazy(items))))
 
-  if (length(modifiers) > 0) item$modifier <- modifiers
+  if (length(hierarchical) > 0) item$modifier <- hierarchical
 
   if (length(targets) > 0) {
     item$targets <- targets
@@ -38,18 +35,19 @@ items <- function(.data, ids, items, control, modifiers = NULL, targets = NULL, 
   } else {
     item$filters <- Filter$new()
   }
-  if (!length(filters$time) > 0) item$filters$time <- unique(item$tbl[[item$time]])
-  if (!length(filters$geo) > 0) item$filters$geo <- levels(unlist(item$tbl[[item$geo]]))
+  if (!length(filters$time) > 0) {
+    item$filters$time <- new("TimeFilter", unique(item$tbl[[item$time]]))
+  }
+  if (!length(filters$geo) > 0) {
+    item$filters$geo <- new("GeoFilter", levels(unlist(item$tbl[[item$geo]])))
+  }
   if (!length(filters$min_t) > 0) item$filters$min_t <- 1L
   if (!length(filters$min_survey) > 0) item$filters$min_survey <- 1L
 
   if (length(control) > 0) {
     item$control <- control
-    print("passed arg")
-    print(control$groups)
   } else {
     item$control <- controls()
-    print(overwrote)
   }
   if (!length(item$control) > 0) stop("argument \"groups\" is missing, with no default")
   # TODO: if variables aren't set, then look for variables with the field names in .data
@@ -89,10 +87,10 @@ hierarchical <- function(.data, modifiers, t1_modifiers, time = NULL, geo = NULL
 
 #' Define filters for item response data 
 #' @export
-item_filter <- function(time = NULL, geo = NULL, min_t = NULL, min_survey = NULL) {
+item_filter <- function(times = NULL, geo = NULL, min_t = NULL, min_survey = NULL) {
   item_filters <- Filter$new()
-  item_filters$time <- time
-    item_filters$geo <- geo
+  item_filters$time <- new("TimeFilter", times)
+  item_filters$geo <- new("GeoFilter", geo)
   item_filters$min_t <- min_t
   item_filters$min_survey <- min_survey
   item_filters

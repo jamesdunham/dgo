@@ -12,6 +12,7 @@ Depends:
 LazyData: true
 Imports:
     assertthat,
+    data.table,
     devtools,
     dplyr,
     ggplot2,

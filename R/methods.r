@@ -10,6 +10,7 @@ reweight <- function() {
   }
 }
 
+# Item$set("public", "make_gt_variables")
 make_gt_variables <- function() {
   gt_table <- create_gt_variables(self)
   self$tbl <- dplyr::bind_cols(self$tbl, gt_table)

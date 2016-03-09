@@ -161,7 +161,7 @@ arrange_item_factors <- function(item) {
 
 arrange_modifier_factors <- function(item) {
   vars <- intersect(names(item$modifier$tbl), c(item$modifier$geo))
-  item$modifier$tbl <- arrange_factors(item$modifier$tbl, vars)
+  item$modifier$tbl <- arrange_factors(as.data.table(item$modifier$tbl), vars)
   item
 }
 
@@ -173,14 +173,7 @@ arrange_factors <- function(tbl, vars) {
 
 drop_rows_missing_covariates <- function(item) {
   n <- nrow(item$tbl)
-  item$tbl <- item$tbl %>%
-    dplyr::filter_(lazyeval::interp(~!is.na(geo_name) & !is.na(time_name),
-  geo_name = as.name(item$geo),
-  time_name = as.name(item$time)))
-  for (v in c(item$time, item$geo, item$groups, item$survey)) {
-    item$tbl <- item$tbl %>%
-      dplyr::filter_(lazyeval::interp(~!is.na(varname), varname = as.name(v)))
-  }
+  item$tbl <- na.omit(item$tbl, cols = c(item$geo, item$time, item$groups, item$survey))
   if (!identical(n, nrow(item$tbl))) {
     message("\tDropped ", format(n - nrow(item$tbl), big.mark = ","), " rows for missingness in covariates")
     item$tbl <- droplevels(item$tbl)
@@ -203,16 +196,17 @@ keep_t <- function(item) {
   item
 }
 
-# item = items
 drop_itemless_respondents <- function(item) {
+  n <- nrow(item$tbl)
   item$items <- intersect(item$items, colnames(item$tbl))
-  item$tbl$none_valid <- get_itemless_respondents(item)
-  if (any(item$tbl$none_valid)) {
-    item$tbl <- item$tbl %>% dplyr::filter_(lazyeval::interp(~!none_valid))
-    message(sprintf(ngettext(sum(item$tbl$none_valid),
+  item$tbl[, rowselect := (!Reduce("*", item$tbl[, lapply(.SD, is.na), .SDcols = item$items]))]
+  setkey(item$tbl, rowselect)
+  item$tbl[TRUE][, rowselect := NULL]
+  if (!identical(n, nrow(item$tbl))) {
+    message(sprintf(ngettext(nrow(item$tbl) - n,
           "\tDropped  %s row for lack of item responses",
           "\tDropped %s rows for lack of item responses"),
-        format(sum(item$tbl$none_valid), big.mark = ",")))
+        format(nrow(item$tbl) - n, big.mark = ",")))
   }
   item
 }
@@ -245,6 +239,7 @@ drop_items_rare_in_time <- function(item) {
 }
 
 get_responseless_items <- function(item) {
+  n_item_responses <- item$tbl[, lapply(.SD, function(k) all(is.na(k))), .SDcols = item$items]
   n_item_responses <- item$tbl %>%
     dplyr::summarise_each_(~sum(!is.na(.)), vars = item$items) %>%
     wrap_melt(id.vars = NULL, value.name = "n_responses")
@@ -253,13 +248,6 @@ get_responseless_items <- function(item) {
   responseless_items <- unlist(responseless_items$variable)
   assertthat::assert_that(is.character(responseless_items))
   responseless_items
-}
-
-get_itemless_respondents <- function(item) {
-  if (length(item$items) < 1) stop("no remaining items")
-  not_na <- !is.na(item$tbl %>%
-    dplyr::select_(.dots = item$items))
-  rowSums(not_na) == 0
 }
 
 get_items_rare_in_time <- function(item) {
@@ -691,7 +679,7 @@ tostan <- function(item) {
     P = item$P,       # number of hierarchical parameters
     S = item$S,   # number of geographic units
     H = item$H,   # number of geographic-level predictors
-    Hprior = item$modifier$H_prior,
+    Hprior = item$H_prior,
     separate_t = item$control$separate_t,  # if 1, no pooling over time
     constant_item = item$control$constant_item,  # if 1, item parameters constant
     D = ifelse(item$control$constant_item, 1L, item$T),           # number of difficulty parameters

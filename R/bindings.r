@@ -1,3 +1,16 @@
+gen_bind <- function(name, check_names = FALSE) {
+  f = function(value) {
+    if (!missing(value) && length(value) > 0) {
+      private$name <- value
+    } 
+    if (!missing(value) && check_names == TRUE) {
+      self$test_names(value)
+    }
+    private$name
+  }
+  pryr::unenclose(f)
+}
+
 bind_tbl <- function(value) {
   if (!missing(value) && length(value) > 0) {
     private$tbl_ <- value
@@ -30,91 +43,6 @@ bind_items <- function(value) {
   private$items_
 }
 
-bind_groups <- function(value) {
-  if (!missing(value) && length(value) > 0) {
-    self$control$groups <- value
-    self$test_names(value)
-  } 
-  self$control$groups
-}
-
-bind_group_grid <- function(value) {
-  if (!missing(value) && length(value) > 0) {
-    private$group_grid_ <- value
-  } 
-  private$group_grid_
-}
-
-bind_group_grid_t <- function(value) {
-  if (!missing(value) && length(value) > 0) {
-    private$group_grid_t_ <- value
-  } 
-  private$group_grid_t_
-}
-
-bind_group_counts <- function(value) {
-  if (!missing(value) && length(value) > 0) {
-    private$group_counts_ <- value
-  } 
-  private$group_counts_
-}
-
-bind_time <- function(value) {
-  if (!missing(value) && length(value) > 0) {
-    private$time_ <- value
-    self$test_names(value)
-  }
-  private$time_
-}
-
-bind_geo <- function(value) {
-  if (!missing(value) && length(value) > 0) {
-    private$geo_ <- value
-    self$test_names(value)
-  }
-  private$geo_
-}
-
-bind_survey <- function(value) {
-  if (!missing(value) && length(value) > 0) {
-    private$survey_ <- value
-    self$test_names(value)
-  }
-  private$survey_
-}
-
-bind_weight <- function(value) {
-  if (!missing(value) && length(value) > 0) {
-    self$targets$weight <- value
-    self$targets$test_names(value)
-  }
-  self$targets$weight
-}
-
-bind_modifiers <- function(value) {
-  if (!missing(value) && length(value) > 0) {
-    private$modifiers_ <- value
-    self$test_names(value)
-  }
-  private$modifiers_
-}
-
-bind_t1_modifiers <- function(value) {
-  if (!missing(value) && length(value) > 0) {
-    private$t1_modifiers_ <- value
-    self$test_names(value)
-  }
-  private$t1_modifiers_
-}
-
-bind_l2_only <- function(value) {
-  if (!missing(value) && length(value) > 0) {
-    private$l2_only_ <- value
-  }
-  private$l2_only_
-}
-
-
 bind_T <- function() {
   length(self$filters$time)
 }
@@ -146,7 +74,7 @@ bind_H = function() {
 }
 
 bind_H_prior = function() {
-  dim(self$ZZ_prior)[[3]]
+  dim(self$modifier$ZZ_prior)[[3]]
 }
 
 bind_G_hier = function() {

@@ -1,5 +1,6 @@
 `%>%` <- magrittr::`%>%`
 `%<>%` <- magrittr::`%<>%`
+`:=` <- data.table::`:=`
 
 na_to_zero <- function(x) {
   replace(x, is.na(x), 0)

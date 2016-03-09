@@ -108,7 +108,6 @@ wrangle_to_shape <- function() {
   # item$tbl <- data.frame(a = 1)
 
   item$items <- new("ItemVar", arg$items)
-  item$groups <- new("ItemVar", arg$groups)
   item$geo <- new("ItemVar", arg$geo_id)
   item$time <- new("ItemVar", arg$time_id)
   item$survey <- new("ItemVar", arg$survey_id)
@@ -135,6 +134,7 @@ wrangle_to_shape <- function() {
     item$targets$time <- new("ItemVar", item$time)
   }
 
+  item$control$groups <- new("ItemVar", arg$groups)
   item$control$separate_t <- as.integer(arg$separate_periods)
   item$control$constant_item <- as.integer(arg$constant_item)
   item$control$delta_tbar_prior_mean <- arg$delta_tbar_prior_mean
