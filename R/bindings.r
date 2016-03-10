@@ -15,10 +15,10 @@ bind_tbl <- function(value) {
   if (!missing(value) && length(value) > 0) {
     private$tbl_ <- value
     tbl_name <- tolower(class(self)[1])
-    if (!inherits(value, "data.frame")) {
+    if (!inherits(private$tbl_, "data.frame")) {
       stop(tbl_name, " data must inherit from data.frame")
     }
-    if (!all(dim(value) > 0)) {
+    if (!all(dim(private$tbl_) > 0)) {
       stop(tbl_name, " data has an empty dimension")
     }
   }
