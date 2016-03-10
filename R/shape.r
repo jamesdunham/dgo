@@ -120,12 +120,11 @@ restrict_items <- function(item) {
   final_dim <- c()
   iter <- 1L
   while (!identical(initial_dim, final_dim)) {
-    message()
     message("Applying restrictions, pass ", iter, "...")
     if (identical(iter, 1L)) item <- drop_rows_missing_covariates(item)
     initial_dim <- dim(item$tbl)
     item <- keep_t(item)
-    item <- drop_itemless_respondents(item)
+    # item <- drop_itemless_respondents(item)
     item <- drop_responseless_items(item)
     item <- drop_items_rare_in_time(item)
     item <- drop_items_rare_in_polls(item)
@@ -161,22 +160,24 @@ arrange_item_factors <- function(item) {
 
 arrange_modifier_factors <- function(item) {
   vars <- intersect(names(item$modifier$tbl), c(item$modifier$geo))
-  item$modifier$tbl <- arrange_factors(as.data.table(item$modifier$tbl), vars)
+  item$modifier$tbl <- arrange_factors(item$modifier$tbl, vars)
   item
 }
 
-arrange_factors <- function(tbl, vars) {
-  with_contr.treatment(tbl %>%
+#item_tbl = item$tbl
+arrange_factors <- function(item_tbl, vars) {
+  with_contr.treatment(item_tbl %>%
     dplyr::arrange_(.dots = vars) %>%
     dplyr::mutate_each_(dplyr::funs(factor(., levels = sort(unique(as.character(.))))), vars = vars))
 }
 
 drop_rows_missing_covariates <- function(item) {
   n <- nrow(item$tbl)
-  item$tbl <- na.omit(item$tbl, cols = c(item$geo, item$time, item$groups, item$survey))
+  is_missing <- rowSums(!is.na(item$tbl[c(item$geo, item$time, item$groups, item$survey)])) == 0
+  item$tbl <- item$tbl %>% dplyr::filter(!is_missing)
   if (!identical(n, nrow(item$tbl))) {
     message("\tDropped ", format(n - nrow(item$tbl), big.mark = ","), " rows for missingness in covariates")
-    item$tbl <- droplevels(item$tbl)
+    # item$tbl <- droplevels(item$tbl)
   }
   item
 }
@@ -197,6 +198,7 @@ keep_t <- function(item) {
 }
 
 drop_itemless_respondents <- function(item) {
+  item$tbl <- data.table::as.data.table(item$tbl)
   n <- nrow(item$tbl)
   item$items <- intersect(item$items, colnames(item$tbl))
   item$tbl[, rowselect := (!Reduce("*", item$tbl[, lapply(.SD, is.na), .SDcols = item$items]))]
@@ -239,7 +241,6 @@ drop_items_rare_in_time <- function(item) {
 }
 
 get_responseless_items <- function(item) {
-  n_item_responses <- item$tbl[, lapply(.SD, function(k) all(is.na(k))), .SDcols = item$items]
   n_item_responses <- item$tbl %>%
     dplyr::summarise_each_(~sum(!is.na(.)), vars = item$items) %>%
     wrap_melt(id.vars = NULL, value.name = "n_responses")
