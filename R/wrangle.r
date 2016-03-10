@@ -47,7 +47,8 @@
 
 wrangle <- function(data = list(level1,
                                 level2 = NULL,
-                                targets = NULL),
+                                targets = NULL,
+                                aggregates = NULL),
                        vars = list(items,
                                    groups,
                                    time_id,
@@ -141,19 +142,52 @@ wrangle <- function(data = list(level1,
   }
 
   group_counts <- make_group_counts(level1, group_grid, arg)
+
+  if (length(data$aggregates) > 0) {
+    message("Adding aggregate data.")
+    aggregates <- subset_to_estimation_periods(data$aggregates, arg)
+    aggregates <- aggregates %>%
+      dplyr::filter_(lazyeval::interp(~geo %in% arg$use_geo, geo = as.name(arg$geo_id)))
+
+    gss_group_grid = make_group_grid(aggregates, arg$groups, arg) %>%
+      dplyr::arrange_(.dots = c(arg$time_id, arg$groups, arg$geo_id))
+    gss_group_grid_t <- gss_group_grid %>%
+      dplyr::select_(lazyeval::interp(~-one_of(v), v = arg$time_id)) %>%
+      dplyr::distinct() %>%
+      dplyr::arrange_(.dots = c(arg$groups, arg$geo_id))
+
+    gss_group_levels <- vapply(arg$groups, function(i) length(levels(gss_group_grid_t[[i]])), numeric(1))
+    if (any(group_levels < 2)) {
+      stop("no variation in group variable: ", paste(names(which(group_levels < 2)), collapse = ", "))
+    }
+
+    aggregates <- factorize_arg_vars(aggregates, arg)
+    gss_group_counts = aggregates %>% 
+      mutate(name = paste(D_year, item, paste0(D_abb, "__", D_black), sep = " | ")) %>%
+        select(name, everything())
+
+    group_grid <- suppressWarnings(bind_rows(group_grid, gss_group_grid)) %>%
+      dplyr::arrange_(.dots = c(arg$time_id, arg$groups, arg$geo_id))
+    # FIXME: bind_rows coerces factors with unequal factor levels back to character
+    group_grid <- factorize_arg_vars(group_grid, arg)
+    group_counts <- suppressWarnings(bind_rows(group_counts, gss_group_counts)) %>%
+      dplyr::arrange_(.dots = c(arg$time_id, "item", arg$groups, arg$geo_id))
+    group_counts <- factorize_arg_vars(group_counts, arg)
+  }
+
   MMM <- create_missingness_array(group_counts, group_grid, arg)
 
   T <- length(arg$use_t)
-  Q <- count_questions(level1)
-  G <- count_covariate_combos(level1, arg)
+  Q <- length(unique(group_counts$item))
+  G <- count_covariate_combos(group_counts, arg)
 
   # Create placeholders
   # TODO: confirm that count_level2_groups works with > 1 group
   Gl2 <- count_level2_groups(arg$level2, G, arg)
   WT <- make_dummy_weight_matrix(T, Gl2, G)
-  l2_only <- make_dummy_l2_only(level1, arg)
-  NNl2 <- make_dummy_l2_counts(level1, T, Q, Gl2 = Gl2, arg$level2_modifiers, arg)
-  SSl2 <- make_dummy_l2_counts(level1, T, Q, Gl2 = Gl2, arg$level2_modifiers, arg)
+  l2_only <- make_dummy_l2_only(unique(group_counts$item), arg)
+  NNl2 <- make_dummy_l2_counts(unique(group_counts$item), T, Q, Gl2 = Gl2, arg$level2_modifiers, arg)
+  SSl2 <- make_dummy_l2_counts(unique(group_counts$item), T, Q, Gl2 = Gl2, arg$level2_modifiers, arg)
 
   group_design_matrix <- make_design_matrix(group_grid_t, arg$groups, arg)
   ZZ <- make_hierarchical_array(level1, arg$level2, arg$level2_modifiers, group_design_matrix, group_grid_t, arg) 
@@ -598,33 +632,31 @@ make_dummy_weight_matrix <- function(T, Gl2, G) {
   array(1, dim = c(T, Gl2, G))
 }
 
-make_dummy_l2_only <- function(level1, arg) {
-  gt_names <- grep("_gt\\d+$", colnames(level1), value = TRUE)
+make_dummy_l2_only <- function(items, arg) {
   l2_only <- matrix(0L,
     nrow = length(arg$use_t),
-    ncol = length(gt_names),
-    dimnames = list(arg$use_t, gt_names))
+    ncol = length(items),
+    dimnames = list(arg$use_t, items))
   l2_only
 }
 
-make_dummy_l2_counts <- function(level1, T, Q, Gl2, level2_modifiers, arg) {
-  array(0, c(T, Q, Gl2), list(arg$use_t,
-      grep("_gt", colnames(level1), fixed= TRUE, value = TRUE), level2_modifiers))
+make_dummy_l2_counts <- function(items, T, Q, Gl2, level2_modifiers, arg) {
+  array(0, c(T, Q, Gl2), list(arg$use_t, items, level2_modifiers))
 }
 
 factorize_arg_vars <- function(tabular, .arg) {
   arg_vars <- intersect(names(tabular),
     c(.arg$groups, .arg$geo_id, .arg$survey_id, .arg$level2_modifiers, .arg$level2_period1_modifiers))
-  numeric_groups <- tabular %>% dplyr::summarize_each_(~is.numeric, vars = arg_vars) %>% unlist()
+  numeric_groups <- lapply(tabular, is.numeric)[arg_vars] %>% unlist()
   if (any(numeric_groups)) {
     message("Defining groups via numeric variables is allowed, but output names won't be descriptive. Consider using factors.")
     for (varname in names(numeric_groups)) {
       tabular[[varname]] <- paste0(varname, as.character(tabular[[varname]]))
     }
   }
-  tabular <- with_contr.treatment(tabular %>% 
-    dplyr::arrange_(.dots = arg_vars) %>%
-    dplyr::mutate_each_(dplyr::funs(factor(., levels = sort(unique(as.character(.))))), vars = arg_vars))
+  tabular <- tabular %>% dplyr::arrange_(.dots = arg_vars)
+  tabular[arg_vars] <- with_contr.treatment(
+    lapply(tabular[arg_vars], function(x) factor(x, levels = sort(unique(as.character(x))))))
   tabular
 }
 
@@ -717,8 +749,7 @@ subset_geos <- function(tabular, arg) {
 subset_to_estimation_periods <- function(.data, arg) {
   assertthat::assert_that(is.data.frame(.data), not_empty(.data)) 
   assertthat::assert_that(is_string(arg$time_id), is.numeric(.data[[arg$time_id]]), is.numeric(arg$use_t))
-  periods_filter <- .data[[arg$time_id]] %in% arg$use_t
-  .data <- .data %>% dplyr::filter(periods_filter)
+  .data <- .data %>% dplyr::filter_(lazyeval::interp(~period %in% arg$use_t, period = as.name(arg$time_id)))
   if (!nrow(.data) > 0) stop("no item data after restriction to estimation periods")
   .data <- droplevels(.data)
   return(.data)
@@ -772,8 +803,8 @@ count_questions <- function(level1) {
   sum(grepl("_gt", colnames(level1), fixed = TRUE))
 }
 
-count_covariate_combos <- function(level1, .arg) {
-  factor_levels <- nlevels_vectorized(level1, c(.arg$geo_id, .arg$groups))
+count_covariate_combos <- function(tab, arg) {
+  factor_levels <- nlevels_vectorized(tab, c(arg$geo_id, arg$groups))
   Reduce(`*`, factor_levels)
 }
 
