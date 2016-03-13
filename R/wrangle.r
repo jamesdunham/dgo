@@ -162,7 +162,8 @@ wrangle <- function(data = list(level1,
 
     aggregates <- factorize_arg_vars(aggregates, arg)
     gss_group_counts = aggregates %>% 
-      mutate(name = paste(D_year, item, paste0(D_abb, "__", D_black), sep = " | ")) %>%
+      tidyr::unite_("name", c(arg$geo_id, arg$groups), sep = "__", remove = FALSE) %>%
+        dplyr::mutate_(name = lazyeval::interp(~paste(period, item, name, sep = " | "), period = as.name(arg$time_id))) %>%
         select(name, everything())
 
     group_grid <- suppressWarnings(bind_rows(group_grid, gss_group_grid)) %>%
