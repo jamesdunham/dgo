@@ -143,11 +143,17 @@ wrangle <- function(data = list(level1,
 
   group_counts <- make_group_counts(level1, group_grid, arg)
 
+  # 1 1946 | Q_fund_cancer_research_gt1 | AL__D_black0    AL D_black0   1946 Q_fund_cancer_research_gt1     8     0
+  # 2 1946 | Q_fund_cancer_research_gt1 | AR__D_black0    AR D_black0   1946 Q_fund_cancer_research_gt1     6     0
+  # 3 1946 | Q_fund_cancer_research_gt1 | CA__D_black0    CA D_black0   1946 Q_fund_cancer_research_gt1    55     0
+  # 4 1946 | Q_fund_cancer_research_gt1 | CO__D_black0    CO D_black0   1946 Q_fund_cancer_research_gt1    14     0
+  # 5 1946 | Q_fund_cancer_research_gt1 | CT__D_black0    CT D_black0   1946 Q_fund_cancer_research_gt1    10     0
+  # 6 1946 | Q_fund_cancer_research_gt1 | DE__D_black0    DE D_black0   1946 Q_fund_cancer_research_gt1    12     0
+
   if (length(data$aggregates) > 0) {
     message("Adding aggregate data.")
-    aggregates <- subset_to_estimation_periods(data$aggregates, arg)
     aggregates <- aggregates %>%
-      dplyr::filter_(lazyeval::interp(~geo %in% arg$use_geo, geo = as.name(arg$geo_id)))
+      dplyr::filter_(lazyeval::interp(~geo %in% arg$use_geo | geo %in% paste0(arg$geo_id, arg$use_geo), geo = as.name(arg$geo_id)))
 
     gss_group_grid = make_group_grid(aggregates, arg$groups, arg) %>%
       dplyr::arrange_(.dots = c(arg$time_id, arg$groups, arg$geo_id))
@@ -170,9 +176,15 @@ wrangle <- function(data = list(level1,
       dplyr::arrange_(.dots = c(arg$time_id, arg$groups, arg$geo_id))
     # FIXME: bind_rows coerces factors with unequal factor levels back to character
     group_grid <- factorize_arg_vars(group_grid, arg)
+    group_grid_t <- group_grid %>%
+      dplyr::select_(lazyeval::interp(~-one_of(v), v = arg$time_id)) %>%
+      dplyr::distinct() %>%
+      dplyr::arrange_(.dots = c(arg$groups, arg$geo_id))
+
     group_counts <- suppressWarnings(bind_rows(group_counts, gss_group_counts)) %>%
       dplyr::arrange_(.dots = c(arg$time_id, "item", arg$groups, arg$geo_id))
-    group_counts <- factorize_arg_vars(group_counts, arg)
+    group_counts <- factorize_arg_vars(group_counts, arg) %>%
+      dplyr::arrange_(.dots = c(arg$time_id, "item", arg$groups, arg$geo_id))
   }
 
   MMM <- create_missingness_array(group_counts, group_grid, arg)
@@ -650,7 +662,7 @@ factorize_arg_vars <- function(tabular, .arg) {
   numeric_groups <- lapply(tabular, is.numeric)[arg_vars] %>% unlist()
   if (any(numeric_groups)) {
     message("Defining groups via numeric variables is allowed, but output names won't be descriptive. Consider using factors.")
-    for (varname in names(numeric_groups)) {
+    for (varname in arg_vars[numeric_groups]) {
       tabular[[varname]] <- paste0(varname, as.character(tabular[[varname]]))
     }
   }
@@ -725,10 +737,10 @@ update_use_geo <- function(.data, .arg) {
 
 set_use_t <- function(.data, .arg) {
   if (!length(.arg$periods) > 0) {
-    return(unique(.data[[.arg$time_id]]))
+    return(sort(unique(.data[[.arg$time_id]])))
   } else {
     assertthat::assert_that(is.numeric(.arg$periods))
-    return(.arg$periods)
+    return(sort(unique(.arg$periods)))
   }
 }
 
@@ -854,7 +866,7 @@ make_group_grid <- function(level, factors, arg) {
   assertthat::assert_that(is_string(arg$time_id), is.numeric(level[[arg$time_id]]))
   group_grid <- expand.grid(c(
     setNames(list(arg$use_t), arg$time_id),
-    lapply(level[, c(arg$geo_id, factors), drop = FALSE], function(x) sort(unique(x)))))
+    lapply(level[c(arg$geo_id, factors)], function(x) sort(unique(x)))))
   assertthat::assert_that(not_empty(group_grid))
   group_grid
 }
