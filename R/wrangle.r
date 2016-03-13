@@ -143,15 +143,7 @@ wrangle <- function(data = list(level1,
 
   group_counts <- make_group_counts(level1, group_grid, arg)
 
-  # 1 1946 | Q_fund_cancer_research_gt1 | AL__D_black0    AL D_black0   1946 Q_fund_cancer_research_gt1     8     0
-  # 2 1946 | Q_fund_cancer_research_gt1 | AR__D_black0    AR D_black0   1946 Q_fund_cancer_research_gt1     6     0
-  # 3 1946 | Q_fund_cancer_research_gt1 | CA__D_black0    CA D_black0   1946 Q_fund_cancer_research_gt1    55     0
-  # 4 1946 | Q_fund_cancer_research_gt1 | CO__D_black0    CO D_black0   1946 Q_fund_cancer_research_gt1    14     0
-  # 5 1946 | Q_fund_cancer_research_gt1 | CT__D_black0    CT D_black0   1946 Q_fund_cancer_research_gt1    10     0
-  # 6 1946 | Q_fund_cancer_research_gt1 | DE__D_black0    DE D_black0   1946 Q_fund_cancer_research_gt1    12     0
-
   if (length(data$aggregates) > 0) {
-    message("Adding aggregate data.")
     aggregates <- data$aggregates %>%
       dplyr::filter_(lazyeval::interp(~geo %in% arg$use_geo |
         geo %in% paste0(arg$geo_id, arg$use_geo), geo = as.name(arg$geo_id)))
@@ -183,9 +175,17 @@ wrangle <- function(data = list(level1,
       dplyr::arrange_(.dots = c(arg$groups, arg$geo_id))
 
     group_counts <- suppressWarnings(bind_rows(group_counts, gss_group_counts)) %>%
+      # group counts must exclude unobserved groups
+      dplyr::filter_(~n_grp > 0) %>%
       dplyr::arrange_(.dots = c(arg$time_id, "item", arg$groups, arg$geo_id))
     group_counts <- factorize_arg_vars(group_counts, arg) %>%
       dplyr::arrange_(.dots = c(arg$time_id, "item", arg$groups, arg$geo_id))
+
+    aggregate_items <- unique(as.character(aggregates$item))
+    message("Added ", length(setdiff(aggregate_items, arg$items)), " new items from aggregate data.")
+
+    arg$items <- sort(unique(c(arg$items, aggregate_items)))
+
   }
 
   MMM <- create_missingness_array(group_counts, group_grid, arg)
@@ -235,7 +235,7 @@ wrangle <- function(data = list(level1,
     innov_sd_theta_scale = arg$innov_sd_theta_scale,
     group_counts = group_counts,
     vars = list(items = arg$items,
-                gt_items = grep("_gt\\d+$", colnames(level1), value = TRUE),
+                gt_items = sort(unique(group_counts$item)),
                 groups = arg$groups,
                 time_id = arg$time_id,
                 use_t = arg$use_t,
