@@ -152,8 +152,9 @@ wrangle <- function(data = list(level1,
 
   if (length(data$aggregates) > 0) {
     message("Adding aggregate data.")
-    aggregates <- aggregates %>%
-      dplyr::filter_(lazyeval::interp(~geo %in% arg$use_geo | geo %in% paste0(arg$geo_id, arg$use_geo), geo = as.name(arg$geo_id)))
+    aggregates <- data$aggregates %>%
+      dplyr::filter_(lazyeval::interp(~geo %in% arg$use_geo |
+        geo %in% paste0(arg$geo_id, arg$use_geo), geo = as.name(arg$geo_id)))
 
     gss_group_grid = make_group_grid(aggregates, arg$groups, arg) %>%
       dplyr::arrange_(.dots = c(arg$time_id, arg$groups, arg$geo_id))
