@@ -75,7 +75,7 @@ check_arg_types <- function(..arg) {
   if (!is.null(..arg$targets)) {
     assertthat::assert_that(inherits(..arg$targets, "data.frame"))
     assertthat::is.string(..arg$target_proportion)
-    assertthat::assert_that(all_strings(..arg$target_groups))
+    assertthat::assert_that(all_strings(unlist(..arg$target_groups)))
   }
   assertthat::is.string(..arg$items)
   assertthat::is.string(..arg$time_id)
