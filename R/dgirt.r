@@ -19,6 +19,7 @@
 #' @param optimize_algorithm The optimization algorithm for CmdStan to use if
 #'        `method` is `"optimize"`, one of `"bfgs"`, `"lbfgs"` (the default),
 #'        and `"newton"`. See CmdStan documentation for details.
+#' @param ... Additional arguments passed to `rstan::stan`.
 #' @return An object of S4 class `stanfit` as returned by `rstan::stan`.
 #' @import rstan
 #' @export
@@ -27,7 +28,7 @@ dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n_war
   seed = 1, save_pars = c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar", "nu_geo",
     "nu_geo_prior", "kappa", "sd_item", "sd_theta", "sd_theta_bar", "sd_gamma", "sd_innov_gamma",
     "sd_innov_delta", "sd_innov_logsd", "sd_total", "theta_l2", "var_theta_bar_l2"),
-  parallel = TRUE, method = "rstan", algorithm = NULL) {
+  parallel = TRUE, method = "rstan", algorithm = NULL, ...) {
 
   requireNamespace("rstan", quietly = TRUE)
   rstan::rstan_options(auto_write = parallel)
@@ -45,7 +46,7 @@ dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n_war
   assertthat::assert_that(is_subset(method, c("rstan", "optimize", "variational")))
   message("Started: ", date())
   stan_out <- switch(method,
-    rstan = use_rstan(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, seed, init_range, vars),
+    rstan = use_rstan(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, seed, init_range, vars, ...),
     optimize = use_cmdstan(dgirt_data, method, algorithm = 'lbfgs', n_iter, init_range, save_pars, vars),
     variational = use_cmdstan(dgirt_data, method, algorithm = 'meanfield', n_iter, init_range, save_pars, vars))
   message("Ended: ", date())
@@ -53,12 +54,12 @@ dgirt <- function(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000, n_war
   return(stan_out)
 }
 
-use_rstan <- function(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, seed, init_range, vars) {
+use_rstan <- function(dgirt_data, n_iter, n_chain, n_warm, n_thin, save_pars, seed, init_range, vars, ...) {
   message("Running ", n_iter, " iterations in each of ", n_chain, " chains. Thinning at an interval of ",
     n_thin, " with ", n_warm, " adaptation iterations.")
   stan_out <- rstan::stan(model_code = stan_code, data = dgirt_data, iter = n_iter,
     chains = n_chain, warmup = n_warm, thin = n_thin, verbose = FALSE, pars = save_pars,
-    seed = seed, init = "random", init_r = init_range)
+    seed = seed, init = "random", init_r = init_range, ...)
   return(stan_out)
 }
 
