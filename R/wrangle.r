@@ -145,6 +145,23 @@ wrangle_to_shape <- function() {
   item
 }
 
+#' @export
+concat_groups <- function(tabular, group_names, geo_id, name) {
+  has_all_names(tabular, group_names)
+  has_all_names(tabular, geo_id)
+  tabular %>%
+    tidyr::unite_("group_concat", group_names, sep = "_") %>%
+    tidyr::unite_(name, c("group_concat", geo_id), sep = "_x_")
+}
+
+#' @export
+split_groups <- function(tabular, group_names, geo_id, name) {
+  assertthat::assert_that(has_name(tabular, "name"))
+  tabular %>%
+    tidyr::separate_(name, c("group_concat", geo_id), sep = "_x_") %>%
+    tidyr::separate_("group_concat", group_names, sep = "_")
+}
+
 set_use_t <- function(item, arg) {
   if (!length(arg$periods) > 0) {
     return(unique(item$tbl[[item$time]]))
