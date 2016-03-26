@@ -14,7 +14,7 @@ Rcpp::IntegerVector is_greater (Rcpp::NumericVector response, int level) {
     } else if (response(i) <= level) {
       res(i) = 0;
     } else {
-      res(i) = IntegerVector::get_na();
+      res(i) = NA_INTEGER; 
     }
   }
 
