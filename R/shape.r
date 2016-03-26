@@ -34,7 +34,6 @@ shape <- function(item, control = list(...)) {
   dichotomize(item)
   add_counts(item)
   get_missing_groups(item)
-  # TODO: avoid check_stan error when hierarchical data are missing
   add_hierarchical(item)
   stan_data <- tostan(item)
   check(stan_data)
@@ -218,15 +217,6 @@ restrict_modifier <- function(item) {
   invisible(item)
 }
 
-# original; generalized for any table below
-# coerce_factors <- function(item) {
-#   varnames <- intersect(names(item$tbl), c(item$groups, item$geo, item$survey))
-#   varnames <- varnames[vapply(item$tbl[, varnames, with = FALSE], is.factor, logical(1))]
-#   for (v in varnames) {
-#     item$tbl[, (v) := as.character(item$tbl[[v]])]
-#   }
-# }
-
 coerce_factors <- function(tbl, vars) {
   factor_vars <- vars[vapply(tbl[, vars, with = FALSE], is.factor, logical(1))]
   for (v in factor_vars) {
@@ -346,13 +336,6 @@ drop_items_rare_in_polls <- function(item) {
   item
 }
 
-# get_question_polls <- function(item) {
-#   question_polls <- item$tbl %>%
-#     dplyr::group_by_(item$survey) %>%
-#     dplyr::summarise_each_(dplyr::funs(any_not_na), vars = item$items)
-#   question_polls
-# }
-
 make_group_counts <- function(item) {
   item$tbl[, ("n_responses") := list(rowSums(!is.na(get_gt(item))))]
   item$tbl[, ("def") := lapply(.SD, calc_design_effects), .SDcols = item$weight, with = FALSE,
@@ -465,24 +448,6 @@ shape_hierarchical_data <- function(item) {
   zz
 }
 
-# count_successes <- function(item, trial_counts, mean_group_outcome) {
-#   # Confirm row order is identical before taking product
-#   item$tbl 
-#   assertthat::assert_that(all_equal(
-#       dplyr::select_(mean_group_outcome, .dots = c(item$geo, item$groups, item$time)),
-#       dplyr::select_(trial_counts, .dots = c(item$geo, item$groups, item$time))))
-#   success_counts <- get_gt(trial_counts) * get_gt(mean_group_outcome)
-#   success_counts <- success_counts %>%
-#     # Reattach our identifiers
-#     dplyr::bind_cols(dplyr::select_(trial_counts, .dots = c(item$geo, item$groups, item$time)), .) %>%
-#     # Round off returning integers and replace NA with 0
-#     dplyr::ungroup() %>%
-#     dplyr::mutate_each_(~na_to_zero, ~matches("_gt\\d+$")) %>%
-#     dplyr::mutate_each_(~round(., digits = 0), ~matches("_gt\\d+$")) %>%
-#     dplyr::arrange_(.dots = c(item$geo, item$groups, item$time))
-#   success_counts
-# }
-
 make_design_matrix <- function(item) {
   design_formula <- as.formula(paste("~ 0", item$geo, paste(item$groups, collapse = " + "), sep = " + "))
   design_matrix <- with_contr.treatment(model.matrix(design_formula, item$group_grid_t))
@@ -495,38 +460,6 @@ make_design_matrix <- function(item) {
   }
   return(design_matrix)
 }
-
-# summarize_trials_by_period <- function(trial_counts) {
-#   dplyr::select_(trial_counts, ~matches("_gt\\d+$"), item$time) %>%
-#     reshape2::melt(id.vars = item$time) %>%
-#     dplyr::group_by_(item$time) %>%
-#     dplyr::summarise_(valid_items = ~sum(value, na.rm = TRUE) > 0)
-# }
-
-# wrap_melt <- function(...) {
-#   melt <- reshape2::melt(...)
-#   melt_args <- list(...)
-#   # make the "variable" variable, whatever it's called, a character vector
-#   # instead of factor
-#   if (length(melt_args$variable.name) > 0) {
-#     melt[[melt_args$variable.name]] <- as.character(melt[[melt_args$variable.name]])
-#   } else {
-#     melt$variable <- as.character(melt$variable)
-#   }
-#   melt
-# }
-
-# get_missingness <- function(item) {
-#  item$group_counts %>%
-#     # Include in the missingness array all group-variables that might not exist
-#     # in the data because of unobserved use_t
-#     muffle_full_join(item$group_grid, by = c(item$geo, item$groups, item$time)) %>%
-#     # Get missingness by group
-#     dplyr::group_by_(.dots = c("item", item$time, item$groups, item$geo)) %>%
-#     dplyr::summarise_("m_grp" = ~as.integer(sum(n_grp, na.rm = TRUE) == 0)) %>%
-#     dplyr::ungroup() %>%
-#     dplyr::arrange_(.dots = c(item$time, "item", item$groups, item$geo))
-# }
 
 make_dummy_l2_only <- function(item) {
   gt_names <- grep("_gt\\d+$", colnames(item$tbl), value = TRUE)
@@ -542,20 +475,9 @@ make_dummy_l2_counts <- function(item) {
       grep("_gt", colnames(item$tbl), fixed= TRUE, value = TRUE), item$modifier$modifiers))
 }
 
-# drop_rows_missing_items <- function(item) {
-#   item_filter <- rowSums(!is.na(item$tbl[, item$items, drop = FALSE])) > 0
-#   item$tbl <- item$tbl %>% dplyr::filter(item_filter)
-#   item$tbl <- droplevels(item$tbl)
-#   item
-# }
-
 get_gt <- function(item) {
   copy(item$tbl)[, grep("_gt\\d+$", names(item$tbl), value = TRUE), with = FALSE]
 }
-
-# muffle_full_join <- function(...) {
-#   suppressWarnings(dplyr::full_join(...))
-# }
 
 calc_design_effects <- function(x) {
   y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
