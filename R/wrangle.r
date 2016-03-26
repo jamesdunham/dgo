@@ -1,50 +1,3 @@
-#' Format data for use with dgirt
-#'
-#' @param data Named `list` of `data.frame`s containing:
-#'   \describe{
-#'     \item{level1}{Survey responses at the lowest level of aggregation (e.g. individual).}
-#'     \item{level2}{Survey responses at higher level
-#'        of aggregation. Currently restricted to geographic units, and must be
-#'        accompanied by `level2_modifiers`.}
-#'     \item{targets}{Population targets for stratification. Strata in
-#'        `level1` must be a subset of those in the target data,
-#'        and there can't be missingness in the stratifying variables.}
-#'   }
-#' @param vars Named `list` of character vectors that give the variable or variables in representing:
-#'   \describe{
-#'     \item{items}{Item responses in `data$level1`}
-#'     \item{groups}{Respondent characteristics in `data$level1`.}
-#'     \item{time_id}{Time period in `data$level1` and `data$level2`.}
-#'     \item{geo_id}{Geographic identifier in `data$level1` and `data$level2`.}
-#'     \item{survey_id}{Survey identifier in `data$level1`.}
-#'     \item{survey_weight}{Survey weight in `data$level1`.}
-#'     \item{target_groups}{Respondent characteristics in `data$targets`.}
-#'     \item{target_proportion}{Population proportions in `data$targets`.}
-#'     \item{level2_modifiers}{Geographic characteristics in `data$level2`.}
-#'     \item{level2_period1_modifiers}{Geographic characteristics in `data$level2` to be used in place of `vars$level2_modifiers` in the first period.}
-#'   }
-#' @param filters Named `list` of filters that will be applied to the data.
-#'   \describe{
-#'     \item{periods}{A numeric vector of time periods to be used in estimation,
-#'        including unobserved periods or excluding observed periods as desired.
-#'        Defaults to the values of the `vars$time_id` variable in the data.}
-#'     \item{geo_ids}{A character vector giving the subset of values of `vars$geo_id` in the data to be used in estimation.
-#'        Defaults to the values of `vars$geo_id` in the data.}
-#'     \item{min_surveys}{A positive integer giving the minimum surveys in which an item must appear to be used in estimation.}
-#'     \item{min_periods}{A positive integer giving the minimum periods in which an item must appear to be used in esimation.}
-#'   }
-#' @param params Named `list` of modeling choices.
-#'   \describe{
-#'     \item{separate_periods}{Logical for whether estimates should be pooled over time. No pooling if `TRUE`.}
-#'     \item{constant_item}{Logical for whether item parameters should be constant over time.}
-#'     \item{delta_tbar_prior_mean}{Prior mean of $\\bar{\\delta_t}$.}
-#'     \item{delta_tbar_prior_sd}{Prior standard deviation of $\\bar{\\delta_t}$.}
-#'     \item{innov_sd_delta_scale}{Prior scale of innovation parameter for standard deviation of $\\bar{\\delta_t}$.}
-#'     \item{innov_sd_theta_scale}{Prior scale of innovation for standard deviation of group ability parameter $\\bar{\\theta_t}$.}
-#'   }
-#' @return \code{list} List formatted for `dgirt`.
-#' @export
-
 # data(state_opinion)
 # data = list(level1 = state_opinion)
 # vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
@@ -54,19 +7,18 @@
 #             survey_id = "source",
 #             survey_weight = "weight")
 # filters = list(periods = c(2006:2010))
-
-data(state_opinion)
-data = list(level1 = state_opinion,level2 = dplyr::mutate(state_opinion, education = sample(1:2, nrow(state_opinion), replace = TRUE)) %>% dplyr::distinct(state, year))
-vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
-            groups = c("race"),
-            time_id = "year",
-            geo_id = "state",
-            survey_id = "source",
-            survey_weight = "weight",
-            level2_modifiers = "education",
-            level2_period1_modifiers = "education")
-filters = list(periods = c(2006:2010))
-
+#
+# data(state_opinion)
+# data = list(level1 = state_opinion,level2 = dplyr::mutate(state_opinion, education = sample(1:2, nrow(state_opinion), replace = TRUE)) %>% dplyr::distinct(state, year))
+# vars = list(items = grep("^Q_", colnames(state_opinion), value = TRUE),
+#             groups = c("race"),
+#             time_id = "year",
+#             geo_id = "state",
+#             survey_id = "source",
+#             survey_weight = "weight",
+#             level2_modifiers = "education",
+#             level2_period1_modifiers = "education")
+# filters = list(periods = c(2006:2010))
 wrangle <- function(data = list(level1,
                                 level2 = NULL,
                                 targets = NULL),
@@ -97,15 +49,9 @@ wrangle <- function(data = list(level1,
 
 wrangle_to_shape <- function() {
   arg <- handle_arguments()
-
   item <- Item$new()
-  item$modifier <- Modifier$new()
-  item$filters <- Filter$new()
-  item$targets <- Target$new()
-  item$control <- Control$new()
 
   item$tbl <- arg$level1
-  # item$tbl <- data.frame(a = 1)
 
   item$items <- new("ItemVar", arg$items)
   item$geo <- new("ItemVar", arg$geo_id)
@@ -113,13 +59,12 @@ wrangle_to_shape <- function() {
   item$survey <- new("ItemVar", arg$survey_id)
   item$targets$weight <- new("ItemVar", arg$survey_weight)
 
-  if (length(arg$level2) > 0) {
-    item$modifier$tbl <- arg$level2
-    item$modifier$modifiers <- new("ItemVar", arg$level2_modifiers)
-    item$modifier$t1_modifiers <- new("ItemVar", arg$level2_period1_modifiers)
-    item$modifier$time <- new("ItemVar", item$time)
-    item$modifier$geo <- new("ItemVar", item$geo)
-  }
+  if (length(arg$level2) > 0) { item$modifier$tbl <- arg$level2
+  item$modifier$modifiers <- new("ItemVar", arg$level2_modifiers)
+  item$modifier$t1_modifiers <- new("ItemVar", arg$level2_period1_modifiers)
+  item$modifier$time <- new("ItemVar",
+                                                                                                       item$time)
+  item$modifier$geo <- new("ItemVar", item$geo) }
 
   item$filters$time <- set_use_t(item, arg)
   item$filters$geo <- update_use_geo(item)

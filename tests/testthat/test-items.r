@@ -1,7 +1,7 @@
 context("items selector")
 
 expect_silent({
-  res = items(state_opinion, ids(state, year, "source"), items = starts_with("Q_"), controls(groups = 'race'))
+  res = items(state_opinion, ids(state, "year", "source"), items = starts_with("Q_"), controls(groups = 'race'))
 })
 
 expect_is(res$tbl, "data.frame")
@@ -22,12 +22,12 @@ item_vars = c("Q_cces2006_minimumwage", "Q_cces2006_gaymarriageamendment", "Q_cc
 expect_true(identical(as.character(res$items), item_vars))
 
 expect_silent({
-  res = items(state_opinion, ids(state, year, "source"), items = starts_with("Q_"),
+  res = items(state_opinion, ids(state, "year", "source"), items = starts_with("Q_"),
     hierarchical = hierarchical(state_opinion, pid3), controls(groups = 'race'))
 })
 
 expect_silent({
-  res = items(state_opinion, ids(state, year, "source"), items = starts_with("Q_"),
+  res = items(state_opinion, ids(state, "year", "source"), items = starts_with("Q_"),
     hierarchical = hierarchical(state_opinion, pid3), item_filter = item_filter(t = 2002:2008),
     controls(groups = 'race'))
 })

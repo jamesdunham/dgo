@@ -1,13 +1,12 @@
 context("ids selector")
 
-expect_silent(ids(state, year, survey))
-expect_silent(ids("state", year, survey))
+expect_silent(ids(state, "year", survey))
+expect_silent(ids("state", "year", survey))
 
-expect_silent(ids(state, year, survey))
+expect_silent(ids(state, "year", survey))
 expect_silent(ids("state", "year", "survey"))
-expect_silent(ids("state", year, "survey"))
 
-res = ids(state, year, survey)
+res = ids(state, "year", survey)
 expect_is(res, "list")
 expect_is(res$geo, "ItemVar")
 expect_is(res$time, "ItemVar")

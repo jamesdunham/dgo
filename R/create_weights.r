@@ -40,8 +40,6 @@ weight <- function(item) {
     dplyr::group_by_(.dots = item$time) %>%
     dplyr::mutate_(preweight = ~preweight / mean(preweight, na.rm = TRUE)) %>%
     dplyr::ungroup()
-
-  item
 }
 
 create_formulas <- function(strata) {

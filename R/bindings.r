@@ -52,8 +52,8 @@ bind_Q <- function() {
 }
 
 bind_G <- function() {
-  factor_levels <- sapply(self$tbl[, c(self$geo, self$groups)], nlevels)
-  Reduce(`*`, factor_levels)
+  group_levels <- sapply(self$tbl[, c(self$geo, self$groups), with = FALSE], function(x) length(unique(x)))
+  Reduce(`*`, group_levels)
 }
 
 bind_N = function() {
