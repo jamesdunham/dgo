@@ -78,3 +78,49 @@ name_pars <- function(dgirt_output, dgirt_input) {
 
   dgirt_extract
 }
+
+name_output_dims <- function(stan_output, vars) {
+  indexed_t = intersect(c("delta_gamma", "delta_tbar", "sd_total", "nu_geo", "sd_theta_bar",
+    "theta_l2", "var_theta_bar_l2", "xi"), names(stan_output))
+  stan_output[indexed_t] = lapply(stan_output[indexed_t], attach_t,
+    vars$use_t, vars$time_id)
+
+  if (length(stan_output$gamma) > 0) {
+    stan_output$gamma$t <- rep(vars$use_t, length(vars$hier_names))
+    stan_output$gamma$p <- rep(vars$hier_names, each = length(vars$use_t))
+  }
+
+  if (length(stan_output$kappa) > 0) {
+    stan_output$kappa$q <- vars$gt_items
+  }
+
+  if (length(stan_output$sd_item) > 0) {
+    stan_output$sd_item$q <- vars$gt_items
+  }
+
+  if (length(stan_output$theta_bar) > 0) {
+  stan_output$theta_bar <- stan_output$theta_bar %>%
+    name_group_means(vars)
+  }
+  return(stan_output)
+}
+
+name_group_means <- function(thetas, vars) {
+  assertthat::assert_that(assertthat::not_empty(thetas))
+  assertthat::assert_that(assertthat::not_empty(vars))
+  assertthat::assert_that(assertthat::not_empty(vars$covariate_groups))
+  assertthat::assert_that(assertthat::not_empty(vars$use_t))
+  thetas[[vars$time_id]] <- rep(as.numeric(vars$use_t), nrow(vars$covariate_groups))
+  thetas <- thetas %>%
+    dplyr::bind_cols(vars$covariate_groups[rep(seq_len(nrow(vars$covariate_groups)),
+      each = length(vars$use_t)), ])
+  thetas <- thetas %>% dplyr::mutate_each_("as.factor", vars = c(vars$groups, vars$geo_id))
+  return(thetas)
+}
+
+attach_t = function(element, use_t, time_id) {
+  assertthat::assert_that(identical(nrow(element), length(use_t)))
+  dplyr::mutate_(element, .dots = setNames(list(~use_t), time_id))
+}
+
+

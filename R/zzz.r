@@ -10,6 +10,7 @@ setClass("Control",
                       innov_sd_delta_scale = "numeric",
                       innov_sd_theta_scale = "numeric",
                       item_names = "character",
+                      aggregate_item_names = "character",
                       min_survey_filter = "numeric",
                       min_t_filter = "numeric",
                       modifier_names = "character",
@@ -72,6 +73,7 @@ setClass("dgirtIn",
                       ZZ_prior = "ANY",
                       MMM = "ANY",
                       G = "ANY",
+                      D = "integer",
                       Q = "ANY",
                       T = "ANY",
                       N = "ANY",
@@ -82,6 +84,10 @@ setClass("dgirtIn",
                       WT = "ANY",
                       l2_only = "ANY",
                       Gl2 = "ANY",
+                      control = "Control",
+                      item_data = "data.frame",
+                      modifier_data = "data.frame",
+                      aggregate_data = "data.frame",
                       group_counts = "ANY",
                       group_grid = "data.frame",
                       group_grid_t = "data.frame",
@@ -108,3 +114,14 @@ setValidity("dgirtIn",
               else
                 TRUE
             })
+
+# h/t http://stackoverflow.com/questions/30386009/how-to-extend-as-list-in-a-canonical-way-to-s4-objects
+as.list.dgirtIn <- function(dgirt_in) { 
+  res <- Map(function(x) {
+        if (x == "item") as.list(slot(dgirt_in, x)) else slot(dgirt_in, x)
+  }, slotNames("dgirtIn"))
+  model_objects <- c("NNl2", "SSl2", "XX", "ZZ", "ZZ_prior", "MMM", "G", "Q", "T", "N", "P", "S", "H", "D", "Hprior",
+                     "WT", "l2_only", "Gl2", "separate_t", "constant_item", "delta_tbar_prior_mean",
+                     "delta_tbar_prior_sd", "innov_sd_theta_scale", "innov_sd_delta_scale", "n_vec", "s_vec")
+  res[names(res) %chin% model_objects]
+}

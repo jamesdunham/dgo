@@ -17,35 +17,30 @@ weight <- function(item_data, target_data, control) {
 
   check_levels(item_data, target_data, weight_vars)
 
-  item_data <- item_data %>%
-    dplyr::mutate_(stratum = ~interaction(.[, weight_vars], drop = TRUE))
-  target_data <- target_data %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate_(stratum = ~interaction(.[, weight_vars], drop = TRUE))
+  item_data[, stratum := interaction(item_data[, weight_vars, with = FALSE], drop = TRUE)]
+  target_data[, stratum := interaction(target_data[, weight_vars, with = FALSE], drop = TRUE)]
 
   # We'll create a design object from the target data.frame; this is a
   # data.frame with attributes that indicate the survey design
   target_design <- survey::svydesign(ids = ~1, data = target_data,
     weights = formula(paste0("~", control@prop_name)))
 
-  rake_weight <- function(item_data, formula.list, target_design) {
+  rake_weight <- function(item_data, formulas, target_design) {
     ds <- survey::svydesign(ids = ~1, data = item_data,
-      weights = formula(paste0("~", control@weight_name)))
-    # NB this weight variable here is the individual weight
-    pop.list <- lapply(formula.list, survey::svytable, design = target_design)
-    rk <- rake_partial(design = ds, sample.margins = formula.list,
-      population.margins = pop.list)
+                            weights = formula(paste0("~", control@weight_name)))
+    # NB this weight variable is the individual weight
+    pop_list <- lapply(formulas, survey::svytable, design = target_design)
+    rk <- rake_partial(design = ds, sample.margins = formulas,
+                       population.margins = pop_list)
     wts <- 1 / rk$prob
     return(wts)
   }
 
-  item_data$preweight <- rake_weight(item_data, formula.list = weight_formulas,
-    target_design = target_design)
+  item_data[, preweight := rake_weight(item_data, formulas = weight_formulas,
+    target_design = target_design)]
 
-  item_data <- item_data %>%
-    dplyr::group_by_(.dots = control@time_name) %>%
-    dplyr::mutate_(preweight = ~preweight / mean(preweight, na.rm = TRUE)) %>%
-    dplyr::ungroup()
+  item_data[, preweight_new := preweight / mean(preweight, na.rm = TRUE),
+            by = eval(control@time_name)]
 
   message()
   message("Reweighted item data using target data.")

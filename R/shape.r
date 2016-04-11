@@ -1,5 +1,6 @@
-#' Shape item response data for modeling with dgirt
+#' Shape data for a DGIRT model
 #' @export
+# devtools::load_all()
 # data(state_opinion)
 # load('../../testdgirt/data/state_chars.rda')
 # data(state_demographics)
@@ -28,21 +29,26 @@
 #              weight_name = "weight")
 # modifier_data <- state_chars
 # target_data <- state_targets
-# target_data$race <- as.character(factor(target_data$race,
-#   labels = c("white", "black", "other")))
-# dgirt_in <- shape(state_opinion,
+# target_data$race <- as.character(factor(target_data$race, labels = c("white", "black", "other")))
+# # FIXME: rewrite weight for DT
+# item_data <- state_opinion
+# aggregate_data <- readRDS('../aggregate_data.Rds')
+# control@aggregate_item_names <- unique(aggregate_data$item)
+#
+# shaped_data <- shape(state_opinion,
 #                   control,
 #                   modifier_data = modifier_data,
 #                   target_data = target_data)
-#
-# item_data <- state_opinion
-# control = new("Control", substitute(control_list))
-# modifier_data = state_chars
+
+# dgirt(shaped_data, iter = 10)
+# FIXME: best practice is to use a single initialize call ...
+# so switch to RC?
 
 shape <- function(item_data,
                   ...,
                   modifier_data = NULL,
-                  target_data = NULL) {
+                  target_data = NULL,
+                  aggregate_data = NULL) {
 
   control <- new("Control", ...)
   stan_data <- new("dgirtIn",
@@ -55,21 +61,25 @@ shape <- function(item_data,
 
   check_targets(target_data, control)
   check_modifiers(modifier_data, control) 
+  # TODO: check_aggregates(aggregate_data, control)
   check_item(item_data, control)
 
   item_data <- restrict_items(item_data, control)
+  # FIXME: control shouldn't be modified anywhere
+  control@item_names <- intersect(control@item_names, names(item_data))
   modifier_data <- restrict_modifier(item_data, modifier_data, control)
-
-  stan_data@T <- length(control@time_filter)
-  stan_data@Q <- length(control@item_names)
-  stan_data@G <- set_G(item_data, control)
+  aggregate_data <- restrict_aggregates(aggregate_data, control)
 
   weight(item_data, target_data, control)
-  dichotomize(item_data, control)
+  stan_data@vars$gt_items <- discretize(item_data, control)
 
-  stan_data@group_grid <- make_group_grid(item_data, control)
+  stan_data@group_grid <- make_group_grid(item_data, aggregate_data, control)
   stan_data@group_grid_t <- make_group_grid_t(stan_data@group_grid, control)
-  stan_data@group_counts <- make_group_counts(item_data, control)
+  stan_data@group_counts <- make_group_counts(item_data,
+                                              aggregate_data,
+                                              stan_data,
+                                              control)
+
   stan_data@n_vec <- setNames(stan_data@group_counts$n_grp, stan_data@group_counts$name)
   stan_data@s_vec <- setNames(stan_data@group_counts$s_grp, stan_data@group_counts$name)
 
@@ -77,33 +87,34 @@ shape <- function(item_data,
                                       stan_data@group_grid,
                                       control)
 
-  # TODO: rname G_hier
+  stan_data@G <- nrow(stan_data@group_grid_t)
+  # TODO: rename as G_hier
   stan_data@Gl2 <- ifelse(!length(modifier_data),
                           nlevels(gl(1L, stan_data@G)),
                           max(unlist(length(control@modifier_names)), 1L))
+  stan_data@T <- length(control@time_filter)
+  stan_data@Q <- length(c(intersect(control@item_names, names(item_data)),
+                          intersect(control@aggregate_item_names, unique(aggregate_data$item))))
 
   stan_data@WT <- array(1, dim = c(stan_data@T, stan_data@Gl2, stan_data@G))
 
-  # FIXME: update to reference from grep for gt_
-  stan_data@l2_only <- make_dummy_l2_only(item_data, control)
-
-  # FIXME: update to reference from grep for gt_
-  stan_data@NNl2 <- make_dummy_l2_counts(item_data, stan_data, control)
+  stan_data@l2_only <- matrix(0L, nrow = length(control@time_filter), ncol = stan_data@Q)
+  stan_data@NNl2 <- array(0L, dim = c(stan_data@T, stan_data@Q, stan_data@Gl2))
   stan_data@SSl2 <- stan_data@NNl2
 
   stan_data@XX <- make_design_matrix(item_data, stan_data, control)
   stan_data@ZZ <- shape_hierarchical_data(item_data, modifier_data, stan_data, control)
   stan_data@ZZ_prior <- stan_data@ZZ
 
-  D = ifelse(control@constant_item, 1L, stan_data@T)
+  stan_data@D <- ifelse(control@constant_item, 1L, stan_data@T)
   stan_data@N <- nrow(stan_data@group_counts)
   stan_data@P <- ncol(stan_data@ZZ)
   stan_data@S <- dim(stan_data@ZZ)[[2]]
   stan_data@H <- dim(stan_data@ZZ)[[3]]
   stan_data@Hprior <- stan_data@H 
 
+  stan_data@control <- control
   stan_data@vars = list(items = control@item_names,
-                        gt_items = grep("_gt\\d+$", colnames(item_data), value = TRUE),
                         groups = control@group_names,
                         time_id = control@time_name,
                         use_t = control@time_filter,
@@ -117,10 +128,12 @@ shape <- function(item_data,
   stan_data
 }
 
-dichotomize <- function(item_data, control) {
+discretize <- function(item_data, control) {
   gt_table <- create_gt_variables(item_data, control)
+  # NOTE: update item_data *by reference* to include gt_table
   item_data[, names(gt_table) := gt_table]
-  invisible(item_data)
+  # return the names in gt_table to safely reference its columns later without regex matching
+  names(gt_table)
 }
 
 check <- function(stan_data) {
@@ -189,12 +202,15 @@ concat_varinfo = function(widths, values, pad_side) {
     }, widths, values, pad_side)
 }
 
-make_group_grid <- function(item_data, control) {
+make_group_grid <- function(item_data, aggregate_data, control) {
   group_grid <- expand.grid(c(
     setNames(list(control@time_filter), control@time_name),
-    lapply(item_data[, c(control@geo_name, control@group_names), with = FALSE], function(x) sort(unique(x)))),
+    lapply(rbind(item_data[, c(control@geo_name, control@group_names), with = FALSE],
+                 aggregate_data[, c(control@group_names, control@geo_name), with = FALSE]),
+           function(x) sort(unique(x)))),
     stringsAsFactors = FALSE)
   setDT(group_grid, key = c(control@time_name, control@group_names, control@geo_name))
+  invisible(group_grid)
 }
 
 make_group_grid_t <- function(group_grid, control) {
@@ -206,6 +222,17 @@ make_group_grid_t <- function(group_grid, control) {
 
 restrict_items <- function(item_data, control) {
   item_data <- setDT(item_data)
+  extra_colnames <- setdiff(names(item_data),
+                            c(control@item_names,
+                              control@strata_names,
+                              control@survey_name,
+                              control@geo_name,
+                              control@time_name,
+                              control@group_names,
+                              control@weight_name))
+  if (length(extra_colnames)) {
+    item_data[, c(extra_colnames) := NULL, with = FALSE]
+  }
   coerce_factors(item_data, c(control@group_names, control@geo_name, control@survey_name))
   rename_numerics(item_data, control)
   initial_dim <- dim(item_data)
@@ -214,25 +241,22 @@ restrict_items <- function(item_data, control) {
   while (!identical(initial_dim, final_dim)) {
     message("Applying restrictions, pass ", iter, "...")
     if (identical(iter, 1L)) item_data <- drop_rows_missing_covariates(item_data, control)
-    stopifnot(!any(is.na(item_data$race)))
     initial_dim <- dim(item_data)
     keep_t(item_data, control)
+    keep_geo(item_data, control)
     drop_responseless_items(item_data, control)
-    control@item_names <- intersect(control@item_names, names(item_data))
     drop_items_rare_in_time(item_data, control)
-    control@item_names <- intersect(control@item_names, names(item_data))
     drop_items_rare_in_polls(item_data, control)
-    control@item_names <- intersect(control@item_names, names(item_data))
     final_dim <- dim(item_data)
     iter <- iter + 1L
     if (identical(initial_dim, final_dim)) {
       message("\tNo changes")
     } else {
-      message("\tRemaining: ", format(nrow(item_data), big.mark = ","), " rows, ", length(control@item_names), " items")
+      # FIXME: 
+      message("\tRemaining: ", format(nrow(item_data), big.mark = ","), " rows, ",
+              length(intersect(control@item_names, names(item_data))), " items")
     }
   }
-  # FIXME: side-effect hack
-  control <<- control
   setkeyv(item_data, c(control@geo_name, control@time_name))
   invisible(item_data)
 }
@@ -257,6 +281,23 @@ restrict_modifier <- function(item_data, modifier_data, control) {
     message("Restricted modifier data to time and geo observed in item data.")
   }
   invisible(modifier_data)
+}
+
+restrict_aggregates <- function(aggregate_data, control) {
+  if (length(aggregate_data)) {
+    setDT(aggregate_data)
+    aggregate_data <- subset(aggregate_data,
+                             aggregate_data[[control@geo_name]] %chin% control@geo_filter & 
+                             aggregate_data[[control@time_name]] %in% control@time_filter)
+    # subset to observed; FIXME: assumes n_grp variable name
+    aggregate_data <- aggregate_data[n_grp > 0]
+    extra_colnames <- setdiff(names(aggregate_data),
+                              c(control@geo_name, control@time_name, control@group_names, "item", "s_grp", "n_grp"))
+    if (length(extra_colnames)) {
+      aggregate_data[, c(extra_colnames) := NULL, with = FALSE]
+    }
+    aggregate_data
+  }
 }
 
 coerce_factors <- function(tbl, vars) {
@@ -304,8 +345,15 @@ keep_t <- function(item_data, control) {
   invisible(item_data)
 }
 
+keep_geo <- function(item_data, control) {
+  data.table::setDT(item_data)
+  item_data <- item_data[get(control@geo_name) %chin% control@geo_filter]
+  invisible(item_data)
+}
+
 drop_responseless_items <- function(item_data, control) {
-  response_counts <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) == 0), .SDcols = control@item_names]
+  item_names <- intersect(control@item_names, names(item_data))
+  response_counts <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) == 0), .SDcols = item_names]
   responseless_items <- melt.data.table(response_counts, id.vars = NULL, measure.vars = names(response_counts))[(value)]
   responseless_items <- as.character(responseless_items[, variable])
   if (length(responseless_items) > 0) {
@@ -321,8 +369,9 @@ drop_responseless_items <- function(item_data, control) {
 }
 
 drop_items_rare_in_time <- function(item_data, control) {
+  item_names <- intersect(control@item_names, names(item_data))
   setkeyv(item_data, item_data[, control@time_name])
-  response_t <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) > 0), .SDcols = control@item_names, by = eval(item_data[, control@time_name])]
+  response_t <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) > 0), .SDcols = item_names, by = eval(item_data[, control@time_name])]
   response_t <- melt.data.table(response_t, id.vars = control@time_name)[(value)]
   response_t <- response_t[, N := .N, by = variable]
   response_t <- response_t[N < control@min_t_filter]
@@ -340,9 +389,10 @@ drop_items_rare_in_time <- function(item_data, control) {
 }
 
 drop_items_rare_in_polls <- function(item_data, control) {
+  item_names <- intersect(control@item_names, names(item_data))
   #TODO: dedupe; cf. drop_items_rare_in_time
   setkeyv(item_data, item_data[, control@survey_name])
-  item_survey <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) > 0), .SDcols = control@item_names, by = eval(item_data[, control@survey_name])]
+  item_survey <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) > 0), .SDcols = item_names, by = eval(item_data[, control@survey_name])]
   item_survey <- melt.data.table(item_survey, id.vars = control@survey_name)[(value)]
   item_survey <- item_survey[, N := .N, by = variable]
   item_survey <- item_survey[N < control@min_survey_filter]
@@ -359,8 +409,9 @@ drop_items_rare_in_polls <- function(item_data, control) {
   invisible(item_data)
 }
 
-make_group_counts <- function(item_data, control) {
-  item_data[, ("n_responses") := list(rowSums(!is.na(get_gt(item_data))))]
+make_group_counts <- function(item_data, aggregate_data, stan_data, control) {
+  # item_data[, ("n_responses") := list(rowSums(!is.na(item_data[, stan_data@vars$gt_items, with = FALSE])))]
+  item_data[, ("n_responses") := list(rowSums(!is.na(.SD))), .SDcols = stan_data@vars$gt_items]
   item_data[, ("def") := lapply(.SD, calc_design_effects), .SDcols = control@weight_name, with = FALSE,
            by = c(control@geo_name, control@group_names, control@time_name)]
   item_n_vars <- paste0(control@item_names, "_n_grp")
@@ -390,10 +441,20 @@ make_group_counts <- function(item_data, control) {
   # group trial and success counts cannot include NAs
   group_counts <- group_counts[n_grp != 0 & !is.na(n_grp)]
   group_counts[is.na(s_grp), s_grp := 0]
+
+  # include aggregates, if any
+  if (length(aggregate_data)) {
+    message("Added ", length(control@aggregate_item_names), " items from aggregate data.")
+    group_counts <- rbind(group_counts, aggregate_data)
+  }
+  group_counts
 }
 
 get_missing_groups <- function(group_counts, group_grid, control) {
-  all_group_counts <- merge(group_counts, group_grid, all = TRUE)
+  # group_counts <- stan_data@group_counts
+  # group_grid <- stan_data@group_grid
+  all_group_counts <- merge(group_counts, group_grid, all = TRUE,
+                            by = c(control@group_names, control@geo_name, control@time_name))
   all_group_counts[, ("is_missing") := is.na(n_grp) + 0L]
   all_group_counts[is.na(n_grp), c("n_grp", "s_grp") := 1L]
   all_group_counts[, (control@geo_name) := paste0("x_", .SD[[control@geo_name]]), .SDcols = c(control@geo_name)]
@@ -475,21 +536,6 @@ make_design_matrix <- function(item_data, stan_data, control) {
     stop("design matrix values should be in (0, 1); found ", paste(sort(invalid_values), collapse = ", "))
   }
   design_matrix
-}
-
-make_dummy_l2_only <- function(item_data, control) {
-  gt_names <- grep("_gt\\d+$", colnames(item_data), value = TRUE)
-  matrix(0L,
-    nrow = length(control@time_filter),
-    ncol = length(gt_names),
-    dimnames = list(control@time_filter, gt_names))
-}
-
-make_dummy_l2_counts <- function(item_data, stan_data, control) {
-  array(0L, dim = c(stan_data@T, stan_data@Q, stan_data@Gl2),
-        dimnames = list(control@time_filter,
-                        grep("_gt", colnames(item_data), fixed = TRUE, value = TRUE),
-                        control@modifier_names))
 }
 
 get_gt <- function(item_data) {
