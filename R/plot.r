@@ -1,3 +1,5 @@
+# TODO: update doc
+# TODO: take another look at ggplot2 dependency
 #' Plot group means
 #'
 #' @param theta_bars Result of either `dgirt` if `method = "optimize"` or `extract_dgirt` if `method = "rstan"` (the default).
@@ -7,14 +9,14 @@
 #' @import ggplot2
 #' @export
 plot_means <- function(theta_bars, time_id, facet_var, jitter = FALSE) {
-  assertthat::assert_that(is.data.frame(theta_bars))
+  stopifnot(is.data.frame(theta_bars))
   assertthat::assert_that(assertthat::is.string(time_id))
   assertthat::assert_that(assertthat::is.string(facet_var))
   assertthat::assert_that(assertthat::has_name(theta_bars, time_id))
   assertthat::assert_that(assertthat::has_name(theta_bars, facet_var))
   assertthat::assert_that(assertthat::has_name(theta_bars, "value"))
-  assertthat::assert_that(is.numeric(theta_bars[[time_id]]))
-  assertthat::assert_that(is.numeric(theta_bars[["value"]]))
+  stopifnot(is.numeric(theta_bars[[time_id]]))
+  stopifnot(is.numeric(theta_bars[["value"]]))
   p <- ggplot2::ggplot(theta_bars, ggplot2::aes_string(x = time_id, y = "value")) +
     ggplot2::geom_smooth(se = FALSE) +
     ggplot2::facet_wrap(facet_var) +

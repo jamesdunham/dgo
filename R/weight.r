@@ -10,7 +10,7 @@ weight <- function(item_data, target_data, control) {
     return(NULL)
   }
 
-  target_data <- setDT(target_data)
+  target_data <- setDT(copy(target_data))
 
   weight_formulas <- create_formulas(control@strata_names)
   weight_vars <- get_weight_vars(control@strata_names)

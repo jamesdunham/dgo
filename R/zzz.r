@@ -1,5 +1,12 @@
 `:=` <- data.table::`:=`
 
+model_objects = c("NNl2", "SSl2", "XX", "ZZ", "ZZ_prior", "MMM", "G", "Q", "T", "N", "P", "S", "H", "D", "Hprior",
+  "WT", "l2_only", "G_hier", "separate_t", "constant_item", "delta_tbar_prior_mean",
+  "delta_tbar_prior_sd", "innov_sd_theta_scale", "innov_sd_delta_scale", "n_vec", "s_vec")
+
+shape_objects = c("group_grid", "group_grid_t", "group_counts", "item_data", "target_data", "aggregate_data",
+  "modifier_data", "control", "vars")
+
 setClass("Control",
          slots = list(constant_item = "logical",
                       delta_tbar_prior_mean = "numeric",
@@ -62,66 +69,119 @@ setValidity("Control",
                 TRUE
             })
 
+# TODO: add to doc
+# # where ... can be: 
+# time_filter
+# geo_filter
+#
+# min_survey_filter
+# min_t_filter
+# survey_name
+#
+# constant_item
+# delta_tbar_prior_mean
+# delta_tbar_prior_sd
+# innov_sd_delta_scale
+# innov_sd_theta_scale
+# separate_t
+#
+# modifier_names
+# t1_modifier_names
+#
+# target_group_names
+# target_proportion_name
+# strata_names
 
-# TODO: create classes for each input object with individual validation, and then use dgirtInput validation for
-# validiation across objects
-setClass("dgirtIn",
-         slots = list(NNl2 = "ANY",
-                      SSl2 = "ANY",
-                      XX = "ANY",
-                      ZZ = "ANY",
-                      ZZ_prior = "ANY",
-                      MMM = "ANY",
-                      G = "ANY",
-                      D = "integer",
-                      Q = "ANY",
-                      T = "ANY",
-                      N = "ANY",
-                      P = "ANY",
-                      S = "ANY",
-                      H = "ANY",
-                      Hprior = "ANY",
-                      WT = "ANY",
-                      l2_only = "ANY",
-                      Gl2 = "ANY",
-                      control = "Control",
-                      item_data = "data.frame",
-                      modifier_data = "data.frame",
-                      aggregate_data = "data.frame",
-                      group_counts = "ANY",
-                      group_grid = "data.frame",
-                      group_grid_t = "data.frame",
-                      separate_t = "logical",
-                      constant_item = "logical",
-                      delta_tbar_prior_mean = "numeric",
-                      delta_tbar_prior_sd = "numeric",
-                      innov_sd_theta_scale = "numeric",
-                      innov_sd_delta_scale = "numeric",
-                      n_vec = "numeric",
-                      s_vec = "numeric",
-                      vars = "list"),
-         prototype = prototype(separate_t = FALSE,
-                               constant_item = TRUE,
-                               delta_tbar_prior_mean = 0.5,
-                               delta_tbar_prior_sd = 0.5,
-                               innov_sd_theta_scale = 2.5,
-                               innov_sd_delta_scale = 2.5))
+# # Setup for new Control object
+# control <- new("Control", 
+#              constant_item = TRUE,
+#              delta_tbar_prior_mean = 2.5,
+#              delta_tbar_prior_sd = 0.5,
+#              geo_filter = as.character(sort(unique(state_opinion$state))),
+#              geo_name = "state",
+#              group_names = "race",
+#              innov_sd_delta_scale = 2.5,
+#              innov_sd_theta_scale = 2.5,
+#              item_names = "Q_cces2006_minimumwage",
+#              min_survey_filter = 1L,
+#              min_t_filter = 1L,
+#              modifier_names = "income_percapita",
+#              target_proportion_name = "proportion",
+#              separate_t = TRUE,
+#              strata_names = "race",
+#              survey_name = "source",
+#              t1_modifier_names = "income_percapita",
+#              target_group_names = "race",
+#              time_filter = 2006:2014,
+#              time_name = "year",
+#              weight_name = "weight")
 
-setValidity("dgirtIn",
-            function(object) {
-              if (FALSE)
-                "stop message"
-              else
-                TRUE
-            })
-
-# h/t http://stackoverflow.com/questions/30386009/how-to-extend-as-list-in-a-canonical-way-to-s4-objects
-as.list.dgirtIn <- function(dgirt_in) { 
-  res <- Map(function(x) {
-        if (x == "item") as.list(slot(dgirt_in, x)) else slot(dgirt_in, x)
-  }, slotNames("dgirtIn"))
-  model_objects <- c("NNl2", "SSl2", "XX", "ZZ", "ZZ_prior", "MMM", "G", "Q", "T", "N", "P", "S", "H", "D", "Hprior",
-                     "WT", "l2_only", "Gl2", "separate_t", "constant_item", "delta_tbar_prior_mean",
-                     "delta_tbar_prior_sd", "innov_sd_theta_scale", "innov_sd_delta_scale", "n_vec", "s_vec")
-  res[names(res) %chin% model_objects]
+# Constructor for Control
+control <- function(group_names,
+                    item_names,
+                    geo_name,
+                    time_name,
+                    weight_name,
+                    ...) {
+  new("Control", group_names = group_names, item_names = item_names,
+      geo_name = geo_name, time_name = time_name, weight_name = weight_name,
+      ...)
 }
+
+dgirtIn <- R6::R6Class("dgirtIn",
+  public = c(
+    setNames(lapply(c(model_objects, shape_objects), function(x) NULL),
+             c(model_objects, shape_objects)),
+    initialize = function(control) {
+      self$constant_item <- control@constant_item
+      self$delta_tbar_prior_mean <- control@delta_tbar_prior_mean
+      self$delta_tbar_prior_sd <- control@delta_tbar_prior_sd
+      self$innov_sd_delta_scale <- control@innov_sd_delta_scale
+      self$innov_sd_theta_scale <- control@innov_sd_theta_scale
+      self$separate_t <- control@separate_t
+    },
+    as_list = function() {
+      Map(function(x) self[[x]], private$model_objects)
+    }),
+  private = list(model_objects = model_objects,
+                 shape_objects = shape_objects))
+
+# Extend stanfit-class
+dgirtFit <- setClass("dgirtFit",
+                     contains = "stanfit",
+                     slots = list(dgirt_in = "ANY",
+                                  stan_data = "list",
+                                  dgirt_vars = "list",
+                                  control = "Control"))
+
+setMethod("show", "dgirtFit",
+          function(object = dgirtFit) {
+            object@sim$fnames_oi <- flatnames(object)
+            callNextMethod(object)
+          })
+
+setMethod("summary", "dgirtFit",
+          function(object = dgirtFit, ...) {
+            object@sim$fnames_oi <- flatnames(object)
+            callNextMethod(object, ...)
+          })
+
+setMethod("extract", "dgirtFit",
+          function(object = dgirtFit, ...) {
+            dots <- list(...)
+            extracted <- callNextMethod(object, ...)
+            if (!length(dots$permuted) || dots$permuted)
+              # permuted is TRUE so extract returns a list of arrays
+              extracted <- arraynames(extracted, object)
+            else
+              # permuted = FALSE so extract returns an array with dimensions iterations x chains x parameters
+              dimnames(extracted)[[3]] <- flatnames(object, dimnames(extracted)[[3]])
+            extracted
+          }) 
+
+setMethod("get_posterior_mean", "dgirtFit",
+          function(object = dgirtFit, ...) {
+            posterior_means <- callNextMethod(object, ...)
+            rownames(posterior_means) <- flatnames(object, rownames(posterior_means))
+            posterior_means
+          })

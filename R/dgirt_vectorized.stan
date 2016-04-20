@@ -123,8 +123,10 @@ transformed parameters {
       var_theta_bar_l2[t][n] <- (theta_bar[t] - theta_l2[t, n])' * WTdiag *
       (theta_bar[t] - theta_l2[t, n]);
     }
+    ###################################################
+    vector<lower=0>[Q] sd_t; # length Q
     for (q in 1:Q) { ## loop over questions
-      real sd_tq;
+      # real sd_tq;
       real sd_l2_tq[G_hier];
       sd_tq <- sqrt(var_theta[t] + var_item[q]);
       for (n in 1:G_hier) {
@@ -151,6 +153,7 @@ transformed parameters {
         prob[t, q, g] <- Phi_approx(z[t, q, g]); ## fast normal CDF
       }
     } ## end question loop
+    #####################################################
   } ## end year loop
 }
 model {
