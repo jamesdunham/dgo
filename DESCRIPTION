@@ -1,6 +1,6 @@
 Package: dgirt
 Title: Group-Level Dynamic IRT and Small Area Estimation
-Version: 0.0.10
+Version: 0.1.00
 Description: What the package does (one paragraph).
 Authors@R: c(person("James", "Dunham", email = "jdunham@mit.edu", role = c("aut", "cre")),
   person("Christopher", "Warshaw", email = "cwarshaw@mit.edu", role = c("aut")),
@@ -14,7 +14,6 @@ LazyData: true
 Imports:
     assertthat,
     devtools,
-    dplyr,
     ggplot2,
     lazyeval,
     reshape2,
@@ -22,7 +21,6 @@ Imports:
     R6,
     stringi,
     survey,
-    tidyr
 RoxygenNote: 5.0.1
 Suggests:
     knitr,
