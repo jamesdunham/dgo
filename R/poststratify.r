@@ -1,17 +1,15 @@
-#' Poststratify dgirt group means
+#' Poststratify Estimates. 
 #'
-#' @param group_means The `theta_bar` element of `dgirt` results; a data.frame.
-#' @param targets Table in which rows correspond to the population
-#'        strata defined by the combinations of `strata_names` variables; a data.frame.
-#' @param strata_names Variables in `targets` table that define population strata; a
-#'        character vector.
-#' @param groups Variables in `group_means` table that give `dgirt` covariates;
-#'        a character vector.
-#' @param prop_var Variable in `targets` table that gives the population
-#'        proportion of each stratum; a length-one character vector.
-#' @param summands Optionally, variables within whose combinations the
-#'        population proportions in `targets` should sum to one, otherwise an error
-#'        will appear; a character vector.
+#' 
+#'
+#'
+#'
+#' @param group_means
+#' @param target_data
+#' @param group_names
+#' @param strata_names
+#' @param prop_name
+#' @param check_sums
 #' @return table of poststratified group means
 #' @export
 

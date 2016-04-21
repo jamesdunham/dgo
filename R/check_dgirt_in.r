@@ -4,8 +4,8 @@ check_order <- function(dgirt_in) {
   assertthat::assert_that(identical(rownames(dgirt_in$XX), dimnames(dgirt_in$MMM)[[3]]))
   assertthat::assert_that(identical(dimnames(dgirt_in$ZZ)[[2]], dimnames(dgirt_in$XX)[[2]]))
   assertthat::assert_that(identical(names(dgirt_in$n_vec), dgirt_in$group_counts$name))
-  n_vec_groups <- copy(dgirt_in$group_counts)[, group := do.call(paste, c(.SD, sep = "_")), .SDcols = c(dgirt_in$vars$groups)]
-  n_vec_groups[, group := do.call(paste, c(.SD, sep = "_x_")), .SDcols = c("group", dgirt_in$vars$geo_id)]
+  n_vec_groups <- copy(dgirt_in$group_counts)[, group := do.call(paste, c(.SD, sep = "_")), .SDcols = c(dgirt_in$control@group_names)]
+  n_vec_groups[, group := do.call(paste, c(.SD, sep = "_x_")), .SDcols = c("group", dgirt_in$control@geo_name)]
   assertthat::assert_that(all(n_vec_groups[["group"]] %in% rownames(dgirt_in$XX)))
   nonmissing_xx_rows <- rownames(dgirt_in$XX)[rownames(dgirt_in$XX) %in% n_vec_groups[["group"]]]
 }

@@ -1,4 +1,13 @@
-#' Shape data for a DGIRT model
+#' Shape Model Data.
+#'
+#' `shape` prepares data for modeling with `dgirt`.
+#'
+#' @param item_data A table of individual item responses.
+#' @param ... Further arguments passed to `\link{control}`.
+#' @param modifier_data A table giving characteristics of `item_data` identifiers to be modeled as hierarchical parameters.
+#' @param target_data A table of population proportions.
+#' @param aggregate_data A table of group-level item-response aggregates.
+#' @return An object of the type expected by `\link{dgirt}`.
 #' @export
 shape <- function(item_data,
                   ...,
@@ -7,6 +16,11 @@ shape <- function(item_data,
                   aggregate_data = NULL) {
 
   control <- new("Control", ...)
+  # TODO: clean this up
+  if (!length(control@time_filter))
+    control@time_filter <- sort(unique(item_data[[control@time_name]]))
+  if (!length(control@geo_filter))
+    control@geo_filter <- sort(unique(as.character(item_data[[control@geo_name]])))
   dgirt_in <- dgirtIn$new(control)
 
   check_targets(target_data, control)
@@ -15,20 +29,20 @@ shape <- function(item_data,
   check_item(item_data, control)
 
   item_data <- restrict_items(item_data, control)
-  # FIXME: this is the only place where control is modified; preferable to avoid
+  # FIXME: preferable to avoid modifying control
   control@item_names <- intersect(control@item_names, names(item_data))
   modifier_data <- restrict_modifier(item_data, modifier_data, control)
   aggregate_data <- restrict_aggregates(aggregate_data, control)
 
   weight(item_data, target_data, control)
-  dgirt_in$vars$gt_items <- discretize(item_data, control)
+  dgirt_in$gt_items <- discretize(item_data, control)
 
   dgirt_in$group_grid <- make_group_grid(item_data, aggregate_data, control)
   dgirt_in$group_grid_t <- make_group_grid_t(dgirt_in$group_grid, control)
   dgirt_in$group_counts <- make_group_counts(item_data,
-                                              aggregate_data,
-                                              dgirt_in,
-                                              control)
+                                             aggregate_data,
+                                             dgirt_in,
+                                             control)
 
   dgirt_in$n_vec <- setNames(dgirt_in$group_counts$n_grp, dgirt_in$group_counts$name)
   dgirt_in$s_vec <- setNames(dgirt_in$group_counts$s_grp, dgirt_in$group_counts$name)
@@ -41,6 +55,7 @@ shape <- function(item_data,
   dgirt_in$G_hier <- ifelse(!length(modifier_data),
                           nlevels(gl(1L, dgirt_in$G)),
                           max(unlist(length(control@modifier_names)), 1L))
+  dgirt_in$hier_names <- dimnames(dgirt_in$ZZ)[[2]]
   dgirt_in$T <- length(control@time_filter)
   dgirt_in$Q <- length(c(intersect(control@item_names, names(item_data)),
                           intersect(control@aggregate_item_names, unique(aggregate_data$item))))
@@ -67,17 +82,6 @@ shape <- function(item_data,
   dgirt_in$modifier_data <- modifier_data
   dgirt_in$aggregate_data <- aggregate_data
   dgirt_in$target_data <- target_data
-
-  dgirt_in$vars = c(dgirt_in$vars,
-                     list(items = control@item_names,
-                          groups = control@group_names,
-                          time_id = control@time_name,
-                          use_t = control@time_filter,
-                          geo_id = control@geo_name,
-                          periods = control@time_filter,
-                          survey_id = control@survey_name,
-                          covariate_groups = dgirt_in$group_grid_t,
-                          hier_names = dimnames(dgirt_in$ZZ)[[2]]))
 
   check(dgirt_in)
   dgirt_in
@@ -197,8 +201,8 @@ restrict_items <- function(item_data, control) {
     message("Applying restrictions, pass ", iter, "...")
     if (identical(iter, 1L)) item_data <- drop_rows_missing_covariates(item_data, control)
     initial_dim <- dim(item_data)
-    keep_t(item_data, control)
-    keep_geo(item_data, control)
+    item_data <- keep_t(item_data, control)
+    item_data <- keep_geo(item_data, control)
     drop_responseless_items(item_data, control)
     drop_items_rare_in_time(item_data, control)
     drop_items_rare_in_polls(item_data, control)
@@ -295,13 +299,11 @@ with_contr.treatment <- function(...) {
 }
 
 keep_t <- function(item_data, control) {
-  data.table::setDT(item_data)
   item_data <- item_data[get(control@time_name) %in% control@time_filter]
   invisible(item_data)
 }
 
 keep_geo <- function(item_data, control) {
-  data.table::setDT(item_data)
   item_data <- item_data[get(control@geo_name) %chin% control@geo_filter]
   invisible(item_data)
 }
@@ -366,7 +368,7 @@ drop_items_rare_in_polls <- function(item_data, control) {
 
 make_group_counts <- function(item_data, aggregate_data, dgirt_in, control) {
   # item_data[, ("n_responses") := list(rowSums(!is.na(item_data[, dgirt_in$vars$gt_items, with = FALSE])))]
-  item_data[, ("n_responses") := list(rowSums(!is.na(.SD))), .SDcols = dgirt_in$vars$gt_items]
+  item_data[, ("n_responses") := list(rowSums(!is.na(.SD))), .SDcols = dgirt_in$gt_items]
   item_data[, ("def") := lapply(.SD, calc_design_effects), .SDcols = control@weight_name, with = FALSE,
            by = c(control@geo_name, control@group_names, control@time_name)]
   item_n_vars <- paste0(control@item_names, "_n_grp")
@@ -493,34 +495,7 @@ make_design_matrix <- function(item_data, dgirt_in, control) {
   design_matrix
 }
 
-get_gt <- function(item_data) {
-  copy(item_data)[, grep("_gt\\d+$", names(item_data), value = TRUE), with = FALSE]
-}
-
 calc_design_effects <- function(x) {
   y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
   ifelse(is.na(y), 1, y)
-}
-
-concat_groups <- function(tabular, control, geo_id, name) {
-  has_all_names(tabular, control@group_names)
-  has_all_names(tabular, geo_id)
-  # FIXME: importing tidyr for this alone isn't necessary
-  tabular %>%
-    tidyr::unite_("group_concat", control@group_names, sep = "_") %>%
-    tidyr::unite_(name, c("group_concat", geo_id), sep = "_x_")
-}
-
-split_groups <- function(tabular, control, geo_id, name) {
-  assertthat::assert_that(has_name(tabular, "name"))
-  tabular %>%
-    tidyr::separate_(name, c("group_concat", geo_id), sep = "_x_") %>%
-    tidyr::separate_("group_concat", control@group_names, sep = "_")
-}
-
-set_G <- function(item_data, control) {
-  # TODO: should this be set from e.g. group_grid?
-  group_levels <- sapply(item_data[, c(control@geo_name, control@group_names), with = FALSE],
-                         function(x) length(unique(x)))
-  Reduce(`*`, group_levels)
 }

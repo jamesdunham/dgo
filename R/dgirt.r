@@ -1,13 +1,15 @@
 #' Estimate a DGIRT model
 #'
 #' @param shaped_data Output of `shape()`.
-#' @return The same `stanfit-class` object returned by `rstan::stan()`.
+#' @param ... 
+#' @param extend
+#' @return 
 #' @import rstan
 #' @export
 dgirt <- function(shaped_data, ..., extend = TRUE) {
 
   dots <- list(...,
-               file = system.file("R/dgirt_vectorized.stan", package = "dgirt", mustWork = TRUE),
+               file = system.file("R/dgirt.stan", package = "dgirt", mustWork = TRUE),
                data = shaped_data$as_list())
   if (!length(dots$pars)) {
     dots$pars <- c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
@@ -22,13 +24,7 @@ dgirt <- function(shaped_data, ..., extend = TRUE) {
   stanfit <- do.call(rstan::stan, dots)
 
   if (isTRUE(extend)) {
-    dgirtfit <- tryCatch(new("dgirtFit", stanfit,
-                             # TODO: after including the entire dgirt_in object here, we can rename references to the
-                             # other three slots and then remove them
-                             dgirt_in = shaped_data,
-                             stan_data = shaped_data$as_list(),
-                             dgirt_vars = shaped_data$vars,
-                             control = shaped_data$control),
+    dgirtfit <- tryCatch(new("dgirtFit", stanfit, dgirt_in = shaped_data),
                          error = function(e) {
                            warning("Error constructing dgirtfit; returning stanfit object instead")
                            dgirtfit <- stanfit
