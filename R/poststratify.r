@@ -1,30 +1,31 @@
 #' Poststratify Estimates. 
 #'
-#' @param group_means A table of estimates.
-#' @param target_data
-#' @param group_names
-#' @param strata_names
-#' @param prop_name
-#' @param check_sums
-#' @return table of poststratified group means
+#' TODO: expand
+#'
+#' @param estimates A table giving estimates for groups within strata.
+#' @param estimate_names The columns in `estimates` to poststratify.
+#' @param target_data A table giving the population proportions of groups within strata.
+#' @param group_names The names of the columns in `estimates` and `target_data` that identify groups. 
+#' @param strata_names The names of the columns in `estimates` and `target_data` that identify population strata.
+#' @param prop_name The name of the column in `target_data` that gives population proportions.
+#' @param check_sums Optionally, the names of the columns within whose combinations population proportions should sum to
+#' one, or an error will occur.
+#' @return A table giving poststratified estimates for each stratum.
 #' @export
-
 # TODO: poststratify method for dgirtFit
-# poststratify(group_means, state_targets, "race")
-# FIXME: estimates renamed as V1
-poststratify <- function(group_means,
+poststratify <- function(estimates,
+                         estimate_names,
                          target_data,
                          group_names,
                          strata_names = c('year', 'state'),
                          prop_name = 'proportion',
                          check_sums = NULL) {
 
-  group_means <- setDT(copy(group_means))
+  estimates <- setDT(copy(estimates))
   targets <- setDT(copy(target_data))
 
-  sapply(c(group_names, strata_names), check_levels,
-         group_means = group_means,
-         targets = targets)
+  vapply(c(group_names, strata_names), check_target_levels, FUN.VALUE = logical(1L),
+         estimates, targets)
 
   targets_n <- nrow(unique(targets[, c(strata_names, group_names), with = FALSE]))
   if (nrow(targets) > targets_n) {
@@ -36,59 +37,60 @@ poststratify <- function(group_means,
     targets <- targets[, lapply(.SD, sum), .SDcols = prop_name, by = c(strata_names, group_names)]
   }
 
-  group_means_n <- nrow(group_means)
-  props <- merge(group_means, targets, all = FALSE, by = c(strata_names, group_names))
-  if (!identical(group_means_n, nrow(props))) {
-    warning("Dropped ", group_means_n - nrow(props), " group means not found in targets")
+  estimates_n <- nrow(estimates)
+  props <- merge(estimates, targets, all = FALSE, by = c(strata_names, group_names))
+  if (!identical(estimates_n, nrow(props))) {
+    warning("Dropped ", estimates_n - nrow(props), " group means not found in targets")
   }
 
-  if (length(check_sums)) check_proportions(props, prop_name, summands)
+  if (length(check_sums)) check_proportions(props, prop_name, check_sums)
 
-  props <- scale_props(props, prop_name, strata_names, summands)
-  means <- props[, sum(`mean-chain:1` * scaled_prop), by = strata_names]
+  props <- scale_props(props, prop_name, strata_names, check_sums)
+  means <- props[, lapply(.SD, function(k) sum(k * props$scaled_prop)),
+                 by = strata_names, .SDcols = estimate_names]
   means
 }
 
-scale_props <- function(props, prop_name, strata_names, summands) {
+scale_props <- function(props, prop_name, strata_names, check_sums) {
   strata_sums <- props[, .(strata_sum = sum(proportion)), by = strata_names]
   props <- merge(props, strata_sums, all = FALSE, by = strata_names)
   props[, scaled_prop := proportion / strata_sum]
   props
 }
 
-check_proportions <- function(tabular, prop_name, summands) {
-  prop_sums <- props[, lapply(.SD, sum), .SDcols = prop_name, by = summands]
+check_proportions <- function(tabular, prop_name, check_sums) {
+  prop_sums <- props[, lapply(.SD, sum), .SDcols = prop_name, by = check_sums]
   if (!isTRUE(all.equal(1L, unique(prop_sums[[prop_name]]))))
-    stop("not all proportions sum to 1 within ", paste(summands, collapse = ", "))
+    stop("not all proportions sum to 1 within ", paste(check_sums, collapse = ", "))
   else TRUE
 }
 
-check_levels <- function(variable, group_means, targets) {
-  if (!identical(class(group_means[[variable]]), class(targets[[variable]]))) {
-    stop("'", variable, "' inherits from '", class(group_means[[variable]]),
-      "' in group_means and '", class(targets[[variable]]), "' in targets")
+check_target_levels <- function(variable, estimates, targets) {
+  if (!identical(class(estimates[[variable]]), class(targets[[variable]]))) {
+    stop("'", variable, "' inherits from '", class(estimates[[variable]]),
+      "' in estimates and '", class(targets[[variable]]), "' in targets")
   }
-  else if (!all(unique(group_means[[variable]] %in% targets[[variable]]))) {
-    stop("not all values of '", variable, "' in group_means are values of '", variable, "' in targets: ",
-      paste(sort(setdiff(group_means[[variable]], targets[[variable]])), collapse = ", "))
+  else if (!all(unique(estimates[[variable]] %in% targets[[variable]]))) {
+    stop("not all values of '", variable, "' in estimates are values of '", variable, "' in targets: ",
+      paste(sort(setdiff(estimates[[variable]], targets[[variable]])), collapse = ", "))
   }
   else TRUE
 }
 
-# assertthat::assert_that(assertthat::not_empty(group_means))
+# assertthat::assert_that(assertthat::not_empty(estimates))
 # assertthat::assert_that(assertthat::not_empty(targets))
 # assertthat::assert_that(all_strings(strata_names))
 # assertthat::assert_that(all_strings(group_names))
 # assertthat::assert_that(assertthat::is.string(prop_name))
 
-# assertthat::assert_that(assertthat::has_name(group_means, variable))
+# assertthat::assert_that(assertthat::has_name(estimates, variable))
 # assertthat::assert_that(assertthat::has_name(targets, variable))
 
 # assertthat::assert_that(assertthat::is.string(prop_name))
-# assertthat::assert_that(is.character(summands) && all(nchar(summands) > 0))
+# assertthat::assert_that(is.character(check_sums) && all(nchar(check_sums) > 0))
 
 # setGeneric("poststratify")
-# setMethod("poststratify", method.skeleton("poststratify", c(group_means = "dgirtFit")),
+# setMethod("poststratify", method.skeleton("poststratify", c(estimates = "dgirtFit")),
 #           function(object, ...) {
 #             dots <- list(...)
 #             posterior_means <- setDT(as.data.frame(get_posterior_mean(dgirt_out)), keep.rownames = TRUE)
