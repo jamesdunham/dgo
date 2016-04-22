@@ -126,6 +126,14 @@ in the future.
 }
 }
 \examples{
+# model individual item responses 
 data(state_opinion)
+shaped_responses <- shape(state_opinion,
+                          time_name = "year",
+                          geo_name = "state",
+                          item_names = "Q_cces2006_minimumwage",
+                          group_names = "race",
+                          survey_name = "source",
+                          weight_name = "weight")
 }
 

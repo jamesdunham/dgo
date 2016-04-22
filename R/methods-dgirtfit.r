@@ -1,4 +1,3 @@
-#' `show`: extract samples from fitted DGIRT model
 #' @rdname dgirfit-class
 setMethod("show", "dgirtFit",
           function(object = dgirtFit) {
@@ -6,7 +5,6 @@ setMethod("show", "dgirtFit",
             callNextMethod(object)
           })
 
-#' `show`: extract samples from fitted DGIRT model
 #' @rdname dgirfit-class
 setMethod("summary", "dgirtFit",
           function(object = dgirtFit, ...) {
@@ -14,6 +12,7 @@ setMethod("summary", "dgirtFit",
             callNextMethod(object, ...)
           })
 
+#' `extract`: extract samples from fitted DGIRT model
 #' @rdname dgirfit-class
 setMethod("extract", "dgirtFit",
           function(object = dgirtFit, ...) {

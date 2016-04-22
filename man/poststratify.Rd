@@ -4,16 +4,30 @@
 \alias{poststratify}
 \title{Poststratify Estimates.}
 \usage{
-poststratify(group_means, target_data, group_names, strata_names = c("year",
-  "state"), prop_name = "proportion", check_sums = NULL)
+poststratify(estimates, estimate_names, target_data, group_names,
+  strata_names = c("year", "state"), prop_name = "proportion",
+  check_sums = NULL)
 }
 \arguments{
-\item{group_means}{A table of estimates.}
+\item{estimates}{A table giving estimates for groups within strata.}
+
+\item{estimate_names}{The columns in `estimates` to poststratify.}
+
+\item{target_data}{A table giving the population proportions of groups within strata.}
+
+\item{group_names}{The names of the columns in `estimates` and `target_data` that identify groups.}
+
+\item{strata_names}{The names of the columns in `estimates` and `target_data` that identify population strata.}
+
+\item{prop_name}{The name of the column in `target_data` that gives population proportions.}
+
+\item{check_sums}{Optionally, the names of the columns within whose combinations population proportions should sum to
+one, or an error will occur.}
 }
 \value{
-table of poststratified group means
+A table giving poststratified estimates for each stratum.
 }
 \description{
-Poststratify Estimates.
+TODO: expand
 }
 
