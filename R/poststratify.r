@@ -1,10 +1,6 @@
 #' Poststratify Estimates. 
 #'
-#' 
-#'
-#'
-#'
-#' @param group_means
+#' @param group_means A table of estimates.
 #' @param target_data
 #' @param group_names
 #' @param strata_names

@@ -2,6 +2,7 @@
 
 using namespace Rcpp;
 
+//' @export
 // [[Rcpp::export()]]
 Rcpp::IntegerVector is_greater (Rcpp::NumericVector response, int level) {
 

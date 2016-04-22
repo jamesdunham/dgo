@@ -1,9 +1,7 @@
-#' Create individual survey weights from population targets
-#'
-#' Strata in the sampled data must be a subset of those in the population targets.
-#' There can't be missingness in the stratifying variables.
-#' @param level1 \code{data.frame} with survey responses at the lowest level of aggregation.
-#' @return \code{data_frame} of survey responses with new weights normalized to have mean 1 in each period.
+# Create individual survey weights from population targets
+#
+# Strata in the sampled data must be a subset of those in the population targets.
+# There can't be missingness in the stratifying variables.
 weight <- function(item_data, target_data, control) {
 
   if (!length(target_data)) {

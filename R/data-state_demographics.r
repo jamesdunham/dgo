@@ -1,20 +1,23 @@
 #' State-level demographic marginals
 #'
-#' A dataset with the proportion of each state's population 1960-2010 in strata defined by four demographic variables.
+#' A table giving the proportion of the American population 1960-2010 falling
+#' into strata defined by five demographic variables.
 #'
 #' \itemize{
-#'  \item state
-#'  \item year
-#'  \item race
-#'  \item female
-#'  \item education
-#'  \item age
+#'  \item `year`, an integer ranging 1960-2010.
+#'  \item `state`, a factor variable with 51 levels.
+#'  \item `race`, a factor variable with 3 levels, `black`, `other`, and
+#'  `white.`
+#'  \item `female`, a factor variable with 2 levels, `female` and `male`.
+#'  \item `education`, an integer ranging 1-5.
+#'  \item `age`, an integer ranging 1-4.
+#'  \item `proportion`, a numeric that sums to 1 within each `year`.
 #' }
 #'
 #' @docType data
 #' @name state_demographics
 #' @usage state_demographics
-#' @format A \code{dplyr} \code{tbl_df} with 312,120 rows and 7 columns.
+#' @format A `data.frame` with 312,120 rows and 7 columns.
 #' @examples
 #' state_demographics
 NULL

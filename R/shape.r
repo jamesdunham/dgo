@@ -2,12 +2,114 @@
 #'
 #' `shape` prepares data for modeling with `dgirt`.
 #'
+#' `shape` takes four kinds of data. Only `item_data` is required. For each data
+#' passed to `shape` through its `*_data` arguments, additional arguments are
+#' required. These are described in the sections below. Most give the name or
+#' names of key variables in the data; they end in `_name` or `_names` and
+#' should be character vectors. A few implement preprocessing and modeling
+#' choices.
+#' 
+#' @section Item Data:
+#' These are required arguments if `item_data` is given.
+#' \describe{
+#'   \item{item_names}{Individual item responses. These variables should be
+#'   integers or ordered factors in the data.}
+#'   \item{group_names}{Discrete grouping variables, usually demographic. Using
+#'   numeric variables is allowed but not recommended.}
+#'   \item{geo_name}{A geographic variable representing local areas. In the
+#'   data it should should be character or factor.}
+#'   \item{time_name}{A time variable with numeric values.}
+#'   \item{weight_name}{A variable giving survey weights.}
+#' }
+#'
+#' @section Modifier Data:
+#' These are required arguments if `modifier_data` is given.
+#' \describe{
+#'   \item{modifier_names}{Modifiers of geographic hierarchical parameters, e.g.
+#'   median household income in each local-area and time-period combination.}
+#'   \item{t1_modifier_names}{Modifiers to be used instead of those in
+#'   `modifier_names` only in the first period.}
+#' }
+#'
+#' @section Aggregate Data:
+#' Specifying `aggregate_data` requires no additional arguments; instead, we
+#' make many assumptions about the data. This implementation is likely to change
+#' in the future. Variable names given for `item_data` are expected in the table
+#' of aggregates: `item_names`, `group_names`, `geo_name`, and `time_name`. Two
+#' fixed variable names are also expected in `aggregate_data`: `n_grp` giving
+#' adjusted counts of item-response trials, and `s_grp` giving adjusted counts
+#' of item-response successes. The counts should be adjusted consistently with
+#' the transformations applied to the individual `item_data`.
+#'
+#' @section Preprocessing:
+#' If `target_data` is specified `shape` will adjust the weighting of groups
+#' toward population targets via raking. This relies on an adaptation of
+#' `\link[survey]{rake}`. The additional required arguments are
+#' `target_proportion_name`, and `strata_names`. The implementation will be more
+#' flexible in the future, but at the moment the strata are defined additively
+#' when more than one variable is given in `strata_names`. 
+#' 
+#' `shape` can restrict data row-wise in `item_data`, `modifier_data`, and
+#' `aggregate_data` to that within specified time periods (`time_filter`) and
+#' local geographic areas (`geo_filter`). Data can also be filtered for
+#' sparsity, to keep items that appear in a minimum of time periods or surveys.
+#' This is a column-wise operation. If both row-wise and column-wise
+#' restrictions are specified, `shape` iterates over them until they leave the
+#' data unchanged.
+#'
+#' \describe{
+#'   \item{target_proportion_name}{The variable giving population proportions
+#'   for strata.}
+#'   \item{strata_names}{Variables that define population strata.}
+#'   \item{geo_filter}{A character vector giving values of the geographic
+#'   variable. Defaults to observed values.}
+#'   \item{time_filter}{A numeric vector giving possible values of the time
+#'   variable. Observed and unobserved time periods can be given.}
+#'   \item{min_survey_filter}{An integer minimum of survey appearances for
+#'   included items. Defaults to 1 and requires `survey_name`.}
+#'   \item{survey_name}{The variable that identifies surveys, for use with
+#'   `min_survey_filter`.}
+#'   \item{min_t_filter}{An integer minimum of time period appearances for
+#'   included items.}
+#' }
+#'
+#' @section Modeling Choices:
+#' Each of these arguments is optional. They may move to the `dgirt` signature
+#' in the future.
+#' \describe{
+#'   \item{constant_item}{Whether item difficulty parameters should be constant
+#'   over time. Default `TRUE`.}
+# FIXME: Removed but not yet moved to dgirt:
+#'   \item{separate_t}{Whether smoothing of estimates over time should be
+#'   disabled. Default `FALSE`.}
+#'   \item{delta_tbar_prior_mean}{Prior mean for `delta_tbar`, the normal weight
+#'   on `theta_bar` in the previous period.  Default `0.5`.}
+#'   \item{delta_tbar_prior_sd}{Prior standard deviation for `delta_bar`.
+#'   Default `0.5`.}
+#'   \item{innov_sd_delta_scale}{Prior scale for `sd_innov_delta`, the Cauchy
+#'   innovation standard deviation of `nu_geo` and `delta_gamma`. Default `2.5`.}
+#'   \item{innov_sd_theta_scale}{Prior scale for `sd_innov_theta`, the Cauchy
+#'   innovation standard deviation of `gamma`, `xi`, and if `constant_item` is
+#'   `FALSE` the item difficulty `diff`. Default `2.5`.}
+#' }
 #' @param item_data A table of individual item responses.
-#' @param ... Further arguments passed to `\link{control}`.
-#' @param modifier_data A table giving characteristics of `item_data` identifiers to be modeled as hierarchical parameters.
+#' @param ... Further arguments. See details below.
+#' @param modifier_data A table giving characteristics of `item_data`
+#' identifiers to be modeled as hierarchical parameters.
 #' @param target_data A table of population proportions.
 #' @param aggregate_data A table of group-level item-response aggregates.
 #' @return An object of the type expected by `\link{dgirt}`.
+#' @import data.table
+#' @examples
+#' # model individual item responses 
+#' data(state_opinion)
+#' shaped_responses <- shape(state_opinion,
+#'                           time_name = "year",
+#'                           geo_name = "state",
+#'                           item_names = "Q_cces2006_minimumwage",
+#'                           group_names = "race",
+#'                           survey_name = "source",
+#'                           weight_name = "weight")
 #' @export
 shape <- function(item_data,
                   ...,
@@ -16,6 +118,7 @@ shape <- function(item_data,
                   aggregate_data = NULL) {
 
   control <- new("Control", ...)
+
   # TODO: clean this up
   if (!length(control@time_filter))
     control@time_filter <- sort(unique(item_data[[control@time_name]]))
@@ -33,6 +136,7 @@ shape <- function(item_data,
   control@item_names <- intersect(control@item_names, names(item_data))
   modifier_data <- restrict_modifier(item_data, modifier_data, control)
   aggregate_data <- restrict_aggregates(aggregate_data, control)
+  control@aggregate_item_names <- control@aggregate_item_names[control@aggregate_item_names %chin% aggregate_data$item]
 
   weight(item_data, target_data, control)
   dgirt_in$gt_items <- discretize(item_data, control)
@@ -89,9 +193,9 @@ shape <- function(item_data,
 
 discretize <- function(item_data, control) {
   gt_table <- create_gt_variables(item_data, control)
-  # NOTE: update item_data *by reference* to include gt_table
+  # NOTE: updating item_data by reference to include gt_table
   item_data[, names(gt_table) := gt_table]
-  # return the names in gt_table to safely reference its columns later without regex matching
+  # returning the names in gt_table to safely reference its columns later without regex matching
   names(gt_table)
 }
 
@@ -180,7 +284,7 @@ make_group_grid_t <- function(group_grid, control) {
 }
 
 restrict_items <- function(item_data, control) {
-  item_data <- setDT(copy(item_data))
+  setDT(item_data)
   extra_colnames <- setdiff(names(item_data),
                             c(control@item_names,
                               control@strata_names,
@@ -190,7 +294,7 @@ restrict_items <- function(item_data, control) {
                               control@group_names,
                               control@weight_name))
   if (length(extra_colnames)) {
-    item_data[, c(extra_colnames) := NULL, with = FALSE]
+    item_data[, c(extra_colnames) := NULL]
   }
   coerce_factors(item_data, c(control@group_names, control@geo_name, control@survey_name))
   rename_numerics(item_data, control)
@@ -222,7 +326,7 @@ restrict_items <- function(item_data, control) {
 
 restrict_modifier <- function(item_data, modifier_data, control) {
   if (length(modifier_data)) {
-    modifier_data <- setDT(copy(modifier_data))
+    setDT(modifier_data)
 
     coerce_factors(modifier_data, c(control@modifier_names,
                                     control@t1_modifier_names,
@@ -244,10 +348,11 @@ restrict_modifier <- function(item_data, modifier_data, control) {
 
 restrict_aggregates <- function(aggregate_data, control) {
   if (length(aggregate_data)) {
-    setDT(copy(aggregate_data))
+    setDT(aggregate_data)
     aggregate_data <- subset(aggregate_data,
                              aggregate_data[[control@geo_name]] %chin% control@geo_filter & 
-                             aggregate_data[[control@time_name]] %in% control@time_filter)
+                             aggregate_data[[control@time_name]] %in% control@time_filter &
+                             aggregate_data[["item"]] %in% control@aggregate_item_names)
     # subset to observed; FIXME: assumes n_grp variable name
     aggregate_data <- aggregate_data[n_grp > 0]
     extra_colnames <- setdiff(names(aggregate_data),
@@ -400,7 +505,7 @@ make_group_counts <- function(item_data, aggregate_data, dgirt_in, control) {
   group_counts[is.na(s_grp), s_grp := 0]
 
   # include aggregates, if any
-  if (length(aggregate_data)) {
+  if (length(aggregate_data) && nrow(aggregate_data) > 0) {
     message("Added ", length(control@aggregate_item_names), " items from aggregate data.")
     group_counts <- rbind(group_counts, aggregate_data)
   }

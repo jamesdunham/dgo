@@ -1,12 +1,16 @@
 #' Estimate a DGIRT model
 #'
-#' @param shaped_data Output of `shape()`.
-#' @param ... 
-#' @param extend
-#' @return 
+#' `dgirt` makes a call to `\link[rstan]{stan}` with the Stan code and data for
+#' a DGIRT model. By default the call overrides the `stan` defaults for `pars`
+#' to specify typical DGIRT parameters of interest and sets `iter_r` to `1L`.
+#'
+#' @param shaped_data Output from `shape`.
+#' @param ... Further arguments to `\link[rstan]{stan}`.
+#' @return A `dgirtfit` object that extends `\link[rstan]{stanfit-class}`. For
+#' details see `\link{dgirtfit-class}`.
 #' @import rstan
 #' @export
-dgirt <- function(shaped_data, ..., extend = TRUE) {
+dgirt <- function(shaped_data, ...) {
 
   dots <- list(...,
                file = system.file("R/dgirt.stan", package = "dgirt", mustWork = TRUE),
@@ -23,15 +27,10 @@ dgirt <- function(shaped_data, ..., extend = TRUE) {
 
   stanfit <- do.call(rstan::stan, dots)
 
-  if (isTRUE(extend)) {
-    dgirtfit <- tryCatch(new("dgirtFit", stanfit, dgirt_in = shaped_data),
-                         error = function(e) {
-                           warning("Error constructing dgirtfit; returning stanfit object instead")
-                           dgirtfit <- stanfit
-                         })
-    return(dgirtfit)
-  } else {
-    return(stanfit)
-  }
+  tryCatch(new("dgirtFit", stanfit, dgirt_in = shaped_data),
+           error = function(e) {
+             warning("Error constructing dgirtfit; returning stanfit object instead")
+             stanfit
+           })
 }
 
