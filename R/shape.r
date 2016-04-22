@@ -159,7 +159,6 @@ shape <- function(item_data,
   dgirt_in$G_hier <- ifelse(!length(modifier_data),
                           nlevels(gl(1L, dgirt_in$G)),
                           max(unlist(length(control@modifier_names)), 1L))
-  dgirt_in$hier_names <- dimnames(dgirt_in$ZZ)[[2]]
   dgirt_in$T <- length(control@time_filter)
   dgirt_in$Q <- length(c(intersect(control@item_names, names(item_data)),
                           intersect(control@aggregate_item_names, unique(aggregate_data$item))))
@@ -173,6 +172,7 @@ shape <- function(item_data,
   dgirt_in$XX <- make_design_matrix(item_data, dgirt_in, control)
   dgirt_in$ZZ <- shape_hierarchical_data(item_data, modifier_data, dgirt_in, control)
   dgirt_in$ZZ_prior <- dgirt_in$ZZ
+  dgirt_in$hier_names <- dimnames(dgirt_in$ZZ)[[2]]
 
   dgirt_in$D <- ifelse(control@constant_item, 1L, dgirt_in$T)
   dgirt_in$N <- nrow(dgirt_in$group_counts)

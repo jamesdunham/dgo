@@ -30,6 +30,7 @@ check_values <- function(dgirt_in) {
 }
 
 check_dimensions <- function(dgirt_in) {
+  stopifnot(identical(length(dgirt_in$hier_names), dim(dgirt_in$ZZ)[[2]]))
   assertthat::assert_that(equal_length(dgirt_in$n_vec, dgirt_in$s_vec))
   assertthat::assert_that(all_equal(dim(dgirt_in$NNl2), as.integer(c(dgirt_in$T, dgirt_in$Q, dgirt_in$G_hier))))
   assertthat::assert_that(all_equal(dim(dgirt_in$SSl2), as.integer(c(dgirt_in$T, dgirt_in$Q, dgirt_in$G_hier))))
