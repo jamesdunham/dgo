@@ -7,15 +7,12 @@ Authors@R: c(person("James", "Dunham", email = "jdunham@mit.edu", role = c("aut"
   person("Devin", "Caughey", email = "dcaughey@mit.edu", role = c("aut")))
 License: GPL-3
 Depends:
-    data.table,
     R (>= 3.2.2),
     rstan
 LazyData: true
 Imports:
     assertthat,
-    devtools,
-    ggplot2,
-    lazyeval,
+    data.table,
     reshape2,
     Rcpp,
     R6,
