@@ -12,18 +12,16 @@ setMethod("summary", "dgirtFit",
             callNextMethod(object, ...)
           })
 
-#' `extract`: extract samples from fitted DGIRT model
 #' @rdname dgirfit-class
 setMethod("extract", "dgirtFit",
           function(object = dgirtFit, ...) {
-            dots <- list(...)
             extracted <- callNextMethod(object, ...)
-            if (!length(dots$permuted) || dots$permuted)
-              # permuted is TRUE so extract returns a list of arrays
+            if (is.list(extracted)) {
               extracted <- arraynames(extracted, object)
-            else
-              # permuted = FALSE so extract returns an array with dimensions iterations x chains x parameters
-              dimnames(extracted)[[3]] <- flatnames(object, dimnames(extracted)[[3]])
+            } else if (is.array(extracted)) {
+              dimnames(extracted)[[3]] <- flatnames(object,
+                dimnames(extracted)[[3]])
+            }
             extracted
           }) 
 
@@ -31,6 +29,7 @@ setMethod("extract", "dgirtFit",
 setMethod("get_posterior_mean", "dgirtFit",
           function(object = dgirtFit, ...) {
             posterior_means <- callNextMethod(object, ...)
-            rownames(posterior_means) <- flatnames(object, rownames(posterior_means))
+            rownames(posterior_means) <- flatnames(object,
+              rownames(posterior_means))
             posterior_means
           })

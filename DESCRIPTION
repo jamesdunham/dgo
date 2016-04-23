@@ -1,7 +1,7 @@
 Package: dgirt
 Title: Group-Level Dynamic IRT and Small Area Estimation
 Version: 0.1.00
-Description: What the package does (one paragraph).
+Description: Fit group-level dynamic IRT models.
 Authors@R: c(person("James", "Dunham", email = "jdunham@mit.edu", role = c("aut", "cre")),
   person("Christopher", "Warshaw", email = "cwarshaw@mit.edu", role = c("aut")),
   person("Devin", "Caughey", email = "dcaughey@mit.edu", role = c("aut")))
@@ -29,3 +29,24 @@ Suggests:
     testthat
 LinkingTo: Rcpp
 VignetteBuilder: knitr
+Collate:
+    'RcppExports.R'
+    'assertions.r'
+    'check_dgirt_in.r'
+    'class-control.r'
+    'class-dgirtfit.r'
+    'class-dgirtin.r'
+    'dgirt.r'
+    'methods-control.r'
+    'methods-dgirtfit.r'
+    'methods-dgirtin.r'
+    'names.r'
+    'poststratify.r'
+    'rake_partial.r'
+    'shape.r'
+    'validate_input_data.r'
+    'weight.r'
+    'zdata-state_demographics.r'
+    'zdata-state_opinion.r'
+    'zdata-toy_dgirt_in.r'
+    'zdata-toy_dgirtfit.r'

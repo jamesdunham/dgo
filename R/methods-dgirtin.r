@@ -1,30 +1,41 @@
 # summary(toy_dgirt_in)
 summary.dgirtIn <- function(object) {
-  cat('<dgirtIn> object:\n',
-      object$Q, ngettext(object$Q, "item", "items"),
-        paste0('(', length(object$gt_items), ' after discretizing)\n'),
-      prod(dim(object$MMM)), 'grouping variable combinations', paste0('(', sum(!object$MMM)), 'observed)\n',
-      # FIXME: time_observed and geo_observed not implemented
-      object$T, 'time periods', paste0('(', length(object$time_observed)), 'observed)\n',
-      length(object$geo_observed), 'local geographic',
-        ngettext(length(object$geo_observed), 'area', 'areas'), '\n',
-      length(object$control@group_names), 'other grouping',
-        ngettext(length(object$control@group_names), 'variable:', 'variables:'),
-        paste(object$control@group_names, sep = ","), '\n',
-    object$P, 'hierarchical parameters\n',
-    length(object$control@modifier_names), 'hierarchical',
-        ngettext(length(object$control@modifier_names), 'modifier', 'modifiers'), '\n')
+  cat("Items:\n")
+  print(c(object$control@item_names,
+          object$control@aggregate_item_names))
+  cat("Respondents:\n")
+  cat("  ", format(get_n(object), big.mark = ","), "in `item_data` (unadjusted)\n")
+  if (length(object$aggregate_data))
+    cat("  ", format(sum(get_n(object, aggregate_name = "item")$n),big.mark = ","),
+        "in `aggregate_data (design-effect adjusted) `\n")
+  cat("Grouping variables:\n")
+  print(c(object$control@time_name,
+          object$control@geo_name,
+          object$control@group_names))
+  cat("Time periods:\n")
+  print(object$control@time_filter)
+  cat("Local geographic areas:\n")
+  print(object$control@geo_filter)
+  cat("Hierarchical parameters:\n")
+  print(object$hier_names)
+  cat("Hierarchical parameters with modifiers:\n")
+  print(object$control@modifier_names)
+  cat("Constants:\n")
+  print(c(Q = object$Q, T = object$T, P = object$P, N = object$N, G = object$G,
+          H = object$H, D = object$D))
 }
+summary(toy_dgirt_in)
 
 setGeneric("get_item_names", signature = "x",
            function(x) standardGeneric("get_item_names"))
-#' @rdname dgirtIn-class
 #' Get Items Names in DGIRT Data.
 #'
 #' @param x An object of class `dgirtIn` as returned by `shape`.
 #' @return A list of item names.
 #' @examples
 #' get_item_names(toy_dgirt_in)
+#' @include class-dgirtin.r
+#' @rdname dgirtin-class
 setMethod("get_item_names", c("x" = "dgirtIn"),
           function(x) {
             list(item_data = x$control@item_names,
@@ -34,7 +45,6 @@ setMethod("get_item_names", c("x" = "dgirtIn"),
 setGeneric("get_n", signature = c("x", "by", "aggregate_name"),
            function(x, by = NULL, aggregate_name = NULL)
              standardGeneric("get_n"))
-#' @rdname dgirtIn-class
 #' Count Respondents in DGIRT Data.
 #'
 #' @param x An object of class `dgirtIn` as returned by `shape`.
@@ -58,8 +68,10 @@ setGeneric("get_n", signature = c("x", "by", "aggregate_name"),
 #'
 #' @seealso `\link{get_item_n}, \link{get_item_names}`
 # toy_dgirt_in$aggregate_data = aggregate_data
-# get_n(toy_dgirt_in, "item", aggregate_data = TRUE)
-# get_n(toy_dgirt_in, "item", by = "year", aggregate_data = TRUE)
+# get_n(toy_dgirt_in, aggregate_name = "race")
+# get_n(toy_dgirt_in, by = "item", aggregate_name = "race")
+#' @include class-dgirtin.r
+#' @rdname dgirtin-class
 setMethod("get_n", c("x" = "dgirtIn"),
   function(x, by = NULL, aggregate_name = NULL) {
     if (!length(aggregate_name)) {
@@ -84,11 +96,15 @@ setMethod("get_n", c("x" = "dgirtIn"),
 
 setGeneric("get_item_n", signature = c("x", "by", "aggregate_data"),
            function(x, by = NULL, aggregate_data = FALSE) standardGeneric("get_item_n"))
-#' @rdname dgirtIn-class
-# get_item_n(toy_dgirt_in)
-# get_item_n(toy_dgirt_in, by = "year")
-# get_item_n(toy_dgirt_in, aggregate_data = TRUE)
-# get_item_n(toy_dgirt_in, by = "year", aggregate_data = TRUE)
+
+#' Count Respondents to Items
+#' @include class-dgirtin.r
+#' @rdname dgirtin-class
+#' @examples
+#' get_item_n(toy_dgirt_in)
+#' get_item_n(toy_dgirt_in, by = "year")
+#' get_item_n(toy_dgirt_in, aggregate_data = TRUE)
+#' get_item_n(toy_dgirt_in, by = "year", aggregate_data = TRUE)
 setMethod("get_item_n", c("x" = "dgirtIn"),
   function(x, by = NULL, aggregate_data = FALSE) {
     if (!isTRUE(aggregate_data)) {

@@ -1,24 +1,24 @@
 `:=` <- data.table::`:=`
 
 # Constructor for Control
-control <- function(group_names,
-                    item_names,
-                    geo_name,
-                    time_name,
-                    weight_name,
-                    ...) {
-
-  mget(names(formals(wrangle)), parent.frame(),
-    ifnotfound = list(rep(NULL, length(formals(wrangle)))))
-
-  dots <- list(...)
-  if (!length(dots$time_filter))
-    dots$time_filter <- 
-  if (!length(dots$geo_filter))
-    dots$geo_filter <- 
-  new("Control", group_names = group_names, item_names = item_names,
-      geo_name = geo_name, time_name = time_name, weight_name = weight_name,
-      dots)
+init_control <- function(item_data,
+                         modifier_data,
+                         target_data,
+                         aggregate_data,
+                         ...) {
+  control <- new("Control", ...)
+  # use item_data to set defaults for time_filter and geo_filter
+  if (!length(control@time_name) || !control@time_name %in% names(item_data)) {
+    stop("`time_name` (" , control@time_name,  ") is not a name in `item_data`")
+  } else if (!length(control@time_filter)) {
+    control@time_filter <- sort(unique(item_data[[control@time_name]]))
+  }
+  if (!length(control@geo_name) || !control@geo_name %in% names(item_data)) {
+    stop("`geo_name` (" , control@geo_name,  ") is not a name in `item_data`")
+  } else if (!length(control@geo_filter)) {
+    control@geo_filter <- sort(unique(as.character(item_data[[control@geo_name]])))
+  }
+  control
 }
 
 setValidity("Control",

@@ -45,7 +45,7 @@
 #' If `target_data` is specified `shape` will adjust the weighting of groups
 #' toward population targets via raking. This relies on an adaptation of
 #' `\link[survey]{rake}`. The additional required arguments are
-#' `target_proportion_name`, and `strata_names`. The implementation will be more
+#' `target_proportion_name` and `strata_names`. The implementation will be more
 #' flexible in the future, but at the moment the strata are defined additively
 #' when more than one variable is given in `strata_names`. 
 #' 
@@ -117,14 +117,11 @@ shape <- function(item_data,
                   target_data = NULL,
                   aggregate_data = NULL) {
 
-  control <- new("Control", ...)
+  control <- init_control(item_data, modifier_data, target_data, aggregate_data,
+                          ...)
 
-  # TODO: clean this up
-  if (!length(control@time_filter))
-    control@time_filter <- sort(unique(item_data[[control@time_name]]))
-  if (!length(control@geo_filter))
-    control@geo_filter <- sort(unique(as.character(item_data[[control@geo_name]])))
-  dgirt_in <- dgirtIn$new(control)
+  dgirt_in <- dgirtIn$new(item_data, modifier_data, target_data, aggregate_data,
+                          control)
 
   check_targets(target_data, control)
   check_modifiers(modifier_data, control) 
@@ -186,6 +183,7 @@ shape <- function(item_data,
   dgirt_in$modifier_data <- modifier_data
   dgirt_in$aggregate_data <- aggregate_data
   dgirt_in$target_data <- target_data
+  dgirt_in$call <- match.call()
 
   check(dgirt_in)
   dgirt_in

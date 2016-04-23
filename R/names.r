@@ -6,7 +6,8 @@ flatnames <- function(dgirt_out, fnames = NULL) {
     fnames <- dgirt_out@sim$fnames_oi
   }
 
-  indexed_t <- c('delta_gamma', 'delta_tbar', 'sd_theta', 'sd_theta_bar', 'sd_total', 'var_theta', 'xi')
+  indexed_t <- c('delta_gamma', 'delta_tbar', 'sd_theta', 'sd_theta_bar',
+                 'sd_total', 'var_theta', 'xi')
   for (varname in indexed_t) {
     fnames[grep(paste0('^', varname, "\\[\\d+\\]", "$"), fnames)] <-
       paste0(varname, "[", control@time_filter, "]")
@@ -54,8 +55,9 @@ arraynames <- function(dgirt_extract, dgirt_out) {
 
   control <- dgirt_out@dgirt_in$control
 
-  dim2_indexed_t <- c('theta_bar', 'xi', 'gamma', 'delta_gamma', 'delta_tbar', 'nu_geo', 'sd_theta', 'sd_theta_bar',
-                      'sd_total', 'theta_l2', 'var_theta_bar_l2')
+  dim2_indexed_t <- c('theta_bar', 'xi', 'gamma', 'delta_gamma', 'delta_tbar',
+                      'nu_geo', 'sd_theta', 'sd_theta_bar', 'sd_total',
+                      'theta_l2', 'var_theta_bar_l2')
   if (!as.logical(control@constant_item)) dim2_indexed_t <- c(dim2_indexed_t, "kappa")
   dim2_indexed_t <- intersect(dim2_indexed_t, names(dgirt_extract))
 
@@ -65,10 +67,12 @@ arraynames <- function(dgirt_extract, dgirt_out) {
     dimnames(dgirt_extract[[i]])[[2]] <- control@time_filter
   }
 
-  names(attributes(dgirt_extract[['theta_bar']])$dimnames)[3] <- 'group'
-  groups_concat <- do.call(function(...) paste(..., sep = "__"), dgirt_out@dgirt_in$group_grid_t)
-  stopifnot(identical(dim(dgirt_extract[['theta_bar']])[3], length(groups_concat)))
-  dimnames(dgirt_extract[['theta_bar']])[[3]] <- groups_concat
+  if ('theta_bar' %chin% names(dgirt_extract)) {
+    names(attributes(dgirt_extract[['theta_bar']])$dimnames)[3] <- 'group'
+    groups_concat <- do.call(function(...) paste(..., sep = "__"), dgirt_out@dgirt_in$group_grid_t)
+    stopifnot(identical(dim(dgirt_extract[['theta_bar']])[3], length(groups_concat)))
+    dimnames(dgirt_extract[['theta_bar']])[[3]] <- groups_concat
+  }
 
   if ('gamma' %chin% names(dgirt_extract)) {
     names(attributes(dgirt_extract[['gamma']])$dimnames)[3] <- 'param'

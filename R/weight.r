@@ -1,8 +1,8 @@
-# Create individual survey weights from population targets
-#
-# Strata in the sampled data must be a subset of those in the population targets.
-# There can't be missingness in the stratifying variables.
 weight <- function(item_data, target_data, control) {
+  # Create individual survey weights from population targets
+  #
+  # We stop if strata in the sampled data aren't a subset of those in the
+  # population targets, or if there's missingness in the stratifying variables.
 
   if (!length(target_data)) {
     return(NULL)
@@ -21,7 +21,7 @@ weight <- function(item_data, target_data, control) {
   # We'll create a design object from the target data.frame; this is a
   # data.frame with attributes that indicate the survey design
   target_design <- survey::svydesign(ids = ~1, data = target_data,
-    weights = formula(paste0("~", control@prop_name)))
+    weights = formula(paste0("~", control@target_proportion_name)))
 
   rake_weight <- function(item_data, formulas, target_design) {
     ds <- survey::svydesign(ids = ~1, data = item_data,

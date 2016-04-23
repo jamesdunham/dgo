@@ -76,7 +76,7 @@ the transformations applied to the individual `item_data`.
 If `target_data` is specified `shape` will adjust the weighting of groups
 toward population targets via raking. This relies on an adaptation of
 `\link[survey]{rake}`. The additional required arguments are
-`target_proportion_name`, and `strata_names`. The implementation will be more
+`target_proportion_name` and `strata_names`. The implementation will be more
 flexible in the future, but at the moment the strata are defined additively
 when more than one variable is given in `strata_names`. 
 
