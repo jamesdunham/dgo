@@ -24,7 +24,6 @@ summary.dgirtIn <- function(object) {
   print(c(Q = object$Q, T = object$T, P = object$P, N = object$N, G = object$G,
           H = object$H, D = object$D))
 }
-summary(toy_dgirt_in)
 
 setGeneric("get_item_names", signature = "x",
            function(x) standardGeneric("get_item_names"))
