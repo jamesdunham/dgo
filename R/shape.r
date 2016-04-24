@@ -305,15 +305,12 @@ restrict_items <- function(item_data, ctrl) {
     drop_responseless_items(item_data, ctrl)
     drop_items_rare_in_time(item_data, ctrl)
     drop_items_rare_in_polls(item_data, ctrl)
+    item_data <- drop_itemless_respondents(item_data, ctrl)
     final_dim <- dim(item_data)
     iter <- iter + 1L
     if (identical(initial_dim, final_dim)) {
       message("\tNo changes")
-    } else {
-      # FIXME: 
-      message("\tRemaining: ", format(nrow(item_data), big.mark = ","), " rows, ",
-              length(intersect(ctrl@item_names, names(item_data))), " items")
-    }
+    } 
   }
   setkeyv(item_data, c(ctrl@geo_name, ctrl@time_name))
   invisible(item_data)
@@ -428,6 +425,21 @@ drop_responseless_items <- function(item_data, ctrl) {
           "\tDropped %i item for lack of responses",
           "\tDropped %i items for lack of responses"),
         length(responseless_items)))
+  }
+  invisible(item_data)
+}
+
+drop_itemless_respondents <- function(item_data, ctrl) {
+  item_names <- intersect(ctrl@item_names, names(item_data))
+  item_data[, ("n_responses") := list(rowSums(!is.na(.SD)) == 0L),
+            .SDcols = item_names]
+  n_itemless <- sum(item_data[["n_responses"]])
+  if (n_itemless > 0) {
+    item_data <- item_data[!(n_responses)]
+    message(sprintf(ngettext(n_itemless,
+          "\tDropped %i rows for lacking item responses",
+          "\tDropped %i rows for lacking item responses"),
+        n_itemless))
   }
   invisible(item_data)
 }
