@@ -25,7 +25,7 @@ dgirtIn <- R6::R6Class("dgirtIn",
                              control@weight_name)
         if (!all(item_data_names %chin% names(item_data))) {
           stop("Not found as names in item data: ",
-               setdiff(item_data_names, names(item_data)))
+               paste(setdiff(item_data_names, names(item_data)), sep = ", "))
         }
       }
 
