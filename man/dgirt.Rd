@@ -20,4 +20,22 @@ details see `\link{dgirtfit-class}`.
 a DGIRT model. By default the call overrides the `stan` defaults for `pars`
 to specify typical DGIRT parameters of interest and sets `iter_r` to `1L`.
 }
+\details{
+Additional arguments giving modeling choices:
+
+\describe{
+  \item{separate_t}{Whether smoothing of estimates over time should be
+  disabled. Default `FALSE`.}
+  \item{delta_tbar_prior_mean}{Prior mean for `delta_tbar`, the normal weight
+  on `theta_bar` in the previous period.  Default `0.5`.}
+  \item{delta_tbar_prior_sd}{Prior standard deviation for `delta_bar`.
+  Default `0.5`.}
+  \item{innov_sd_delta_scale}{Prior scale for `sd_innov_delta`, the Cauchy
+  innovation standard deviation of `nu_geo` and `delta_gamma`. Default
+  `2.5`.}
+  \item{innov_sd_theta_scale}{Prior scale for `sd_innov_theta`, the Cauchy
+  innovation standard deviation of `gamma`, `xi`, and if `constant_item` is
+  `FALSE` the item difficulty `diff`. Default `2.5`.}
+}
+}
 

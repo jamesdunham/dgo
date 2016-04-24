@@ -25,6 +25,10 @@ summary.dgirtIn <- function(object) {
           H = object$H, D = object$D))
 }
 
+print.dgirtIn <- function(object) {
+  summary(object)
+}
+
 setGeneric("get_item_names", signature = "x",
            function(x) standardGeneric("get_item_names"))
 #' Get Items Names in DGIRT Data.
@@ -122,3 +126,5 @@ setMethod("get_item_n", c("x" = "dgirtIn"),
   }
   copy(n)
 })
+
+setMethod("show", c("dgirtIn"), function(object) summary(object) )

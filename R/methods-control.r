@@ -33,18 +33,8 @@ setValidity("Control",
                 "\"weight_name\" should be a single variable name"
               if (!length(unique(object@group_names)) > 1L)
                 "\"group_names\" should be at least one variable name" 
-              if (!length(object@separate_t) == 1L)
-                "\"separate_t\" should be a single logical value"
-              if (!length(object@constant_item) == 1L)
+              if (!length(object@constant_item) == 1L && is.logical(object@constant_item))
                 "\"constant_item\" should be a single logical value"
-              if (!length(object@delta_tbar_prior_mean) == 1L)
-                "\"delta_tbar_prior_mean\" should be a single real value"
-              if (!length(object@delta_tbar_prior_sd) == 1L)
-                "\"delta_tbar_prior_sd\" should be a single positive real value"
-              if (!length(object@innov_sd_delta_scale ) == 1L)
-                "\"delta_tbar_delta_scale\" should be a single real value"
-              if (!length(object@innov_sd_theta_scale ) == 1L)
-                "\"delta_tbar_theta_scale\" should be a single real value"
               if (!length(unique(object@time_filter)) > 1L)
                 "\"time_filter\" filter should indicate at least two periods or be NULL to include all observed periods"
               if (!length(unique(object@geo_filter)) > 1L)

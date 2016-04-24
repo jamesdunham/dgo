@@ -41,5 +41,4 @@ check_dimensions <- function(dgirt_in) {
   assertthat::assert_that(all_equal(dim(dgirt_in$ZZ), c(dgirt_in$T, dgirt_in$P, dgirt_in$H)))
   assertthat::assert_that(all_equal(dim(dgirt_in$ZZ_prior), c(dgirt_in$T, dgirt_in$P, dgirt_in$H)))
   assertthat::assert_that(not_empty((dgirt_in$constant_item)))
-  assertthat::assert_that(not_empty((dgirt_in$separate_t)))
 }

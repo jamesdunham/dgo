@@ -74,23 +74,12 @@
 #' }
 #'
 #' @section Modeling Choices:
-#' Each of these arguments is optional. They may move to the `dgirt` signature
-#' in the future.
+#' Optional. Most arguments like this one are in the `dgirt` signature, but
+#' `constant_item` affects the shape of the data. May move to `dgirt` in the
+#' future. 
 #' \describe{
 #'   \item{constant_item}{Whether item difficulty parameters should be constant
 #'   over time. Default `TRUE`.}
-# FIXME: Removed but not yet moved to dgirt:
-#'   \item{separate_t}{Whether smoothing of estimates over time should be
-#'   disabled. Default `FALSE`.}
-#'   \item{delta_tbar_prior_mean}{Prior mean for `delta_tbar`, the normal weight
-#'   on `theta_bar` in the previous period.  Default `0.5`.}
-#'   \item{delta_tbar_prior_sd}{Prior standard deviation for `delta_bar`.
-#'   Default `0.5`.}
-#'   \item{innov_sd_delta_scale}{Prior scale for `sd_innov_delta`, the Cauchy
-#'   innovation standard deviation of `nu_geo` and `delta_gamma`. Default `2.5`.}
-#'   \item{innov_sd_theta_scale}{Prior scale for `sd_innov_theta`, the Cauchy
-#'   innovation standard deviation of `gamma`, `xi`, and if `constant_item` is
-#'   `FALSE` the item difficulty `diff`. Default `2.5`.}
 #' }
 #' @param item_data A table of individual item responses.
 #' @param ... Further arguments. See details below.
@@ -128,13 +117,17 @@ shape <- function(item_data,
   check_item(item_data, ctrl)
 
   item_data <- restrict_items(item_data, ctrl)
-  # FIXME: preferable to avoid modifying ctrl
+  # preferable to avoid modifying ctrl
   ctrl@item_names <- intersect(ctrl@item_names, names(item_data))
   modifier_data <- restrict_modifier(item_data, modifier_data, ctrl)
   aggregate_data <- restrict_aggregates(aggregate_data, ctrl)
   ctrl@aggregate_item_names <-
     ctrl@aggregate_item_names[ctrl@aggregate_item_names %chin%
                               aggregate_data$item]
+  d_in$time_observed <- unique(item_data[[ctrl@time_name]],
+                               aggregate_data[[ctrl@time_name]])
+  d_in$geo_observed <- unique(item_data[[ctrl@geo_name]],
+                              aggregate_data[[ctrl@geo_name]])
 
   weight(item_data, target_data, ctrl)
   d_in$gt_items <- discretize(item_data, ctrl)
