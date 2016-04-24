@@ -470,44 +470,63 @@ drop_items_rare_in_polls <- function(item_data, control) {
 }
 
 make_group_counts <- function(item_data, aggregate_data, dgirt_in, control) {
-  # item_data[, ("n_responses") := list(rowSums(!is.na(item_data[, dgirt_in$vars$gt_items, with = FALSE])))]
-  item_data[, ("n_responses") := list(rowSums(!is.na(.SD))), .SDcols = dgirt_in$gt_items]
-  item_data[, ("def") := lapply(.SD, calc_design_effects), .SDcols = control@weight_name, with = FALSE,
-           by = c(control@geo_name, control@group_names, control@time_name)]
-  item_n_vars <- paste0(control@item_names, "_n_grp")
-  item_mean_vars <- paste0(control@item_names, "_mean")
+  item_data[, ("n_responses") := list(rowSums(!is.na(.SD))),
+            .SDcols = dgirt_in$gt_items]
+  item_data[, ("def") := lapply(.SD, calc_design_effects),
+            .SDcols = control@weight_name, with = FALSE,
+            by = c(control@geo_name, control@group_names, control@time_name)]
 
-  item_n <- item_data[, lapply(.SD, function(x) ceiling(sum(as.integer(!is.na(x)) / get("n_responses") / get("def")))),
-                       .SDcols = c(control@item_names), by = c(control@geo_name, control@group_names, control@time_name)]
-  names(item_n) <- replace(names(item_n), match(control@item_names, names(item_n)), item_n_vars)
+  # get design-effect-adjusted nonmissing response counts by group and item
+  item_n <- item_data[, lapply(.SD, count_items, get("n_responses"), get("def")),
+                      .SDcols = c(dgirt_in$gt_items),
+                      by = c(control@geo_name, control@group_names, control@time_name)]
+
+  # append _n_grp to the response count columns
+  item_n_vars <- paste0(control@item_names, "_n_grp")
+  names(item_n) <- replace(names(item_n), match(dgirt_in$gt_items, names(item_n)), item_n_vars)
   setkeyv(item_n, c(control@time_name, control@geo_name, control@group_names))
 
   item_data[, ("adj_weight") := get(control@weight_name) / n_responses]
-  item_means <- item_data[, lapply(.SD, function(x) weighted.mean(x, .SD$adj_weight)),
-                       .SDcols = c(control@item_names, "adj_weight"), by = c(control@geo_name, control@group_names, control@time_name)]
-  names(item_means) <- replace(names(item_means), match(control@item_names, names(item_means)), item_mean_vars)
+  item_means <- item_data[, lapply(.SD, function(x) weighted.mean(x, .SD$adj_weight, na.rm = TRUE)),
+                       .SDcols = c(dgirt_in$gt_items, "adj_weight"), by = c(control@geo_name, control@group_names, control@time_name)]
+
+  # append _mean to the mean response columns 
+  item_mean_vars <- paste0(control@item_names, "_mean")
+  names(item_means) <- replace(names(item_means), match(dgirt_in$gt_items, names(item_means)), item_mean_vars)
   setkeyv(item_means, c(control@time_name, control@geo_name, control@group_names))
 
+  # join response counts with means 
   counts_means <- item_n[item_means]
   counts_means <- counts_means[, c(control@time_name, control@geo_name, control@group_names, item_mean_vars, item_n_vars), with = FALSE]
 
+  # the group success count for an item is the product of its count and mean
   item_s_vars <- paste0(control@item_names, "_s_grp")
   counts_means[, (item_s_vars) := round(counts_means[, (item_mean_vars), with = FALSE] * counts_means[, (item_n_vars), with = FALSE], 0)]
   counts_means <- counts_means[, -grep("_mean$", names(counts_means)), with = FALSE]
+
+  # we want a long table of successes (s_grp) and trials (n_grp) by group and
+  # item; items need to move from columns to rows
   melted <- melt(counts_means, id.vars = c(control@time_name, control@geo_name, control@group_names), variable.name = "item")
   melted[, c("variable", "item") := list(gsub(".*([sn]_grp)$", "\\1", item), gsub("(.*)_[sn]_grp$", "\\1", item))]
   f <- as.formula(paste0(paste(control@time_name, control@geo_name, control@group_names, "item", sep = "+"), "~variable"))
   group_counts <- data.table::dcast.data.table(melted, f)
-  # group trial and success counts cannot include NAs
+
+  # stan code expects unobserved group-items to be omitted
   group_counts <- group_counts[n_grp != 0 & !is.na(n_grp)]
+  # be sure to represent no observed success with a zero count, not NA
   group_counts[is.na(s_grp), s_grp := 0]
 
+  # TODO: what if there's overlap between 
   # include aggregates, if any
   if (length(aggregate_data) && nrow(aggregate_data) > 0) {
     message("Added ", length(control@aggregate_item_names), " items from aggregate data.")
     group_counts <- rbind(group_counts, aggregate_data)
   }
   group_counts
+}
+
+count_items <- function(x, n_responses, def) {
+  ceiling(sum(as.integer(!is.na(x)) / n_responses / def, na.rm = TRUE))
 }
 
 get_missing_groups <- function(group_counts, group_grid, control) {

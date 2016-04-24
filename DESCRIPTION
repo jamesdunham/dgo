@@ -7,12 +7,12 @@ Authors@R: c(person("James", "Dunham", email = "jdunham@mit.edu", role = c("aut"
   person("Devin", "Caughey", email = "dcaughey@mit.edu", role = c("aut")))
 License: GPL-3
 Depends:
+    data.table,
     R (>= 3.2.2),
     rstan
 LazyData: true
 Imports:
     assertthat,
-    data.table,
     reshape2,
     Rcpp,
     R6,
@@ -33,17 +33,17 @@ Collate:
     'class-control.r'
     'class-dgirtfit.r'
     'class-dgirtin.r'
+    'data-state_demographics.r'
+    'data-state_opinion.r'
+    'shape.r'
+    'data-toy_dgirt_in.r'
     'dgirt.r'
+    'data-toy_dgirtfit.r'
     'methods-control.r'
     'methods-dgirtfit.r'
     'methods-dgirtin.r'
     'names.r'
     'poststratify.r'
     'rake_partial.r'
-    'shape.r'
     'validate_input_data.r'
     'weight.r'
-    'zdata-state_demographics.r'
-    'zdata-state_opinion.r'
-    'zdata-toy_dgirt_in.r'
-    'zdata-toy_dgirtfit.r'
