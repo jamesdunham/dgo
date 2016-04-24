@@ -117,100 +117,97 @@ shape <- function(item_data,
                   target_data = NULL,
                   aggregate_data = NULL) {
 
-  control <- init_control(item_data, modifier_data, target_data, aggregate_data,
-                          ...)
+  ctrl <- init_control(item_data, modifier_data, target_data, aggregate_data,
+                       ...)
 
-  dgirt_in <- dgirtIn$new(item_data, modifier_data, target_data, aggregate_data,
-                          control)
+  d_in <- dgirtIn$new(item_data, modifier_data, target_data, aggregate_data,
+                      ctrl)
 
-  check_targets(target_data, control)
-  check_modifiers(modifier_data, control) 
-  # TODO: check_aggregates(aggregate_data, control)
-  check_item(item_data, control)
+  check_targets(target_data, ctrl)
+  check_modifiers(modifier_data, ctrl) 
+  # TODO: check_aggregates(aggregate_data, ctrl)
+  check_item(item_data, ctrl)
 
-  item_data <- restrict_items(item_data, control)
-  # FIXME: preferable to avoid modifying control
-  control@item_names <- intersect(control@item_names, names(item_data))
-  modifier_data <- restrict_modifier(item_data, modifier_data, control)
-  aggregate_data <- restrict_aggregates(aggregate_data, control)
-  control@aggregate_item_names <- control@aggregate_item_names[control@aggregate_item_names %chin% aggregate_data$item]
+  item_data <- restrict_items(item_data, ctrl)
+  # FIXME: preferable to avoid modifying ctrl
+  ctrl@item_names <- intersect(ctrl@item_names, names(item_data))
+  modifier_data <- restrict_modifier(item_data, modifier_data, ctrl)
+  aggregate_data <- restrict_aggregates(aggregate_data, ctrl)
+  ctrl@aggregate_item_names <-
+    ctrl@aggregate_item_names[ctrl@aggregate_item_names %chin%
+                              aggregate_data$item]
 
-  weight(item_data, target_data, control)
-  dgirt_in$gt_items <- discretize(item_data, control)
+  weight(item_data, target_data, ctrl)
+  d_in$gt_items <- discretize(item_data, ctrl)
 
-  dgirt_in$group_grid <- make_group_grid(item_data, aggregate_data, control)
-  dgirt_in$group_grid_t <- make_group_grid_t(dgirt_in$group_grid, control)
-  dgirt_in$group_counts <- make_group_counts(item_data,
-                                             aggregate_data,
-                                             dgirt_in,
-                                             control)
+  d_in$group_grid <- make_group_grid(item_data, aggregate_data, ctrl)
+  d_in$group_grid_t <- make_group_grid_t(d_in$group_grid, ctrl)
+  d_in$group_counts <- make_group_counts(item_data, aggregate_data, d_in, ctrl)
 
-  dgirt_in$n_vec <- setNames(dgirt_in$group_counts$n_grp, dgirt_in$group_counts$name)
-  dgirt_in$s_vec <- setNames(dgirt_in$group_counts$s_grp, dgirt_in$group_counts$name)
+  d_in$n_vec <- setNames(d_in$group_counts$n_grp, d_in$group_counts$name)
+  d_in$s_vec <- setNames(d_in$group_counts$s_grp, d_in$group_counts$name)
 
-  dgirt_in$MMM <- get_missing_groups(dgirt_in$group_counts,
-                                      dgirt_in$group_grid,
-                                      control)
+  d_in$MMM <- get_missing_groups(d_in$group_counts, d_in$group_grid, ctrl)
 
-  dgirt_in$G <- nrow(dgirt_in$group_grid_t)
-  dgirt_in$G_hier <- ifelse(!length(modifier_data),
-                          nlevels(gl(1L, dgirt_in$G)),
-                          max(unlist(length(control@modifier_names)), 1L))
-  dgirt_in$T <- length(control@time_filter)
-  dgirt_in$Q <- length(c(intersect(control@item_names, names(item_data)),
-                          intersect(control@aggregate_item_names, unique(aggregate_data$item))))
+  d_in$G <- nrow(d_in$group_grid_t)
+  d_in$G_hier <- ifelse(!length(modifier_data), nlevels(gl(1L, d_in$G)),
+                        max(unlist(length(ctrl@modifier_names)), 1L))
+  d_in$T <- length(ctrl@time_filter)
+  d_in$Q <- length(c(intersect(ctrl@item_names, names(item_data)),
+                     intersect(ctrl@aggregate_item_names,
+                               unique(aggregate_data$item))))
 
-  dgirt_in$WT <- array(1, dim = c(dgirt_in$T, dgirt_in$G_hier, dgirt_in$G))
+  d_in$WT <- array(1, dim = c(d_in$T, d_in$G_hier, d_in$G))
 
-  dgirt_in$l2_only <- matrix(0L, nrow = length(control@time_filter), ncol = dgirt_in$Q)
-  dgirt_in$NNl2 <- array(0L, dim = c(dgirt_in$T, dgirt_in$Q, dgirt_in$G_hier))
-  dgirt_in$SSl2 <- dgirt_in$NNl2
+  d_in$l2_only <- matrix(0L, nrow = length(ctrl@time_filter), ncol = d_in$Q)
+  d_in$NNl2 <- array(0L, dim = c(d_in$T, d_in$Q, d_in$G_hier))
+  d_in$SSl2 <- d_in$NNl2
 
-  dgirt_in$XX <- make_design_matrix(item_data, dgirt_in, control)
-  dgirt_in$ZZ <- shape_hierarchical_data(item_data, modifier_data, dgirt_in, control)
-  dgirt_in$ZZ_prior <- dgirt_in$ZZ
-  dgirt_in$hier_names <- dimnames(dgirt_in$ZZ)[[2]]
+  d_in$XX <- make_design_matrix(item_data, d_in, ctrl)
+  d_in$ZZ <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl)
+  d_in$ZZ_prior <- d_in$ZZ
+  d_in$hier_names <- dimnames(d_in$ZZ)[[2]]
 
-  dgirt_in$D <- ifelse(control@constant_item, 1L, dgirt_in$T)
-  dgirt_in$N <- nrow(dgirt_in$group_counts)
-  dgirt_in$P <- ncol(dgirt_in$ZZ)
-  dgirt_in$S <- dim(dgirt_in$ZZ)[[2]]
-  dgirt_in$H <- dim(dgirt_in$ZZ)[[3]]
-  dgirt_in$Hprior <- dgirt_in$H 
+  d_in$D <- ifelse(ctrl@constant_item, 1L, d_in$T)
+  d_in$N <- nrow(d_in$group_counts)
+  d_in$P <- ncol(d_in$ZZ)
+  d_in$S <- dim(d_in$ZZ)[[2]]
+  d_in$H <- dim(d_in$ZZ)[[3]]
+  d_in$Hprior <- d_in$H 
 
-  dgirt_in$control <- control
-  dgirt_in$item_data <- item_data
-  dgirt_in$modifier_data <- modifier_data
-  dgirt_in$aggregate_data <- aggregate_data
-  dgirt_in$target_data <- target_data
-  dgirt_in$call <- match.call()
+  d_in$control <- ctrl
+  d_in$item_data <- item_data
+  d_in$modifier_data <- modifier_data
+  d_in$aggregate_data <- aggregate_data
+  d_in$target_data <- target_data
+  d_in$call <- match.call()
 
-  check(dgirt_in)
-  dgirt_in
+  check(d_in)
+  d_in
 }
 
-discretize <- function(item_data, control) {
+discretize <- function(item_data, ctrl) {
   # Discretize item response variables
   #
   # For item response variables with K ordered levels, make K - 1 indicators for
   # whether a response is ranked higher than k.
-  gt_table <- create_gt_variables(item_data, control)
+  gt_table <- create_gt_variables(item_data, ctrl)
   # NOTE: updating item_data by reference to include gt_table
   item_data[, names(gt_table) := gt_table]
   # return the indicator names to reference them safely later
   names(gt_table)
 }
 
-check <- function(dgirt_in) {
-  check_dimensions(dgirt_in)
-  check_values(dgirt_in)
-  check_order(dgirt_in)
+check <- function(d_in) {
+  check_dimensions(d_in)
+  check_values(d_in)
+  check_order(d_in)
 }
 
-create_gt_variables <- function(item_data, control){
+create_gt_variables <- function(item_data, ctrl){
   widths <- c("item" = 30, "class" = 10, "levels" = 12, "responses" = 16)
   print_varinfo_header(widths)
-  out <- lapply(control@item_names, function(i) {
+  out <- lapply(ctrl@item_names, function(i) {
     if (is.ordered(item_data[[i]])) {
       i_levels <- na.omit(levels(droplevels(item_data[[i]])))
       values <- match(as.character(item_data[[i]]), i_levels)
@@ -267,53 +264,55 @@ concat_varinfo = function(widths, values, pad_side) {
     }, widths, values, pad_side)
 }
 
-make_group_grid <- function(item_data, aggregate_data, control) {
+make_group_grid <- function(item_data, aggregate_data, ctrl) {
   # Make a table giving combinations of the grouping variables
   group_grid <- expand.grid(c(
-    setNames(list(control@time_filter), control@time_name),
-    lapply(rbind(item_data[, c(control@geo_name, control@group_names), with = FALSE],
-                 aggregate_data[, c(control@group_names, control@geo_name), with = FALSE]),
-           function(x) sort(unique(x)))),
-    stringsAsFactors = FALSE)
-  setDT(group_grid, key = c(control@time_name, control@group_names, control@geo_name))
+    setNames(list(ctrl@time_filter), ctrl@time_name),
+    lapply(rbind(item_data[, c(ctrl@geo_name, ctrl@group_names), with = FALSE],
+                 aggregate_data[, c(ctrl@group_names, ctrl@geo_name), with =
+                                FALSE]),
+           function(x) sort(unique(x)))), stringsAsFactors = FALSE)
+  setDT(group_grid, key = c(ctrl@time_name, ctrl@group_names, ctrl@geo_name))
   invisible(group_grid)
 }
 
-make_group_grid_t <- function(group_grid, control) {
+make_group_grid_t <- function(group_grid, ctrl) {
   # Make a table giving combinations of grouping variables, excluding time
-  group_grid_t <- copy(group_grid)[, control@time_name := NULL, with = FALSE]
+  group_grid_t <- copy(group_grid)[, ctrl@time_name := NULL, with = FALSE]
   group_grid_t <- group_grid_t[!duplicated(group_grid_t)]
-  setkeyv(group_grid_t, c(control@group_names, control@geo_name))
+  setkeyv(group_grid_t, c(ctrl@group_names, ctrl@geo_name))
   group_grid_t
 }
 
-restrict_items <- function(item_data, control) {
+restrict_items <- function(item_data, ctrl) {
   setDT(item_data)
   extra_colnames <- setdiff(names(item_data),
-                            c(control@item_names,
-                              control@strata_names,
-                              control@survey_name,
-                              control@geo_name,
-                              control@time_name,
-                              control@group_names,
-                              control@weight_name))
+                            c(ctrl@item_names,
+                              ctrl@strata_names,
+                              ctrl@survey_name,
+                              ctrl@geo_name,
+                              ctrl@time_name,
+                              ctrl@group_names,
+                              ctrl@weight_name))
   if (length(extra_colnames)) {
     item_data[, c(extra_colnames) := NULL]
   }
-  coerce_factors(item_data, c(control@group_names, control@geo_name, control@survey_name))
-  rename_numerics(item_data, control)
+  coerce_factors(item_data, c(ctrl@group_names, ctrl@geo_name,
+                              ctrl@survey_name))
+  rename_numerics(item_data, ctrl)
   initial_dim <- dim(item_data)
   final_dim <- c()
   iter <- 1L
   while (!identical(initial_dim, final_dim)) {
     message("Applying restrictions, pass ", iter, "...")
-    if (identical(iter, 1L)) item_data <- drop_rows_missing_covariates(item_data, control)
+    if (identical(iter, 1L)) item_data <-
+      drop_rows_missing_covariates(item_data, ctrl)
     initial_dim <- dim(item_data)
-    item_data <- keep_t(item_data, control)
-    item_data <- keep_geo(item_data, control)
-    drop_responseless_items(item_data, control)
-    drop_items_rare_in_time(item_data, control)
-    drop_items_rare_in_polls(item_data, control)
+    item_data <- keep_t(item_data, ctrl)
+    item_data <- keep_geo(item_data, ctrl)
+    drop_responseless_items(item_data, ctrl)
+    drop_items_rare_in_time(item_data, ctrl)
+    drop_items_rare_in_polls(item_data, ctrl)
     final_dim <- dim(item_data)
     iter <- iter + 1L
     if (identical(initial_dim, final_dim)) {
@@ -321,27 +320,29 @@ restrict_items <- function(item_data, control) {
     } else {
       # FIXME: 
       message("\tRemaining: ", format(nrow(item_data), big.mark = ","), " rows, ",
-              length(intersect(control@item_names, names(item_data))), " items")
+              length(intersect(ctrl@item_names, names(item_data))), " items")
     }
   }
-  setkeyv(item_data, c(control@geo_name, control@time_name))
+  setkeyv(item_data, c(ctrl@geo_name, ctrl@time_name))
   invisible(item_data)
 }
 
-restrict_modifier <- function(item_data, modifier_data, control) {
+restrict_modifier <- function(item_data, modifier_data, ctrl) {
   if (length(modifier_data)) {
     setDT(modifier_data)
 
-    coerce_factors(modifier_data, c(control@modifier_names,
-                                    control@t1_modifier_names,
-                                    control@geo_name,
-                                    control@time_name))
+    coerce_factors(modifier_data, c(ctrl@modifier_names,
+                                    ctrl@t1_modifier_names,
+                                    ctrl@geo_name,
+                                    ctrl@time_name))
 
-    modifier_data <- modifier_data[modifier_data[[control@geo_name]] %in% item_data[[control@geo_name]] &
-                                   modifier_data[[control@time_name]] %in% item_data[[control@time_name]]]
+    modifier_data <- modifier_data[modifier_data[[ctrl@geo_name]] %in%
+                                   item_data[[ctrl@geo_name]] &
+                                 modifier_data[[ctrl@time_name]] %in%
+                                   item_data[[ctrl@time_name]]]
 
     if (!identical(nrow(modifier_data),
-                   nrow(unique(modifier_data[, c(control@geo_name, control@time_name), with = FALSE])))) {
+                   nrow(unique(modifier_data[, c(ctrl@geo_name, ctrl@time_name), with = FALSE])))) {
       stop("time and geo identifiers don't uniquely identify modifier data observations")
     }
     message()
@@ -350,17 +351,17 @@ restrict_modifier <- function(item_data, modifier_data, control) {
   invisible(modifier_data)
 }
 
-restrict_aggregates <- function(aggregate_data, control) {
+restrict_aggregates <- function(aggregate_data, ctrl) {
   if (length(aggregate_data)) {
     setDT(aggregate_data)
     aggregate_data <- subset(aggregate_data,
-                             aggregate_data[[control@geo_name]] %chin% control@geo_filter & 
-                             aggregate_data[[control@time_name]] %in% control@time_filter &
-                             aggregate_data[["item"]] %in% control@aggregate_item_names)
+                             aggregate_data[[ctrl@geo_name]] %chin% ctrl@geo_filter & 
+                             aggregate_data[[ctrl@time_name]] %in% ctrl@time_filter &
+                             aggregate_data[["item"]] %in% ctrl@aggregate_item_names)
     # subset to observed; FIXME: assumes n_grp variable name
     aggregate_data <- aggregate_data[n_grp > 0]
     extra_colnames <- setdiff(names(aggregate_data),
-                              c(control@geo_name, control@time_name, control@group_names, "item", "s_grp", "n_grp"))
+                              c(ctrl@geo_name, ctrl@time_name, ctrl@group_names, "item", "s_grp", "n_grp"))
     if (length(extra_colnames)) {
       aggregate_data[, c(extra_colnames) := NULL, with = FALSE]
     }
@@ -378,8 +379,9 @@ coerce_factors <- function(tbl, vars) {
   invisible(tbl)
 }
 
-rename_numerics <- function(item_data, control) {
-  varnames <- c(control@group_names, control@geo_name, control@modifier_names, control@t1_modifier_names)
+rename_numerics <- function(item_data, ctrl) {
+  varnames <- c(ctrl@group_names, ctrl@geo_name, ctrl@modifier_names,
+                ctrl@t1_modifier_names)
   varnames <- varnames[vapply(item_data[, varnames], is.numeric, logical(1))]
   if (length(varnames)) {
     for (v in varnames) {
@@ -389,38 +391,42 @@ rename_numerics <- function(item_data, control) {
   invisible(item_data)
 }
 
-drop_rows_missing_covariates <- function(item_data, control) {
+drop_rows_missing_covariates <- function(item_data, ctrl) {
   n <- nrow(item_data)
-  is_missing <- rowSums(is.na(item_data[, c(control@geo_name, control@time_name, control@group_names, control@survey_name), with = FALSE])) > 0
+  is_missing <- rowSums(is.na(item_data[, c(ctrl@geo_name, ctrl@time_name, ctrl@group_names, ctrl@survey_name), with = FALSE])) > 0
   item_data <- subset(item_data, !is_missing)
   if (!identical(n, nrow(item_data))) {
-    message("\tDropped ", format(n - nrow(item_data), big.mark = ","), " rows for missingness in covariates")
+    message("\tDropped ", format(n - nrow(item_data), big.mark = ","),
+            " rows for missingness in covariates")
   }
   item_data
 }
 
 with_contr.treatment <- function(...) {
   contrast_options = getOption("contrasts")
-  options("contrasts"= c(unordered = "contr.treatment", ordered = "contr.treatment"))
+  options("contrasts"= c(unordered = "contr.treatment",
+                         ordered = "contr.treatment"))
   res <- eval(...)
   options("contrasts"= contrast_options)
   res
 }
 
-keep_t <- function(item_data, control) {
-  item_data <- item_data[get(control@time_name) %in% control@time_filter]
+keep_t <- function(item_data, ctrl) {
+  item_data <- item_data[get(ctrl@time_name) %in% ctrl@time_filter]
   invisible(item_data)
 }
 
-keep_geo <- function(item_data, control) {
-  item_data <- item_data[get(control@geo_name) %chin% control@geo_filter]
+keep_geo <- function(item_data, ctrl) {
+  item_data <- item_data[get(ctrl@geo_name) %chin% ctrl@geo_filter]
   invisible(item_data)
 }
 
-drop_responseless_items <- function(item_data, control) {
-  item_names <- intersect(control@item_names, names(item_data))
-  response_counts <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) == 0), .SDcols = item_names]
-  responseless_items <- melt.data.table(response_counts, id.vars = NULL, measure.vars = names(response_counts))[(value)]
+drop_responseless_items <- function(item_data, ctrl) {
+  item_names <- intersect(ctrl@item_names, names(item_data))
+  response_n <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) == 0),
+                          .SDcols = item_names]
+  responseless_items <- melt.data.table(response_n, id.vars = NULL, measure.vars
+                                        = names(response_n))[(value)]
   responseless_items <- as.character(responseless_items[, variable])
   if (length(responseless_items)) {
     for (v in responseless_items) {
@@ -434,13 +440,14 @@ drop_responseless_items <- function(item_data, control) {
   invisible(item_data)
 }
 
-drop_items_rare_in_time <- function(item_data, control) {
-  item_names <- intersect(control@item_names, names(item_data))
-  setkeyv(item_data, item_data[, control@time_name])
-  response_t <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) > 0), .SDcols = item_names, by = eval(item_data[, control@time_name])]
-  response_t <- melt.data.table(response_t, id.vars = control@time_name)[(value)]
+drop_items_rare_in_time <- function(item_data, ctrl) {
+  item_names <- intersect(ctrl@item_names, names(item_data))
+  setkeyv(item_data, item_data[, ctrl@time_name])
+  response_t <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) > 0), .SDcols
+                          = item_names, by = eval(item_data[, ctrl@time_name])]
+  response_t <- melt.data.table(response_t, id.vars = ctrl@time_name)[(value)]
   response_t <- response_t[, N := .N, by = variable]
-  response_t <- response_t[N < control@min_t_filter]
+  response_t <- response_t[N < ctrl@min_t_filter]
   rare_items <- as.character(response_t[, variable])
   if (length(rare_items)) {
     for (v in rare_items) {
@@ -449,19 +456,22 @@ drop_items_rare_in_time <- function(item_data, control) {
     message(sprintf(ngettext(length(rare_items),
           "\tDropped %i items for failing min_t requirement (%i)",
           "\tDropped %i items for failing min_t requirement (%i)"),
-        length(rare_items), control@min_t_filter))
+        length(rare_items), ctrl@min_t_filter))
   }
   invisible(item_data)
 }
 
-drop_items_rare_in_polls <- function(item_data, control) {
-  item_names <- intersect(control@item_names, names(item_data))
+drop_items_rare_in_polls <- function(item_data, ctrl) {
+  item_names <- intersect(ctrl@item_names, names(item_data))
   #TODO: dedupe; cf. drop_items_rare_in_time
-  setkeyv(item_data, item_data[, control@survey_name])
-  item_survey <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) > 0), .SDcols = item_names, by = eval(item_data[, control@survey_name])]
-  item_survey <- melt.data.table(item_survey, id.vars = control@survey_name)[(value)]
+  setkeyv(item_data, item_data[, ctrl@survey_name])
+  item_survey <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) > 0),
+                           .SDcols = item_names,
+                           by = eval(item_data[, ctrl@survey_name])]
+  item_survey <- melt.data.table(item_survey, id.vars =
+                                 ctrl@survey_name)[(value)]
   item_survey <- item_survey[, N := .N, by = variable]
-  item_survey <- item_survey[N < control@min_survey_filter]
+  item_survey <- item_survey[N < ctrl@min_survey_filter]
   rare_items <- as.character(item_survey[, variable])
   if (length(rare_items)) {
     for (v in rare_items) {
@@ -470,52 +480,55 @@ drop_items_rare_in_polls <- function(item_data, control) {
     message(sprintf(ngettext(length(rare_items),
           "\tDropped %i items for failing min_survey requirement (%i)",
           "\tDropped %i items for failing min_survey requirement (%i)"),
-        length(rare_items), control@min_survey_filter))
+        length(rare_items), ctrl@min_survey_filter))
   }
   invisible(item_data)
 }
 
-make_group_counts <- function(item_data, aggregate_data, dgirt_in, control) {
+make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
   # Make a table giving success and trial counts by group and item
   item_data[, ("n_responses") := list(rowSums(!is.na(.SD))),
-            .SDcols = dgirt_in$gt_items]
+            .SDcols = d_in$gt_items]
   item_data[, ("def") := lapply(.SD, calc_design_effects),
-            .SDcols = control@weight_name, with = FALSE,
-            by = c(control@geo_name, control@group_names, control@time_name)]
+            .SDcols = ctrl@weight_name, with = FALSE,
+            by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
 
   # get design-effect-adjusted nonmissing response counts by group and item
   item_n <- item_data[, lapply(.SD, count_items, get("n_responses"), get("def")),
-                      .SDcols = c(dgirt_in$gt_items),
-                      by = c(control@geo_name, control@group_names, control@time_name)]
+                      .SDcols = c(d_in$gt_items),
+                      by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
 
   # append _n_grp to the response count columns
-  item_n_vars <- paste0(control@item_names, "_n_grp")
-  names(item_n) <- replace(names(item_n), match(dgirt_in$gt_items, names(item_n)), item_n_vars)
-  setkeyv(item_n, c(control@time_name, control@geo_name, control@group_names))
+  item_n_vars <- paste0(ctrl@item_names, "_n_grp")
+  names(item_n) <- replace(names(item_n), match(d_in$gt_items, names(item_n)), item_n_vars)
+  setkeyv(item_n, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
 
-  item_data[, ("adj_weight") := get(control@weight_name) / n_responses]
+  item_data[, ("adj_weight") := get(ctrl@weight_name) / n_responses]
   item_means <- item_data[, lapply(.SD, function(x) weighted.mean(x, .SD$adj_weight, na.rm = TRUE)),
-                       .SDcols = c(dgirt_in$gt_items, "adj_weight"), by = c(control@geo_name, control@group_names, control@time_name)]
+                          .SDcols = c(d_in$gt_items, "adj_weight"),
+                          by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
 
   # append _mean to the mean response columns 
-  item_mean_vars <- paste0(control@item_names, "_mean")
-  names(item_means) <- replace(names(item_means), match(dgirt_in$gt_items, names(item_means)), item_mean_vars)
-  setkeyv(item_means, c(control@time_name, control@geo_name, control@group_names))
+  item_mean_vars <- paste0(ctrl@item_names, "_mean")
+  names(item_means) <- replace(names(item_means), match(d_in$gt_items, names(item_means)), item_mean_vars)
+  setkeyv(item_means, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
 
   # join response counts with means 
   counts_means <- item_n[item_means]
-  counts_means <- counts_means[, c(control@time_name, control@geo_name, control@group_names, item_mean_vars, item_n_vars), with = FALSE]
+  counts_means <- counts_means[, c(ctrl@time_name, ctrl@geo_name,
+                                   ctrl@group_names, item_mean_vars,
+                                   item_n_vars), with = FALSE]
 
   # the group success count for an item is the product of its count and mean
-  item_s_vars <- paste0(control@item_names, "_s_grp")
+  item_s_vars <- paste0(ctrl@item_names, "_s_grp")
   counts_means[, (item_s_vars) := round(counts_means[, (item_mean_vars), with = FALSE] * counts_means[, (item_n_vars), with = FALSE], 0)]
   counts_means <- counts_means[, -grep("_mean$", names(counts_means)), with = FALSE]
 
   # we want a long table of successes (s_grp) and trials (n_grp) by group and
   # item; items need to move from columns to rows
-  melted <- melt(counts_means, id.vars = c(control@time_name, control@geo_name, control@group_names), variable.name = "item")
+  melted <- melt(counts_means, id.vars = c(ctrl@time_name, ctrl@geo_name, ctrl@group_names), variable.name = "item")
   melted[, c("variable", "item") := list(gsub(".*([sn]_grp)$", "\\1", item), gsub("(.*)_[sn]_grp$", "\\1", item))]
-  f <- as.formula(paste0(paste(control@time_name, control@geo_name, control@group_names, "item", sep = "+"), "~variable"))
+  f <- as.formula(paste0(paste(ctrl@time_name, ctrl@geo_name, ctrl@group_names, "item", sep = "+"), "~variable"))
   group_counts <- data.table::dcast.data.table(melted, f)
 
   # stan code expects unobserved group-items to be omitted
@@ -525,7 +538,7 @@ make_group_counts <- function(item_data, aggregate_data, dgirt_in, control) {
 
   # include aggregates, if any
   if (length(aggregate_data) && nrow(aggregate_data) > 0) {
-    message("Added ", length(control@aggregate_item_names), " items from aggregate data.")
+    message("Added ", length(ctrl@aggregate_item_names), " items from aggregate data.")
     group_counts <- rbind(group_counts, aggregate_data)
   }
   group_counts
@@ -535,15 +548,13 @@ count_items <- function(x, n_responses, def) {
   ceiling(sum(as.integer(!is.na(x)) / n_responses / def, na.rm = TRUE))
 }
 
-get_missing_groups <- function(group_counts, group_grid, control) {
-  # group_counts <- dgirt_in$group_counts
-  # group_grid <- dgirt_in$group_grid
+get_missing_groups <- function(group_counts, group_grid, ctrl) {
   all_group_counts <- merge(group_counts, group_grid, all = TRUE,
-                            by = c(control@group_names, control@geo_name, control@time_name))
+                            by = c(ctrl@group_names, ctrl@geo_name, ctrl@time_name))
   all_group_counts[, ("is_missing") := is.na(n_grp) + 0L]
   all_group_counts[is.na(n_grp), c("n_grp", "s_grp") := 1L]
-  all_group_counts[, (control@geo_name) := paste0("x_", .SD[[control@geo_name]]), .SDcols = c(control@geo_name)]
-  acast_formula <- as.formula(paste0(control@time_name, "~ item ~", paste(control@group_names, collapse = "+"), "+", control@geo_name))
+  all_group_counts[, (ctrl@geo_name) := paste0("x_", .SD[[ctrl@geo_name]]), .SDcols = c(ctrl@geo_name)]
+  acast_formula <- as.formula(paste0(ctrl@time_name, "~ item ~", paste(ctrl@group_names, collapse = "+"), "+", ctrl@geo_name))
   MMM <- reshape2::acast(all_group_counts, acast_formula, value.var = "is_missing", fill = 1)
   # merging group_grid included unobserved combinations of grouping variables; being unobserved, they're associated with
   # no item, and when the result is cast to array, NA will appear in the second dimension as an item name
@@ -552,73 +563,74 @@ get_missing_groups <- function(group_counts, group_grid, control) {
   MMM
 }
 
-shape_hierarchical_data <- function(item_data, modifier_data, dgirt_in, control) {
-  if (dgirt_in$G_hier == 1) {
-    zz.names <- list(control@time_filter, dimnames(dgirt_in$XX)[[2]], "")
+shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl) {
+  if (d_in$G_hier == 1) {
+    zz.names <- list(ctrl@time_filter, dimnames(d_in$XX)[[2]], "")
     zz <- array(data = 0, dim = lapply(zz.names, length), dimnames = zz.names)
   } else {
     # the array of hierarchical data ZZ should be T x P x H, where T is the number of time periods, P is the number of
     # hierarchical parameters (including the geographic), and H is the number of predictors for geographic unit effects
     # TODO: make flexible; as written we must model geo x t
-    modeled_params = c(control@geo_name, control@time_name)
-    unmodeled_params = setdiff(c(control@geo_name, control@time_name, control@group_names), modeled_params)
-    # TODO: uniqueness checks on level2 data (state_demographics should not pass)
-    # TODO: confirm sort order of level2_modifier
+    modeled_params = c(ctrl@geo_name, ctrl@time_name)
+    unmodeled_params = setdiff(c(ctrl@geo_name, ctrl@time_name, ctrl@group_names), modeled_params)
 
     # does hierarchical data include all observed geo?
     missing_modifier_geo <- setdiff(
-                                    unique(dgirt_in$group_grid_t[[control@geo_name]]),
-                                    unique(modifier_data[[control@geo_name]]))
+                                    unique(d_in$group_grid_t[[ctrl@geo_name]]),
+                                    unique(modifier_data[[ctrl@geo_name]]))
     if (length(missing_modifier_geo)) stop("no hierarchical data for geo in item data: ", missing_modifier_geo)
     # does hierarchical data include all modeled t?
-    missing_modifier_t <- setdiff(control@time_filter, unique(modifier_data[[control@time_name]]))
+    missing_modifier_t <- setdiff(ctrl@time_filter, unique(modifier_data[[ctrl@time_name]]))
     if (length(missing_modifier_t)) stop("missing hierarchical data for t in item data: ", missing_modifier_t)
 
     # NOTE: we're prepending the value of geo with its variable name; may not be desirable
-    hier_frame <- copy(modifier_data)[, control@geo_name := paste0(control@geo_name, modifier_data[[control@geo_name]])]
+    hier_frame <- copy(modifier_data)[, ctrl@geo_name := paste0(ctrl@geo_name, modifier_data[[ctrl@geo_name]])]
     hier_frame[, setdiff(names(hier_frame), c(modeled_params, modifier_names)) := NULL, with = FALSE]
-    hier_frame[, c("param", control@geo_name) := .(hier_frame[[control@geo_name]], NULL), with = FALSE]
-    setkeyv(hier_frame, c("param", control@time_name))
+    hier_frame[, c("param", ctrl@geo_name) := .(hier_frame[[ctrl@geo_name]], NULL), with = FALSE]
+    setkeyv(hier_frame, c("param", ctrl@time_name))
 
     modeled_param_names <- unique(hier_frame[, param])
     unmodeled_param_levels = unlist(lapply(unmodeled_params, function(x) {
-                                             paste0(x, unique(dgirt_in$group_grid_t[[x]]))[-1]
+                                             paste0(x, unique(d_in$group_grid_t[[x]]))[-1]
         }))
     param_levels <- c(modeled_param_names, unmodeled_param_levels)
 
     unmodeled_frame <- expand.grid(c(list(
                                           unmodeled_param_levels,
-                                          sort(unique(hier_frame[[control@time_name]])),
+                                          sort(unique(hier_frame[[ctrl@time_name]])),
                                           as.integer(rep(list(0), length(modifier_names))))))
-    unmodeled_frame <- setNames(unmodeled_frame, c("param", control@time_name, modifier_names))
-    setDT(unmodeled_frame, key = c("param", control@time_name))
+    unmodeled_frame <- setNames(unmodeled_frame, c("param", ctrl@time_name, modifier_names))
+    setDT(unmodeled_frame, key = c("param", ctrl@time_name))
 
     hier_frame <- rbind(hier_frame, unmodeled_frame)
 
     # FIXME: hacky handling of the possibility of NA modifier values here
     hier_frame[, c(modifier_names) := lapply(.SD, function(x) replace(x, is.na(x), 0)), .SDcols = modifier_names]
 
-    hier_melt = melt(hier_frame, id.vars = c("param", control@time_name), variable.name = "modifiers", variable.factor = FALSE,
+    hier_melt = melt(hier_frame, id.vars = c("param", ctrl@time_name), variable.name = "modifiers", variable.factor = FALSE,
                      value.factor = FALSE)
     setkeyv(hier_melt, c("param", "year"))
 
-    melt_formula <- as.formula(paste(control@time_name, "param", "modifiers", sep = " ~ "))
+    melt_formula <- as.formula(paste(ctrl@time_name, "param", "modifiers", sep = " ~ "))
     zz <- reshape2::acast(hier_melt, melt_formula, drop = FALSE, value.var = "value")
     zz <- zz[, -1, , drop = FALSE]
   } 
   zz
 }
 
-make_design_matrix <- function(item_data, dgirt_in, control) {
-  design_formula <- as.formula(paste("~ 0", control@geo_name, paste(control@group_names, collapse = " + "), sep = " + "))
-  design_matrix <- with_contr.treatment(model.matrix(design_formula, dgirt_in$group_grid_t))
-  rownames(design_matrix) <- paste(paste(dgirt_in$group_grid_t[[control@group_names]], sep = "_"),
-                                   dgirt_in$group_grid_t[[control@geo_name]],  sep = "_x_")
+make_design_matrix <- function(item_data, d_in, ctrl) {
+  design_formula <- as.formula(paste("~ 0", ctrl@geo_name,
+                                     paste(ctrl@group_names, collapse = " + "),
+                                     sep = " + "))
+  design_matrix <- with_contr.treatment(model.matrix(design_formula, d_in$group_grid_t))
+  rownames(design_matrix) <- paste(paste(d_in$group_grid_t[[ctrl@group_names]], sep = "_"),
+                                   d_in$group_grid_t[[ctrl@geo_name]],  sep = "_x_")
   design_matrix <- subset(design_matrix, select = -1)
   # TODO: move to S4 validate
   invalid_values <- setdiff(as.vector(design_matrix), c(0, 1))
   if (length(invalid_values)) {
-    stop("design matrix values should be in (0, 1); found ", paste(sort(invalid_values), collapse = ", "))
+    stop("design matrix values should be in (0, 1); found ",
+         paste(sort(invalid_values), collapse = ", "))
   }
   design_matrix
 }
