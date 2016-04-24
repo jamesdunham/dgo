@@ -8,9 +8,12 @@
 \alias{dgirtfit-class}
 \alias{extract,dgirtFit-method}
 \alias{get_posterior_mean,dgirtFit-method}
+\alias{show,dgirtFit-method}
 \alias{summary,dgirtFit-method}
 \title{Fitted DGIRT Model.}
 \usage{
+\S4method{show}{dgirtFit}(object = dgirtFit)
+
 \S4method{summary}{dgirtFit}(object = dgirtFit, ...)
 
 \S4method{extract}{dgirtFit}(object = dgirtFit, ...)

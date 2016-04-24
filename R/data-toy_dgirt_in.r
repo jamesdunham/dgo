@@ -19,5 +19,6 @@
 #'                  group_names = "race",
 #'                  survey_name = "source",
 #'                  weight_name = "weight")
+#' @include shape.r
 #' toy_dgirt_in
 NULL

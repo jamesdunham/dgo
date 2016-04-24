@@ -13,4 +13,5 @@
 #' data(toy_dgirt_in)
 #' toy_dgirtfit <- dgirt(dgirt_in, iter = 10, chains = 2)
 #' toy_dgirtfit
+#' @include dgirt.r
 NULL
