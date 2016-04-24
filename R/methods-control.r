@@ -9,12 +9,12 @@ init_control <- function(item_data,
   control <- new("Control", ...)
   # use item_data to set defaults for time_filter and geo_filter
   if (!length(control@time_name) || !control@time_name %in% names(item_data)) {
-    stop("`time_name` (" , control@time_name,  ") is not a name in `item_data`")
+    stop("`time_name` (" , control@time_name,  ") should be a name in `item_data`")
   } else if (!length(control@time_filter)) {
     control@time_filter <- sort(unique(item_data[[control@time_name]]))
   }
   if (!length(control@geo_name) || !control@geo_name %in% names(item_data)) {
-    stop("`geo_name` (" , control@geo_name,  ") is not a name in `item_data`")
+    stop("`geo_name` (" , control@geo_name,  ") should be a name in `item_data`")
   } else if (!length(control@geo_filter)) {
     control@geo_filter <- sort(unique(as.character(item_data[[control@geo_name]])))
   }
