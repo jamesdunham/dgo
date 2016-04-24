@@ -24,7 +24,7 @@ dgirtIn <- R6::R6Class("dgirtIn",
                              control@weight_name)
         if (!all(item_data_names %chin% names(item_data))) {
           stop("Not found as names in item data: ",
-               paste(setdiff(item_data_names, names(item_data)), sep = ", "))
+               paste(setdiff(item_data_names, names(item_data)), collapse = ", "))
         }
       }
 
@@ -33,7 +33,7 @@ dgirtIn <- R6::R6Class("dgirtIn",
                                  control@geo_name, control@time_name)
         if (!all(modifier_data_names %chin% names(modifier_data))) {
           stop("Not found as names in modifier data: ",
-               setdiff(modifier_data_names, names(item_data)))
+               paste(setdiff(modifier_data_names, names(item_data)), collapse = ", "))
         }
       }
 
@@ -42,7 +42,7 @@ dgirtIn <- R6::R6Class("dgirtIn",
                                control@geo_name, control@time_name)
         if (!all(target_data_names %chin% names(target_data))) {
           stop("Not found as names in target data: ",
-               setdiff(target_data_names, names(item_data)))
+               paste(setdiff(target_data_names, names(item_data)), collapse = ", "))
         }
       }
 
@@ -51,7 +51,7 @@ dgirtIn <- R6::R6Class("dgirtIn",
                                   "n_grp", "s_grp")
         if (!all(aggregate_data_names %chin% names(aggregate_data))) {
           stop("Not found as names in aggregate data: ",
-               setdiff(aggregate_data_names, names(item_data)))
+               paste(setdiff(aggregate_data_names, names(item_data)), collapse = ", "))
         }
       }
     },
