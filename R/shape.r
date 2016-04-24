@@ -124,10 +124,8 @@ shape <- function(item_data,
   ctrl@aggregate_item_names <-
     ctrl@aggregate_item_names[ctrl@aggregate_item_names %chin%
                               aggregate_data$item]
-  d_in$time_observed <- unique(item_data[[ctrl@time_name]],
-                               aggregate_data[[ctrl@time_name]])
-  d_in$geo_observed <- unique(item_data[[ctrl@geo_name]],
-                              aggregate_data[[ctrl@geo_name]])
+  d_in$time_observed <- get_observed(item_data, aggregate_data, ctrl@time_name)
+  d_in$geo_observed <- get_observed(item_data, aggregate_data, ctrl@geo_name)
 
   weight(item_data, target_data, ctrl)
   d_in$gt_items <- discretize(item_data, ctrl)
@@ -694,4 +692,8 @@ make_design_matrix <- function(item_data, d_in, ctrl) {
 calc_design_effects <- function(x) {
   y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
   ifelse(is.na(y), 1, y)
+}
+
+get_observed <- function(item_data, aggregate_data, varname) {
+  unique(item_data[[varname]], aggregate_data[[varname]])
 }
