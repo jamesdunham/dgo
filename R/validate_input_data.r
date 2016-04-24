@@ -23,6 +23,10 @@ check_aggregates <- function(aggregate_data, ctrl) {
   nm <- names(aggregate_data)
   if (!length(aggregate_data))
     return (TRUE)
+  if (!(length(ctrl@aggregate_item_names) && ctrl@aggregate_item_names %chin%
+        aggregate_data[["item"]]))
+    stop("\"aggregate_item_names\" should give values of \"item\" column in ",
+         "aggregate_data")
   if (!all(dim(aggregate_data) > 0))
     stop("not all dimensions of aggregate data are positive")
   if (!ctrl@time_name %in% nm)
