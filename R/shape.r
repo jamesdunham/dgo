@@ -119,7 +119,6 @@ shape <- function(item_data,
 
   ctrl <- init_control(item_data, modifier_data, target_data, aggregate_data,
                        ...)
-
   d_in <- dgirtIn$new(item_data, modifier_data, target_data, aggregate_data,
                       ctrl)
 
@@ -541,6 +540,11 @@ make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
     message("Added ", length(ctrl@aggregate_item_names), " items from aggregate data.")
     group_counts <- rbind(group_counts, aggregate_data)
   }
+
+  # create an identifier for use in n_vec and s_vec 
+  group_counts[, name := do.call(paste, c(.SD, sep = "__")), .SDcols =
+               c(ctrl@time_name, ctrl@geo_name, ctrl@group_names, "item")]
+
   group_counts
 }
 
