@@ -190,10 +190,14 @@ shape <- function(item_data,
 }
 
 discretize <- function(item_data, control) {
+  # Discretize item response variables
+  #
+  # For item response variables with K ordered levels, make K - 1 indicators for
+  # whether a response is ranked higher than k.
   gt_table <- create_gt_variables(item_data, control)
   # NOTE: updating item_data by reference to include gt_table
   item_data[, names(gt_table) := gt_table]
-  # returning the names in gt_table to safely reference its columns later without regex matching
+  # return the indicator names to reference them safely later
   names(gt_table)
 }
 
@@ -264,6 +268,7 @@ concat_varinfo = function(widths, values, pad_side) {
 }
 
 make_group_grid <- function(item_data, aggregate_data, control) {
+  # Make a table giving combinations of the grouping variables
   group_grid <- expand.grid(c(
     setNames(list(control@time_filter), control@time_name),
     lapply(rbind(item_data[, c(control@geo_name, control@group_names), with = FALSE],
@@ -275,6 +280,7 @@ make_group_grid <- function(item_data, aggregate_data, control) {
 }
 
 make_group_grid_t <- function(group_grid, control) {
+  # Make a table giving combinations of grouping variables, excluding time
   group_grid_t <- copy(group_grid)[, control@time_name := NULL, with = FALSE]
   group_grid_t <- group_grid_t[!duplicated(group_grid_t)]
   setkeyv(group_grid_t, c(control@group_names, control@geo_name))
@@ -470,6 +476,7 @@ drop_items_rare_in_polls <- function(item_data, control) {
 }
 
 make_group_counts <- function(item_data, aggregate_data, dgirt_in, control) {
+  # Make a table giving success and trial counts by group and item
   item_data[, ("n_responses") := list(rowSums(!is.na(.SD))),
             .SDcols = dgirt_in$gt_items]
   item_data[, ("def") := lapply(.SD, calc_design_effects),
@@ -516,7 +523,6 @@ make_group_counts <- function(item_data, aggregate_data, dgirt_in, control) {
   # be sure to represent no observed success with a zero count, not NA
   group_counts[is.na(s_grp), s_grp := 0]
 
-  # TODO: what if there's overlap between 
   # include aggregates, if any
   if (length(aggregate_data) && nrow(aggregate_data) > 0) {
     message("Added ", length(control@aggregate_item_names), " items from aggregate data.")
