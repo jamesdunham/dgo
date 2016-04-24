@@ -113,7 +113,7 @@ shape <- function(item_data,
 
   check_targets(target_data, ctrl)
   check_modifiers(modifier_data, ctrl) 
-  # TODO: check_aggregates(aggregate_data, ctrl)
+  check_aggregates(aggregate_data, ctrl)
   check_item(item_data, ctrl)
 
   item_data <- restrict_items(item_data, ctrl)
@@ -291,7 +291,8 @@ restrict_items <- function(item_data, ctrl) {
   }
   coerce_factors(item_data, c(ctrl@group_names, ctrl@geo_name,
                               ctrl@survey_name))
-  rename_numerics(item_data, ctrl)
+  rename_numerics(item_data, c(ctrl@group_names, ctrl@geo_name,
+                               ctrl@survey_name))
   initial_dim <- dim(item_data)
   final_dim <- c()
   iter <- 1L
@@ -326,16 +327,22 @@ restrict_modifier <- function(item_data, modifier_data, ctrl) {
                                     ctrl@time_name))
 
     modifier_data <- modifier_data[modifier_data[[ctrl@geo_name]] %in%
-                                   item_data[[ctrl@geo_name]] &
-                                 modifier_data[[ctrl@time_name]] %in%
+                                   item_data[[ctrl@geo_name]]]
+    if (!nrow(modifier_data))
+      stop("no rows in modifier data remaining after subsetting to local ",
+           "geographic areas in item data")
+    modifier_data <- modifier_data[modifier_data[[ctrl@time_name]] %in%
                                    item_data[[ctrl@time_name]]]
+    if (!nrow(modifier_data))
+      stop("no rows in modifier data remaining after subsetting to time ",
+           "periods in item data")
 
-    if (!identical(nrow(modifier_data),
-                   nrow(unique(modifier_data[, c(ctrl@geo_name, ctrl@time_name), with = FALSE])))) {
-      stop("time and geo identifiers don't uniquely identify modifier data observations")
-    }
-    message()
-    message("Restricted modifier data to time and geo observed in item data.")
+    n <- nrow(unique(modifier_data[, c(ctrl@geo_name, ctrl@time_name), with = FALSE]))
+    if (!identical(nrow(modifier_data), n))
+      stop("time and geo identifiers don't uniquely identify modifier data ",
+           "observations")
+   
+    message("\nRestricted modifier data to time and geo observed in item data.")
   }
   invisible(modifier_data)
 }
@@ -343,12 +350,32 @@ restrict_modifier <- function(item_data, modifier_data, ctrl) {
 restrict_aggregates <- function(aggregate_data, ctrl) {
   if (length(aggregate_data)) {
     setDT(aggregate_data)
-    aggregate_data <- subset(aggregate_data,
-                             aggregate_data[[ctrl@geo_name]] %chin% ctrl@geo_filter & 
-                             aggregate_data[[ctrl@time_name]] %in% ctrl@time_filter &
-                             aggregate_data[["item"]] %in% ctrl@aggregate_item_names)
-    # subset to observed; FIXME: assumes n_grp variable name
+
+    coerce_factors(aggregate_data, c(ctrl@group_names, ctrl@geo_name,
+                                     ctrl@time_name))
+
+    aggregate_data <- aggregate_data[aggregate_data[[ctrl@geo_name]] %chin%
+                                     ctrl@geo_filter]
+    if (!nrow(aggregate_data))
+      stop("no rows in aggregate data remaining after subsetting to local ",
+           "geographic areas in `geo_filter`")
+    aggregate_data <- aggregate_data[aggregate_data[[ctrl@time_name]] %in%
+                                     ctrl@time_filter]
+    if (!nrow(aggregate_data))
+      stop("no rows in aggregate data remaining after subsetting to time ",
+           "periods in `time_filter`")
+
+    aggregate_data <- aggregate_data[aggregate_data[["item"]] %chin%
+                                     ctrl@aggregate_item_names]
+    if (!nrow(aggregate_data))
+      stop("no rows in aggregate data remaining after subsetting to items ",
+           "in `aggregate_item_names`")
+
     aggregate_data <- aggregate_data[n_grp > 0]
+    if (!nrow(aggregate_data))
+      stop("no rows in aggregate data remaining after dropping unobserved ",
+           "group-item combinations")
+
     extra_colnames <- setdiff(names(aggregate_data),
                               c(ctrl@geo_name, ctrl@time_name, ctrl@group_names, "item", "s_grp", "n_grp"))
     if (length(extra_colnames)) {
@@ -362,22 +389,24 @@ coerce_factors <- function(tbl, vars) {
   factor_vars <- vars[vapply(tbl[, vars, with = FALSE], is.factor, logical(1))]
   if (length(factor_vars)) {
     for (v in factor_vars) {
+      warning("Coercing factor `", v, "` in ", substitute(tbl), 
+              " with `as.character(", substitute(tbl), "[[", v, "]])`")
       tbl[, (v) := as.character(tbl[[v]])]
     }
   }
   invisible(tbl)
 }
 
-rename_numerics <- function(item_data, ctrl) {
-  varnames <- c(ctrl@group_names, ctrl@geo_name, ctrl@modifier_names,
-                ctrl@t1_modifier_names)
-  varnames <- varnames[vapply(item_data[, varnames], is.numeric, logical(1))]
-  if (length(varnames)) {
-    for (v in varnames) {
-      item_data[, (v) := paste0(v, item_data[[v]])]
+rename_numerics <- function(tbl, vars) {
+  numeric_vars <- vars[vapply(tbl[, vars], is.numeric, logical(1))]
+  if (length(numeric_vars)) {
+    for (v in numeric_vars) {
+      warning("coercing numeric `", v, "` in ", substitute(tbl),
+              " with `paste0(", v, ", ", substitute(tbl), "[[", v, "]])`")
+      tbl[, (v) := paste0(v, tbl[[v]])]
     }
   }
-  invisible(item_data)
+  invisible(tbl)
 }
 
 drop_rows_missing_covariates <- function(item_data, ctrl) {
@@ -414,23 +443,29 @@ drop_responseless_items <- function(item_data, ctrl) {
   item_names <- intersect(ctrl@item_names, names(item_data))
   response_n <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) == 0),
                           .SDcols = item_names]
-  responseless_items <- melt.data.table(response_n, id.vars = NULL, measure.vars
-                                        = names(response_n))[(value)]
-  responseless_items <- as.character(responseless_items[, variable])
+  response_n <- item_data[, lapply(.SD, function(x) sum(!is.na(x))),
+                          .SDcols = item_names]
+  response_n <- melt.data.table(response_n, id.vars = NULL,
+                                measure.vars = names(response_n),
+                                variable.name = "variable",
+                                value.name = "count") 
+  responseless_items <- as.character(response_n[count == 0][["variable"]])
   if (length(responseless_items)) {
-    for (v in responseless_items) {
-      item_data[, (v) := NULL]
-    }
+    item_data[, (responseless_items) := NULL]
     message(sprintf(ngettext(length(responseless_items),
           "\tDropped %i item for lack of responses",
           "\tDropped %i items for lack of responses"),
         length(responseless_items)))
+    if (!length(intersect(ctrl@item_names, names(item_data))))
+      stop("no items remaining after dropping items without responses")
   }
   invisible(item_data)
 }
 
 drop_itemless_respondents <- function(item_data, ctrl) {
   item_names <- intersect(ctrl@item_names, names(item_data))
+  if (!length(item_names)) stop("no items remaining")
+  if (!nrow(item_data)) stop("no rows remaining")
   item_data[, ("n_responses") := list(rowSums(!is.na(.SD)) == 0L),
             .SDcols = item_names]
   n_itemless <- sum(item_data[["n_responses"]])
@@ -440,18 +475,24 @@ drop_itemless_respondents <- function(item_data, ctrl) {
           "\tDropped %i rows for lacking item responses",
           "\tDropped %i rows for lacking item responses"),
         n_itemless))
+    if (!nrow(item_data))
+      stop("no rows remaining after dropping rows without item responses")
   }
   invisible(item_data)
 }
 
 drop_items_rare_in_time <- function(item_data, ctrl) {
   item_names <- intersect(ctrl@item_names, names(item_data))
+  if (!length(item_names)) stop("no items remaining")
+  if (!nrow(item_data)) stop("no rows remaining")
   setkeyv(item_data, item_data[, ctrl@time_name])
   response_t <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) > 0), .SDcols
                           = item_names, by = eval(item_data[, ctrl@time_name])]
-  response_t <- melt.data.table(response_t, id.vars = ctrl@time_name)[(value)]
-  response_t <- response_t[, N := .N, by = variable]
-  response_t <- response_t[N < ctrl@min_t_filter]
+  response_t <- melt.data.table(response_t, id.vars = ctrl@time_name,
+                                variable.name = "variable",
+                                value.name = "observed")
+  response_t <- response_t[, .(count = sum(observed)), keyby = "variable"]
+  response_t <- response_t[count < ctrl@min_t_filter]
   rare_items <- as.character(response_t[, variable])
   if (length(rare_items)) {
     for (v in rare_items) {
@@ -461,12 +502,16 @@ drop_items_rare_in_time <- function(item_data, ctrl) {
           "\tDropped %i items for failing min_t requirement (%i)",
           "\tDropped %i items for failing min_t requirement (%i)"),
         length(rare_items), ctrl@min_t_filter))
+    if (!length(intersect(ctrl@item_names, names(item_data))))
+      stop("no items remaining after dropping items without responses")
   }
   invisible(item_data)
 }
 
 drop_items_rare_in_polls <- function(item_data, ctrl) {
   item_names <- intersect(ctrl@item_names, names(item_data))
+  if (!length(item_names)) stop("no items remaining")
+  if (!nrow(item_data)) stop("no rows remaining")
   #TODO: dedupe; cf. drop_items_rare_in_time
   setkeyv(item_data, item_data[, ctrl@survey_name])
   item_survey <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) > 0),
@@ -485,6 +530,8 @@ drop_items_rare_in_polls <- function(item_data, ctrl) {
           "\tDropped %i items for failing min_survey requirement (%i)",
           "\tDropped %i items for failing min_survey requirement (%i)"),
         length(rare_items), ctrl@min_survey_filter))
+    if (!length(intersect(ctrl@item_names, names(item_data))))
+      stop("no items remaining after dropping items without responses")
   }
   invisible(item_data)
 }
