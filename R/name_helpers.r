@@ -1,4 +1,3 @@
-# TODO: export a helper for expanding flatnames to columns?
 flatnames <- function(dgirt_out, fnames = NULL) {
 
   control <- dgirt_out@dgirt_in$control

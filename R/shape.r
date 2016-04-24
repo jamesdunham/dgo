@@ -111,13 +111,14 @@ shape <- function(item_data,
   d_in <- dgirtIn$new(item_data, modifier_data, target_data, aggregate_data,
                       ctrl)
 
+  # validate inputs #
   check_targets(target_data, ctrl)
   check_modifiers(modifier_data, ctrl) 
   check_aggregates(aggregate_data, ctrl)
   check_item(item_data, ctrl)
 
+  # restrict data #
   item_data <- restrict_items(item_data, ctrl)
-  # preferable to avoid modifying ctrl
   ctrl@item_names <- intersect(ctrl@item_names, names(item_data))
   modifier_data <- restrict_modifier(item_data, modifier_data, ctrl)
   aggregate_data <- restrict_aggregates(aggregate_data, ctrl)
@@ -127,6 +128,7 @@ shape <- function(item_data,
   d_in$time_observed <- get_observed(item_data, aggregate_data, ctrl@time_name)
   d_in$geo_observed <- get_observed(item_data, aggregate_data, ctrl@geo_name)
 
+  # aggregate individual item response data to group level #
   weight(item_data, target_data, ctrl)
   d_in$gt_items <- discretize(item_data, ctrl)
 
@@ -134,6 +136,7 @@ shape <- function(item_data,
   d_in$group_grid_t <- make_group_grid_t(d_in$group_grid, ctrl)
   d_in$group_counts <- make_group_counts(item_data, aggregate_data, d_in, ctrl)
 
+  # make objects used by dgirt.stan #
   d_in$n_vec <- setNames(d_in$group_counts$n_grp, d_in$group_counts$name)
   d_in$s_vec <- setNames(d_in$group_counts$s_grp, d_in$group_counts$name)
 
@@ -165,441 +168,20 @@ shape <- function(item_data,
   d_in$H <- dim(d_in$ZZ)[[3]]
   d_in$Hprior <- d_in$H 
 
-  d_in$control <- ctrl
+  # include subset data and other objects that may be useful later #
   d_in$item_data <- item_data
   d_in$modifier_data <- modifier_data
   d_in$aggregate_data <- aggregate_data
   d_in$target_data <- target_data
+  d_in$control <- ctrl
   d_in$call <- match.call()
 
-  check(d_in)
-  d_in
-}
-
-discretize <- function(item_data, ctrl) {
-  # Discretize item response variables
-  #
-  # For item response variables with K ordered levels, make K - 1 indicators for
-  # whether a response is ranked higher than k.
-  gt_table <- create_gt_variables(item_data, ctrl)
-  # NOTE: updating item_data by reference to include gt_table
-  item_data[, names(gt_table) := gt_table]
-  # return the indicator names to reference them safely later
-  names(gt_table)
-}
-
-check <- function(d_in) {
+  # validate input to model #
   check_dimensions(d_in)
   check_values(d_in)
   check_order(d_in)
-}
 
-create_gt_variables <- function(item_data, ctrl){
-  widths <- c("item" = 30, "class" = 10, "levels" = 12, "responses" = 16)
-  print_varinfo_header(widths)
-  out <- lapply(ctrl@item_names, function(i) {
-    if (is.ordered(item_data[[i]])) {
-      i_levels <- na.omit(levels(droplevels(item_data[[i]])))
-      values <- match(as.character(item_data[[i]]), i_levels)
-    } else if (is.numeric(item_data[[i]])) {
-      i_levels <- sort.int(na.omit(unique.default(item_data[[i]])))
-      values <- match(item_data[[i]], i_levels)
-    } else {
-      stop("each item should be an ordered factor or numeric")
-    }
-    gt_levels <- seq_along(i_levels)[-length(i_levels)]
-
-    if (!length(gt_levels)) {
-      stop("no variation in item ", deparse(i))
-    } else if (identical(length(gt_levels), 1L)) {
-      stopifnot(identical(length(i_levels), 2L))
-    } else if (length(gt_levels) > 1L) {
-      stopifnot(length(i_levels) > 2L)
-    }
-
-    print_varinfo(item_data, i, i_levels, gt_levels, widths)
-    gt_cols <- lapply(gt_levels, function(gt) {
-      is_greater(values, gt)
-    })
-    assertthat::assert_that(not_empty(gt_cols))
-    setNames(gt_cols, paste(i, gt_levels, sep = "_gt"))
-  })
-  print_varinfo_rule(widths)
-  data.frame(out)
-}
-
-print_varinfo_header <- function(widths) {
-  pad_side <- c("right", rep("left", length(widths) - 1))
-  message()
-  message(concat_varinfo(widths, names(widths), pad_side))
-  print_varinfo_rule(widths)
-}
-
-print_varinfo_rule <- function(widths) {
-  message(paste0(rep('-', sum(widths)), collapse = ''))
-}
-
-print_varinfo <- function(item_data, i, i_levels, gt_levels, widths) {
-  item_name = ifelse(nchar(i) > 30,paste0(stringi::stri_sub(i, 1, 26), '...'), i)
-  responses = format(sum(!is.na(item_data[[i]])), big.mark = ",")
-  values <- c("item" = item_name, "class" = class(item_data[[i]]), "levels" = length(i_levels), responses = responses)
-  pad_side <- c("right", rep("left", length(values) - 1))
-  assertthat::assert_that(identical(length(widths), length(values)))
-  message(concat_varinfo(widths, values, pad_side))
-}
-
-concat_varinfo = function(widths, values, pad_side) {
-  mapply(function(width, value, side) {
-      paste0(stringi::stri_pad(value, width, side = side), collapse = '')
-    }, widths, values, pad_side)
-}
-
-make_group_grid <- function(item_data, aggregate_data, ctrl) {
-  # Make a table giving combinations of the grouping variables
-  group_grid <- expand.grid(c(
-    setNames(list(ctrl@time_filter), ctrl@time_name),
-    lapply(rbind(item_data[, c(ctrl@geo_name, ctrl@group_names), with = FALSE],
-                 aggregate_data[, c(ctrl@group_names, ctrl@geo_name), with =
-                                FALSE]),
-           function(x) sort(unique(x)))), stringsAsFactors = FALSE)
-  setDT(group_grid, key = c(ctrl@time_name, ctrl@group_names, ctrl@geo_name))
-  invisible(group_grid)
-}
-
-make_group_grid_t <- function(group_grid, ctrl) {
-  # Make a table giving combinations of grouping variables, excluding time
-  group_grid_t <- copy(group_grid)[, ctrl@time_name := NULL, with = FALSE]
-  group_grid_t <- group_grid_t[!duplicated(group_grid_t)]
-  setkeyv(group_grid_t, c(ctrl@group_names, ctrl@geo_name))
-  group_grid_t
-}
-
-restrict_items <- function(item_data, ctrl) {
-  setDT(item_data)
-  extra_colnames <- setdiff(names(item_data),
-                            c(ctrl@item_names,
-                              ctrl@strata_names,
-                              ctrl@survey_name,
-                              ctrl@geo_name,
-                              ctrl@time_name,
-                              ctrl@group_names,
-                              ctrl@weight_name))
-  if (length(extra_colnames)) {
-    item_data[, c(extra_colnames) := NULL]
-  }
-  coerce_factors(item_data, c(ctrl@group_names, ctrl@geo_name,
-                              ctrl@survey_name))
-  rename_numerics(item_data, c(ctrl@group_names, ctrl@geo_name,
-                               ctrl@survey_name))
-  initial_dim <- dim(item_data)
-  final_dim <- c()
-  iter <- 1L
-  while (!identical(initial_dim, final_dim)) {
-    message("Applying restrictions, pass ", iter, "...")
-    if (identical(iter, 1L)) item_data <-
-      drop_rows_missing_covariates(item_data, ctrl)
-    initial_dim <- dim(item_data)
-    item_data <- keep_t(item_data, ctrl)
-    item_data <- keep_geo(item_data, ctrl)
-    drop_responseless_items(item_data, ctrl)
-    drop_items_rare_in_time(item_data, ctrl)
-    drop_items_rare_in_polls(item_data, ctrl)
-    item_data <- drop_itemless_respondents(item_data, ctrl)
-    final_dim <- dim(item_data)
-    iter <- iter + 1L
-    if (identical(initial_dim, final_dim)) {
-      message("\tNo changes")
-    } 
-  }
-  setkeyv(item_data, c(ctrl@geo_name, ctrl@time_name))
-  invisible(item_data)
-}
-
-restrict_modifier <- function(item_data, modifier_data, ctrl) {
-  if (length(modifier_data)) {
-    setDT(modifier_data)
-
-    coerce_factors(modifier_data, c(ctrl@modifier_names,
-                                    ctrl@t1_modifier_names,
-                                    ctrl@geo_name,
-                                    ctrl@time_name))
-
-    modifier_data <- modifier_data[modifier_data[[ctrl@geo_name]] %in%
-                                   item_data[[ctrl@geo_name]]]
-    if (!nrow(modifier_data))
-      stop("no rows in modifier data remaining after subsetting to local ",
-           "geographic areas in item data")
-    modifier_data <- modifier_data[modifier_data[[ctrl@time_name]] %in%
-                                   item_data[[ctrl@time_name]]]
-    if (!nrow(modifier_data))
-      stop("no rows in modifier data remaining after subsetting to time ",
-           "periods in item data")
-
-    n <- nrow(unique(modifier_data[, c(ctrl@geo_name, ctrl@time_name), with = FALSE]))
-    if (!identical(nrow(modifier_data), n))
-      stop("time and geo identifiers don't uniquely identify modifier data ",
-           "observations")
-   
-    message("\nRestricted modifier data to time and geo observed in item data.")
-  }
-  invisible(modifier_data)
-}
-
-restrict_aggregates <- function(aggregate_data, ctrl) {
-  if (length(aggregate_data)) {
-    setDT(aggregate_data)
-
-    coerce_factors(aggregate_data, c(ctrl@group_names, ctrl@geo_name,
-                                     ctrl@time_name))
-
-    aggregate_data <- aggregate_data[aggregate_data[[ctrl@geo_name]] %chin%
-                                     ctrl@geo_filter]
-    if (!nrow(aggregate_data))
-      stop("no rows in aggregate data remaining after subsetting to local ",
-           "geographic areas in `geo_filter`")
-    aggregate_data <- aggregate_data[aggregate_data[[ctrl@time_name]] %in%
-                                     ctrl@time_filter]
-    if (!nrow(aggregate_data))
-      stop("no rows in aggregate data remaining after subsetting to time ",
-           "periods in `time_filter`")
-
-    aggregate_data <- aggregate_data[aggregate_data[["item"]] %chin%
-                                     ctrl@aggregate_item_names]
-    if (!nrow(aggregate_data))
-      stop("no rows in aggregate data remaining after subsetting to items ",
-           "in `aggregate_item_names`")
-
-    aggregate_data <- aggregate_data[n_grp > 0]
-    if (!nrow(aggregate_data))
-      stop("no rows in aggregate data remaining after dropping unobserved ",
-           "group-item combinations")
-
-    extra_colnames <- setdiff(names(aggregate_data),
-                              c(ctrl@geo_name, ctrl@time_name, ctrl@group_names, "item", "s_grp", "n_grp"))
-    if (length(extra_colnames)) {
-      aggregate_data[, c(extra_colnames) := NULL, with = FALSE]
-    }
-    aggregate_data
-  }
-}
-
-coerce_factors <- function(tbl, vars) {
-  factor_vars <- vars[vapply(tbl[, vars, with = FALSE], is.factor, logical(1))]
-  if (length(factor_vars)) {
-    for (v in factor_vars) {
-      warning("Coercing factor `", v, "` in ", substitute(tbl), 
-              " with `as.character(", substitute(tbl), "[[", v, "]])`")
-      tbl[, (v) := as.character(tbl[[v]])]
-    }
-  }
-  invisible(tbl)
-}
-
-rename_numerics <- function(tbl, vars) {
-  numeric_vars <- vars[vapply(tbl[, vars], is.numeric, logical(1))]
-  if (length(numeric_vars)) {
-    for (v in numeric_vars) {
-      warning("coercing numeric `", v, "` in ", substitute(tbl),
-              " with `paste0(", v, ", ", substitute(tbl), "[[", v, "]])`")
-      tbl[, (v) := paste0(v, tbl[[v]])]
-    }
-  }
-  invisible(tbl)
-}
-
-drop_rows_missing_covariates <- function(item_data, ctrl) {
-  n <- nrow(item_data)
-  is_missing <- rowSums(is.na(item_data[, c(ctrl@geo_name, ctrl@time_name, ctrl@group_names, ctrl@survey_name), with = FALSE])) > 0
-  item_data <- subset(item_data, !is_missing)
-  if (!identical(n, nrow(item_data))) {
-    message("\tDropped ", format(n - nrow(item_data), big.mark = ","),
-            " rows for missingness in covariates")
-  }
-  item_data
-}
-
-with_contr.treatment <- function(...) {
-  contrast_options = getOption("contrasts")
-  options("contrasts"= c(unordered = "contr.treatment",
-                         ordered = "contr.treatment"))
-  res <- eval(...)
-  options("contrasts"= contrast_options)
-  res
-}
-
-keep_t <- function(item_data, ctrl) {
-  item_data <- item_data[get(ctrl@time_name) %in% ctrl@time_filter]
-  invisible(item_data)
-}
-
-keep_geo <- function(item_data, ctrl) {
-  item_data <- item_data[get(ctrl@geo_name) %chin% ctrl@geo_filter]
-  invisible(item_data)
-}
-
-drop_responseless_items <- function(item_data, ctrl) {
-  item_names <- intersect(ctrl@item_names, names(item_data))
-  response_n <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) == 0),
-                          .SDcols = item_names]
-  response_n <- item_data[, lapply(.SD, function(x) sum(!is.na(x))),
-                          .SDcols = item_names]
-  response_n <- melt.data.table(response_n, id.vars = NULL,
-                                measure.vars = names(response_n),
-                                variable.name = "variable",
-                                value.name = "count") 
-  responseless_items <- as.character(response_n[count == 0][["variable"]])
-  if (length(responseless_items)) {
-    item_data[, (responseless_items) := NULL]
-    message(sprintf(ngettext(length(responseless_items),
-          "\tDropped %i item for lack of responses",
-          "\tDropped %i items for lack of responses"),
-        length(responseless_items)))
-    if (!length(intersect(ctrl@item_names, names(item_data))))
-      stop("no items remaining after dropping items without responses")
-  }
-  invisible(item_data)
-}
-
-drop_itemless_respondents <- function(item_data, ctrl) {
-  item_names <- intersect(ctrl@item_names, names(item_data))
-  if (!length(item_names)) stop("no items remaining")
-  if (!nrow(item_data)) stop("no rows remaining")
-  item_data[, ("n_responses") := list(rowSums(!is.na(.SD)) == 0L),
-            .SDcols = item_names]
-  n_itemless <- sum(item_data[["n_responses"]])
-  if (n_itemless > 0) {
-    item_data <- item_data[!(n_responses)]
-    message(sprintf(ngettext(n_itemless,
-          "\tDropped %i rows for lacking item responses",
-          "\tDropped %i rows for lacking item responses"),
-        n_itemless))
-    if (!nrow(item_data))
-      stop("no rows remaining after dropping rows without item responses")
-  }
-  invisible(item_data)
-}
-
-drop_items_rare_in_time <- function(item_data, ctrl) {
-  item_names <- intersect(ctrl@item_names, names(item_data))
-  if (!length(item_names)) stop("no items remaining")
-  if (!nrow(item_data)) stop("no rows remaining")
-  setkeyv(item_data, item_data[, ctrl@time_name])
-  response_t <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) > 0), .SDcols
-                          = item_names, by = eval(item_data[, ctrl@time_name])]
-  response_t <- melt.data.table(response_t, id.vars = ctrl@time_name,
-                                variable.name = "variable",
-                                value.name = "observed")
-  response_t <- response_t[, .(count = sum(observed)), keyby = "variable"]
-  response_t <- response_t[count < ctrl@min_t_filter]
-  rare_items <- as.character(response_t[, variable])
-  if (length(rare_items)) {
-    for (v in rare_items) {
-      item_data[, (v) := NULL]
-    }
-    message(sprintf(ngettext(length(rare_items),
-          "\tDropped %i items for failing min_t requirement (%i)",
-          "\tDropped %i items for failing min_t requirement (%i)"),
-        length(rare_items), ctrl@min_t_filter))
-    if (!length(intersect(ctrl@item_names, names(item_data))))
-      stop("no items remaining after dropping items without responses")
-  }
-  invisible(item_data)
-}
-
-drop_items_rare_in_polls <- function(item_data, ctrl) {
-  item_names <- intersect(ctrl@item_names, names(item_data))
-  if (!length(item_names)) stop("no items remaining")
-  if (!nrow(item_data)) stop("no rows remaining")
-  #TODO: dedupe; cf. drop_items_rare_in_time
-  setkeyv(item_data, item_data[, ctrl@survey_name])
-  item_survey <- item_data[, lapply(.SD, function(x) sum(!is.na(x)) > 0),
-                           .SDcols = item_names,
-                           by = eval(item_data[, ctrl@survey_name])]
-  item_survey <- melt.data.table(item_survey, id.vars =
-                                 ctrl@survey_name)[(value)]
-  item_survey <- item_survey[, N := .N, by = variable]
-  item_survey <- item_survey[N < ctrl@min_survey_filter]
-  rare_items <- as.character(item_survey[, variable])
-  if (length(rare_items)) {
-    for (v in rare_items) {
-      item_data[, (v) := NULL]
-    }
-    message(sprintf(ngettext(length(rare_items),
-          "\tDropped %i items for failing min_survey requirement (%i)",
-          "\tDropped %i items for failing min_survey requirement (%i)"),
-        length(rare_items), ctrl@min_survey_filter))
-    if (!length(intersect(ctrl@item_names, names(item_data))))
-      stop("no items remaining after dropping items without responses")
-  }
-  invisible(item_data)
-}
-
-make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
-  # Make a table giving success and trial counts by group and item
-  item_data[, ("n_responses") := list(rowSums(!is.na(.SD))),
-            .SDcols = d_in$gt_items]
-  item_data[, ("def") := lapply(.SD, calc_design_effects),
-            .SDcols = ctrl@weight_name, with = FALSE,
-            by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
-
-  # get design-effect-adjusted nonmissing response counts by group and item
-  item_n <- item_data[, lapply(.SD, count_items, get("n_responses"), get("def")),
-                      .SDcols = c(d_in$gt_items),
-                      by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
-
-  # append _n_grp to the response count columns
-  item_n_vars <- paste0(ctrl@item_names, "_n_grp")
-  names(item_n) <- replace(names(item_n), match(d_in$gt_items, names(item_n)), item_n_vars)
-  setkeyv(item_n, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
-
-  item_data[, ("adj_weight") := get(ctrl@weight_name) / n_responses]
-  item_means <- item_data[, lapply(.SD, function(x) weighted.mean(x, .SD$adj_weight, na.rm = TRUE)),
-                          .SDcols = c(d_in$gt_items, "adj_weight"),
-                          by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
-
-  # append _mean to the mean response columns 
-  item_mean_vars <- paste0(ctrl@item_names, "_mean")
-  names(item_means) <- replace(names(item_means), match(d_in$gt_items, names(item_means)), item_mean_vars)
-  setkeyv(item_means, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
-
-  # join response counts with means 
-  counts_means <- item_n[item_means]
-  counts_means <- counts_means[, c(ctrl@time_name, ctrl@geo_name,
-                                   ctrl@group_names, item_mean_vars,
-                                   item_n_vars), with = FALSE]
-
-  # the group success count for an item is the product of its count and mean
-  item_s_vars <- paste0(ctrl@item_names, "_s_grp")
-  counts_means[, (item_s_vars) := round(counts_means[, (item_mean_vars), with = FALSE] * counts_means[, (item_n_vars), with = FALSE], 0)]
-  counts_means <- counts_means[, -grep("_mean$", names(counts_means)), with = FALSE]
-
-  # we want a long table of successes (s_grp) and trials (n_grp) by group and
-  # item; items need to move from columns to rows
-  melted <- melt(counts_means, id.vars = c(ctrl@time_name, ctrl@geo_name, ctrl@group_names), variable.name = "item")
-  melted[, c("variable", "item") := list(gsub(".*([sn]_grp)$", "\\1", item), gsub("(.*)_[sn]_grp$", "\\1", item))]
-  f <- as.formula(paste0(paste(ctrl@time_name, ctrl@geo_name, ctrl@group_names, "item", sep = "+"), "~variable"))
-  group_counts <- data.table::dcast.data.table(melted, f)
-
-  # stan code expects unobserved group-items to be omitted
-  group_counts <- group_counts[n_grp != 0 & !is.na(n_grp)]
-  # be sure to represent no observed success with a zero count, not NA
-  group_counts[is.na(s_grp), s_grp := 0]
-
-  # include aggregates, if any
-  if (length(aggregate_data) && nrow(aggregate_data) > 0) {
-    message("Added ", length(ctrl@aggregate_item_names), " items from aggregate data.")
-    group_counts <- rbind(group_counts, aggregate_data)
-  }
-
-  # create an identifier for use in n_vec and s_vec 
-  group_counts[, name := do.call(paste, c(.SD, sep = "__")), .SDcols =
-               c(ctrl@time_name, ctrl@geo_name, ctrl@group_names, "item")]
-
-  group_counts
-}
-
-count_items <- function(x, n_responses, def) {
-  ceiling(sum(as.integer(!is.na(x)) / n_responses / def, na.rm = TRUE))
+  d_in
 }
 
 get_missing_groups <- function(group_counts, group_grid, ctrl) {
@@ -689,11 +271,16 @@ make_design_matrix <- function(item_data, d_in, ctrl) {
   design_matrix
 }
 
+with_contr.treatment <- function(...) {
+  contrast_options = getOption("contrasts")
+  options("contrasts"= c(unordered = "contr.treatment",
+                         ordered = "contr.treatment"))
+  res <- eval(...)
+  options("contrasts"= contrast_options)
+  res
+}
+
 calc_design_effects <- function(x) {
   y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
   ifelse(is.na(y), 1, y)
-}
-
-get_observed <- function(item_data, aggregate_data, varname) {
-  unique(item_data[[varname]], aggregate_data[[varname]])
 }
