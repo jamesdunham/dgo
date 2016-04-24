@@ -13,6 +13,7 @@ Depends:
 LazyData: true
 Imports:
     assertthat,
+    methods,
     reshape2,
     Rcpp,
     R6,
@@ -28,8 +29,8 @@ LinkingTo: Rcpp
 VignetteBuilder: knitr
 Collate:
     'RcppExports.R'
+    'aggregate_item_responses.r'
     'assertions.r'
-    'check_dgirt_in.r'
     'class-control.r'
     'class-dgirtfit.r'
     'constants.r'
@@ -40,12 +41,15 @@ Collate:
     'data-toy_dgirt_in.r'
     'dgirt.r'
     'data-toy_dgirtfit.r'
+    'discretize_item_responses.r'
     'expand_rownames.r'
     'methods-control.r'
     'methods-dgirtfit.r'
     'methods-dgirtin.r'
-    'names.r'
+    'name_helpers.r'
     'poststratify.r'
     'rake_partial.r'
+    'restrict_input_data.r'
+    'reweight_item_responses.r'
+    'validate_dgirtIn.r'
     'validate_input_data.r'
-    'weight.r'
