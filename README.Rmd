@@ -3,6 +3,7 @@ output:
   md_document:
     variant: markdown_github
 ---
+
 dgirt is an R package for dynamic group-level IRT models as developed in
 [Caughey and Warshaw 2014](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html):
 
@@ -17,6 +18,16 @@ dgirt is an R package for dynamic group-level IRT models as developed in
 > time. The group-level estimates can be weighted to generate estimates for
 > geographic units. This framework opens up vast new areas of research on
 > historical public opinion, especially at the subnational level.
+
+```{r, knitr-options, echo = FALSE}
+# rmarkdown::render("~/projects/dgirt/README.Rmd")
+knitr::opts_chunk$set(
+  echo = TRUE,
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-",
+  cache = FALSE)
+```
 
 # Quick start
 
