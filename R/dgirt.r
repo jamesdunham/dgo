@@ -31,7 +31,7 @@
 dgirt <- function(shaped_data, ...) {
 
   dots <- list(...,
-               file = system.file("inst/dgirt.stan", package = "dgirt", mustWork = TRUE),
+               file = system.file("dgirt.stan", package = "dgirt", mustWork = TRUE),
                data = shaped_data$as_list(...))
   if (!length(dots$pars)) {
     dots$pars <- c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
