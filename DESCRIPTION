@@ -1,29 +1,55 @@
 Package: dgirt
 Title: Group-Level Dynamic IRT and Small Area Estimation
-Version: 0.0.10
-Description: What the package does (one paragraph).
+Version: 0.1.00
+Description: Fit group-level dynamic IRT models.
 Authors@R: c(person("James", "Dunham", email = "jdunham@mit.edu", role = c("aut", "cre")),
   person("Christopher", "Warshaw", email = "cwarshaw@mit.edu", role = c("aut")),
   person("Devin", "Caughey", email = "dcaughey@mit.edu", role = c("aut")))
 License: GPL-3
 Depends:
+    data.table,
     R (>= 3.2.2),
     rstan
 LazyData: true
 Imports:
     assertthat,
-    devtools,
-    dplyr,
-    ggplot2,
-    lazyeval,
+    methods,
     reshape2,
+    Rcpp,
+    R6,
     stringi,
     survey,
-    tidyr
 RoxygenNote: 5.0.1
 Suggests:
     knitr,
     lintr,
     rmarkdown,
     testthat
+LinkingTo: Rcpp
 VignetteBuilder: knitr
+Collate:
+    'RcppExports.R'
+    'aggregate_item_responses.r'
+    'assertions.r'
+    'class-control.r'
+    'class-dgirtfit.r'
+    'constants.r'
+    'class-dgirtin.r'
+    'data-state_demographics.r'
+    'data-state_opinion.r'
+    'shape.r'
+    'data-toy_dgirt_in.r'
+    'dgirt.r'
+    'data-toy_dgirtfit.r'
+    'discretize_item_responses.r'
+    'expand_rownames.r'
+    'methods-control.r'
+    'methods-dgirtfit.r'
+    'methods-dgirtin.r'
+    'name_helpers.r'
+    'poststratify.r'
+    'rake_partial.r'
+    'restrict_input_data.r'
+    'reweight_item_responses.r'
+    'validate_dgirtIn.r'
+    'validate_input_data.r'

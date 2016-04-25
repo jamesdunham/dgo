@@ -2,34 +2,37 @@
 % Please edit documentation in R/poststratify.r
 \name{poststratify}
 \alias{poststratify}
-\title{Poststratify dgirt group means}
+\title{Poststratify Estimates.}
 \usage{
-poststratify(group_means, targets, strata = c("year", "state"), groups,
-  prop_var = "proportion", summands = NULL)
+poststratify(estimates, estimate_names, target_data, group_names,
+  strata_names = c("year", "state"), prop_name = "proportion",
+  check_sums = NULL)
 }
 \arguments{
-\item{group_means}{The `theta_bar` element of `dgirt` results; a data.frame.}
+\item{estimates}{A table giving estimates for groups within strata.}
 
-\item{targets}{Table in which rows correspond to the population
-strata defined by the combinations of `strata` variables; a data.frame.}
+\item{estimate_names}{The columns in `estimates` to poststratify.}
 
-\item{strata}{Variables in `targets` table that define population strata; a
-character vector.}
+\item{target_data}{A table giving the population proportions of groups within
+strata.}
 
-\item{groups}{Variables in `group_means` table that give `dgirt` covariates;
-a character vector.}
+\item{group_names}{The names of the columns in `estimates` and `target_data`
+that identify groups.}
 
-\item{prop_var}{Variable in `targets` table that gives the population
-proportion of each stratum; a length-one character vector.}
+\item{strata_names}{The names of the columns in `estimates` and `target_data`
+that identify population strata.}
 
-\item{summands}{Optionally, variables within whose combinations the
-population proportions in `targets` should sum to one, otherwise an error
-will appear; a character vector.}
+\item{prop_name}{The name of the column in `target_data` that gives
+population proportions.}
+
+\item{check_sums}{Optionally, the names of the columns within whose
+combinations population proportions should sum to one, or an error will
+occur.}
 }
 \value{
-table of poststratified group means
+A table giving poststratified estimates for each stratum.
 }
 \description{
-Poststratify dgirt group means
+Poststratify Estimates.
 }
 
