@@ -5,7 +5,7 @@ dgirt is an R package for dynamic group-level IRT models as developed in [Caughe
 Quick start
 ===========
 
-Install `dgirt` from GitHub. `dgirt` requires [`rstan`](https://github.com/stan-dev/rstan). [See](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#how-to-install-rstan) `rstan` installation instructions.
+Install from GitHub. `dgirt` requires [RStan](https://github.com/stan-dev/rstan). See the RStan [installation instructions](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#how-to-install-rstan) for help.
 
 ``` r
 devtools::install_github("jamesdunham/dgirt")
@@ -81,7 +81,7 @@ dgirt_out <- dgirt(dgirt_in, iter = 2000, chains = 2, cores = 2, seed = 42)
 # verbose output omitted
 ```
 
-All `rstan` methods for the `stanfit` class are available for `dgirt` output, so [do things the `rstan` way](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#how-to-use-rstan). Descriptive labels for parameters on time periods, local geographic areas, and grouping variables will be added to most output.
+All `rstan` methods for the `stanfit` class are available for `dgirt` output, so [do things the RStan way](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#how-to-use-rstan). Descriptive labels for parameters on time periods, local geographic areas, and grouping variables will be added to most output.
 
 Summarize the results:
 
