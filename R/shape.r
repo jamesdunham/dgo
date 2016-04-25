@@ -34,12 +34,16 @@
 #' @section Aggregate Data:
 #' Specifying `aggregate_data` requires no additional arguments; instead, we
 #' make many assumptions about the data. This implementation is likely to change
-#' in the future. Variable names given for `item_data` are expected in the table
-#' of aggregates: `item_names`, `group_names`, `geo_name`, and `time_name`. Two
-#' fixed variable names are also expected in `aggregate_data`: `n_grp` giving
-#' adjusted counts of item-response trials, and `s_grp` giving adjusted counts
-#' of item-response successes. The counts should be adjusted consistently with
-#' the transformations applied to the individual `item_data`.
+#' in the future.
+
+#' `aggregate_data` is expected to be a long table of trial and success counts
+#' by group and item. Some variable names given for `item_data` are expected in
+#' the table of aggregates: `group_names`, `geo_name`, and `time_name`. Three
+#' fixed variable names are also expected in `aggregate_data`: `item` giving
+#' item identifiers, `n_grp` giving adjusted counts of item-response trials, and
+#' `s_grp` giving adjusted counts of item-response successes. The counts should
+#' be adjusted consistently with the transformations applied to the individual
+#' `item_data`.
 #'
 #' @section Preprocessing:
 #' If `target_data` is specified `shape` will adjust the weighting of groups
