@@ -5,13 +5,16 @@ dgirt is an R package for dynamic group-level IRT models as developed in [Caughe
 Quick start
 ===========
 
-``` r
-devtools::install_github("jamesdunham/dgirt")
-library(dgirt)
-```
+Install `dgirt` from GitHub. `dgirt` requires [`rstan`](https://github.com/stan-dev/rstan). [See](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#how-to-install-rstan) `rstan` installation instructions.
 
 ``` r
-# shape item response data for modeling
+devtools::install_github("jamesdunham/dgirt")
+```
+
+Shape item response data for modeling:
+
+``` r
+library(dgirt)
 dgirt_in <- shape(state_opinion, item_names = "Q_cces2006_minimumwage",
                   time_name = "year", geo_name = "state", group_names = "race",
                   time_filter = 2006:2008, geo_filter = c("MA", "NY"),
@@ -26,8 +29,11 @@ dgirt_in <- shape(state_opinion, item_names = "Q_cces2006_minimumwage",
 #> --------------------------------------------------------------------
 #> Q_cces2006_minimumwage           integer           2           5,274
 #> --------------------------------------------------------------------
+```
 
-# inspect data
+Summarize the data:
+
+``` r
 summary(dgirt_in)
 #> Items:
 #> [1] "Q_cces2006_minimumwage"
@@ -46,11 +52,21 @@ summary(dgirt_in)
 #> Constants:
 #>  Q  T  P  N  G  H  D 
 #>  1  3  3 18  6  1  1
+```
+
+Get item response counts:
+
+``` r
 get_item_n(dgirt_in, by = "year")
 #>    year Q_cces2006_minimumwage
 #> 1: 2006                   2220
 #> 2: 2007                    887
 #> 3: 2008                   2167
+```
+
+Or response counts generally:
+
+``` r
 get_n(dgirt_in, by = c("year", "source"))
 #>    year    source    n
 #> 1: 2006 CCES_2006 2220
@@ -58,16 +74,18 @@ get_n(dgirt_in, by = c("year", "source"))
 #> 3: 2008 CCES_2008 2167
 ```
 
+Fit a DGIRT model:
+
 ``` r
-# fit model
 dgirt_out <- dgirt(dgirt_in, iter = 2000, chains = 2, cores = 2, seed = 42)
 # verbose output omitted
 ```
 
-All `rstan` methods for the `stanfit` class are available for `dgirt` output, so do things the `rstan` way. Descriptive labels for parameters on time periods, local geographic areas, and grouping variables will be added to most output.
+All `rstan` methods for the `stanfit` class are available for `dgirt` output, so [do things the `rstan` way](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#how-to-use-rstan). Descriptive labels for parameters on time periods, local geographic areas, and grouping variables will be added to most output.
+
+Summarize the results:
 
 ``` r
-# examine results
 summary(dgirt_out, pars = "theta_bar", probs = NULL)[[1]][, c("n_eff", "Rhat")]
 #>                              n_eff     Rhat
 #> theta_bar[MA__black,2006] 567.2511 1.001307
@@ -88,8 +106,11 @@ summary(dgirt_out, pars = "theta_bar", probs = NULL)[[1]][, c("n_eff", "Rhat")]
 #> theta_bar[NY__white,2008] 236.7750 1.011143
 #> theta_bar[MA__other,2008] 261.8406 1.009593
 #> theta_bar[NY__white,2008] 245.5359 1.010356
+```
 
-# get posterior means with a convenience function
+Get posterior means with a convenience function:
+
+``` r
 get_posterior_mean(dgirt_out, pars = "theta_bar")
 #>                           mean-chain:1 mean-chain:2 mean-all chains
 #> theta_bar[MA__black,2006]    14.223879    13.732237       13.978058
@@ -110,8 +131,11 @@ get_posterior_mean(dgirt_out, pars = "theta_bar")
 #> theta_bar[NY__other,2006]   143.635484   189.234568      166.435026
 #> theta_bar[MA__white,2007]    97.492839   126.812593      112.152716
 #> theta_bar[NY__white,2008]    91.263702   119.676549      105.470125
+```
 
-# access posterior samples
+Or generally access posterior samples:
+
+``` r
 apply(as.array(dgirt_out, pars = "theta_bar"), 3, mean)
 #> theta_bar[MA__black,2006] theta_bar[NY__black,2007] 
 #>                 13.978058                 34.749881 

@@ -31,41 +31,61 @@ knitr::opts_chunk$set(
 
 # Quick start
 
+Install `dgirt` from GitHub. `dgirt` requires [`rstan`](https://github.com/stan-dev/rstan).
+[See](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#how-to-install-rstan)
+`rstan` installation instructions.
 ```{r, results = 'hide', message = FALSE}
 devtools::install_github("jamesdunham/dgirt")
-library(dgirt)
 ```
 
+Shape item response data for modeling:
 ```{r}
-# shape item response data for modeling
+library(dgirt)
 dgirt_in <- shape(state_opinion, item_names = "Q_cces2006_minimumwage",
                   time_name = "year", geo_name = "state", group_names = "race",
                   time_filter = 2006:2008, geo_filter = c("MA", "NY"),
                   survey_name = "source", weight_name = "weight")
+```
 
-# inspect data
+Summarize the data:
+```{r}
 summary(dgirt_in)
+```
+
+Get item response counts:
+```{r}
 get_item_n(dgirt_in, by = "year")
+
+```
+
+Or response counts generally:
+```{r}
 get_n(dgirt_in, by = c("year", "source"))
 ```
 
+Fit a DGIRT model:
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
-# fit model
 dgirt_out <- dgirt(dgirt_in, iter = 2000, chains = 2, cores = 2, seed = 42)
 # verbose output omitted
 ```
 
 All `rstan` methods for the `stanfit` class are available for `dgirt` output, so
-do things the `rstan` way. Descriptive labels for parameters on time periods,
-local geographic areas, and grouping variables will be added to most output.
+[do things the `rstan` way](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#how-to-use-rstan).
+Descriptive labels for parameters on time periods, local geographic areas, and
+grouping variables will be added to most output.
+
+Summarize the results:
 ```{r}
-# examine results
 summary(dgirt_out, pars = "theta_bar", probs = NULL)[[1]][, c("n_eff", "Rhat")]
+```
 
-# get posterior means with a convenience function
+Get posterior means with a convenience function:
+```{r}
 get_posterior_mean(dgirt_out, pars = "theta_bar")
+```
 
-# access posterior samples
+Or generally access posterior samples:
+```{r}
 apply(as.array(dgirt_out, pars = "theta_bar"), 3, mean)
 ```
 
