@@ -1,4 +1,5 @@
 #' @rdname dgirfit-class
+#' @export
 setMethod("show", "dgirtFit",
           function(object = dgirtFit) {
             object@sim$fnames_oi <- flatnames(object)
@@ -6,6 +7,7 @@ setMethod("show", "dgirtFit",
           })
 
 #' @rdname dgirfit-class
+#' @export
 setMethod("summary", "dgirtFit",
           function(object = dgirtFit, ...) {
             object@sim$fnames_oi <- flatnames(object)
@@ -13,6 +15,7 @@ setMethod("summary", "dgirtFit",
           })
 
 #' @rdname dgirfit-class
+#' @export
 setMethod("extract", "dgirtFit",
           function(object = dgirtFit, ...) {
             extracted <- callNextMethod(object, ...)
@@ -26,6 +29,7 @@ setMethod("extract", "dgirtFit",
           }) 
 
 #' @rdname dgirfit-class
+#' @export
 setMethod("get_posterior_mean", "dgirtFit",
           function(object = dgirtFit, ...) {
             posterior_means <- callNextMethod(object, ...)

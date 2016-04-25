@@ -1,4 +1,5 @@
 # summary(toy_dgirt_in)
+#' @export
 summary.dgirtIn <- function(object) {
   cat("Items:\n")
   print(c(object$control@item_names,
@@ -39,6 +40,7 @@ setGeneric("get_item_names", signature = "x",
 #' get_item_names(toy_dgirt_in)
 #' @include class-dgirtin.r
 #' @rdname dgirtin-class
+#' @export
 setMethod("get_item_names", c("x" = "dgirtIn"),
           function(x) {
             list(item_data = x$control@item_names,
@@ -75,6 +77,7 @@ setGeneric("get_n", signature = c("x", "by", "aggregate_name"),
 # get_n(toy_dgirt_in, by = "item", aggregate_name = "race")
 #' @include class-dgirtin.r
 #' @rdname dgirtin-class
+#' @export
 setMethod("get_n", c("x" = "dgirtIn"),
   function(x, by = NULL, aggregate_name = NULL) {
     if (!length(aggregate_name)) {
@@ -108,6 +111,7 @@ setGeneric("get_item_n", signature = c("x", "by", "aggregate_data"),
 #' get_item_n(toy_dgirt_in, by = "year")
 #' get_item_n(toy_dgirt_in, aggregate_data = TRUE)
 #' get_item_n(toy_dgirt_in, by = "year", aggregate_data = TRUE)
+#' @export
 setMethod("get_item_n", c("x" = "dgirtIn"),
   function(x, by = NULL, aggregate_data = FALSE) {
     if (!isTRUE(aggregate_data)) {
@@ -127,4 +131,5 @@ setMethod("get_item_n", c("x" = "dgirtIn"),
   copy(n)
 })
 
+#' @export
 setMethod("show", c("dgirtIn"), function(object) summary(object) )
