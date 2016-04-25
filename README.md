@@ -1,32 +1,22 @@
-dgirt is an R package for dynamic group-level IRT models as developed in
-[Caughey and Warshaw
-2014](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html):
+dgirt is an R package for dynamic group-level IRT models as developed in [Caughey and Warshaw 2014](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html):
 
-> Over the past eight decades, millions of people have been surveyed on
-> their political opinions. Until recently, however, polls rarely
-> included enough questions in a given domain to apply scaling
-> techniques such as IRT models at the individual level, preventing
-> scholars from taking full advantage of historical survey data. To
-> address this problem, we develop a Bayesian group-level IRT approach
-> that models latent traits at the level of demographic and/or
-> geographic groups rather than individuals. We use a hierarchical model
-> to borrow strength cross-sectionally and dynamic linear models to do
-> so across time. The group-level estimates can be weighted to generate
-> estimates for geographic units. This framework opens up vast new areas
-> of research on historical public opinion, especially at the
-> subnational level.
+> Over the past eight decades, millions of people have been surveyed on their political opinions. Until recently, however, polls rarely included enough questions in a given domain to apply scaling techniques such as IRT models at the individual level, preventing scholars from taking full advantage of historical survey data. To address this problem, we develop a Bayesian group-level IRT approach that models latent traits at the level of demographic and/or geographic groups rather than individuals. We use a hierarchical model to borrow strength cross-sectionally and dynamic linear models to do so across time. The group-level estimates can be weighted to generate estimates for geographic units. This framework opens up vast new areas of research on historical public opinion, especially at the subnational level.
 
 Quick start
 ===========
 
-    devtools::install_github("jamesdunham/dgirt")
-    library(dgirt)
+``` r
+devtools::install_github("jamesdunham/dgirt")
+library(dgirt)
+```
 
-    # shape item response data for modeling
-    dgirt_in <- shape(state_opinion, item_names = "Q_cces2006_minimumwage",
-                      time_name = "year", geo_name = "state", group_names = "race",
-                      time_filter = 2006:2008, geo_filter = c("MA", "NY"),
-                      survey_name = "source", weight_name = "weight")
+``` r
+# shape item response data for modeling
+dgirt_in <- shape(state_opinion, item_names = "Q_cces2006_minimumwage",
+                  time_name = "year", geo_name = "state", group_names = "race",
+                  time_filter = 2006:2008, geo_filter = c("MA", "NY"),
+                  survey_name = "source", weight_name = "weight")
+```
 
     ## Applying restrictions, pass 1...
     ##  Dropped 5 rows for missingness in covariates
@@ -39,8 +29,10 @@ Quick start
     ## Q_cces2006_minimumwage           integer           2           5,274
     ## --------------------------------------------------------------------
 
-    # inspect data
-    summary(dgirt_in)
+``` r
+# inspect data
+summary(dgirt_in)
+```
 
     ## Items:
     ## [1] "Q_cces2006_minimumwage"
@@ -60,32 +52,36 @@ Quick start
     ##  Q  T  P  N  G  H  D 
     ##  1  3  3 18  6  1  1
 
-    get_item_n(dgirt_in, by = "year")
+``` r
+get_item_n(dgirt_in, by = "year")
+```
 
     ##    year Q_cces2006_minimumwage
     ## 1: 2006                   2220
     ## 2: 2007                    887
     ## 3: 2008                   2167
 
-    get_n(dgirt_in, by = c("year", "source"))
+``` r
+get_n(dgirt_in, by = c("year", "source"))
+```
 
     ##    year    source    n
     ## 1: 2006 CCES_2006 2220
     ## 2: 2007 CCES_2007  887
     ## 3: 2008 CCES_2008 2167
 
-    # fit model
-    dgirt_out <- dgirt(dgirt_in, iter = 2000, chains = 2, cores = 2, seed = 42)
+``` r
+# fit model
+dgirt_out <- dgirt(dgirt_in, iter = 2000, chains = 2, cores = 2, seed = 42)
+# verbose output omitted
+```
 
-    # verbose output omitted
+All `rstan` methods for the `stanfit` class are available for `dgirt` output, so do things the `rstan` way. Descriptive labels for parameters on time periods, local geographic areas, and grouping variables will be added to most output.
 
-All `rstan` methods for the `stanfit` class are available for `dgirt`
-output, so do things the `rstan` way. Descriptive labels for parameters
-on time periods, local geographic areas, and grouping variables will be
-added to most output.
-
-    # examine results
-    summary(dgirt_out, pars = "theta_bar", probs = NULL)[[1]][, c("n_eff", "Rhat")]
+``` r
+# examine results
+summary(dgirt_out, pars = "theta_bar", probs = NULL)[[1]][, c("n_eff", "Rhat")]
+```
 
     ##                              n_eff     Rhat
     ## theta_bar[MA__black,2006] 567.2511 1.001307
@@ -107,8 +103,10 @@ added to most output.
     ## theta_bar[MA__other,2008] 261.8406 1.009593
     ## theta_bar[NY__white,2008] 245.5359 1.010356
 
-    # get posterior means with a convenience function
-    get_posterior_mean(dgirt_out, pars = "theta_bar")
+``` r
+# get posterior means with a convenience function
+get_posterior_mean(dgirt_out, pars = "theta_bar")
+```
 
     ##                           mean-chain:1 mean-chain:2 mean-all chains
     ## theta_bar[MA__black,2006]    14.223879    13.732237       13.978058
@@ -130,8 +128,10 @@ added to most output.
     ## theta_bar[MA__white,2007]    97.492839   126.812593      112.152716
     ## theta_bar[NY__white,2008]    91.263702   119.676549      105.470125
 
-    # access posterior samples
-    apply(as.array(dgirt_out, pars = "theta_bar"), 3, mean)
+``` r
+# access posterior samples
+apply(as.array(dgirt_out, pars = "theta_bar"), 3, mean)
+```
 
     ## theta_bar[MA__black,2006] theta_bar[NY__black,2007] 
     ##                 13.978058                 34.749881 
