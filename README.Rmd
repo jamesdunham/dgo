@@ -34,8 +34,8 @@ knitr::opts_chunk$set(
 Install from GitHub. `dgirt` requires [RStan](https://github.com/stan-dev/rstan).
 See the RStan [installation instructions](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#how-to-install-rstan)
 for help.
-```{r, results = 'hide', message = FALSE}
-devtools::install_github("jamesdunham/dgirt")
+```
+devtools::install_github("jamesdunham/dgirt", dependencies = TRUE)
 ```
 
 Shape item response data for modeling:
@@ -89,4 +89,4 @@ Or generally access posterior samples:
 apply(as.array(dgirt_out, pars = "theta_bar"), 3, mean)
 ```
 
-See `help("dgirtfit-class")` and help`("stanfit-class")` for more.
+See `help("dgirtfit-class")` and `help("stanfit-class")` for more.

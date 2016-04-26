@@ -7,9 +7,7 @@ Quick start
 
 Install from GitHub. `dgirt` requires [RStan](https://github.com/stan-dev/rstan). See the RStan [installation instructions](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#how-to-install-rstan) for help.
 
-``` r
-devtools::install_github("jamesdunham/dgirt")
-```
+    devtools::install_github("jamesdunham/dgirt", dependencies = TRUE)
 
 Shape item response data for modeling:
 
@@ -157,4 +155,4 @@ apply(as.array(dgirt_out, pars = "theta_bar"), 3, mean)
 #>                 20.418889                105.470125
 ```
 
-See `help("dgirtfit-class")` and help`("stanfit-class")` for more.
+See `help("dgirtfit-class")` and `help("stanfit-class")` for more.
