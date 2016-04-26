@@ -43,6 +43,7 @@ Collate:
     'data-toy_dgirtfit.r'
     'discretize_item_responses.r'
     'expand_rownames.r'
+    'import_rcpp.r'
     'methods-control.r'
     'methods-dgirtfit.r'
     'methods-dgirtin.r'
