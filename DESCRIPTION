@@ -7,8 +7,8 @@ Authors@R: c(person("James", "Dunham", email = "jdunham@mit.edu", role = c("aut"
   person("Devin", "Caughey", email = "dcaughey@mit.edu", role = c("aut")))
 License: GPL-3
 Depends:
-    data.table,
     R (>= 3.2.2),
+    Rcpp (>= 0.11.0),
     rstan
 LazyData: true
 Imports:
@@ -17,15 +17,17 @@ Imports:
     reshape2,
     Rcpp,
     R6,
+    rstan (>= 2.8.1),
     stringi,
-    survey,
+    survey
 RoxygenNote: 5.0.1
 Suggests:
     knitr,
     lintr,
     rmarkdown,
     testthat
-LinkingTo: Rcpp
+LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>=
+    0.11.0), RcppEigen
 VignetteBuilder: knitr
 Collate:
     'RcppExports.R'
@@ -50,6 +52,7 @@ Collate:
     'name_helpers.r'
     'poststratify.r'
     'rake_partial.r'
+    'require_namespace.r'
     'restrict_input_data.r'
     'reweight_item_responses.r'
     'validate_dgirtIn.r'
