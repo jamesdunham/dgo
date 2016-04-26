@@ -2,11 +2,17 @@
 
 # Constructor for Control
 init_control <- function(item_data,
-                         modifier_data,
-                         target_data,
-                         aggregate_data,
+                         item_names,
+                         time_name,
+                         geo_name,
+                         group_names,
+                         weight_name,
+                         survey_name,
                          ...) {
-  control <- new("Control", ...)
+  control <- new("Control", item_names = item_names,
+                 time_name = time_name, geo_name = geo_name, group_names =
+                   group_names, weight_name = weight_name, survey_name =
+                   survey_name, ...)
   # use item_data to set defaults for time_filter and geo_filter
   if (!length(control@time_name) || !control@time_name %in% names(item_data)) {
     stop("`time_name` (" , control@time_name,  ") should be a name in `item_data`")

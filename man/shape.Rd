@@ -4,58 +4,55 @@
 \alias{shape}
 \title{Shape Model Data.}
 \usage{
-shape(item_data, ..., modifier_data = NULL, target_data = NULL,
-  aggregate_data = NULL)
+shape(item_data, item_names, time_name, geo_name, group_names, weight_name,
+  survey_name, ...)
 }
 \arguments{
-\item{item_data}{A table of individual item responses.}
+\item{item_data}{A table in which items appear in columns and each row
+represents an individual's responses in some time period and local geographic
+area.}
 
-\item{...}{Further arguments. See details below.}
+\item{item_names}{Individual item responses. These variables should be
+integers or ordered factors in the data.}
 
-\item{modifier_data}{A table giving characteristics of `item_data`
-identifiers to be modeled as hierarchical parameters.}
+\item{time_name}{A time variable with numeric values.}
 
-\item{target_data}{A table of population proportions.}
+\item{geo_name}{A geographic variable representing local areas.}
 
-\item{aggregate_data}{A table of group-level item-response aggregates.}
+\item{group_names}{Discrete grouping variables, usually demographic. Using
+numeric variables is allowed but not recommended.}
+
+\item{weight_name}{A variable giving survey weights.}
+
+\item{survey_name}{A survey identifier.}
+
+\item{...}{Further arguments for more complex models, input data, and
+preprocessing.}
 }
 \value{
-An object of the type expected by `\link{dgirt}`.
+An object of class `dgirtIn`, i.e., that expected by `\link{dgirt}`.
 }
 \description{
 `shape` prepares data for modeling with `dgirt`.
 }
 \details{
-`shape` takes four kinds of data. Only `item_data` is required. For each data
-passed to `shape` through its `*_data` arguments, additional arguments are
-required. These are described in the sections below. Most give the name or
-names of key variables in the data; they end in `_name` or `_names` and
-should be character vectors. A few implement preprocessing and modeling
-choices.
+`shape` takes four kinds of data. Only `item_data` is required. For each
+other data type passed to `shape`, additional arguments are required, as
+described in the sections below. Most arguments give the name or names of key
+variables in the data; they end in `_name` or `_names` and should be
+character vectors.  Some implement preprocessing and modeling choices.
 }
-\section{Item Data}{
-
-These are required arguments if `item_data` is given.
-\describe{
-  \item{item_names}{Individual item responses. These variables should be
-  integers or ordered factors in the data.}
-  \item{group_names}{Discrete grouping variables, usually demographic. Using
-  numeric variables is allowed but not recommended.}
-  \item{geo_name}{A geographic variable representing local areas. In the
-  data it should should be character or factor.}
-  \item{time_name}{A time variable with numeric values.}
-  \item{weight_name}{A variable giving survey weights.}
-}
-}
-
 \section{Modifier Data}{
 
-These are required arguments if `modifier_data` is given.
+These arguments are required to model hierarchical parameters. 
+At the moment, modeling geographic parameters is supported
 \describe{
-  \item{modifier_names}{Modifiers of geographic hierarchical parameters, e.g.
+  \item{`modifier_data`:}{Table giving characteristics of local geographic
+  areas in time periods.}
+  \item{`modifier_names`:}{Modifiers of geographic hierarchical parameters, e.g.
   median household income in each local-area and time-period combination.}
-  \item{t1_modifier_names}{Modifiers to be used instead of those in
-  `modifier_names` only in the first period.}
+  \item{`t1_modifier_names`:}{Modifiers to be used instead of those in
+  `modifier_names`, only in the first period.}
 }
 }
 
@@ -92,26 +89,27 @@ restrictions are specified, `shape` iterates over them until they leave the
 data unchanged.
 
 \describe{
+  \item{`target_data`}{A table giving population proportions for groups by
+  local geographic area and time period.}
   \item{target_proportion_name}{The variable giving population proportions
   for strata.}
   \item{strata_names}{Variables that define population strata.}
   \item{geo_filter}{A character vector giving values of the geographic
   variable. Defaults to observed values.}
   \item{time_filter}{A numeric vector giving possible values of the time
-  variable. Observed and unobserved time periods can be given.}
+  variable. Observed and unobserved time periods can be given. Defaults to
+  observed values.}
   \item{min_survey_filter}{An integer minimum of survey appearances for
-  included items. Defaults to 1 and requires `survey_name`.}
-  \item{survey_name}{The variable that identifies surveys, for use with
-  `min_survey_filter`.}
+  included items. Defaults to 1.}
   \item{min_t_filter}{An integer minimum of time period appearances for
-  included items.}
+  included items. Defaults to 1.}
 }
 }
 
 \section{Modeling Choices}{
 
-Optional. Most arguments like this one are in the `dgirt` signature, but
-`constant_item` affects the shape of the data. May move to `dgirt` in the
+Optional. Most arguments like this one are now in the `dgirt` signature, but
+`constant_item` affects the shape of the data. It may move to `dgirt` in the
 future. 
 \describe{
   \item{constant_item}{Whether item difficulty parameters should be constant
@@ -128,5 +126,12 @@ shaped_responses <- shape(state_opinion,
                           group_names = "race",
                           survey_name = "source",
                           weight_name = "weight")
+# summarize result)
+summary(shaped_responses)
+# check sparseness of data to be modeled
+get_item_n(shaped_responses, by = "year")
+}
+\seealso{
+get_n, get_item_n, dgirtin-class
 }
 
