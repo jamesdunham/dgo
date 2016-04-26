@@ -5,7 +5,8 @@
 \title{Shape Model Data.}
 \usage{
 shape(item_data, item_names, time_name, geo_name, group_names, weight_name,
-  survey_name, ...)
+  survey_name, modifier_data = NULL, target_data = NULL,
+  aggregate_data = NULL, ...)
 }
 \arguments{
 \item{item_data}{A table in which items appear in columns and each row
@@ -120,18 +121,18 @@ future.
 # model individual item responses 
 data(state_opinion)
 shaped_responses <- shape(state_opinion,
+                          item_names = "Q_cces2006_minimumwage",
                           time_name = "year",
                           geo_name = "state",
-                          item_names = "Q_cces2006_minimumwage",
                           group_names = "race",
-                          survey_name = "source",
-                          weight_name = "weight")
+                          weight_name = "weight",
+                          survey_name = "source")
 # summarize result)
 summary(shaped_responses)
 # check sparseness of data to be modeled
 get_item_n(shaped_responses, by = "year")
 }
 \seealso{
-get_n, get_item_n, dgirtin-class
+get_n, get_item_n, get_item_names, dgirtin-class
 }
 
