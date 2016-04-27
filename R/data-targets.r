@@ -9,7 +9,7 @@
 #' @docType data
 #' @name targets
 #' @usage targets
-#' @format A `data.frame` with 312,120 rows and 6 columns.
+#' @format A `data.frame` with 18,360 observations of 6 variables.
 #' @seealso \url{http://www.census.gov/}
 #' @examples
 #' targets

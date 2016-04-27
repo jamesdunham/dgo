@@ -9,16 +9,6 @@
 #' @usage toy_dgirt_in
 #' @format A `dgirtIn` object.
 #' @examples
-#' # created as follows
-#' data(state_opinion)
-#' toy_dgirt_in <- shape(state_opinion,
-#'                  time_name = "year",
-#'                  item_names = c("Q_cces2006_minimumwage",
-#'                                 "Q_cces2006_abortion"),
-#'                  geo_name = "state",
-#'                  group_names = "race",
-#'                  survey_name = "source",
-#'                  weight_name = "weight")
-#' @include shape.r
 #' toy_dgirt_in
+#' @include shape.r
 NULL

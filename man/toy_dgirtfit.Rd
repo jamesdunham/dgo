@@ -14,9 +14,6 @@ class from `rstan`.  `toy_dgirtfit` is a minimal `dgirtfit` object, mostly
 for use in development.
 }
 \examples{
-# created as follows
-data(toy_dgirt_in)
-toy_dgirtfit <- dgirt(dgirt_in, iter = 10, chains = 2)
 toy_dgirtfit
 }
 
