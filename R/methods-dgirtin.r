@@ -1,6 +1,6 @@
 # summary(toy_dgirt_in)
 #' @export
-summary.dgirtIn <- function(object) {
+summary.dgirtIn <- function(object, ...) {
   cat("Items:\n")
   print(c(object$control@item_names,
           object$control@aggregate_item_names))
@@ -26,8 +26,8 @@ summary.dgirtIn <- function(object) {
           H = object$H, D = object$D))
 }
 
-print.dgirtIn <- function(object) {
-  summary(object)
+print.dgirtIn <- function(object, ...) {
+  summary(object, ...)
 }
 
 setGeneric("get_item_names", signature = "x",
