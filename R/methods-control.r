@@ -1,4 +1,5 @@
 `:=` <- data.table::`:=`
+`%chin%` <- data.table::`%chin%`
 
 # Constructor for Control
 init_control <- function(item_data,

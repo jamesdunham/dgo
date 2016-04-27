@@ -1,5 +1,5 @@
 restrict_items <- function(item_data, ctrl) {
-  setDT(item_data)
+  data.table::setDT(item_data)
   extra_colnames <- setdiff(names(item_data),
                             c(ctrl@item_names,
                               ctrl@strata_names,
@@ -41,14 +41,14 @@ restrict_items <- function(item_data, ctrl) {
 
 restrict_modifier <- function(item_data, modifier_data, ctrl) {
   if (length(modifier_data)) {
-    setDT(modifier_data)
+    data.table::setDT(modifier_data)
 
     coerce_factors(modifier_data, c(ctrl@modifier_names,
                                     ctrl@t1_modifier_names,
                                     ctrl@geo_name,
                                     ctrl@time_name))
 
-    modifier_data <- modifier_data[modifier_data[[ctrl@geo_name]] %in%
+    modifier_data <- modifier_data[modifier_data[[ctrl@geo_name]] %chin%
                                    item_data[[ctrl@geo_name]]]
     if (!nrow(modifier_data))
       stop("no rows in modifier data remaining after subsetting to local ",
@@ -71,7 +71,7 @@ restrict_modifier <- function(item_data, modifier_data, ctrl) {
 
 restrict_aggregates <- function(aggregate_data, ctrl) {
   if (length(aggregate_data)) {
-    setDT(aggregate_data)
+    data.table::setDT(aggregate_data)
 
     coerce_factors(aggregate_data, c(ctrl@group_names, ctrl@geo_name,
                                      ctrl@time_name))
@@ -93,7 +93,7 @@ restrict_aggregates <- function(aggregate_data, ctrl) {
       stop("no rows in aggregate data remaining after subsetting to items ",
            "in `aggregate_item_names`")
 
-    aggregate_data <- aggregate_data[n_grp > 0]
+    aggregate_data <- aggregate_data[get("n_grp") > 0]
     if (!nrow(aggregate_data))
       stop("no rows in aggregate data remaining after dropping unobserved ",
            "group-item combinations")
@@ -113,7 +113,7 @@ coerce_factors <- function(tbl, vars) {
     for (v in factor_vars) {
       warning("Coercing factor `", v, "` in ", substitute(tbl), 
               " with `as.character(", substitute(tbl), "[[", v, "]])`")
-      tbl[, (v) := as.character(tbl[[v]])]
+      tbl[, c(v) := as.character(tbl[[v]])]
     }
   }
   invisible(tbl)
@@ -125,7 +125,7 @@ rename_numerics <- function(tbl, vars) {
     for (v in numeric_vars) {
       warning("coercing numeric `", v, "` in ", substitute(tbl),
               " with `paste0(", v, ", ", substitute(tbl), "[[", v, "]])`")
-      tbl[, (v) := paste0(v, tbl[[v]])]
+      tbl[, c(v) := paste0(v, tbl[[v]])]
     }
   }
   invisible(tbl)
@@ -162,9 +162,9 @@ drop_responseless_items <- function(item_data, ctrl) {
                                 measure.vars = names(response_n),
                                 variable.name = "variable",
                                 value.name = "count") 
-  responseless_items <- as.character(response_n[count == 0][["variable"]])
+  responseless_items <- as.character(response_n[get("count") == 0][["variable"]])
   if (length(responseless_items)) {
-    item_data[, (responseless_items) := NULL]
+    item_data[, c(responseless_items) := NULL]
     message(sprintf(ngettext(length(responseless_items),
           "\tDropped %i item for lack of responses",
           "\tDropped %i items for lack of responses"),
@@ -179,13 +179,13 @@ drop_itemless_respondents <- function(item_data, ctrl) {
   item_names <- intersect(ctrl@item_names, names(item_data))
   if (!length(item_names)) stop("no items remaining")
   if (!nrow(item_data)) stop("no rows remaining")
-  item_data[, ("n_responses") := list(rowSums(!is.na(.SD)) == 0L),
+  item_data[, c("n_responses") := list(rowSums(!is.na(.SD)) == 0L),
             .SDcols = item_names]
   n_itemless <- sum(item_data[["n_responses"]])
   if (n_itemless > 0) {
-    item_data <- item_data[!(n_responses)]
+    item_data <- item_data[!get("n_responses")]
     message(sprintf(ngettext(n_itemless,
-          "\tDropped %i rows for lacking item responses",
+          "\tDropped %i row for lacking item responses",
           "\tDropped %i rows for lacking item responses"),
         n_itemless))
     if (!nrow(item_data))
@@ -204,12 +204,12 @@ drop_items_rare_in_time <- function(item_data, ctrl) {
   response_t <- melt.data.table(response_t, id.vars = ctrl@time_name,
                                 variable.name = "variable",
                                 value.name = "observed")
-  response_t <- response_t[, .(count = sum(observed)), keyby = "variable"]
-  response_t <- response_t[count < ctrl@min_t_filter]
-  rare_items <- as.character(response_t[, variable])
+  response_t <- response_t[, list(count = sum(get("observed"))), keyby = "variable"]
+  response_t <- response_t[get("count") < ctrl@min_t_filter]
+  rare_items <- as.character(response_t[["variable"]])
   if (length(rare_items)) {
     for (v in rare_items) {
-      item_data[, (v) := NULL]
+      item_data[, c(v) := NULL]
     }
     message(sprintf(ngettext(length(rare_items),
           "\tDropped %i items for failing min_t requirement (%i)",
@@ -231,13 +231,13 @@ drop_items_rare_in_polls <- function(item_data, ctrl) {
                            .SDcols = item_names,
                            by = eval(item_data[, ctrl@survey_name])]
   item_survey <- melt.data.table(item_survey, id.vars =
-                                 ctrl@survey_name)[(value)]
-  item_survey <- item_survey[, N := .N, by = variable]
-  item_survey <- item_survey[N < ctrl@min_survey_filter]
-  rare_items <- as.character(item_survey[, variable])
+                                 ctrl@survey_name)[get("value")]
+  item_survey <- item_survey[, c("N") := .N, by = "variable"]
+  item_survey <- item_survey[get("N") < ctrl@min_survey_filter]
+  rare_items <- as.character(item_survey[["variable"]])
   if (length(rare_items)) {
     for (v in rare_items) {
-      item_data[, (v) := NULL]
+      item_data[, c(v) := NULL]
     }
     message(sprintf(ngettext(length(rare_items),
           "\tDropped %i items for failing min_survey requirement (%i)",

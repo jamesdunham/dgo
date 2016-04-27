@@ -3,18 +3,31 @@
 \docType{methods}
 \name{dgirtin-class}
 \alias{dgirtin-class}
+\alias{get_item_n}
 \alias{get_item_n,dgirtIn-method}
+\alias{get_item_names}
 \alias{get_item_names,dgirtIn-method}
+\alias{get_n}
 \alias{get_n,dgirtIn-method}
+\alias{show,dgirtIn-method}
+\alias{summary,dgirtIn-method}
 \title{Data for fitting a DGIRT Model.}
 \usage{
+\S4method{summary}{dgirtIn}(object, ...)
+
 \S4method{get_item_names}{dgirtIn}(x)
 
 \S4method{get_n}{dgirtIn}(x, by = NULL, aggregate_name = NULL)
 
 \S4method{get_item_n}{dgirtIn}(x, by = NULL, aggregate_data = FALSE)
+
+\S4method{show}{dgirtIn}(object)
 }
 \arguments{
+\item{object}{An object of class `dgirtIn` as returned by `shape`.}
+
+\item{...}{Unused.}
+
 \item{x}{An object of class `dgirtIn` as returned by `shape`.}
 
 \item{by}{The name of a grouping variable.}
@@ -23,7 +36,8 @@
 to `shape` as `aggregate_data` instead of on the individual data and count
 nonmissingness in the given variable.}
 
-\item{x}{An object of class `dgirtIn` as returned by `shape`.}
+\item{aggregate_data}{If specified `get_n` will operate on the table passed
+to `shape` as `aggregate_data` instead of on the individual data.}
 }
 \value{
 A list of item names.
@@ -31,11 +45,15 @@ A list of item names.
 \description{
 Data for fitting a DGIRT Model.
 
+Summarize DGIRT Data.
+
 Get Items Names in DGIRT Data.
 
 Count Respondents in DGIRT Data.
 
-Count Respondents to Items
+Count Respondents for Items in DGIRT Data
+
+Show Summary of DGIRT Data
 }
 \examples{
 get_item_names(toy_dgirt_in)
@@ -48,13 +66,8 @@ get_n(toy_dgirt_in, by = "year")
 # respondent count by survey identifier
 get_n(toy_dgirt_in, by = "source")
 
-# specify `aggregate_name` to get counts of a variable in the aggregate data
-get_n(toy_dgirt_in, aggregate_name = "race", by = "year")
-
 get_item_n(toy_dgirt_in)
 get_item_n(toy_dgirt_in, by = "year")
-get_item_n(toy_dgirt_in, aggregate_data = TRUE)
-get_item_n(toy_dgirt_in, by = "year", aggregate_data = TRUE)
 }
 \seealso{
 `\link{get_item_n}, \link{get_item_names}`

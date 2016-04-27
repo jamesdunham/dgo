@@ -8,36 +8,26 @@ weight <- function(item_data, target_data, control) {
     return(NULL)
   }
 
-  target_data <- setDT(copy(target_data))
+  target_data <- data.table::setDT(data.table::copy(target_data))
 
   weight_formulas <- create_formulas(control@strata_names)
   weight_vars <- get_weight_vars(control@strata_names)
 
   check_levels(item_data, target_data, weight_vars)
 
-  item_data[, stratum := interaction(item_data[, weight_vars, with = FALSE], drop = TRUE)]
-  target_data[, stratum := interaction(target_data[, weight_vars, with = FALSE], drop = TRUE)]
+  item_data[, c("stratum") := make_stratum(item_data, weight_vars)]
+  target_data[, c("stratum") := make_stratum(target_data, weight_vars)]
 
   # We'll create a design object from the target data.frame; this is a
   # data.frame with attributes that indicate the survey design
   target_design <- survey::svydesign(ids = ~1, data = target_data,
     weights = formula(paste0("~", control@target_proportion_name)))
 
-  rake_weight <- function(item_data, formulas, target_design) {
-    ds <- survey::svydesign(ids = ~1, data = item_data,
-                            weights = formula(paste0("~", control@weight_name)))
-    # NB this weight variable is the individual weight
-    pop_list <- lapply(formulas, survey::svytable, design = target_design)
-    rk <- rake_partial(design = ds, sample.margins = formulas,
-                       population.margins = pop_list)
-    wts <- 1 / rk$prob
-    return(wts)
-  }
+  item_data[, c("preweight") := rake_weight(item_data, formulas = weight_formulas,
+                                            target_design = target_design)]
 
-  item_data[, preweight := rake_weight(item_data, formulas = weight_formulas,
-    target_design = target_design)]
-
-  item_data[, preweight_new := preweight / mean(preweight, na.rm = TRUE),
+  item_data[, c("preweight_new") := list(get("preweight") /
+                                         mean(get("preweight"), na.rm = TRUE)),
             by = eval(control@time_name)]
 
   message()
@@ -58,9 +48,25 @@ create_formulas <- function(strata_names) {
   return(out)
 }
 
+make_stratum <- function(tab, weight_vars) {
+  interaction(tab[, weight_vars, with = FALSE], drop = TRUE)
+}
+
 get_weight_vars <- function(strata_names) {
   unique(unlist(strata_names))
 }
+
+rake_weight <- function(item_data, formulas, target_design, control) {
+  ds <- survey::svydesign(ids = ~1, data = item_data,
+                          weights = formula(paste0("~", control@weight_name)))
+  # NB this weight variable is the individual weight
+  pop_list <- lapply(formulas, survey::svytable, design = target_design)
+  rk <- rake_partial(design = ds, sample.margins = formulas,
+                     population.margins = pop_list)
+  wts <- 1 / rk$prob
+  return(wts)
+}
+
 
 check_levels <- function(item_data, target_data, weight_vars) {
   for (s in weight_vars) {

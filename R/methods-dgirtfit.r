@@ -1,4 +1,5 @@
 #' @rdname dgirfit-class
+#' @param object An object of class `dgirtIn` as returned by `shape`.
 #' @export
 setMethod("show", "dgirtFit",
           function(object = dgirtFit) {
@@ -7,6 +8,7 @@ setMethod("show", "dgirtFit",
           })
 
 #' @rdname dgirfit-class
+#' @param ... Unused.
 #' @export
 setMethod("summary", "dgirtFit",
           function(object = dgirtFit, ...) {

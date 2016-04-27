@@ -27,6 +27,15 @@ numeric variables is allowed but not recommended.}
 
 \item{survey_name}{A survey identifier.}
 
+\item{modifier_data}{Table giving characteristics of local geographic areas
+in time periods. See details below.}
+
+\item{target_data}{A table giving population proportions for groups by local
+geographic area and time period. See details below.}
+
+\item{aggregate_data}{A table of trial and success counts by group and item.
+See details below.}
+
 \item{...}{Further arguments for more complex models, input data, and
 preprocessing.}
 }
@@ -45,11 +54,9 @@ character vectors.  Some implement preprocessing and modeling choices.
 }
 \section{Modifier Data}{
 
-These arguments are required to model hierarchical parameters. 
-At the moment, modeling geographic parameters is supported
+These arguments are required to model hierarchical parameters with
+`modifier_data`.  At the moment, modeling geographic parameters is supported.
 \describe{
-  \item{`modifier_data`:}{Table giving characteristics of local geographic
-  areas in time periods.}
   \item{`modifier_names`:}{Modifiers of geographic hierarchical parameters, e.g.
   median household income in each local-area and time-period combination.}
   \item{`t1_modifier_names`:}{Modifiers to be used instead of those in
@@ -90,8 +97,7 @@ restrictions are specified, `shape` iterates over them until they leave the
 data unchanged.
 
 \describe{
-  \item{`target_data`}{A table giving population proportions for groups by
-  local geographic area and time period.}
+  \item{`target_data`}{.}
   \item{target_proportion_name}{The variable giving population proportions
   for strata.}
   \item{strata_names}{Variables that define population strata.}
@@ -119,9 +125,9 @@ future.
 }
 \examples{
 # model individual item responses 
-data(state_opinion)
-shaped_responses <- shape(state_opinion,
-                          item_names = "Q_cces2006_minimumwage",
+data(opinion)
+shaped_responses <- shape(opinion,
+                          item_names = "Q_cces2006_gaymarriageamendment",
                           time_name = "year",
                           geo_name = "state",
                           group_names = "race",

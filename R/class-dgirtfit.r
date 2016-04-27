@@ -1,9 +1,9 @@
 #' Fitted DGIRT Model.
 #'
-#' All `rstan` methods for superclass `\link[rstan]{stanfit}` are available.
+#' All `rstan` methods for superclass `\link{stanfit-class}` are available.
 #' Descriptive labels for parameters on time periods, local geographic areas,
 #' and grouping variables will be added to most output.
-#' @seealso `\link[rstan]{stanfit-class}`
+#' @seealso `\link{stanfit-class}`
 #' @slot dgirt_in Data used to fit the model.
 #' @aliases dgirtfit dgirtfit-class dgirtFit-class
 #' @examples

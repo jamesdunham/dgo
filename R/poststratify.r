@@ -26,8 +26,8 @@ poststratify <- function(estimates,
                          prop_name = 'proportion',
                          check_sums = NULL) {
 
-  estimates <- setDT(copy(estimates))
-  targets <- setDT(copy(target_data))
+  estimates <- data.table::setDT(data.table::copy(estimates))
+  targets <- data.table::setDT(data.table::copy(target_data))
 
   vapply(c(group_names, strata_names), check_target_levels, FUN.VALUE = logical(1L),
          estimates, targets)
@@ -57,14 +57,14 @@ poststratify <- function(estimates,
 }
 
 scale_props <- function(props, prop_name, strata_names, check_sums) {
-  strata_sums <- props[, .(strata_sum = sum(proportion)), by = strata_names]
+  strata_sums <- props[, list(strata_sum = sum(get("proportion"))), by = strata_names]
   props <- merge(props, strata_sums, all = FALSE, by = strata_names)
-  props[, scaled_prop := proportion / strata_sum]
+  props[, c("scaled_prop") := get("proportion") / get("strata_sum")]
   props
 }
 
 check_proportions <- function(tabular, prop_name, check_sums) {
-  prop_sums <- props[, lapply(.SD, sum), .SDcols = prop_name, by = check_sums]
+  prop_sums <- tabular[, lapply(.SD, sum), .SDcols = prop_name, by = check_sums]
   if (!isTRUE(all.equal(1L, unique(prop_sums[[prop_name]]))))
     stop("not all proportions sum to 1 within ", paste(check_sums, collapse = ", "))
   else TRUE
@@ -81,33 +81,3 @@ check_target_levels <- function(variable, estimates, targets) {
   }
   else TRUE
 }
-
-# assertthat::assert_that(assertthat::not_empty(estimates))
-# assertthat::assert_that(assertthat::not_empty(targets))
-# assertthat::assert_that(all_strings(strata_names))
-# assertthat::assert_that(all_strings(group_names))
-# assertthat::assert_that(assertthat::is.string(prop_name))
-
-# assertthat::assert_that(assertthat::has_name(estimates, variable))
-# assertthat::assert_that(assertthat::has_name(targets, variable))
-
-# assertthat::assert_that(assertthat::is.string(prop_name))
-# assertthat::assert_that(is.character(check_sums) && all(nchar(check_sums) > 0))
-
-# setGeneric("poststratify")
-# setMethod("poststratify", method.skeleton("poststratify", c(estimates = "dgirtFit")),
-#           function(object, ...) {
-#             dots <- list(...)
-#             posterior_means <- setDT(as.data.frame(get_posterior_mean(dgirt_out)), keep.rownames = TRUE)
-#             prop_name <- dgirt_out@control@prop_name
-#
-#             if (length(dots$target_data)) {
-#               targets <- setDT(copy(dots$target_data))
-#             } else if (length(dgirt_out@dgirt_in$target_data)) {
-#               targets <- dgirt_out@dgirt_in$target_data
-#             } else {
-#               stop("Population targets must appear as `target_data` either in the call to `poststratify` or in the `dgirt_in` slot.")
-#             }
-#             callGeneric(posterior_means, targets, prop_name, ...)
-#           })
-#

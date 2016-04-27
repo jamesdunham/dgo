@@ -20,8 +20,13 @@
 
 \S4method{get_posterior_mean}{dgirtFit}(object = dgirtFit, ...)
 }
+\arguments{
+\item{object}{An object of class `dgirtIn` as returned by `shape`.}
+
+\item{...}{Unused.}
+}
 \description{
-All `rstan` methods for superclass `\link[rstan]{stanfit}` are available.
+All `rstan` methods for superclass `\link{stanfit-class}` are available.
 Descriptive labels for parameters on time periods, local geographic areas,
 and grouping variables will be added to most output.
 }
@@ -49,6 +54,6 @@ as.data.frame(toy_dgirtfit, pars = 'xi')  # all samples
 extract(toy_dgirtfit, pars = 'theta_bar')  # all samples
 }
 \seealso{
-`\link[rstan]{stanfit-class}`
+`\link{stanfit-class}`
 }
 

@@ -28,7 +28,7 @@
 expand_rownames <- function(x, col_names) {
   if (is.matrix(x)) x <- as.data.frame(x, stringsAsFactors = FALSE,
                                        rownames = rownames(x))
-  x <- copy(setDT(x, keep.rownames = TRUE))
+  x <- data.table::copy(data.table::setDT(x, keep.rownames = TRUE))
   rn <- gsub('.*\\[([A-Za-z0-9,_]+)\\].*', '\\1', x[, rn])
   comma_split <- data.table::tstrsplit(rn, c(","))
   if (length(comma_split) > 1L) {
@@ -44,5 +44,5 @@ expand_rownames <- function(x, col_names) {
   }
   # time column
   x[, (col_names[length(col_names)]) := comma_split[[length(comma_split)]]]
-  copy(x)
+  data.table::copy(x)
 }

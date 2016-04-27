@@ -55,36 +55,26 @@ dgirtIn <- R6::R6Class("dgirtIn",
         }
       }
     },
-    as_list = function(...) {
+    as_list = function(separate_t, delta_tbar_prior_mean, delta_tbar_prior_sd,
+                       innov_sd_delta_scale, innov_sd_theta_scale) {
       d_in_list <- Map(function(x) self[[x]], private$model_objects)
       # if called from `dgirt` look for modeling-choice arguments passed in ...
-      dots <- list(...)
-      if (length(dots$separate_t)) {
-        if (!length(dots$separate_t) == 1L && is.logical(dots$separate_t))
-          stop("\"dots$separate_t\" should be a single logical value")
-        else d_in_list$separate_t <- dots$separate_t
-      } else d_in_list$separate_t <- FALSE
-      if (length(dots$delta_tbar_prior_mean)) {
-        if (!length(dots$delta_tbar_prior_mean) == 1L &&
-            is.numeric(dots$delta_tbar_prior_mean))
-          stop("\"delta_tbar_prior_mean\" should be a single real value")
-        else d_in_list$delta_tbar_prior_mean <- dots$delta_tbar_prior_mean 
-      } else d_in_list$delta_tbar_prior_mean <- 0.5
-      if (length(dots$delta_tbar_prior_sd)) {
-        if (!length(dots$delta_tbar_prior_sd) == 1L && is.numeric(dots$delta_tbar_prior_sd))
-          stop("\"delta_tbar_prior_sd\" should be a single positive real value")
-        else d_in_list$delta_tbar_prior_sd <- dots$delta_tbar_prior_sd 
-      } else d_in_list$delta_tbar_prior_sd <- 0.5
-      if (length(dots$innov_sd_delta_scale)) {
-        if (!length(dots$innov_sd_delta_scale ) == 1L && is.numeric(dots$innov_sd_delta_scale))
-          stop("\"delta_tbar_delta_scale\" should be a single real value")
-        else d_in_list$innov_sd_delta_scale <- dots$innov_sd_delta_scale 
-      } else d_in_list$innov_sd_delta_scale <- 2.5
-      if (length(dots$innov_sd_theta_scale)) {
-        if (!length(dots$innov_sd_theta_scale ) == 1L && is.numeric(dots$innov_sd_theta_scale))
-          stop("\"delta_tbar_theta_scale\" should be a single real value")
-        else d_in_list$innov_sd_theta_scale <- dots$innov_sd_theta_scale 
-      } else d_in_list$innov_sd_theta_scale<- 2.5
+      if (!length(separate_t) == 1L && is.logical(separate_t))
+        stop("\"separate_t\" should be a single logical value")
+      else d_in_list$separate_t <- separate_t
+      if (!length(delta_tbar_prior_mean) == 1L &&
+          is.numeric(delta_tbar_prior_mean))
+        stop("\"delta_tbar_prior_mean\" should be a single real value")
+      else d_in_list$delta_tbar_prior_mean <- delta_tbar_prior_mean 
+      if (!length(delta_tbar_prior_sd) == 1L && is.numeric(delta_tbar_prior_sd))
+        stop("\"delta_tbar_prior_sd\" should be a single positive real value")
+      else d_in_list$delta_tbar_prior_sd <- delta_tbar_prior_sd 
+      if (!length(innov_sd_delta_scale ) == 1L && is.numeric(innov_sd_delta_scale))
+        stop("\"delta_tbar_delta_scale\" should be a single real value")
+      else d_in_list$innov_sd_delta_scale <- innov_sd_delta_scale 
+      if (!length(innov_sd_theta_scale ) == 1L && is.numeric(innov_sd_theta_scale))
+        stop("\"delta_tbar_theta_scale\" should be a single real value")
+      else d_in_list$innov_sd_theta_scale <- innov_sd_theta_scale 
       d_in_list
     }),
   private = list(model_objects = model_objects,

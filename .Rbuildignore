@@ -1,4 +1,5 @@
 ^.*\.Rproj$
+^.*\.Rdata$
 ^.*\.png$
 ^README.Rmd$
 ^\.DS_Store$
@@ -6,5 +7,7 @@
 ^\.Rproj\.user$
 ^\.travis.yml$
 ^packrat/
+^data-ext/
 ^todo.txt$
 ^wercker.yml$
+^build_install_check.r$

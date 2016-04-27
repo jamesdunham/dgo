@@ -9,11 +9,9 @@
 #' character vectors.  Some implement preprocessing and modeling choices.
 #' 
 #' @section Modifier Data:
-#' These arguments are required to model hierarchical parameters. 
-#' At the moment, modeling geographic parameters is supported
+#' These arguments are required to model hierarchical parameters with
+#' `modifier_data`.  At the moment, modeling geographic parameters is supported.
 #' \describe{
-#'   \item{`modifier_data`:}{Table giving characteristics of local geographic
-#'   areas in time periods.}
 #'   \item{`modifier_names`:}{Modifiers of geographic hierarchical parameters, e.g.
 #'   median household income in each local-area and time-period combination.}
 #'   \item{`t1_modifier_names`:}{Modifiers to be used instead of those in
@@ -51,8 +49,7 @@
 #' data unchanged.
 #'
 #' \describe{
-#'   \item{`target_data`}{A table giving population proportions for groups by
-#'   local geographic area and time period.}
+#'   \item{`target_data`}{.}
 #'   \item{target_proportion_name}{The variable giving population proportions
 #'   for strata.}
 #'   \item{strata_names}{Variables that define population strata.}
@@ -87,6 +84,12 @@
 #' @param time_name A time variable with numeric values.
 #' @param survey_name A survey identifier.
 #' @param weight_name A variable giving survey weights.
+#' @param modifier_data Table giving characteristics of local geographic areas
+#' in time periods. See details below.
+#' @param target_data A table giving population proportions for groups by local
+#' geographic area and time period. See details below.
+#' @param aggregate_data A table of trial and success counts by group and item.
+#' See details below.
 #' @param ... Further arguments for more complex models, input data, and
 #' preprocessing.
 #' @return An object of class `dgirtIn`, i.e., that expected by `\link{dgirt}`.
@@ -94,9 +97,9 @@
 #' @seealso get_n, get_item_n, get_item_names, dgirtin-class
 #' @examples
 #' # model individual item responses 
-#' data(state_opinion)
-#' shaped_responses <- shape(state_opinion,
-#'                           item_names = "Q_cces2006_minimumwage",
+#' data(opinion)
+#' shaped_responses <- shape(opinion,
+#'                           item_names = "Q_cces2006_gaymarriageamendment",
 #'                           time_name = "year",
 #'                           geo_name = "state",
 #'                           group_names = "race",
@@ -106,6 +109,7 @@
 #' summary(shaped_responses)
 #' # check sparseness of data to be modeled
 #' get_item_n(shaped_responses, by = "year")
+#' @include require_namespace.r
 #' @export
 shape <- function(item_data,
                   item_names,
@@ -200,8 +204,8 @@ shape <- function(item_data,
 get_missing_groups <- function(group_counts, group_grid, ctrl) {
   all_group_counts <- merge(group_counts, group_grid, all = TRUE,
                             by = c(ctrl@group_names, ctrl@geo_name, ctrl@time_name))
-  all_group_counts[, ("is_missing") := is.na(n_grp) + 0L]
-  all_group_counts[is.na(n_grp), c("n_grp", "s_grp") := 1L]
+  all_group_counts[, ("is_missing") := is.na(get("n_grp")) + 0L]
+  all_group_counts[is.na(get("n_grp")), c("n_grp", "s_grp") := 1L]
   all_group_counts[, (ctrl@geo_name) := paste0("x_", .SD[[ctrl@geo_name]]), .SDcols = c(ctrl@geo_name)]
   acast_formula <- as.formula(paste0(ctrl@time_name, "~ item ~", paste(ctrl@group_names, collapse = "+"), "+", ctrl@geo_name))
   MMM <- reshape2::acast(all_group_counts, acast_formula, value.var = "is_missing", fill = 1)
@@ -233,12 +237,13 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl) {
     if (length(missing_modifier_t)) stop("missing hierarchical data for t in item data: ", missing_modifier_t)
 
     # NOTE: we're prepending the value of geo with its variable name; may not be desirable
-    hier_frame <- copy(modifier_data)[, ctrl@geo_name := paste0(ctrl@geo_name, modifier_data[[ctrl@geo_name]])]
-    hier_frame[, setdiff(names(hier_frame), c(modeled_params, modifier_names)) := NULL, with = FALSE]
-    hier_frame[, c("param", ctrl@geo_name) := .(hier_frame[[ctrl@geo_name]], NULL), with = FALSE]
+    # FIXME: how to handle t1_modifier_names?
+    hier_frame <- data.table::copy(modifier_data)[, ctrl@geo_name := paste0(ctrl@geo_name, modifier_data[[ctrl@geo_name]])]
+    hier_frame[, setdiff(names(hier_frame), c(modeled_params, ctrl@modifier_names)) := NULL, with = FALSE]
+    hier_frame[, c("param", ctrl@geo_name) := list(hier_frame[[ctrl@geo_name]], NULL), with = FALSE]
     setkeyv(hier_frame, c("param", ctrl@time_name))
 
-    modeled_param_names <- unique(hier_frame[, param])
+    modeled_param_names <- unique(hier_frame[, get("param")])
     unmodeled_param_levels = unlist(lapply(unmodeled_params, function(x) {
                                              paste0(x, unique(d_in$group_grid_t[[x]]))[-1]
         }))
@@ -247,14 +252,14 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl) {
     unmodeled_frame <- expand.grid(c(list(
                                           unmodeled_param_levels,
                                           sort(unique(hier_frame[[ctrl@time_name]])),
-                                          as.integer(rep(list(0), length(modifier_names))))))
-    unmodeled_frame <- setNames(unmodeled_frame, c("param", ctrl@time_name, modifier_names))
-    setDT(unmodeled_frame, key = c("param", ctrl@time_name))
+                                          as.integer(rep(list(0), length(ctrl@modifier_names))))))
+    unmodeled_frame <- setNames(unmodeled_frame, c("param", ctrl@time_name, ctrl@modifier_names))
+    data.table::setDT(unmodeled_frame, key = c("param", ctrl@time_name))
 
     hier_frame <- rbind(hier_frame, unmodeled_frame)
 
     # FIXME: hacky handling of the possibility of NA modifier values here
-    hier_frame[, c(modifier_names) := lapply(.SD, function(x) replace(x, is.na(x), 0)), .SDcols = modifier_names]
+    hier_frame[, c(ctrl@modifier_names) := lapply(.SD, function(x) replace(x, is.na(x), 0)), .SDcols = ctrl@modifier_names]
 
     hier_melt = melt(hier_frame, id.vars = c("param", ctrl@time_name), variable.name = "modifiers", variable.factor = FALSE,
                      value.factor = FALSE)
