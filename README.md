@@ -13,19 +13,19 @@ Shape item response data for modeling:
 
 ``` r
 library(dgirt)
-dgirt_in <- shape(state_opinion, item_names = "Q_cces2006_minimumwage",
+dgirt_in <- shape(opinion, item_names = "Q_cces2006_abortion",
                   time_name = "year", geo_name = "state", group_names = "race",
                   time_filter = 2006:2008, geo_filter = c("MA", "NY"),
                   survey_name = "source", weight_name = "weight")
 #> Applying restrictions, pass 1...
 #>  Dropped 5 rows for missingness in covariates
-#>  Dropped 254 rows for lacking item responses
+#>  Dropped 215 rows for lacking item responses
 #> Applying restrictions, pass 2...
 #>  No changes
 #> 
 #> item                               class      levels       responses
 #> --------------------------------------------------------------------
-#> Q_cces2006_minimumwage           integer           2           5,274
+#> Q_cces2006_abortion              integer           2           5,313
 #> --------------------------------------------------------------------
 ```
 
@@ -34,9 +34,9 @@ Summarize the data:
 ``` r
 summary(dgirt_in)
 #> Items:
-#> [1] "Q_cces2006_minimumwage"
+#> [1] "Q_cces2006_abortion"
 #> Respondents:
-#>    5,274 in `item_data` (unadjusted)
+#>    5,313 in `item_data` (unadjusted)
 #> Grouping variables:
 #> [1] "year"  "state" "race" 
 #> Time periods:
@@ -56,10 +56,10 @@ Get item response counts:
 
 ``` r
 get_item_n(dgirt_in, by = "year")
-#>    year Q_cces2006_minimumwage
-#> 1: 2006                   2220
-#> 2: 2007                    887
-#> 3: 2008                   2167
+#>    year Q_cces2006_abortion
+#> 1: 2006                2142
+#> 2: 2007                 838
+#> 3: 2008                2333
 ```
 
 Or response counts generally:
@@ -67,9 +67,9 @@ Or response counts generally:
 ``` r
 get_n(dgirt_in, by = c("year", "source"))
 #>    year    source    n
-#> 1: 2006 CCES_2006 2220
-#> 2: 2007 CCES_2007  887
-#> 3: 2008 CCES_2008 2167
+#> 1: 2006 CCES_2006 2142
+#> 2: 2007 CCES_2007  838
+#> 3: 2008 CCES_2008 2333
 ```
 
 Fit a DGIRT model:
@@ -85,25 +85,25 @@ Summarize the results:
 
 ``` r
 summary(dgirt_out, pars = "theta_bar", probs = NULL)[[1]][, c("n_eff", "Rhat")]
-#>                              n_eff     Rhat
-#> theta_bar[MA__black,2006] 567.2511 1.001307
-#> theta_bar[NY__other,2006] 672.1604 1.000926
-#> theta_bar[MA__black,2006] 632.3718 1.000982
-#> theta_bar[NY__other,2006] 562.4402 1.001778
-#> theta_bar[MA__black,2006] 586.9589 1.002445
-#> theta_bar[NY__other,2006] 577.8566 1.001134
-#> theta_bar[NY__black,2007] 217.2885 1.009635
-#> theta_bar[MA__white,2007] 242.3918 1.010424
-#> theta_bar[NY__black,2007] 231.9694 1.010861
-#> theta_bar[MA__white,2007] 213.2866 1.011052
-#> theta_bar[NY__black,2007] 207.3987 1.011877
-#> theta_bar[MA__white,2007] 202.3302 1.012442
-#> theta_bar[MA__other,2008] 230.2633 1.011293
-#> theta_bar[NY__white,2008] 294.0922 1.008538
-#> theta_bar[MA__other,2008] 249.6917 1.010232
-#> theta_bar[NY__white,2008] 236.7750 1.011143
-#> theta_bar[MA__other,2008] 261.8406 1.009593
-#> theta_bar[NY__white,2008] 245.5359 1.010356
+#>                              n_eff      Rhat
+#> theta_bar[MA__black,2006] 349.3893 0.9993043
+#> theta_bar[NY__other,2006] 351.9231 1.0013305
+#> theta_bar[MA__black,2006] 375.9871 0.9997203
+#> theta_bar[NY__other,2006] 347.6678 1.0005613
+#> theta_bar[MA__black,2006] 370.8096 0.9998836
+#> theta_bar[NY__other,2006] 366.3508 1.0002863
+#> theta_bar[NY__black,2007] 105.8143 1.0081298
+#> theta_bar[MA__white,2007] 101.1465 1.0106646
+#> theta_bar[NY__black,2007] 105.6818 1.0091991
+#> theta_bar[MA__white,2007] 180.4446 1.0093761
+#> theta_bar[NY__black,2007] 109.4179 1.0069398
+#> theta_bar[MA__white,2007] 102.7480 1.0087389
+#> theta_bar[MA__other,2008] 197.2584 1.0079659
+#> theta_bar[NY__white,2008] 175.3147 1.0095019
+#> theta_bar[MA__other,2008] 178.1905 1.0088156
+#> theta_bar[NY__white,2008] 180.9532 1.0085106
+#> theta_bar[MA__other,2008] 184.0831 1.0079557
+#> theta_bar[NY__white,2008] 174.6215 1.0086977
 ```
 
 Get posterior means with a convenience function:
@@ -111,24 +111,24 @@ Get posterior means with a convenience function:
 ``` r
 get_posterior_mean(dgirt_out, pars = "theta_bar")
 #>                           mean-chain:1 mean-chain:2 mean-all chains
-#> theta_bar[MA__black,2006]    14.223879    13.732237       13.978058
-#> theta_bar[NY__black,2007]     7.062407     6.700662        6.881535
-#> theta_bar[MA__other,2008]     7.982472     7.790585        7.886528
-#> theta_bar[NY__other,2006]    14.846393    14.496723       14.671558
-#> theta_bar[MA__white,2007]     9.209964     9.046366        9.128165
-#> theta_bar[NY__white,2008]     8.064513     7.787008        7.925760
-#> theta_bar[MA__black,2006]    32.711052    36.788709       34.749881
-#> theta_bar[NY__black,2007]    19.957765    22.340277       21.149021
-#> theta_bar[MA__other,2008]    23.458089    26.078331       24.768210
-#> theta_bar[NY__other,2006]    33.676353    37.582956       35.629654
-#> theta_bar[MA__white,2007]    21.293037    24.110654       22.701845
-#> theta_bar[NY__white,2008]    19.084285    21.753493       20.418889
-#> theta_bar[MA__black,2006]   139.191189   184.742037      161.966613
-#> theta_bar[NY__black,2007]    88.571519   115.378657      101.975088
-#> theta_bar[MA__other,2008]    95.441928   123.841169      109.641548
-#> theta_bar[NY__other,2006]   143.635484   189.234568      166.435026
-#> theta_bar[MA__white,2007]    97.492839   126.812593      112.152716
-#> theta_bar[NY__white,2008]    91.263702   119.676549      105.470125
+#> theta_bar[MA__black,2006]    11.558036    11.429454       11.493745
+#> theta_bar[NY__black,2007]    11.767744    11.314054       11.540899
+#> theta_bar[MA__other,2008]    10.675021    10.487621       10.581321
+#> theta_bar[NY__other,2006]    13.387433    13.008990       13.198212
+#> theta_bar[MA__white,2007]     7.060649     6.977554        7.019101
+#> theta_bar[NY__white,2008]     8.446796     8.287860        8.367328
+#> theta_bar[MA__black,2006]    36.109720    37.227125       36.668422
+#> theta_bar[NY__black,2007]    33.923667    34.262023       34.092845
+#> theta_bar[MA__other,2008]    34.398405    35.328319       34.863362
+#> theta_bar[NY__other,2006]    40.358194    40.874236       40.616215
+#> theta_bar[MA__white,2007]    20.843050    22.372757       21.607903
+#> theta_bar[NY__white,2008]    24.277230    25.152684       24.714957
+#> theta_bar[MA__black,2006]   284.224807   237.578705      260.901756
+#> theta_bar[NY__black,2007]   251.804622   218.204948      235.004785
+#> theta_bar[MA__other,2008]   248.950215   217.664538      233.307377
+#> theta_bar[NY__other,2006]   308.300503   271.317389      289.808946
+#> theta_bar[MA__white,2007]   154.496565   147.377518      150.937042
+#> theta_bar[NY__white,2008]   197.128599   175.250661      186.189630
 ```
 
 Or generally access posterior samples:
@@ -136,23 +136,23 @@ Or generally access posterior samples:
 ``` r
 apply(as.array(dgirt_out, pars = "theta_bar"), 3, mean)
 #> theta_bar[MA__black,2006] theta_bar[NY__black,2007] 
-#>                 13.978058                 34.749881 
+#>                 11.493745                 36.668422 
 #> theta_bar[MA__other,2008] theta_bar[NY__other,2006] 
-#>                161.966613                  6.881535 
+#>                260.901756                 11.540899 
 #> theta_bar[MA__white,2007] theta_bar[NY__white,2008] 
-#>                 21.149021                101.975088 
+#>                 34.092845                235.004785 
 #> theta_bar[MA__black,2006] theta_bar[NY__black,2007] 
-#>                  7.886528                 24.768210 
+#>                 10.581321                 34.863362 
 #> theta_bar[MA__other,2008] theta_bar[NY__other,2006] 
-#>                109.641548                 14.671558 
+#>                233.307377                 13.198212 
 #> theta_bar[MA__white,2007] theta_bar[NY__white,2008] 
-#>                 35.629654                166.435026 
+#>                 40.616215                289.808946 
 #> theta_bar[MA__black,2006] theta_bar[NY__black,2007] 
-#>                  9.128165                 22.701845 
+#>                  7.019101                 21.607903 
 #> theta_bar[MA__other,2008] theta_bar[NY__other,2006] 
-#>                112.152716                  7.925760 
+#>                150.937042                  8.367328 
 #> theta_bar[MA__white,2007] theta_bar[NY__white,2008] 
-#>                 20.418889                105.470125
+#>                 24.714957                186.189630
 ```
 
 See `help("dgirtfit-class")` and `help("stanfit-class")` for more.
