@@ -13,6 +13,7 @@ Shape item response data for modeling:
 
 ``` r
 library(dgirt)
+#> Loading required package: Rcpp
 dgirt_in <- shape(opinion, item_names = "Q_cces2006_abortion",
                   time_name = "year", geo_name = "state", group_names = "race",
                   time_filter = 2006:2008, geo_filter = c("MA", "NY"),
