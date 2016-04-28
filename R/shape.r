@@ -217,7 +217,7 @@ get_missing_groups <- function(group_counts, group_grid, ctrl) {
 }
 
 shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl) {
-  if (d_in$G_hier == 1) {
+  if (!length(modifier_data)) {
     zz.names <- list(ctrl@time_filter, dimnames(d_in$XX)[[2]], "")
     zz <- array(data = 0, dim = lapply(zz.names, length), dimnames = zz.names)
   } else {
