@@ -3,14 +3,17 @@ discretize <- function(item_data, ctrl) {
   #
   # For item response variables with K ordered levels, make K - 1 indicators for
   # whether a response is ranked higher than k.
+  #
+  # Joining the result to the existing item_data with cbind is slow, but there
+  # were problems in earlier implementations adding the dichotomized variables
+  # as new columns by reference.
   gt_table <- create_gt_variables(item_data, ctrl)
-  # NOTE: updating item_data by reference to include gt_table
-  item_data[, names(gt_table) := gt_table]
-  # return the indicator names to reference them safely later
-  names(gt_table)
+  item_data <- cbind(item_data, gt_table)
+  setattr(item_data, "gt_names", names(gt_table))
+  invisible(item_data)
 }
 
-create_gt_variables <- function(item_data, ctrl){
+create_gt_variables <- function(item_data, ctrl) {
   widths <- c("item" = 30, "class" = 10, "levels" = 12, "responses" = 16)
   print_varinfo_header(widths)
   out <- lapply(ctrl@item_names, function(i) {
