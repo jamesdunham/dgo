@@ -27,7 +27,7 @@ setMethod("summary", c(object = "dgirtIn"),
             print(object$control@geo_filter)
             cat("Hierarchical parameters:\n")
             print(object$hier_names)
-            cat("Hierarchical parameters with modifiers:\n")
+            cat("Modifiers of hierarchical parameters:\n")
             print(object$control@modifier_names)
             cat("Constants:\n")
             print(c(Q = object$Q, T = object$T, P = object$P, N = object$N, G = object$G,
