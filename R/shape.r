@@ -147,7 +147,8 @@ shape <- function(item_data,
 
   # aggregate individual item response data to group level #
   weight(item_data, target_data, ctrl)
-  d_in$gt_items <- discretize(item_data, ctrl)
+  item_data <- discretize(item_data, ctrl)
+  d_in$gt_items <- attr(item_data, "gt_names")
 
   d_in$group_grid <- make_group_grid(item_data, aggregate_data, ctrl)
   d_in$group_grid_t <- make_group_grid_t(d_in$group_grid, ctrl)
@@ -228,8 +229,7 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl) {
     unmodeled_params = setdiff(c(ctrl@geo_name, ctrl@time_name, ctrl@group_names), modeled_params)
 
     # does hierarchical data include all observed geo?
-    missing_modifier_geo <- setdiff(
-                                    unique(d_in$group_grid_t[[ctrl@geo_name]]),
+    missing_modifier_geo <- setdiff(unique(d_in$group_grid_t[[ctrl@geo_name]]),
                                     unique(modifier_data[[ctrl@geo_name]]))
     if (length(missing_modifier_geo)) stop("no hierarchical data for geo in item data: ", missing_modifier_geo)
     # does hierarchical data include all modeled t?
@@ -238,7 +238,7 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl) {
 
     # NOTE: we're prepending the value of geo with its variable name; may not be desirable
     # FIXME: how to handle t1_modifier_names?
-    hier_frame <- data.table::copy(modifier_data)[, ctrl@geo_name := paste0(ctrl@geo_name, modifier_data[[ctrl@geo_name]])]
+    hier_frame <- data.table::copy(modifier_data) [, ctrl@geo_name := paste0(ctrl@geo_name, modifier_data[[ctrl@geo_name]])]
     hier_frame[, setdiff(names(hier_frame), c(modeled_params, ctrl@modifier_names)) := NULL, with = FALSE]
     hier_frame[, c("param", ctrl@geo_name) := list(hier_frame[[ctrl@geo_name]], NULL), with = FALSE]
     setkeyv(hier_frame, c("param", ctrl@time_name))
@@ -249,10 +249,10 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl) {
         }))
     param_levels <- c(modeled_param_names, unmodeled_param_levels)
 
-    unmodeled_frame <- expand.grid(c(list(
-                                          unmodeled_param_levels,
-                                          sort(unique(hier_frame[[ctrl@time_name]])),
-                                          as.integer(rep(list(0), length(ctrl@modifier_names))))))
+    # make a zeroed table for unmodeled parameters by time period
+    unmodeled_frame <- expand.grid(c(list(unmodeled_param_levels,
+                                          sort(unique(hier_frame[[ctrl@time_name]]))),
+                                          rep(list(0L), length(ctrl@modifier_names))))
     unmodeled_frame <- setNames(unmodeled_frame, c("param", ctrl@time_name, ctrl@modifier_names))
     data.table::setDT(unmodeled_frame, key = c("param", ctrl@time_name))
 
@@ -263,7 +263,7 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl) {
 
     hier_melt = melt(hier_frame, id.vars = c("param", ctrl@time_name), variable.name = "modifiers", variable.factor = FALSE,
                      value.factor = FALSE)
-    setkeyv(hier_melt, c("param", "year"))
+    setkeyv(hier_melt, c("param", ctrl@time_name))
 
     melt_formula <- as.formula(paste(ctrl@time_name, "param", "modifiers", sep = " ~ "))
     zz <- reshape2::acast(hier_melt, melt_formula, drop = FALSE, value.var = "value")
@@ -277,8 +277,9 @@ make_design_matrix <- function(item_data, d_in, ctrl) {
                                      paste(ctrl@group_names, collapse = " + "),
                                      sep = " + "))
   design_matrix <- with_contr.treatment(model.matrix(design_formula, d_in$group_grid_t))
-  rownames(design_matrix) <- paste(paste(d_in$group_grid_t[[ctrl@group_names]], sep = "_"),
-                                   d_in$group_grid_t[[ctrl@geo_name]],  sep = "_x_")
+  group_names <- do.call(paste, c(d_in$group_grid_t[, ctrl@group_names, with = FALSE], sep = "_"))
+  rownames(design_matrix) <- paste(group_names, d_in$group_grid_t[[ctrl@geo_name]],  sep = "_x_")
+                                   
   design_matrix <- subset(design_matrix, select = -1)
   # TODO: move to S4 validate
   invalid_values <- setdiff(as.vector(design_matrix), c(0, 1))

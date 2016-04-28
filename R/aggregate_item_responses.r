@@ -62,7 +62,8 @@ make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
   melted <- melt(counts_means, id.vars = c(ctrl@time_name, ctrl@geo_name, ctrl@group_names), variable.name = "item")
   melted[, c("variable", "item") := list(gsub(".*([sn]_grp)$", "\\1", get("item")),
                                          gsub("(.*)_[sn]_grp$", "\\1", get("item")))]
-  f <- as.formula(paste0(paste(ctrl@time_name, ctrl@geo_name, ctrl@group_names, "item", sep = "+"), "~variable"))
+  f <- as.formula(paste0(paste(ctrl@time_name, ctrl@geo_name, paste(ctrl@group_names, collapse = " + "),
+                               "item", sep = "+"), " ~ variable"))
   group_counts <- data.table::dcast.data.table(melted, f)
 
   # stan code expects unobserved group-items to be omitted
@@ -72,8 +73,8 @@ make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
 
   # include aggregates, if any
   if (length(aggregate_data) && nrow(aggregate_data) > 0) {
-    message("Added ", length(ctrl@aggregate_item_names), " items from aggregate data.")
     group_counts <- rbind(group_counts, aggregate_data)
+    message("Added ", length(ctrl@aggregate_item_names), " items from aggregate data.")
   }
 
   # create an identifier for use in n_vec and s_vec 
