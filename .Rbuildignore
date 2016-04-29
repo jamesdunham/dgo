@@ -11,3 +11,5 @@
 ^todo.txt$
 ^wercker.yml$
 ^build_install_check.r$
+^debug_setup.r$
+^aggregate_data.Rds$

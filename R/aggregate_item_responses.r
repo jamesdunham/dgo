@@ -19,7 +19,11 @@ make_group_grid_t <- function(group_grid, ctrl) {
 }
 
 make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
-  # Make a table giving success and trial counts by group and item
+  # Make a table giving success and trial counts by group and item.
+  #
+  # Because of how DGIRT Stan code iterates over the data, the result must be
+  # ordered by time, item, and then group. The order of the grouping variables
+  # doesn't matter so long as it's consistent between here and MMM.
   item_data[, c("n_responses") := list(rowSums(!is.na(.SD))),
             .SDcols = d_in$gt_items]
   item_data[, c("def") := lapply(.SD, calc_design_effects),
@@ -81,6 +85,7 @@ make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
   group_counts[, c("name") := do.call(paste, c(.SD, sep = "__")), .SDcols =
                c(ctrl@time_name, ctrl@geo_name, ctrl@group_names, "item")]
 
+  setkeyv(group_counts, c(ctrl@time_name, "item", ctrl@group_names, ctrl@geo_name))
   group_counts
 }
 

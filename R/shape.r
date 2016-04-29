@@ -125,6 +125,7 @@ shape <- function(item_data,
 
   ctrl <- init_control(item_data, item_names, time_name, geo_name, group_names,
                        weight_name, survey_name, ...)
+
   d_in <- dgirtIn$new(item_data, modifier_data, target_data, aggregate_data,
                       ctrl)
 
@@ -207,9 +208,13 @@ get_missing_groups <- function(group_counts, group_grid, ctrl) {
                             by = c(ctrl@group_names, ctrl@geo_name, ctrl@time_name))
   all_group_counts[, ("is_missing") := is.na(get("n_grp")) + 0L]
   all_group_counts[is.na(get("n_grp")), c("n_grp", "s_grp") := 1L]
+  all_group_counts[, c("n_grp", "s_grp", "name") := list(NULL)]
   all_group_counts[, (ctrl@geo_name) := paste0("x_", .SD[[ctrl@geo_name]]), .SDcols = c(ctrl@geo_name)]
-  acast_formula <- as.formula(paste0(ctrl@time_name, "~ item ~", paste(ctrl@group_names, collapse = "+"), "+", ctrl@geo_name))
-  MMM <- reshape2::acast(all_group_counts, acast_formula, value.var = "is_missing", fill = 1)
+  acast_formula <- as.formula(paste0(ctrl@time_name, "~ item ~",
+                                     paste(ctrl@group_names, collapse = "+"),
+                                     "+", ctrl@geo_name))
+  MMM <- reshape2::acast(all_group_counts, acast_formula,
+                         value.var = "is_missing", fill = 1)
   # merging group_grid included unobserved combinations of grouping variables; being unobserved, they're associated with
   # no item, and when the result is cast to array, NA will appear in the second dimension as an item name
   MMM <- MMM[, dimnames(MMM)[[2]] != "NA", , drop = FALSE]

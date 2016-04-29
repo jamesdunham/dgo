@@ -103,6 +103,12 @@ restrict_aggregates <- function(aggregate_data, ctrl) {
     if (length(extra_colnames)) {
       aggregate_data[, c(extra_colnames) := NULL, with = FALSE]
     }
+
+    id_cols <- c(ctrl@geo_name, ctrl@time_name, ctrl@group_names, "item")
+    if (any(duplicated(aggregate_data[, id_cols, with = FALSE])))
+      stop("rows in aggregate data do not uniquely identify item response ",
+           "counts within group, geographic area, and time period combinations")
+
     aggregate_data
   }
 }
