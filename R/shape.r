@@ -165,7 +165,7 @@ shape <- function(item_data,
   d_in$G_hier <- ifelse(!length(modifier_data), nlevels(gl(1L, d_in$G)),
                         max(unlist(length(ctrl@modifier_names)), 1L))
   d_in$T <- length(ctrl@time_filter)
-  d_in$Q <- length(c(intersect(ctrl@item_names, names(item_data)),
+  d_in$Q <- length(c(intersect(d_in$gt_items, names(item_data)),
                      intersect(ctrl@aggregate_item_names,
                                unique(aggregate_data$item))))
 
