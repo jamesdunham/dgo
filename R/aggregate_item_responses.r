@@ -34,21 +34,24 @@ make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
   item_n <- item_data[, lapply(.SD, count_items, get("n_responses"), get("def")),
                       .SDcols = c(d_in$gt_items),
                       by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
-
   # append _n_grp to the response count columns
-  item_n_vars <- paste0(ctrl@item_names, "_n_grp")
+  item_n_vars <- paste0(d_in$gt_items, "_n_grp")
   names(item_n) <- replace(names(item_n), match(d_in$gt_items, names(item_n)), item_n_vars)
   setkeyv(item_n, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
+  drop_cols <- setdiff(names(item_n), c(key(item_n), item_n_vars))
+  item_n[, c(drop_cols) := NULL, with = FALSE]
 
+  # get mean ystar
   item_data[, c("adj_weight") := get(ctrl@weight_name) / get("n_responses")]
   item_means <- item_data[, lapply(.SD, function(x) weighted.mean(x, .SD$adj_weight, na.rm = TRUE)),
                           .SDcols = c(d_in$gt_items, "adj_weight"),
                           by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
-
   # append _mean to the mean response columns 
-  item_mean_vars <- paste0(ctrl@item_names, "_mean")
+  item_mean_vars <- paste0(d_in$gt_items, "_mean")
   names(item_means) <- replace(names(item_means), match(d_in$gt_items, names(item_means)), item_mean_vars)
   setkeyv(item_means, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
+  drop_cols <- setdiff(names(item_means), c(key(item_means), item_mean_vars))
+  item_means[, c(drop_cols) := NULL, with = FALSE]
 
   # join response counts with means 
   counts_means <- item_n[item_means]
@@ -57,15 +60,17 @@ make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
                                    item_n_vars), with = FALSE]
 
   # the group success count for an item is the product of its count and mean
-  item_s_vars <- paste0(ctrl@item_names, "_s_grp")
-  counts_means[, c(item_s_vars) := round(counts_means[, (item_mean_vars), with = FALSE] * counts_means[, (item_n_vars), with = FALSE], 0)]
+  item_s_vars <- paste0(d_in$gt_items, "_s_grp")
+  counts_means[, c(item_s_vars) := round(counts_means[, (item_mean_vars), with = FALSE] *
+                                         counts_means[, (item_n_vars), with = FALSE], 0)]
   counts_means <- counts_means[, -grep("_mean$", names(counts_means)), with = FALSE]
+
 
   # we want a long table of successes (s_grp) and trials (n_grp) by group and
   # item; items need to move from columns to rows
   melted <- melt(counts_means, id.vars = c(ctrl@time_name, ctrl@geo_name, ctrl@group_names), variable.name = "item")
-  melted[, c("variable", "item") := list(gsub(".*([sn]_grp)$", "\\1", get("item")),
-                                         gsub("(.*)_[sn]_grp$", "\\1", get("item")))]
+  melted[, c("variable") := list(gsub(".*([sn]_grp)$", "\\1", get("item")))]
+  melted[, c("item") := list(gsub("(.*)_[sn]_grp$", "\\1", get("item")))]
   f <- as.formula(paste0(paste(ctrl@time_name, ctrl@geo_name, paste(ctrl@group_names, collapse = " + "),
                                "item", sep = "+"), " ~ variable"))
   group_counts <- data.table::dcast.data.table(melted, f)
