@@ -48,7 +48,7 @@ summary(dgirt_in)
 #> [1] "MA" "NY"
 #> Hierarchical parameters:
 #> [1] "stateNY"   "raceother" "racewhite"
-#> Hierarchical parameters with modifiers:
+#> Modifiers of hierarchical parameters:
 #> character(0)
 #> Constants:
 #>  Q  T  P  N  G  H  D 
@@ -88,25 +88,25 @@ Summarize the results:
 
 ``` r
 summary(dgirt_out, pars = "theta_bar", probs = NULL)[[1]][, c("n_eff", "Rhat")]
-#>                              n_eff      Rhat
-#> theta_bar[MA__black,2006] 349.3893 0.9993043
-#> theta_bar[NY__other,2006] 351.9231 1.0013305
-#> theta_bar[MA__black,2006] 375.9871 0.9997203
-#> theta_bar[NY__other,2006] 347.6678 1.0005613
-#> theta_bar[MA__black,2006] 370.8096 0.9998836
-#> theta_bar[NY__other,2006] 366.3508 1.0002863
-#> theta_bar[NY__black,2007] 105.8143 1.0081298
-#> theta_bar[MA__white,2007] 101.1465 1.0106646
-#> theta_bar[NY__black,2007] 105.6818 1.0091991
-#> theta_bar[MA__white,2007] 180.4446 1.0093761
-#> theta_bar[NY__black,2007] 109.4179 1.0069398
-#> theta_bar[MA__white,2007] 102.7480 1.0087389
-#> theta_bar[MA__other,2008] 197.2584 1.0079659
-#> theta_bar[NY__white,2008] 175.3147 1.0095019
-#> theta_bar[MA__other,2008] 178.1905 1.0088156
-#> theta_bar[NY__white,2008] 180.9532 1.0085106
-#> theta_bar[MA__other,2008] 184.0831 1.0079557
-#> theta_bar[NY__white,2008] 174.6215 1.0086977
+#>                              n_eff     Rhat
+#> theta_bar[MA__black,2006] 617.8521 1.002874
+#> theta_bar[NY__other,2006] 550.4068 1.004465
+#> theta_bar[MA__black,2006] 648.2662 1.004901
+#> theta_bar[NY__other,2006] 493.8424 1.005667
+#> theta_bar[MA__black,2006] 597.2855 1.003263
+#> theta_bar[NY__other,2006] 602.2568 1.003630
+#> theta_bar[NY__black,2007] 161.0472 1.007891
+#> theta_bar[MA__white,2007] 159.8824 1.010316
+#> theta_bar[NY__black,2007] 165.9396 1.008898
+#> theta_bar[MA__white,2007] 186.6746 1.007097
+#> theta_bar[NY__black,2007] 161.5272 1.010481
+#> theta_bar[MA__white,2007] 159.2225 1.009206
+#> theta_bar[MA__other,2008] 130.0661 1.003498
+#> theta_bar[NY__white,2008] 122.5863 1.004336
+#> theta_bar[MA__other,2008] 130.9246 1.003504
+#> theta_bar[NY__white,2008] 126.0247 1.003744
+#> theta_bar[MA__other,2008] 120.6686 1.004224
+#> theta_bar[NY__white,2008] 121.6400 1.004121
 ```
 
 Get posterior means with a convenience function:
@@ -114,24 +114,24 @@ Get posterior means with a convenience function:
 ``` r
 get_posterior_mean(dgirt_out, pars = "theta_bar")
 #>                           mean-chain:1 mean-chain:2 mean-all chains
-#> theta_bar[MA__black,2006]    11.558036    11.429454       11.493745
-#> theta_bar[NY__black,2007]    11.767744    11.314054       11.540899
-#> theta_bar[MA__other,2008]    10.675021    10.487621       10.581321
-#> theta_bar[NY__other,2006]    13.387433    13.008990       13.198212
-#> theta_bar[MA__white,2007]     7.060649     6.977554        7.019101
-#> theta_bar[NY__white,2008]     8.446796     8.287860        8.367328
-#> theta_bar[MA__black,2006]    36.109720    37.227125       36.668422
-#> theta_bar[NY__black,2007]    33.923667    34.262023       34.092845
-#> theta_bar[MA__other,2008]    34.398405    35.328319       34.863362
-#> theta_bar[NY__other,2006]    40.358194    40.874236       40.616215
-#> theta_bar[MA__white,2007]    20.843050    22.372757       21.607903
-#> theta_bar[NY__white,2008]    24.277230    25.152684       24.714957
-#> theta_bar[MA__black,2006]   284.224807   237.578705      260.901756
-#> theta_bar[NY__black,2007]   251.804622   218.204948      235.004785
-#> theta_bar[MA__other,2008]   248.950215   217.664538      233.307377
-#> theta_bar[NY__other,2006]   308.300503   271.317389      289.808946
-#> theta_bar[MA__white,2007]   154.496565   147.377518      150.937042
-#> theta_bar[NY__white,2008]   197.128599   175.250661      186.189630
+#> theta_bar[MA__black,2006]    11.150921    12.016116       11.583519
+#> theta_bar[NY__black,2007]    11.037050    11.975606       11.506328
+#> theta_bar[MA__other,2008]     8.869601     9.694063        9.281832
+#> theta_bar[NY__other,2006]     6.527898     7.141562        6.834730
+#> theta_bar[MA__white,2007]     8.724813     9.407850        9.066331
+#> theta_bar[NY__white,2008]     7.022367     7.585582        7.303974
+#> theta_bar[MA__black,2006]    30.322840    35.816811       33.069826
+#> theta_bar[NY__black,2007]    28.529103    33.990859       31.259981
+#> theta_bar[MA__other,2008]    23.195351    27.176713       25.186032
+#> theta_bar[NY__other,2006]    15.940862    18.621480       17.281171
+#> theta_bar[MA__white,2007]    24.566486    29.207524       26.887005
+#> theta_bar[NY__white,2008]    17.802850    20.987815       19.395333
+#> theta_bar[MA__black,2006]   131.893221   203.277472      167.585347
+#> theta_bar[NY__black,2007]   127.041911   202.530328      164.786119
+#> theta_bar[MA__other,2008]    97.761362   151.816903      124.789133
+#> theta_bar[NY__other,2006]    73.252799   107.939084       90.595942
+#> theta_bar[MA__white,2007]   103.772838   163.383290      133.578064
+#> theta_bar[NY__white,2008]    83.912056   129.516051      106.714053
 ```
 
 Or generally access posterior samples:
@@ -139,23 +139,23 @@ Or generally access posterior samples:
 ``` r
 apply(as.array(dgirt_out, pars = "theta_bar"), 3, mean)
 #> theta_bar[MA__black,2006] theta_bar[NY__black,2007] 
-#>                 11.493745                 36.668422 
+#>                 11.583519                 33.069826 
 #> theta_bar[MA__other,2008] theta_bar[NY__other,2006] 
-#>                260.901756                 11.540899 
+#>                167.585347                 11.506328 
 #> theta_bar[MA__white,2007] theta_bar[NY__white,2008] 
-#>                 34.092845                235.004785 
+#>                 31.259981                164.786119 
 #> theta_bar[MA__black,2006] theta_bar[NY__black,2007] 
-#>                 10.581321                 34.863362 
+#>                  9.281832                 25.186032 
 #> theta_bar[MA__other,2008] theta_bar[NY__other,2006] 
-#>                233.307377                 13.198212 
+#>                124.789133                  6.834730 
 #> theta_bar[MA__white,2007] theta_bar[NY__white,2008] 
-#>                 40.616215                289.808946 
+#>                 17.281171                 90.595942 
 #> theta_bar[MA__black,2006] theta_bar[NY__black,2007] 
-#>                  7.019101                 21.607903 
+#>                  9.066331                 26.887005 
 #> theta_bar[MA__other,2008] theta_bar[NY__other,2006] 
-#>                150.937042                  8.367328 
+#>                133.578064                  7.303974 
 #> theta_bar[MA__white,2007] theta_bar[NY__white,2008] 
-#>                 24.714957                186.189630
+#>                 19.395333                106.714053
 ```
 
 See `help("dgirtfit-class")` and `help("stanfit-class")` for more.
