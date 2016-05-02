@@ -1,25 +1,34 @@
-#' @rdname dgirfit-class
-#' @param object An object of class `dgirtIn` as returned by `shape`.
+#' \code{show} method for \code{dgirtfit-class} objects
+#' @param object An object of class \code{dgirtIn} as returned by \code{shape}.
+#' @rdname dgirtfit-class
 #' @export
-setMethod("show", "dgirtFit",
-          function(object = dgirtFit) {
+#' @examples
+#' toy_dgirtfit
+setMethod("show", "dgirtfit",
+          function(object = dgirtfit) {
             object@sim$fnames_oi <- flatnames(object)
             callNextMethod(object)
           })
 
-#' @rdname dgirfit-class
-#' @param ... Unused.
+#' \code{summary} method for \code{dgirtfit-class} objects
+#' @rdname dgirtfit-class
+#' @param ... Further arguments to \code{\link{stanfit-class}} methods.
 #' @export
-setMethod("summary", "dgirtFit",
-          function(object = dgirtFit, ...) {
+#' @examples
+#' summary(toy_dgirtfit)
+setMethod("summary", "dgirtfit",
+          function(object = dgirtfit, ...) {
             object@sim$fnames_oi <- flatnames(object)
             callNextMethod(object, ...)
           })
 
-#' @rdname dgirfit-class
+#' \code{extract} method for \code{dgirtfit-class} objects
+#' @rdname dgirtfit-class
 #' @export
-setMethod("extract", "dgirtFit",
-          function(object = dgirtFit, ...) {
+#' @examples
+#' extract(toy_dgirtfit)
+setMethod("extract", "dgirtfit",
+          function(object = dgirtfit, ...) {
             extracted <- callNextMethod(object, ...)
             if (is.list(extracted)) {
               extracted <- arraynames(extracted, object)
@@ -28,12 +37,15 @@ setMethod("extract", "dgirtFit",
                 dimnames(extracted)[[3]])
             }
             extracted
-          }) 
+          })
 
-#' @rdname dgirfit-class
+#' \code{get_posterior_mean} method for \code{dgirtfit-class} objects
+#' @rdname dgirtfit-class
 #' @export
-setMethod("get_posterior_mean", "dgirtFit",
-          function(object = dgirtFit, ...) {
+#' @examples
+#' get_posterior_mean(toy_dgirtfit)
+setMethod("get_posterior_mean", "dgirtfit",
+          function(object = dgirtfit, ...) {
             posterior_means <- callNextMethod(object, ...)
             rownames(posterior_means) <- flatnames(object,
               rownames(posterior_means))

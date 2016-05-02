@@ -1,24 +1,37 @@
-#' Estimate a DGIRT model
+#' \code{dgirt}: fit a DGIRT model
 #'
-#' `dgirt` makes a call to `\link[rstan]{stan}` with the Stan code and data for
-#' a DGIRT model. By default the call overrides the `stan` defaults for `pars`
-#' to specify typical DGIRT parameters of interest and sets `iter_r` to `1L`.
+#' \code{dgirt} makes a call to \code{\link[rstan]{stan}} with the Stan code and
+#' data for a DGIRT model. By default the call overrides the
+#' \code{\link[rstan]{stan}} defaults for \code{pars} to specify typical DGIRT
+#' parameters of interest and sets \code{iter_r} to \code{1L}.
 #'
-#' @param shaped_data Output from `shape`.
+#' @param shaped_data Output from \code{\link{shape}}.
+#'
 #' @param separate_t Whether smoothing of estimates over time should be
-#' disabled. Default `FALSE`.
-#' @param delta_tbar_prior_mean Prior mean for `delta_tbar`, the normal weight
-#' on `theta_bar` in the previous period.  Default `0.5`.
-#' @param delta_tbar_prior_sd Prior standard deviation for `delta_bar`. Default
-#' `0.5`.
-#' @param innov_sd_delta_scale Prior scale for `sd_innov_delta`, the Cauchy
-#' innovation standard deviation of `nu_geo` and `delta_gamma`. Default `2.5`.
-#' @param innov_sd_theta_scale Prior scale for `sd_innov_theta`, the Cauchy
-#' innovation standard deviation of `gamma`, `xi`, and if `constant_item` is
-#' `FALSE` the item difficulty `diff`. Default `2.5`.
-#' @param ... Further arguments passed to `\link[rstan]{stan}`.
-#' @return A `dgirtfit` object that extends `stanfit-class`. For details see
-#' `\link{dgirtfit-class}`.
+#' disabled. Default \code{FALSE}.
+#'
+#' @param delta_tbar_prior_mean Prior mean for \code{delta_tbar}, the normal
+#' weight on \code{theta_bar} in the previous period.  Default \code{0.5}.
+#'
+#' @param delta_tbar_prior_sd Prior standard deviation for \code{delta_bar}.
+#' Default \code{0.5}.
+#'
+#' @param innov_sd_delta_scale Prior scale for \code{sd_innov_delta}, the Cauchy
+#' innovation standard deviation of \code{nu_geo} and \code{delta_gamma}.
+#' Default \code{2.5}.
+#'
+#' @param innov_sd_theta_scale Prior scale for \code{sd_innov_theta}, the Cauchy
+#' innovation standard deviation of \code{gamma}, \code{xi}, and if
+#' \code{constant_item} is \code{FALSE} the item difficulty \code{diff}. Default
+#' \code{2.5}.
+#'
+#' @param ... Further arguments passed to \code{\link[rstan]{stan}}.
+#'
+#' @return A \code{\link{dgirtfit-class}} object that extends
+#' \code{\link[rstan]{stanfit-class}}.
+#'
+#' @seealso \code{\link{dgirtfit-class}} \code{\link{shape}}
+#'
 #' @import rstan
 #' @export
 #' @include constants.r
@@ -50,7 +63,7 @@ dgirt <- function(shaped_data, separate_t = FALSE, delta_tbar_prior_mean = 0.5,
 
   stanfit <- do.call(rstan::stan, dots)
 
-  tryCatch(new("dgirtFit", stanfit, dgirt_in = shaped_data, call = match.call()),
+  tryCatch(new("dgirtfit", stanfit, dgirt_in = shaped_data, call = match.call()),
            error = function(e) {
              warning("Error constructing dgirtfit; returning stanfit object instead")
              stanfit

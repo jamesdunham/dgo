@@ -2,30 +2,31 @@
 % Please edit documentation in R/expand_rownames.r
 \name{expand_rownames}
 \alias{expand_rownames}
-\title{Expand Descriptive Rownames.}
+\title{\code{expand_rownames}: extract parameter descriptions in rownames}
 \usage{
 expand_rownames(x, col_names)
 }
 \arguments{
-\item{x}{A table with rownames in the format `param[group1__groupK,t]` or
-`param[t]`.}
+\item{x}{A table with rownames in the format \code{param[group1__groupK,t]}
+or \code{param[t]}.}
 
 \item{col_names}{A character vector of column names to be created, in the
 same order that their values appear in the rownames.}
 }
 \value{
-`x` with additional columns (see details).
+\code{x} with additional columns (see details).
 }
 \description{
 Move rownames that describe parameters (e.g. xi[2009]) to columns.
 }
 \details{
-Tables of `dgirt` output will often have descriptive rownames of the format
-`param[group1__groupK,t]` for parameters indexed by group and time period, or
-`param[t]` for parameters indexed by time period. `expand_rownames` is a
-convenience function for moving this information to columns in those tables
-whose names are given by the `col_names` argument. The rownames in their
-original format will appear in the column `rn`.
+Tables of \code{\link{dgirtfit}}-class \code{\link{dgirt}} output  will often
+have descriptive rownames of the format \code{param[group1__groupK,t]} for
+parameters indexed by group and time period, or \code{param[t]} for
+parameters indexed by time period.  \code{expand_rownames} is a convenience
+function for moving this information to columns in those tables whose names
+are given by the \code{col_names} argument. The rownames in their original
+format will appear in the column \code{rn}.
 }
 \examples{
 data(toy_dgirtfit)
@@ -38,5 +39,8 @@ head(tb_means)
 xi_means <- get_posterior_mean(toy_dgirtfit, pars = 'xi')
 xi_means <- expand_rownames(xi_means, col_names = c("year"))
 head(xi_means)
+}
+\seealso{
+\code{\link{dgirtfit-class}}
 }
 

@@ -3,15 +3,15 @@
 \docType{data}
 \name{toy_dgirt_in}
 \alias{toy_dgirt_in}
-\title{A Minimal Example of the dgirtIn Class.}
-\format{A `dgirtIn` object.}
+\title{Class \code{dgirtIn}: a minimal example object}
+\format{A \code{\link{dgirtin-class}} object.}
 \usage{
 toy_dgirt_in
 }
 \description{
-`\link{shape}` returns a `dgirtIn`-class object used with `\link{dgirt}` for
-DGIRT modeling. `toy_dgirt_in` is a minimal `dgirtIn` object, mostly for
-use in development.
+\code{\link{shape}} returns a \code{\link{dgirtin-class}} object used with
+\code{\link{dgirt}} for DGIRT modeling. \code{toy_dgirt_in} is a minimal
+\code{\link{dgirtin-class}} object, mostly for use in development.
 }
 \examples{
 toy_dgirt_in

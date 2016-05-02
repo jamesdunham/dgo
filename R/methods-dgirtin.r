@@ -1,11 +1,15 @@
 setGeneric("summary")
 #' Summarize DGIRT Data.
+#'
+#' @param x An object of class \code{dgirtIn} as returned by \code{shape}.
+#'
+#' @param ... Unused.
+#'
+#' @param object An object of class \code{dgirtIn} as returned by \code{shape}.
+#'
 #' @include class-dgirtin.r
 #' @include require_namespace.r
 #' @rdname dgirtin-class
-#' @param x An object of class `dgirtIn` as returned by `shape`.
-#' @param ... Unused.
-#' @param object An object of class `dgirtIn` as returned by `shape`.
 #' @export
 setMethod("summary", c(object = "dgirtIn"),
           function(object, ...) {

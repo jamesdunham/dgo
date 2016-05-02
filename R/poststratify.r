@@ -1,21 +1,29 @@
-#' Poststratify Estimates. 
+#' \code{poststratify}: poststratify \code{dgirt} estimates
 #'
 # TODO: expand
 #'
 #' @param estimates A table giving estimates for groups within strata.
-#' @param estimate_names The columns in `estimates` to poststratify.
+#'
+#' @param estimate_names The columns in \code{estimates} to poststratify.
+#'
 #' @param target_data A table giving the population proportions of groups within
 #' strata.
-#' @param group_names The names of the columns in `estimates` and `target_data`
-#' that identify groups. 
-#' @param strata_names The names of the columns in `estimates` and `target_data`
-#' that identify population strata.
-#' @param prop_name The name of the column in `target_data` that gives
+#'
+#' @param group_names The names of the columns in \code{estimates} and
+#' \code{target_data} that identify groups.
+#'
+#' @param strata_names The names of the columns in \code{estimates} and
+#' \code{target_data} that identify population strata.
+#'
+#' @param prop_name The name of the column in \code{target_data} that gives
 #' population proportions.
+#'
 #' @param check_sums Optionally, the names of the columns within whose
 #' combinations population proportions should sum to one, or an error will
 #' occur.
+#'
 #' @return A table giving poststratified estimates for each stratum.
+#'
 #' @export
 # TODO: poststratify method for dgirtFit
 poststratify <- function(estimates,

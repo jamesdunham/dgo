@@ -3,8 +3,8 @@
 \docType{data}
 \name{states}
 \alias{states}
-\title{State Demographics.}
-\format{A `data.frame` with 153 observations of 7 variables.}
+\title{\code{dgirt} example data: state demographics}
+\format{A \code{data.frame} with 153 observations of 7 variables.}
 \usage{
 states
 }

@@ -3,8 +3,8 @@
 \docType{data}
 \name{opinion}
 \alias{opinion}
-\title{Item Responses.}
-\format{A `data.frame` with 78,709 observations of 10 variables.}
+\title{\code{dgirt} example data: item responses}
+\format{A \code{data.frame} with 78,709 observations of 10 variables.}
 \usage{
 opinion
 }

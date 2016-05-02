@@ -1,11 +1,16 @@
-#' Fitted DGIRT Model.
+#' Class \code{dgirtfit}: fitted DGIRT model
 #'
-#' All `rstan` methods for superclass `\link{stanfit-class}` are available.
-#' Descriptive labels for parameters on time periods, local geographic areas,
-#' and grouping variables will be added to most output.
-#' @seealso `\link{stanfit-class}`
-#' @slot dgirt_in Data used to fit the model.
-#' @aliases dgirtfit dgirtfit-class dgirtFit-class
+#' All \code{\link{rstan}} methods for superclass
+#' \code{\link[rstan]{stanfit-class}} are available. Descriptive labels for
+#' parameters on time periods, local geographic areas, and grouping variables
+#' will be added to most output.
+#'
+#' @slot dgirt_in \code{\link{dgirtin-class}} data used to fit the model.
+#'
+#' @aliases dgirtfit dgirtfit-class 
+#' @seealso \code{\link{stanfit-class}} \code{\link{dgirtin-class}}
+#' @rdname dgirtfit-class
+#' @name dgirtfit-class
 #' @examples
 #' data(toy_dgirtfit)
 #' # summarize the fitted results
@@ -23,8 +28,7 @@
 #' as.array(toy_dgirtfit, pars = 'xi')  # samples after warmup
 #' as.data.frame(toy_dgirtfit, pars = 'xi')  # all samples
 #' extract(toy_dgirtfit, pars = 'theta_bar')  # all samples
-#' @rdname dgirfit-class
-dgirtFit <- setClass("dgirtFit",
+dgirtfit <- setClass("dgirtfit",
                      contains = "stanfit",
                      slots = list(dgirt_in = "ANY",
                                   call = "language"))

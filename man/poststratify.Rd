@@ -2,7 +2,7 @@
 % Please edit documentation in R/poststratify.r
 \name{poststratify}
 \alias{poststratify}
-\title{Poststratify Estimates.}
+\title{\code{poststratify}: poststratify \code{dgirt} estimates}
 \usage{
 poststratify(estimates, estimate_names, target_data, group_names,
   strata_names = c("year", "state"), prop_name = "proportion",
@@ -11,18 +11,18 @@ poststratify(estimates, estimate_names, target_data, group_names,
 \arguments{
 \item{estimates}{A table giving estimates for groups within strata.}
 
-\item{estimate_names}{The columns in `estimates` to poststratify.}
+\item{estimate_names}{The columns in \code{estimates} to poststratify.}
 
 \item{target_data}{A table giving the population proportions of groups within
 strata.}
 
-\item{group_names}{The names of the columns in `estimates` and `target_data`
-that identify groups.}
+\item{group_names}{The names of the columns in \code{estimates} and
+\code{target_data} that identify groups.}
 
-\item{strata_names}{The names of the columns in `estimates` and `target_data`
-that identify population strata.}
+\item{strata_names}{The names of the columns in \code{estimates} and
+\code{target_data} that identify population strata.}
 
-\item{prop_name}{The name of the column in `target_data` that gives
+\item{prop_name}{The name of the column in \code{target_data} that gives
 population proportions.}
 
 \item{check_sums}{Optionally, the names of the columns within whose
@@ -33,6 +33,6 @@ occur.}
 A table giving poststratified estimates for each stratum.
 }
 \description{
-Poststratify Estimates.
+\code{poststratify}: poststratify \code{dgirt} estimates
 }
 

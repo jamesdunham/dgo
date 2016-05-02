@@ -2,7 +2,7 @@
 % Please edit documentation in R/shape.r
 \name{shape}
 \alias{shape}
-\title{Shape Model Data.}
+\title{\code{shape}: prepare data for modeling with \code{dgirt}}
 \usage{
 shape(item_data, item_names, time_name, geo_name, group_names, weight_name,
   survey_name, modifier_data = NULL, target_data = NULL,
@@ -40,64 +40,61 @@ See details below.}
 preprocessing.}
 }
 \value{
-An object of class `dgirtIn`, i.e., that expected by `\link{dgirt}`.
+An object of class \code{dgirtIn}, i.e., that expected by \code{\link{dgirt}}.
 }
 \description{
-`shape` prepares data for modeling with `dgirt`.
-}
-\details{
-`shape` takes four kinds of data. Only `item_data` is required. For each
-other data type passed to `shape`, additional arguments are required, as
+\code{shape} takes four kinds of data. Only \code{item_data} is required. For each
+other data type passed to \code{shape}, additional arguments are required, as
 described in the sections below. Most arguments give the name or names of key
-variables in the data; they end in `_name` or `_names` and should be
+variables in the data; they end in \code{_name} or \code{_names} and should be
 character vectors.  Some implement preprocessing and modeling choices.
 }
 \section{Modifier Data}{
 
 These arguments are required to model hierarchical parameters with
-`modifier_data`.  At the moment, modeling geographic parameters is supported.
+\code{modifier_data}.  At the moment, modeling geographic parameters is supported.
 \describe{
-  \item{`modifier_names`:}{Modifiers of geographic hierarchical parameters, e.g.
+  \item{\code{modifier_names}:}{Modifiers of geographic hierarchical parameters, e.g.
   median household income in each local-area and time-period combination.}
-  \item{`t1_modifier_names`:}{Modifiers to be used instead of those in
-  `modifier_names`, only in the first period.}
+  \item{\code{t1_modifier_names}:}{Modifiers to be used instead of those in
+  \code{modifier_names}, only in the first period.}
 }
 }
 
 \section{Aggregate Data}{
 
-Specifying `aggregate_data` requires no additional arguments; instead, we
+Specifying \code{aggregate_data} requires no additional arguments; instead, we
 make many assumptions about the data. This implementation is likely to change
 in the future.
-`aggregate_data` is expected to be a long table of trial and success counts
-by group and item. Some variable names given for `item_data` are expected in
-the table of aggregates: `group_names`, `geo_name`, and `time_name`. Three
-fixed variable names are also expected in `aggregate_data`: `item` giving
-item identifiers, `n_grp` giving adjusted counts of item-response trials, and
-`s_grp` giving adjusted counts of item-response successes. The counts should
+
+\code{aggregate_data} is expected to be a long table of trial and success counts
+by group and item. Some variable names given for \code{item_data} are expected in
+the table of aggregates: \code{group_names}, \code{geo_name}, and \code{time_name}. Three
+fixed variable names are also expected in \code{aggregate_data}: \code{item} giving
+item identifiers, \code{n_grp} giving adjusted counts of item-response trials, and
+\code{s_grp} giving adjusted counts of item-response successes. The counts should
 be adjusted consistently with the transformations applied to the individual
-`item_data`.
+\code{item_data}.
 }
 
 \section{Preprocessing}{
 
-If `target_data` is specified `shape` will adjust the weighting of groups
+If \code{target_data} is specified \code{shape} will adjust the weighting of groups
 toward population targets via raking. This relies on an adaptation of
-`\link[survey]{rake}`. The additional required arguments are
-`target_proportion_name` and `strata_names`. The implementation will be more
+\code{\link[survey]{rake}}. The additional required arguments are
+\code{target_proportion_name} and \code{strata_names}. The implementation will be more
 flexible in the future, but at the moment the strata are defined additively
-when more than one variable is given in `strata_names`. 
+when more than one variable is given in \code{strata_names}.
 
-`shape` can restrict data row-wise in `item_data`, `modifier_data`, and
-`aggregate_data` to that within specified time periods (`time_filter`) and
-local geographic areas (`geo_filter`). Data can also be filtered for
+\code{shape} can restrict data row-wise in \code{item_data}, \code{modifier_data}, and
+\code{aggregate_data} to that within specified time periods (\code{time_filter}) and
+local geographic areas (\code{geo_filter}). Data can also be filtered for
 sparsity, to keep items that appear in a minimum of time periods or surveys.
 This is a column-wise operation. If both row-wise and column-wise
-restrictions are specified, `shape` iterates over them until they leave the
+restrictions are specified, \code{shape} iterates over them until they leave the
 data unchanged.
-
 \describe{
-  \item{`target_data`}{.}
+  \item{\code{target_data}}{.}
   \item{target_proportion_name}{The variable giving population proportions
   for strata.}
   \item{strata_names}{Variables that define population strata.}
@@ -115,16 +112,16 @@ data unchanged.
 
 \section{Modeling Choices}{
 
-Optional. Most arguments like this one are now in the `dgirt` signature, but
-`constant_item` affects the shape of the data. It may move to `dgirt` in the
-future. 
+Optional. Most arguments like this one are now in the \code{dgirt} signature, but
+\code{constant_item} affects the shape of the data. It may move to \code{dgirt} in the
+future.
 \describe{
   \item{constant_item}{Whether item difficulty parameters should be constant
-  over time. Default `TRUE`.}
+  over time. Default \code{TRUE}.}
 }
 }
 \examples{
-# model individual item responses 
+# model individual item responses
 data(opinion)
 shaped_responses <- shape(opinion,
                           item_names = "Q_cces2006_gaymarriageamendment",
@@ -135,10 +132,12 @@ shaped_responses <- shape(opinion,
                           survey_name = "source")
 # summarize result)
 summary(shaped_responses)
+
 # check sparseness of data to be modeled
 get_item_n(shaped_responses, by = "year")
+
 }
 \seealso{
-get_n, get_item_n, get_item_names, dgirtin-class
+\code{\link{dgirtin-class}} \code{\link{dgirtfit-class}}
 }
 

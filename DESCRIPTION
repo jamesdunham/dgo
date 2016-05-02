@@ -3,35 +3,16 @@ Maintainer: James Dunham <jdunham@mit.edu>
 Version: 0.1.4
 Title: Dynamic Group-Level IRT and Small Area Estimation
 Author: James Dunham, Christopher Warshaw, and Devin Caughey.
-Description: Fit dynamic group-level IRT models from individual or aggregated
-    item response data. This package handles common preprocessing tasks and extends
-    functions for inspecting results, poststratification, and quick iteration over
-    alternative models. Under active development. Provides a simple workflow for
-    quick progress.
+Description: Fit dynamic group-level IRT models from individual or aggregated item response data. This package handles common preprocessing tasks and extends functions for inspecting results, poststratification, and quick iteration over alternative models. Under active development.
 License: GPL-3
 URL: https://github.com/jamesdunham/dgirt
 BugReports: https://github.com/jamesdunham/dgirt/issues
-Depends:
-    R (>= 3.2.2),
-    Rcpp (>= 0.11.0)
+Depends: R (>= 3.2.2), Rcpp (>= 0.11.0), rstan (>= 2.8.1)
 LazyData: true
-Imports:
-    assertthat,
-    data.table,
-    methods,
-    reshape2,
-    R6,
-    rstan (>= 2.8.1),
-    stringi,
-    survey
+Imports: assertthat, data.table, methods, reshape2, R6, stringi, survey
 RoxygenNote: 5.0.1
-Suggests:
-    knitr,
-    lintr,
-    rmarkdown,
-    testthat
-LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0),
-    Rcpp (>= 0.11.0), RcppEigen
+Suggests: knitr, lintr, rmarkdown, testthat
+LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>= 0.11.0), RcppEigen
 VignetteBuilder: knitr
 Collate:
     'RcppExports.R'

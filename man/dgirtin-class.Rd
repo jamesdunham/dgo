@@ -11,7 +11,7 @@
 \alias{get_n,dgirtIn-method}
 \alias{show,dgirtIn-method}
 \alias{summary,dgirtIn-method}
-\title{Data for fitting a DGIRT Model.}
+\title{Class \code{dgirtIn}: data prepared for modeling with \code{dgirt}}
 \usage{
 \S4method{summary}{dgirtIn}(object, ...)
 
@@ -24,11 +24,11 @@
 \S4method{show}{dgirtIn}(object)
 }
 \arguments{
-\item{object}{An object of class `dgirtIn` as returned by `shape`.}
+\item{object}{An object of class \code{dgirtIn} as returned by \code{shape}.}
 
 \item{...}{Unused.}
 
-\item{x}{An object of class `dgirtIn` as returned by `shape`.}
+\item{x}{An object of class \code{dgirtIn} as returned by \code{shape}.}
 
 \item{by}{The name of a grouping variable.}
 
@@ -43,7 +43,7 @@ to `shape` as `aggregate_data` instead of on the individual data.}
 A list of item names.
 }
 \description{
-Data for fitting a DGIRT Model.
+Class \code{dgirtIn}: data prepared for modeling with \code{dgirt}
 
 Summarize DGIRT Data.
 
