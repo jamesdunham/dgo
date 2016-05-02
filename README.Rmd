@@ -21,7 +21,7 @@ dgirt is an R package for dynamic group-level IRT models as developed in
 > historical public opinion, especially at the subnational level.
 
 ```{r, knitr-options, echo = FALSE}
-# rmarkdown::render("~/projects/dgirt/README.Rmd")
+# rmarkdown::render("README.Rmd")
 knitr::opts_chunk$set(
   echo = TRUE,
   collapse = TRUE,
