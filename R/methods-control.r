@@ -10,22 +10,21 @@ init_control <- function(item_data,
                          weight_name,
                          survey_name,
                          ...) {
-  control <- new("Control", item_names = item_names,
+  ctrl <- new("Control", item_names = item_names,
                  time_name = time_name, geo_name = geo_name, group_names =
                    group_names, weight_name = weight_name, survey_name =
                    survey_name, ...)
-  # use item_data to set defaults for time_filter and geo_filter
-  if (!length(control@time_name) || !control@time_name %in% names(item_data)) {
-    stop("`time_name` (" , control@time_name,  ") should be a name in `item_data`")
-  } else if (!length(control@time_filter)) {
-    control@time_filter <- sort(unique(item_data[[control@time_name]]))
+
+  is_name <- valid_names(item_data, ctrl, 1L)
+  is_name(c("time_name", "geo_name"))
+  has_type(c("time_name", "geo_name"), item_data, ctrl)
+  if (!length(ctrl@time_filter)) {
+    ctrl@time_filter <- sort(unique(item_data[[ctrl@time_name]]))
   }
-  if (!length(control@geo_name) || !control@geo_name %in% names(item_data)) {
-    stop("`geo_name` (" , control@geo_name,  ") should be a name in `item_data`")
-  } else if (!length(control@geo_filter)) {
-    control@geo_filter <- sort(unique(as.character(item_data[[control@geo_name]])))
+  if (!length(ctrl@geo_filter)) {
+    ctrl@geo_filter <- sort(unique(as.character(item_data[[ctrl@geo_name]])))
   }
-  control
+  ctrl
 }
 
 setValidity("Control",
