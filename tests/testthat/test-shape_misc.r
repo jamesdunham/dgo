@@ -1,4 +1,8 @@
+source("setup.r")
 suppressMessages({
+
+  d_min <- min_item_call()
+  d_mod <- min_modifier_call()
 
   context("dgirtIn classes")
 

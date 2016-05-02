@@ -125,9 +125,7 @@ shape <- function(item_data,
 
   ctrl <- init_control(item_data, item_names, time_name, geo_name, group_names,
                        weight_name, survey_name, ...)
-
-  d_in <- dgirtIn$new(item_data, modifier_data, target_data, aggregate_data,
-                      ctrl)
+  d_in <- dgirtIn$new(ctrl)
 
   # validate inputs #
   check_targets(target_data, ctrl)

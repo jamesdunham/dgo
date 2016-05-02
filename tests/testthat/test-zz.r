@@ -1,4 +1,8 @@
+source("setup.r")
 suppressMessages({
+
+  d_min <- min_item_call()
+  d_mod <- min_modifier_call()
 
   context("hierarchical parameter names")
 
@@ -51,9 +55,9 @@ suppressMessages({
     # level2_modifiers, group_grid_t,  : non-numeric values in hierarchical data.
     # Factor handling probably failed.  Possible quick fix: omit or manually dummy
     # out any factors in 'level2_modifiers' or 'level2_period1_modif iers'.
-    d_mod <- min_modifier_call(modifier_names = "region",
-                              t1_modifier_names = "region")
-    expect_true(is.numeric(d_mod$ZZ))
+    expect_error(min_modifier_call(modifier_names = "region",
+                              t1_modifier_names = "region"),
+                 "should be integer or numeric")
   })
 
   test_that('elements in ZZ corresponding to the grouping variable are zeroed', {
@@ -66,9 +70,9 @@ suppressMessages({
   test_that('factor values of modifier are dummied', {
     data(states)
     states$region <- as.factor(states$region)
-    d_mod <- min_modifier_call(modifier_names = "region",
-                              t1_modifier_names = "region")
-    expect_true(is.numeric(d_mod$ZZ))
+    expect_error(min_modifier_call(modifier_names = "region",
+                              t1_modifier_names = "region"),
+                 "should be integer or numeric")
   })
 
   test_that('elements in ZZ corresponding to the grouping variable are zeroed', {

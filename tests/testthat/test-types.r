@@ -1,50 +1,74 @@
+source("setup.r")
 suppressMessages({
 
-  context("minimal calls")
+  context("input types")
 
-  test_that("shape runs", {
+  data(opinion)
+  data(states)
+  
+  d_min <- min_item_call()
+  d_mod <- min_modifier_call()
+
+  test_that("minimal shape calls are successful", {
     expect_silent(suppressMessages(min_item_call()))
     expect_silent(suppressMessages(min_modifier_call()))
   })
 
-  context("geo_name type in item_data")
+  test_that("stop_if_empty works", {
+    x <- data.frame()
+    expect_error(stop_if_empty(x), "all dimensions of x should be positive")
+  })
 
-  test_that("factor values produce a warning", {
+  test_that("check_count works", {
+    expect_silent(check_count(cars, "speed"))
+  })
+  
+  test_that("check_count catches non-integers", {
+    data(cars)
+    cars$speed <- cars$speed + 0.5
+    expect_error(check_count(cars, "speed"),
+                 "values of \"speed\" in cars should be positive integers")
+  })
+
+  test_that("check_count catches negative numbers", {
+    data(cars)
+    cars$speed <- cars$speed * -1
+    expect_error(check_count(cars, "speed"),
+                 "values of \"speed\" in cars should be positive integers")
+  })
+
+
+  test_that("factor values for geo_name in item_data produce a warning", {
     opinion$state <- as.factor(opinion$state)
     expect_warning(min_item_call(item_data = opinion), "Coercing factor")
   })
 
-  test_that("numeric values produce an error", {
+  test_that("numeric values for geo_name produce an error", {
     opinion$state <- suppressWarnings(as.numeric(opinion$state))
-    expect_error(min_item_call(item_data = opinion), "must be 'character'")
+    expect_error(min_item_call(item_data = opinion), "should be character or factor")
   })
 
-  context("geo_name type in modifier_data")
-
-  test_that("factor values produce a warning", {
+  test_that("factor values for geo_name in modifier_data produce a warning", {
     states$state = as.factor(states$state)
     expect_warning(min_modifier_call(modifier_data = states), "Coercing factor")
   })
 
-  test_that("numeric values produce an error", {
+  test_that("numeric values for geo_name in modifier data produce an error", {
     states$state = suppressWarnings(as.numeric(states$state))
-    expect_error(min_modifier_call(modifier_data = states), "must be 'character'")
+    expect_error(min_modifier_call(modifier_data = states), "should be character or factor")
   })
 
-  context("group_names type in item_data")
-
-  test_that("numeric values produce an error", {
+  test_that("numeric values for group_names in item_data produce an error", {
     opinion$female <- suppressWarnings(as.numeric(opinion$female))
-    expect_error(min_item_call(item_data = opinion), "must be 'character'")
+    expect_error(min_item_call(item_data = opinion), "should be character or factor")
   })
 
-
-  test_that("factor values produce a warning", {
+  test_that("factor values for group_names in item-data produce a warning", {
     opinion$female <- as.factor(opinion$female)
     expect_warning(min_item_call(item_data = opinion), "Coercing factor")
   })
 
-  test_that("factor values in just one group variable produces a warning", {
+  test_that("factor values for just one of group_names in item_data produce a warning", {
     opinion$race <- as.factor(opinion$race)
     expect_warning(shape(opinion,
                          item_names = "Q_cces2006_abortion",
@@ -56,87 +80,71 @@ suppressMessages({
                    "Coercing factor")
   })
 
-  context("item_names type")
-
-  test_that("character values produce an error", {
-    # character
+  test_that("character values for item_names produce an error", {
     opinion$Q_cces2006_abortion <- as.character(opinion$Q_cces2006_abortion)
     expect_error(min_item_call(item_data = opinion),
-                 "each item should be an ordered factor or numeric")
+                 "should be integer or numeric")
   })
 
-  test_that("unordered factor values produce an error", {
+  test_that("unordered factor values of item_names produce an error", {
     opinion$Q_cces2006_abortion <- as.factor(opinion$Q_cces2006_abortion)
     expect_error(min_item_call(item_data = opinion),
-                 "each item should be an ordered factor or numeric")
+                 "should be integer or numeric")
   })
 
-  test_that("ordered factor values do not produce an error", {
-    stop("stack overflow")
-    # data(opinion)
-    # opinion$Q_cces2006_abortion <- as.ordered(opinion$Q_cces2006_abortion)
-    # expect_silent(suppressMessages(min_item_call(item_data = opinion)))
+  test_that("ordered factor values of item_names produce an error", {
+    opinion$Q_cces2006_abortion <- as.ordered(opinion$Q_cces2006_abortion)
+    expect_error(min_item_call(item_data = opinion), "should be integer or numeric")
   })
 
-  context("survey_name variable type")
-
-  test_that("factor values produce a warning", {
+  test_that("factor values of survey_name produce a warning", {
     opinion$source <- as.factor(opinion$source)
     expect_warning(min_item_call(item_data = opinion), "Coercing factor")
   })
 
-  test_that("numeric values produce an error", {
+  test_that("numeric values of survey_name produce an error", {
     opinion$source <- suppressWarnings(as.numeric(opinion$source))
-    expect_error(min_item_call(item_data = opinion), "must be 'character'")
+    expect_error(min_item_call(item_data = opinion), "should be character or factor")
   })
 
-  context("time_name type in item_data")
-
-  test_that("non-integer values work", {
+  test_that("non-integer values of time_name in item_data produce an error", {
     opinion$year <- opinion$year + 0.5
-    expect_silent(suppressMessages(min_item_call(item_data = opinion)))
+    expect_error(min_item_call(item_data = opinion), "should be integer")
   })
 
-  test_that("factor values produce a warning", {
+  test_that("factor values of time_name in item_data produce an error", {
     opinion$year <- as.factor(opinion$year)
-    expect_warning(min_item_call(item_data = opinion), "Coercing factor")
+    expect_error(min_item_call(item_data = opinion), "should be integer")
   })
 
-  test_that("character values produce an error", {
+  test_that("character values of time_name in item_data produce an error", {
     opinion$year <- as.character(opinion$year)
-    expect_error(min_item_call(item_data = opinion), "must be 'numeric'")
+    expect_error(min_item_call(item_data = opinion), "should be integer")
   })
 
-  context("time_name type in modifier_data")
-
-  test_that("non-integer values work", {
-    stop("stack overflow")
-    # states$year <- states$year + 0.5
-    # expect_silent(suppressMessages(min_modifier_call(modifier_data = states)))
+  test_that("non-integer values of time_name in modifier_data work", {
+    states$year <- states$year + 0.5
+    expect_error(min_modifier_call(modifier_data = states))
   })
 
-  test_that("factor values produce a warning", {
+  test_that("factor values of time_name in modifier_data produce a warning", {
     states$year <- as.factor(states$year)
-    expect_warning(min_modifier_call(modifier_data = states), "Coercing factor")
+    expect_error(min_modifier_call(modifier_data = states), "should be integer or numeric")
   })
 
-  test_that("character values produce an error", {
+  test_that("character values of time_name in modifier_data produce an error", {
     states$year <- as.character(states$year)
-    expect_error(min_modifier_call(modifier_data = states), "must be 'numeric'")
+    expect_error(min_modifier_call(modifier_data = states), "should be integer or numeric")
   })
 
-  context("weight_name type")
-
-  test_that("character values produce an error", {
-    stop("stack overflow")
-  #   opinion$weight <- suppressWarnings(as.character(opinion$weight))
-  #   expect_error(suppressWarnings(min_item_call(item_data = opinion)), "must be 'numeric'")
+  test_that("character values of weight_name in item_data produce an error", {
+    opinion$weight <- suppressWarnings(as.character(opinion$weight))
+    expect_error(suppressWarnings(min_item_call(item_data = opinion)), "should be numeric")
   })
-  #
-  test_that("factor values produce an error", {
-    stop("stack overflow")
-    # opinion$weight <- suppressWarnings(as.factor(opinion$weight))
-    # expect_error(suppressWarnings(min_item_call(item_data = opinion)), "must be 'numeric'")
+
+  test_that("factor values of weight_name in item_data produce an error", {
+    opinion$weight <- suppressWarnings(as.factor(opinion$weight))
+    expect_error(min_item_call(item_data = opinion), "should be numeric")
   })
 
 })

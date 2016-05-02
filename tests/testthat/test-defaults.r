@@ -1,4 +1,7 @@
+source("setup.r")
 suppressMessages({
+
+  d_min <- min_item_call()
 
   context("defaults")
 
