@@ -7,6 +7,19 @@ shape_objects <- c("gt_items", "group_grid", "group_grid_t", "group_counts",
                   "control", "hier_names", "time_observed", "geo_observed",
                   "call")
 
-# to be passed in the call to dgirt in ... but dropped from the call to stan
 dgirt_pars <- c("separate_t", "delta_tbar_prior_mean", "delta_tbar_prior_sd",
                 "innov_sd_delta_scale", "innov_sd_theta_scale")
+
+var_types <- list(item_names = c("integer", "numeric"),
+                  group_names = c("character", "factor"),
+                  geo_name = c("character", "factor"),
+                  time_name = c("integer", "numeric"),
+                  survey_name = c("character", "factor"),
+                  weight_name = "numeric",
+                  strata_names = c("character", "factor"),
+                  target_proportion_name = "numeric",
+                  modifier_names = c("integer", "numeric"),
+                  t1_modifier_names = c("integer", "numeric"),
+                  item = c("character", "factor"),
+                  n_grp = c("integer", "numeric"),
+                  s_grp = c("integer", "numeric"))

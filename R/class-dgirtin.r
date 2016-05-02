@@ -8,13 +8,9 @@ dgirtIn <- R6::R6Class("dgirtIn",
   public = c(
     setNames(lapply(c(model_objects, shape_objects), function(x) NULL),
              c(model_objects, shape_objects)),
-    initialize = function(item_data,
-                          modifier_data,
-                          target_data,
-                          aggregate_data,
-                          control) {
-      if (length(control@constant_item)) {
-        self$constant_item <- control@constant_item
+    initialize = function(ctrl) {
+      if (length(ctrl@constant_item)) {
+        self$constant_item <- ctrl@constant_item
       }
     },
     as_list = function(separate_t, delta_tbar_prior_mean, delta_tbar_prior_sd,
