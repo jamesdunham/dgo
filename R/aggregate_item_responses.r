@@ -6,7 +6,7 @@ make_group_grid <- function(item_data, aggregate_data, ctrl) {
                  aggregate_data[, c(ctrl@group_names, ctrl@geo_name), with =
                                 FALSE]),
            function(x) sort(unique(x)))), stringsAsFactors = FALSE)
-  data.table::setDT(group_grid, key = c(ctrl@time_name, ctrl@group_names, ctrl@geo_name))
+  data.table::setDT(group_grid, key = c(ctrl@group_names, ctrl@time_name, ctrl@geo_name))
   invisible(group_grid)
 }
 
@@ -14,7 +14,7 @@ make_group_grid_t <- function(group_grid, ctrl) {
   # Make a table giving combinations of grouping variables, excluding time
   group_grid_t <- data.table::copy(group_grid)[, ctrl@time_name := NULL, with = FALSE]
   group_grid_t <- group_grid_t[!duplicated(group_grid_t)]
-  setkeyv(group_grid_t, c(ctrl@group_names, ctrl@geo_name))
+  data.table::setkeyv(group_grid_t, c(ctrl@group_names, ctrl@geo_name))
   group_grid_t
 }
 
@@ -37,7 +37,7 @@ make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
   # append _n_grp to the response count columns
   item_n_vars <- paste0(d_in$gt_items, "_n_grp")
   names(item_n) <- replace(names(item_n), match(d_in$gt_items, names(item_n)), item_n_vars)
-  setkeyv(item_n, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
+  data.table::setkeyv(item_n, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
   drop_cols <- setdiff(names(item_n), c(key(item_n), item_n_vars))
   item_n[, c(drop_cols) := NULL, with = FALSE]
 
@@ -49,7 +49,7 @@ make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
   # append _mean to the mean response columns 
   item_mean_vars <- paste0(d_in$gt_items, "_mean")
   names(item_means) <- replace(names(item_means), match(d_in$gt_items, names(item_means)), item_mean_vars)
-  setkeyv(item_means, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
+  data.table::setkeyv(item_means, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
   drop_cols <- setdiff(names(item_means), c(key(item_means), item_mean_vars))
   item_means[, c(drop_cols) := NULL, with = FALSE]
 

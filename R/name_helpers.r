@@ -13,7 +13,9 @@ flatnames <- function(dgirt_out, fnames = NULL) {
   }
 
   theta_bar_indices <- paste(do.call(function(...) paste(..., sep = "__"),
-                                     dgirt_out@dgirt_in$group_grid_t), control@time_filter, sep = ",")
+                     dgirt_out@dgirt_in$group_grid[, -c(control@time_name), with = FALSE]),
+             dgirt_out@dgirt_in$group_grid[[control@time_name]], sep = ",")
+
   fnames[grep(paste0('^', "theta_bar", "\\[\\d+,\\d+\\]", "$"), fnames)] <-
     paste0("theta_bar[", theta_bar_indices, "]")
   fnames[grep(paste0('^', "theta_bar_raw", "\\[\\d+,\\d+\\]", "$"), fnames)] <-
