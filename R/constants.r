@@ -5,7 +5,7 @@ model_objects <- c("NNl2", "SSl2", "XX", "ZZ", "ZZ_prior", "G", "Q", "T", "N",
 shape_objects <- c("gt_items", "group_grid", "group_grid_t", "group_counts",
                   "item_data", "target_data", "aggregate_data", "modifier_data",
                   "control", "hier_names", "time_observed", "geo_observed",
-                  "call")
+                  "call", "mod_par_names", "unmod_par_names")
 
 dgirt_pars <- c("separate_t", "delta_tbar_prior_mean", "delta_tbar_prior_sd",
                 "innov_sd_delta_scale", "innov_sd_theta_scale")

@@ -9,5 +9,5 @@ toy_dgirt_in <- shape(opinion,
                  geo_filter = c("VA", "SC"),
                  weight_name = "weight")
 devtools::use_data(toy_dgirt_in, overwrite = TRUE)
-tools::checkRdaFiles('data')
-tools::resaveRdaFiles('data', 'auto')
+tools::checkRdaFiles(system.file('data', package = 'dgirt'))
+tools::resaveRdaFiles(system.file('data', package = 'dgirt'))

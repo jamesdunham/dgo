@@ -43,6 +43,13 @@ check_modifiers <- function(modifier_data, ctrl) {
     are_names(c("modifier_names", "t1_modifier_names"))
     has_type(c("time_name", "geo_name", "modifier_names", "t1_modifier_names"),
              modifier_data, ctrl)
+    sapply(unique(c(ctrl@modifier_names, ctrl@t1_modifier_names,
+                    ctrl@time_name, ctrl@geo_name)), 
+           function(x) {
+             if (any(is.na(modifier_data[[x]])))
+               stop("There are NA values in the ", deparse(x), " variable ",
+                    "of the modifier data.")
+           })
     check_time(modifier_data, ctrl@time_name) 
   }
 }

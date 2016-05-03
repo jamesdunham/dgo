@@ -7,7 +7,7 @@
 setMethod("show", "dgirtfit",
           function(object = dgirtfit) {
             object@sim$fnames_oi <- flatnames(object)
-            callNextMethod(object)
+            print(object)
           })
 
 #' \code{summary} method for \code{dgirtfit-class} objects

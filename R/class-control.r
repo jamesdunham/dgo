@@ -20,4 +20,28 @@ setClass("Control",
          prototype = prototype(constant_item = TRUE,
                                min_t_filter = 1L,
                                min_survey_filter = 1L,
-                               prop_name = "proportion"))
+                               prop_name = "proportion"),
+         validity = function(object) {
+           if (!length(object@time_name) == 1L)
+             "\"time_name\" should be a single variable name"
+           else if (!length(object@geo_name) == 1L)
+             "\"geo_name\" should be a single variable name"
+           else if (!length(object@survey_name) == 1L)
+             "\"survey_name\" should be a single variable name"
+           else if (!length(object@weight_name) == 1L)
+             "\"weight_name\" should be a single variable name"
+           else if (!length(unique(object@group_names)) > 0L)
+             "\"group_names\" should be at least one variable name" 
+           else if (!length(object@constant_item) == 1L && is.logical(object@constant_item))
+             "\"constant_item\" should be a single logical value"
+           else if (length(unique(object@time_filter)) == 1L)
+             "if specified \"time_filter\" should give at least two time periods"
+           else if (length(unique(object@geo_filter)) == 1L)
+             "if specified \"geo_filter\" should give at least two local geographic areas"
+           else if (length(object@min_survey_filter) != 1L || object@min_survey_filter <= 0L)
+             "\"min_survey_filter\" should be a positive integer"
+           else if (!length(object@min_t_filter) == 1L && object@min_t_filter > 0L)
+             "\"min_t_filter\" should be a positive integer"
+           else 
+             TRUE
+         })

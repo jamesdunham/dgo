@@ -6,8 +6,7 @@ suppressMessages({
 
   context("hierarchical parameter names")
 
-  state_hier_names <- paste0("state", sort(unique(states$state)))[-1]
-  hier_names <- c(state_hier_names, "femalemale")
+  hier_names <- c(sort(unique(states$state))[-1], "femalemale")
 
   test_that('hier_name and ZZ dimnames match', {
     data(states)
@@ -34,9 +33,8 @@ suppressMessages({
     data(states)
     data.table::setDT(states)
     data.table::setkeyv(states, c("state", "year"))
-    states$state_label <- paste0("state", states$state)
-    zz <- reshape2::acast(states[, .(year, state_label, prop_evangelicals)],
-                          year ~ state_label ~ "prop_evangelicals",
+    zz <- reshape2::acast(states[, .(year, state, prop_evangelicals)],
+                          year ~ state ~ "prop_evangelicals",
                           value.var = 'prop_evangelicals', drop = FALSE)
     # omit first hierarchical parameter
     zz <- zz[, -1L, , drop = FALSE]
