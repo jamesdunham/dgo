@@ -1,7 +1,6 @@
 # TODO: move to s4 class validation
 
 check_order <- function(dgirt_in) {
-  assertthat::assert_that(identical(rownames(dgirt_in$XX), dimnames(dgirt_in$MMM)[[3]]))
   assertthat::assert_that(identical(dimnames(dgirt_in$ZZ)[[2]], dimnames(dgirt_in$XX)[[2]]))
   assertthat::assert_that(identical(names(dgirt_in$n_vec), dgirt_in$group_counts$name))
   n_vec_groups <- data.table::copy(dgirt_in$group_counts)
@@ -36,7 +35,6 @@ check_dimensions <- function(dgirt_in) {
   assertthat::assert_that(equal_length(dgirt_in$n_vec, dgirt_in$s_vec))
   assertthat::assert_that(all_equal(dim(dgirt_in$NNl2), as.integer(c(dgirt_in$T, dgirt_in$Q, dgirt_in$G_hier))))
   assertthat::assert_that(all_equal(dim(dgirt_in$SSl2), as.integer(c(dgirt_in$T, dgirt_in$Q, dgirt_in$G_hier))))
-  assertthat::assert_that(all_equal(dim(dgirt_in$MMM), c(dgirt_in$T, dgirt_in$Q, dgirt_in$G)))
   assertthat::assert_that(all_equal(dim(dgirt_in$WT), as.integer(c(dgirt_in$T, dgirt_in$G_hier, dgirt_in$G))))
   assertthat::assert_that(all_equal(dim(dgirt_in$l2_only), c(dgirt_in$T, dgirt_in$Q)))
   assertthat::assert_that(all_equal(dim(dgirt_in$XX), c(dgirt_in$G, dgirt_in$P)))

@@ -40,7 +40,8 @@ dgirt <- function(shaped_data, separate_t = FALSE, delta_tbar_prior_mean = 0.5,
                   innov_sd_theta_scale = 2.5, ...) {
 
   dots <- list(...,
-               file = system.file("dgirt.stan", package = "dgirt", mustWork = TRUE),
+               file = system.file("dgirt_2016_04_20.stan", package = "dgirt",
+                                  mustWork = TRUE),
                data = shaped_data$as_list(separate_t = separate_t,
                                           delta_tbar_prior_mean =
                                             delta_tbar_prior_mean,

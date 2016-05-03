@@ -73,12 +73,11 @@ make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
   melted[, c("item") := list(gsub("(.*)_[sn]_grp$", "\\1", get("item")))]
   f <- as.formula(paste0(paste(ctrl@time_name, ctrl@geo_name, paste(ctrl@group_names, collapse = " + "),
                                "item", sep = "+"), " ~ variable"))
-  group_counts <- data.table::dcast.data.table(melted, f)
+  group_counts <- data.table::dcast.data.table(melted, f, drop = FALSE, fill = 0L)
 
   # stan code expects unobserved group-items to be omitted
-  group_counts <- group_counts[get("n_grp") != 0 & !is.na(get("n_grp"))]
-  # be sure to represent no observed success with a zero count, not NA
   group_counts[is.na(get("s_grp")), c("s_grp") := 0]
+  group_counts[is.na(get("n_grp")), c("n_grp") := 0]
 
   # include aggregates, if any
   if (length(aggregate_data) && nrow(aggregate_data) > 0) {

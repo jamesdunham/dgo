@@ -164,14 +164,15 @@ shape <- function(item_data,
   d_in$group_grid <- make_group_grid(item_data, aggregate_data, ctrl)
   d_in$group_grid_t <- make_group_grid_t(d_in$group_grid, ctrl)
   d_in$group_counts <- make_group_counts(item_data, aggregate_data, d_in, ctrl)
+  d_in$observed <- which(d_in$group_counts[["n_grp"]] > 0)
+  d_in$N_observed <- length(d_in$observed)
 
   # make objects used by dgirt.stan #
   d_in$n_vec <- setNames(d_in$group_counts$n_grp, d_in$group_counts$name)
   d_in$s_vec <- setNames(d_in$group_counts$s_grp, d_in$group_counts$name)
 
-  d_in$MMM <- get_missing_groups(d_in$group_counts, d_in$group_grid, ctrl)
-
-  d_in$G <- nrow(d_in$group_grid_t)
+  d_in$G <- nrow(unique(d_in$group_counts[, c(ctrl@geo_name, ctrl@group_names),
+                        with = FALSE]))
   d_in$G_hier <- ifelse(!length(modifier_data), nlevels(gl(1L, d_in$G)),
                         max(unlist(length(ctrl@modifier_names)), 1L))
   d_in$T <- length(ctrl@time_filter)
