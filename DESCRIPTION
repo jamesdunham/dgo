@@ -3,17 +3,36 @@ Maintainer: James Dunham <jdunham@mit.edu>
 Version: 0.1.5
 Title: Dynamic Group-Level IRT and Small Area Estimation
 Author: James Dunham, Christopher Warshaw, and Devin Caughey.
-Description: Fit dynamic group-level IRT models from individual or aggregated item response data. This package handles common preprocessing tasks and extends functions for inspecting results, poststratification, and quick iteration over alternative models. Under active development.
-License: GPL-3
+Description: Fit dynamic group-level IRT models from individual or aggregated
+    item response data. This package handles common preprocessing tasks and extends
+    functions for inspecting results, poststratification, and quick iteration over
+    alternative models. Under active development. License: GPL-3
 URL: https://github.com/jamesdunham/dgirt
 BugReports: https://github.com/jamesdunham/dgirt/issues
-Depends: R (>= 3.2.2), Rcpp (>= 0.11.0), rstan (>= 2.8.1)
+Depends:
+    R (>= 3.2.2),
+    Rcpp (>= 0.11.0),
+    rstan (>= 2.8.1)
 LazyData: true
-Imports: assertthat, data.table, methods, R6, stringi, survey
+Imports:
+    assertthat,
+    data.table,
+    methods,
+    R6,
+    Rcpp,
+    stringi,
+    survey
 RoxygenNote: 5.0.1
-Suggests: knitr, lintr, rmarkdown, testthat
-LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>= 0.11.0), RcppEigen
+Suggests:
+    knitr,
+    lintr,
+    rmarkdown,
+    testthat
+LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>=
+    0.11.0), RcppEigen
 VignetteBuilder: knitr
+RcppModules: stan_fit42016_04_20_mod, stan_fit42015_12_16_mod
+NeedsCompilation: yes
 Collate:
     'RcppExports.R'
     'aggregate_item_responses.r'
@@ -32,7 +51,6 @@ Collate:
     'data-toy_dgirtfit.r'
     'discretize_item_responses.r'
     'expand_rownames.r'
-    'import_rcpp.r'
     'methods-control.r'
     'methods-dgirtfit.r'
     'methods-dgirtin.r'
@@ -41,5 +59,7 @@ Collate:
     'rake_partial.r'
     'restrict_input_data.r'
     'reweight_item_responses.r'
+    'stanmodels.R'
     'validate_dgirtIn.r'
     'validate_input_data.r'
+    'zzz.R'
