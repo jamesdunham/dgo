@@ -9,7 +9,7 @@ URL: https://github.com/jamesdunham/dgirt
 BugReports: https://github.com/jamesdunham/dgirt/issues
 Depends: R (>= 3.2.2), Rcpp (>= 0.11.0), rstan (>= 2.8.1)
 LazyData: true
-Imports: assertthat, data.table, methods, R6, Rcpp, stringi, survey
+Imports: assertthat, data.table, methods, R6, stringi, survey
 RoxygenNote: 5.0.1
 Suggests: knitr, lintr, rmarkdown, testthat
 LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>= 0.11.0), RcppEigen
