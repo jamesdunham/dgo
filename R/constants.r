@@ -8,7 +8,12 @@ shape_objects <- c("gt_items", "group_grid", "group_grid_t", "group_counts",
                   "call", "mod_par_names", "unmod_par_names")
 
 dgirt_pars <- c("separate_t", "delta_tbar_prior_mean", "delta_tbar_prior_sd",
-                "innov_sd_delta_scale", "innov_sd_theta_scale")
+                "innov_sd_delta_scale", "innov_sd_theta_scale", "version")
+
+default_pars <- c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
+                  "nu_geo", "nu_geo_prior", "kappa", "sd_item", "sd_theta",
+                  "sd_theta_bar", "sd_gamma", "sd_innov_gamma", "sd_innov_delta",
+                  "sd_innov_logsd", "sd_total", "theta_l2", "var_theta_bar_l2")
 
 var_types <- list(item_names = c("integer", "numeric"),
                   group_names = c("character", "factor"),

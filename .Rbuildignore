@@ -3,13 +3,9 @@
 ^.*\.png$
 ^README.Rmd$
 ^\.DS_Store$
-^\.Rprofile$
-^\.Rproj\.user$
 ^\.travis.yml$
 ^packrat/
 ^data-ext/
-^todo.txt$
 ^wercker.yml$
-^build_install_check.r$
-^debug_setup.r$
-^aggregate_data.Rds$
+^setup.r$
+^Makefile$

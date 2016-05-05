@@ -1,6 +1,3 @@
-functions {
-}
-
 data {
   int<lower=1> G; ## number of covariate groups
   int<lower=1> G_hier; ## number of level-two demographic groups
