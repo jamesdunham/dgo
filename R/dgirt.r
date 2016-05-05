@@ -25,6 +25,8 @@
 #' \code{constant_item} is \code{FALSE} the item difficulty \code{diff}. Default
 #' \code{2.5}.
 #'
+#' @param version The version of the DGIRT model to use.
+#'
 #' @param ... Further arguments passed to \code{\link[rstan]{stan}}.
 #'
 #' @return A \code{\link{dgirtfit-class}} object that extends

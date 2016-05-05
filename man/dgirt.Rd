@@ -30,6 +30,8 @@ Default \code{2.5}.}
 innovation standard deviation of \code{gamma}, \code{xi}, and if
 \code{constant_item} is \code{FALSE} the item difficulty \code{diff}. Default
 \code{2.5}.}
+
+\item{version}{The version of the DGIRT model to use.}
 }
 \value{
 A \code{\link{dgirtfit-class}} object that extends
