@@ -35,20 +35,23 @@ expand_rownames <- function(x, col_names) {
   if (is.matrix(x)) x <- as.data.frame(x, stringsAsFactors = FALSE,
                                        rownames = rownames(x))
   x <- data.table::copy(data.table::setDT(x, keep.rownames = TRUE))
+  if (!"rn" %in% names(x)) rn <- rownames(x)
   rn <- gsub('.*\\[([A-Za-z0-9,_]+)\\].*', '\\1', x[, rn])
   comma_split <- data.table::tstrsplit(rn, c(","))
   if (length(comma_split) > 1L) {
     # group columns (assume only one comma)
     us_split <- data.table::tstrsplit(comma_split[[-2L]], "__")
-    if (1L + length(us_split) != length(col_names))
+    if (1L + length(us_split) != length(col_names)) {
       stop("\"col_names\" is length ", length(col_names), " but expanded ",
            "rownames are length ", 1L + length(us_split))
-    else x[, (col_names[-length(col_names)]) := us_split]
-  } else if (length(col_names) != 1L) {
+    } else {
+      x[, (col_names[-length(col_names)]) := us_split]
+    }
+  } else if (length(col_names) == 1L) {
       stop("\"col_names\" is length ", length(col_names), " but expanded ",
            "rownames are length 1")
   }
   # time column
-  x[, (col_names[length(col_names)]) := comma_split[[length(comma_split)]]]
+  x[, (col_names[length(col_names)]) := type.convert(comma_split[[length(comma_split)]])]
   data.table::copy(x)
 }
