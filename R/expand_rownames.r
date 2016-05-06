@@ -20,38 +20,58 @@
 #'
 #' @examples
 #' data(toy_dgirtfit)
-#' tb_means <- get_posterior_mean(toy_dgirtfit, pars = 'theta_bar')
+#' tb_means <- get_posterior_mean(toy_dgirtfit, name = FALSE)
 #' # rownames are e.g. "theta_bar[CO__black,2011]"
-#' tb_means <- expand_rownames(tb_means, c("state", "race", "year"))
+#' tb_means <- expand_rownames(tb_means, time_name = "year", geo_name = "state", group_names = "race")
 #' # result has columns state, race, year (and original rownames in rn)
 #' head(tb_means)
+#'
 #' # similarly for a parameter indexed t
 #' xi_means <- get_posterior_mean(toy_dgirtfit, pars = 'xi')
-#' xi_means <- expand_rownames(xi_means, col_names = c("year"))
+#' xi_means <- get_posterior_mean(toy_dgirtfit, pars = 'gamma')
+#' xi_means <- expand_rownames(xi_means, time_name = "year")
 #' head(xi_means)
 #' @seealso \code{\link{dgirtfit-class}}
 #' @include data-toy_dgirtfit.r
-expand_rownames <- function(x, col_names) {
+expand_rownames <- function(x, time_name, geo_name, group_names) {
   if (is.matrix(x)) x <- as.data.frame(x, stringsAsFactors = FALSE,
                                        rownames = rownames(x))
   x <- data.table::copy(data.table::setDT(x, keep.rownames = TRUE))
-  if (!"rn" %in% names(x)) rn <- rownames(x)
-  rn <- gsub('.*\\[([A-Za-z0-9,_]+)\\].*', '\\1', x[, rn])
-  comma_split <- data.table::tstrsplit(rn, c(","))
-  if (length(comma_split) > 1L) {
-    # group columns (assume only one comma)
-    us_split <- data.table::tstrsplit(comma_split[[-2L]], "__")
-    if (1L + length(us_split) != length(col_names)) {
-      stop("\"col_names\" is length ", length(col_names), " but expanded ",
-           "rownames are length ", 1L + length(us_split))
-    } else {
-      x[, (col_names[-length(col_names)]) := us_split]
+  if (!"rn" %in% names(x)) stop("After setDT(x, keep.rownames = TRUE), ",
+                                "rownames couldn't be found. Did x ",
+                                "have rownames?")
+  indexes <- gsub('.*\\[([A-Za-z0-9,_]+)\\].*', '\\1', x[["rn"]])
+  parnames <- gsub('(.*)\\[[A-Za-z0-9,_]+\\].*', '\\1', x[["rn"]])
+  comma_split <- data.table::tstrsplit(indexes, c(","))
+  for (parname in unique(parnames)) {
+    # index_names is a list for looking up the names of parameter indexes
+    for (i in index_names[[parname]]) {
+      if (length(i)) {
+        index_pos <- which(index_names[[parname]] == i)
+        x[parnames == parname, c(i) :=
+          list(comma_split[[index_pos]][parnames == parname]), with = FALSE]
+      }
     }
-  } else if (length(col_names) == 1L) {
-      stop("\"col_names\" is length ", length(col_names), " but expanded ",
-           "rownames are length 1")
   }
-  # time column
-  x[, (col_names[length(col_names)]) := type.convert(comma_split[[length(comma_split)]])]
+  if ("group_names" %in% names(x)) {
+    us_split <- strsplit(x[["group_names"]], "__", fixed = TRUE)
+    n_col <- max(vapply(us_split, length, integer(1L)))
+    group_cols <- paste0("group_", seq.int(0, n_col - 1L))
+    x[, c(group_cols) := data.table::tstrsplit(group_names, "__", fixed = TRUE)]
+    if (length(geo_name)) {
+      x[, c(geo_name, group_cols[1L]) := list(get(group_cols[1L]), NULL),
+        with = FALSE]
+    }
+    if (length(group_names)) {
+      x[, c(group_names, group_cols[-1L]) := list(get(group_cols[-1L]), NULL),
+        with = FALSE]
+    }
+    x[, c("group_names") := NULL, with = FALSE]
+  }
+  if (length(time_name) && "time_name" %in% names(x)) {
+    names(x)[names(x) == "time_name"] <- time_name
+    x[, c(time_name) := type.convert(x[[time_name]]), with = FALSE]
+  }
   data.table::copy(x)
 }
+

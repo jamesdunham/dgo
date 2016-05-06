@@ -4,7 +4,7 @@
 \alias{expand_rownames}
 \title{\code{expand_rownames}: extract parameter descriptions in rownames}
 \usage{
-expand_rownames(x, col_names)
+expand_rownames(x, time_name, geo_name, group_names)
 }
 \arguments{
 \item{x}{A table with rownames in the format \code{param[group1__groupK,t]}
@@ -30,14 +30,16 @@ format will appear in the column \code{rn}.
 }
 \examples{
 data(toy_dgirtfit)
-tb_means <- get_posterior_mean(toy_dgirtfit, pars = 'theta_bar')
+tb_means <- get_posterior_mean(toy_dgirtfit, name = FALSE)
 # rownames are e.g. "theta_bar[CO__black,2011]"
-tb_means <- expand_rownames(tb_means, c("state", "race", "year"))
+tb_means <- expand_rownames(tb_means, time_name = "year", geo_name = "state", group_names = "race")
 # result has columns state, race, year (and original rownames in rn)
 head(tb_means)
+
 # similarly for a parameter indexed t
 xi_means <- get_posterior_mean(toy_dgirtfit, pars = 'xi')
-xi_means <- expand_rownames(xi_means, col_names = c("year"))
+xi_means <- get_posterior_mean(toy_dgirtfit, pars = 'gamma')
+xi_means <- expand_rownames(xi_means, time_name = "year")
 head(xi_means)
 }
 \seealso{
