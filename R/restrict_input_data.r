@@ -48,11 +48,31 @@ restrict_modifier <- function(item_data, modifier_data, ctrl) {
                                     ctrl@geo_name,
                                     ctrl@time_name))
 
+    extra_colnames <- setdiff(names(modifier_data),
+                              c(ctrl@geo_name, ctrl@time_name,
+                                ctrl@modifier_names, ctrl@t1_modifier_names))
+    if (length(extra_colnames)) {
+      modifier_data[, c(extra_colnames) := NULL, with = FALSE]
+    }
+
+    missing_geo <- setdiff(ctrl@geo_filter, unique(modifier_data[[ctrl@geo_name]]))
+    if (length(missing_geo)) {
+      stop("local geographic areas in \"geo_filter\" are missing in modifier ",
+           "data: ", paste(missing_geo, sep = ", "))
+    }
+
+    missing_time <- setdiff(ctrl@time_filter, unique(modifier_data[[ctrl@time_name]]))
+    if (length(missing_time)) {
+      stop("time periods in \"time_filter\" are missing in modifier data: ",
+           paste(missing_time, sep = ", "))
+    }
+
     modifier_data <- modifier_data[modifier_data[[ctrl@geo_name]] %chin%
                                    item_data[[ctrl@geo_name]]]
     if (!nrow(modifier_data))
       stop("no rows in modifier data remaining after subsetting to local ",
            "geographic areas in item data")
+
     modifier_data <- modifier_data[modifier_data[[ctrl@time_name]] %in%
                                    item_data[[ctrl@time_name]]]
     if (!nrow(modifier_data))

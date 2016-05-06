@@ -25,6 +25,8 @@
 #' \code{constant_item} is \code{FALSE} the item difficulty \code{diff}. Default
 #' \code{2.5}.
 #'
+#' @param version The version of the DGIRT model to use.
+#'
 #' @param ... Further arguments passed to \code{\link[rstan]{stan}}.
 #'
 #' @return A \code{\link{dgirtfit-class}} object that extends
@@ -35,12 +37,12 @@
 #' @import rstan
 #' @export
 #' @include constants.r
-dgirt <- function(shaped_data, separate_t = FALSE, delta_tbar_prior_mean = 0.5,
+dgirt <- function(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.5,
                   delta_tbar_prior_sd = 0.5, innov_sd_delta_scale = 2.5,
-                  innov_sd_theta_scale = 2.5, ...) {
+                  innov_sd_theta_scale = 2.5, version = "2016_04_20") {
 
   dots <- list(...,
-               file = system.file("dgirt.stan", package = "dgirt", mustWork = TRUE),
+               object = stanmodels[[version]],
                data = shaped_data$as_list(separate_t = separate_t,
                                           delta_tbar_prior_mean =
                                             delta_tbar_prior_mean,
@@ -50,22 +52,24 @@ dgirt <- function(shaped_data, separate_t = FALSE, delta_tbar_prior_mean = 0.5,
                                             innov_sd_delta_scale,
                                           innov_sd_theta_scale =
                                             innov_sd_theta_scale))
+
   if (!length(dots$pars)) {
-    dots$pars <- c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
-              "nu_geo", "nu_geo_prior", "kappa", "sd_item", "sd_theta",
-              "sd_theta_bar", "sd_gamma", "sd_innov_gamma", "sd_innov_delta",
-              "sd_innov_logsd", "sd_total", "theta_l2", "var_theta_bar_l2")
+    dots$pars <- default_pars
   }
   if (!length(dots$init_r)) {
     dots$init_r <- 1L
   }
   dots <- dots[!names(dots) %in% dgirt_pars]
 
-  stanfit <- do.call(rstan::stan, dots)
+  stanfit <- do.call(rstan::sampling, dots)
 
   tryCatch(new("dgirtfit", stanfit, dgirt_in = shaped_data, call = match.call()),
            error = function(e) {
              warning("Error constructing dgirtfit; returning stanfit object instead")
              stanfit
            })
+}
+
+models <- function() {
+  names(stanmodels)
 }

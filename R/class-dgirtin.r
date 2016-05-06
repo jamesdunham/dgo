@@ -12,6 +12,8 @@ dgirtIn <- R6::R6Class("dgirtIn",
       if (length(ctrl@constant_item)) {
         self$constant_item <- ctrl@constant_item
       }
+      self$mod_par_names <- c(ctrl@geo_name, ctrl@time_name)
+      self$unmod_par_names <- ctrl@group_names
     },
     as_list = function(separate_t, delta_tbar_prior_mean, delta_tbar_prior_sd,
                        innov_sd_delta_scale, innov_sd_theta_scale) {

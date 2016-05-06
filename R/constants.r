@@ -1,14 +1,19 @@
-model_objects <- c("NNl2", "SSl2", "XX", "ZZ", "ZZ_prior", "MMM", "G", "Q", "T",
-                  "N", "P", "S", "H", "D", "Hprior", "WT", "l2_only", "G_hier",
-                  "constant_item", "n_vec", "s_vec")
+model_objects <- c("NNl2", "SSl2", "XX", "ZZ", "ZZ_prior", "G", "Q", "T", "N",
+                   "P", "S", "H", "D", "Hprior", "WT", "l2_only", "G_hier",
+                   "constant_item", "n_vec", "s_vec", "observed", "N_observed")
 
 shape_objects <- c("gt_items", "group_grid", "group_grid_t", "group_counts",
                   "item_data", "target_data", "aggregate_data", "modifier_data",
                   "control", "hier_names", "time_observed", "geo_observed",
-                  "call")
+                  "call", "mod_par_names", "unmod_par_names")
 
 dgirt_pars <- c("separate_t", "delta_tbar_prior_mean", "delta_tbar_prior_sd",
-                "innov_sd_delta_scale", "innov_sd_theta_scale")
+                "innov_sd_delta_scale", "innov_sd_theta_scale", "version")
+
+default_pars <- c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
+                  "nu_geo", "nu_geo_prior", "kappa", "sd_item", "sd_theta",
+                  "sd_theta_bar", "sd_gamma", "sd_innov_gamma", "sd_innov_delta",
+                  "sd_innov_logsd", "sd_total", "theta_l2", "var_theta_bar_l2")
 
 var_types <- list(item_names = c("integer", "numeric"),
                   group_names = c("character", "factor"),
@@ -23,3 +28,32 @@ var_types <- list(item_names = c("integer", "numeric"),
                   item = c("character", "factor"),
                   n_grp = c("integer", "numeric"),
                   s_grp = c("integer", "numeric"))
+
+index_names <- list("delta_gamma" = "time_name",
+                     "delta_tbar" = "time_name",
+                     # "diff" = c("unnamed_index", "unnamed_index"),
+                     # "disc" = "unnamed_index",
+                     "gamma" = c("hier_params", "time_name"),
+                     "gamma_raw" = c("hier_params", "time_name"),
+                     # "kappa" = c("unnamed_index" = "unnamed_index"),
+                     # "mu_theta_bar" = c("unnamed_index", "unnamed_index"),
+                     # "mu_gamma" = c("unnamed_index", "unnamed_index"),
+                     "nu_geo" = c("time_name", NULL),
+                     # "nu_geo_prior" = "unnamed_index",
+                     # "sd_gamma" = NA,
+                     # "sd_innov_delta" = NA,
+                     # "sd_innov_gamma" = NA,
+                     # "sd_innov_logsd" = NA,
+                     "sd_item" = "item_names", 
+                     "sd_theta" = "time_name",
+                     "sd_theta_bar" = "time_name",
+                     "sd_total" = "time_name",
+                     "theta_l2" = c("time_name", NULL),
+                     "theta_bar" = c("group_names", "time_name"),
+                     "theta_bar_raw" = c("group_names", "time_name"),
+                     "var_item" = "item_names",
+                     "var_theta" = "time_name",
+                     "var_theta_bar_l2" = c("time_name", NULL),
+                     "xi" = "time_name",
+                     "z" = c("time_name", NULL, "group_names"),
+                     "z_l2" = c("time_name", NULL, NULL))

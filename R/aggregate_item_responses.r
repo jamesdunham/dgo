@@ -6,7 +6,7 @@ make_group_grid <- function(item_data, aggregate_data, ctrl) {
                  aggregate_data[, c(ctrl@group_names, ctrl@geo_name), with =
                                 FALSE]),
            function(x) sort(unique(x)))), stringsAsFactors = FALSE)
-  data.table::setDT(group_grid, key = c(ctrl@time_name, ctrl@group_names, ctrl@geo_name))
+  data.table::setDT(group_grid, key = c(ctrl@group_names, ctrl@time_name, ctrl@geo_name))
   invisible(group_grid)
 }
 
@@ -14,7 +14,7 @@ make_group_grid_t <- function(group_grid, ctrl) {
   # Make a table giving combinations of grouping variables, excluding time
   group_grid_t <- data.table::copy(group_grid)[, ctrl@time_name := NULL, with = FALSE]
   group_grid_t <- group_grid_t[!duplicated(group_grid_t)]
-  setkeyv(group_grid_t, c(ctrl@group_names, ctrl@geo_name))
+  data.table::setkeyv(group_grid_t, c(ctrl@group_names, ctrl@geo_name))
   group_grid_t
 }
 
@@ -37,7 +37,7 @@ make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
   # append _n_grp to the response count columns
   item_n_vars <- paste0(d_in$gt_items, "_n_grp")
   names(item_n) <- replace(names(item_n), match(d_in$gt_items, names(item_n)), item_n_vars)
-  setkeyv(item_n, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
+  data.table::setkeyv(item_n, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
   drop_cols <- setdiff(names(item_n), c(key(item_n), item_n_vars))
   item_n[, c(drop_cols) := NULL, with = FALSE]
 
@@ -49,49 +49,63 @@ make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
   # append _mean to the mean response columns 
   item_mean_vars <- paste0(d_in$gt_items, "_mean")
   names(item_means) <- replace(names(item_means), match(d_in$gt_items, names(item_means)), item_mean_vars)
-  setkeyv(item_means, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
+  data.table::setkeyv(item_means, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
   drop_cols <- setdiff(names(item_means), c(key(item_means), item_mean_vars))
   item_means[, c(drop_cols) := NULL, with = FALSE]
 
   # join response counts with means 
-  counts_means <- item_n[item_means]
-  counts_means <- counts_means[, c(ctrl@time_name, ctrl@geo_name,
+  count_means <- item_n[item_means]
+  count_means <- count_means[, c(ctrl@time_name, ctrl@geo_name,
                                    ctrl@group_names, item_mean_vars,
                                    item_n_vars), with = FALSE]
 
   # the group success count for an item is the product of its count and mean
   item_s_vars <- paste0(d_in$gt_items, "_s_grp")
-  counts_means[, c(item_s_vars) := round(counts_means[, (item_mean_vars), with = FALSE] *
-                                         counts_means[, (item_n_vars), with = FALSE], 0)]
-  counts_means <- counts_means[, -grep("_mean$", names(counts_means)), with = FALSE]
+  count_means[, c(item_s_vars) := round(count_means[, (item_mean_vars), with = FALSE] *
+                                         count_means[, (item_n_vars), with = FALSE], 0)]
+  count_means <- count_means[, -grep("_mean$", names(count_means)), with = FALSE]
 
 
   # we want a long table of successes (s_grp) and trials (n_grp) by group and
   # item; items need to move from columns to rows
-  melted <- melt(counts_means, id.vars = c(ctrl@time_name, ctrl@geo_name, ctrl@group_names), variable.name = "item")
+  melted <- melt(count_means, id.vars = c(ctrl@time_name, ctrl@geo_name,
+                                           ctrl@group_names),
+                 variable.name = "item")
   melted[, c("variable") := list(gsub(".*([sn]_grp)$", "\\1", get("item")))]
   melted[, c("item") := list(gsub("(.*)_[sn]_grp$", "\\1", get("item")))]
-  f <- as.formula(paste0(paste(ctrl@time_name, ctrl@geo_name, paste(ctrl@group_names, collapse = " + "),
+  f <- as.formula(paste0(paste(ctrl@time_name, ctrl@geo_name,
+                               paste(ctrl@group_names, collapse = " + "),
                                "item", sep = "+"), " ~ variable"))
-  group_counts <- data.table::dcast.data.table(melted, f)
-
-  # stan code expects unobserved group-items to be omitted
-  group_counts <- group_counts[get("n_grp") != 0 & !is.na(get("n_grp"))]
-  # be sure to represent no observed success with a zero count, not NA
-  group_counts[is.na(get("s_grp")), c("s_grp") := 0]
+  counts <- data.table::dcast.data.table(melted, f, drop = FALSE, fill = 0L)
 
   # include aggregates, if any
   if (length(aggregate_data) && nrow(aggregate_data) > 0) {
-    group_counts <- rbind(group_counts, aggregate_data)
+    counts <- data.table::rbindlist(list(counts, aggregate_data), use.names =
+                                    TRUE)
     message("Added ", length(ctrl@aggregate_item_names), " items from aggregate data.")
+    data.table::setkeyv(counts, c(ctrl@time_name, "item", ctrl@group_names,
+                                  ctrl@geo_name))
   }
 
+  # include unobserved cells
+  all_groups = expand.grid(c(setNames(list(ctrl@geo_filter), ctrl@geo_name),
+                             setNames(list(ctrl@time_filter), ctrl@time_name),
+                             lapply(counts[, c(ctrl@group_names,
+                                                     "item"), with = FALSE],
+                                    function(x) sort(unique(x)))),
+                           stringsAsFactors = FALSE)
+  counts <- merge(counts, all_groups, all = TRUE)
+
+  # stan code expects unobserved group-items to be omitted
+  counts[is.na(get("s_grp")), c("s_grp") := 0]
+  counts[is.na(get("n_grp")), c("n_grp") := 0]
+
   # create an identifier for use in n_vec and s_vec 
-  group_counts[, c("name") := do.call(paste, c(.SD, sep = "__")), .SDcols =
+  counts[, c("name") := do.call(paste, c(.SD, sep = "__")), .SDcols =
                c(ctrl@time_name, ctrl@geo_name, ctrl@group_names, "item")]
 
-  setkeyv(group_counts, c(ctrl@time_name, "item", ctrl@group_names, ctrl@geo_name))
-  group_counts
+  setkeyv(counts, c(ctrl@time_name, "item", ctrl@group_names, ctrl@geo_name))
+  counts
 }
 
 count_items <- function(x, n_responses, def) {

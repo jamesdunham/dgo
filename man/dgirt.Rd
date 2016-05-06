@@ -4,12 +4,14 @@
 \alias{dgirt}
 \title{\code{dgirt}: fit a DGIRT model}
 \usage{
-dgirt(shaped_data, separate_t = FALSE, delta_tbar_prior_mean = 0.5,
+dgirt(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.5,
   delta_tbar_prior_sd = 0.5, innov_sd_delta_scale = 2.5,
-  innov_sd_theta_scale = 2.5, ...)
+  innov_sd_theta_scale = 2.5, version = "2016_04_20")
 }
 \arguments{
 \item{shaped_data}{Output from \code{\link{shape}}.}
+
+\item{...}{Further arguments passed to \code{\link[rstan]{stan}}.}
 
 \item{separate_t}{Whether smoothing of estimates over time should be
 disabled. Default \code{FALSE}.}
@@ -29,7 +31,7 @@ innovation standard deviation of \code{gamma}, \code{xi}, and if
 \code{constant_item} is \code{FALSE} the item difficulty \code{diff}. Default
 \code{2.5}.}
 
-\item{...}{Further arguments passed to \code{\link[rstan]{stan}}.}
+\item{version}{The version of the DGIRT model to use.}
 }
 \value{
 A \code{\link{dgirtfit-class}} object that extends

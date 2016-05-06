@@ -1,91 +1,86 @@
-#' \code{poststratify}: poststratify \code{dgirt} estimates
-#'
-# TODO: expand
-#'
-#' @param estimates A table giving estimates for groups within strata.
-#'
-#' @param estimate_names The columns in \code{estimates} to poststratify.
-#'
-#' @param target_data A table giving the population proportions of groups within
-#' strata.
-#'
-#' @param group_names The names of the columns in \code{estimates} and
-#' \code{target_data} that identify groups.
-#'
-#' @param strata_names The names of the columns in \code{estimates} and
-#' \code{target_data} that identify population strata.
-#'
-#' @param prop_name The name of the column in \code{target_data} that gives
-#' population proportions.
-#'
-#' @param check_sums Optionally, the names of the columns within whose
-#' combinations population proportions should sum to one, or an error will
-#' occur.
-#'
-#' @return A table giving poststratified estimates for each stratum.
-#'
-#' @export
-# TODO: poststratify method for dgirtFit
-poststratify <- function(estimates,
-                         estimate_names,
-                         target_data,
-                         group_names,
-                         strata_names = c('year', 'state'),
-                         prop_name = 'proportion',
-                         check_sums = NULL) {
+post_generic <- function(x, target_data, strata_names, group_names,
+                         prop_name = "proportion", aggregate = FALSE, ...) { 
 
-  estimates <- data.table::setDT(data.table::copy(estimates))
+  estimates <- data.table::setDT(data.table::copy(x))
+  if (!length(target_data)) stop("target_data is missing")
   targets <- data.table::setDT(data.table::copy(target_data))
 
-  vapply(c(group_names, strata_names), check_target_levels, FUN.VALUE = logical(1L),
-         estimates, targets)
+  if (!all(strata_names %in% names(estimates)))
+    stop("All variables in strata_names should be variables in estimates.")
+  if (!all(strata_names %in% names(target_data)))
+    stop("All variables in strata_names should be variables in targets.")
 
   targets_n <- nrow(unique(targets[, c(strata_names, group_names), with = FALSE]))
-  if (nrow(targets) > targets_n) {
-    warning("There are more rows of proportions in the target data ",
-            "than there are combinations of strata and grouping ",
-            "variables. Summing proportions over other variables.")
 
-    targets[, setdiff(names(targets), c(strata_names, group_names, prop_name)) := NULL, with = FALSE]
-    targets <- targets[, lapply(.SD, sum), .SDcols = prop_name, by = c(strata_names, group_names)]
+  if (nrow(targets) > targets_n) {
+    if (isTRUE(aggregate)) {
+      targets <- targets[, lapply(.SD, sum), .SDcols = prop_name, by = c(strata_names, group_names)]
+    } else {
+      stop("There are more observations in the target data than ",
+           "combinations of strata and grouping variables. If ",
+           "\"aggregate\" is TRUE, their proportions will be summed over. ",
+           "But this is not recommended unless they are sure to represent ",
+           "partitions of the specified strata.")
+    }
   }
+
+  extra_cols <- setdiff(names(targets), c(strata_names, group_names, prop_name))
+  if (length(extra_cols)) {
+    targets[, c(extra_cols) := NULL, with = FALSE]
+  }
+  value_col <- setdiff(names(estimates), c(strata_names, group_names, prop_name, "rn"))
 
   estimates_n <- nrow(estimates)
   props <- merge(estimates, targets, all = FALSE, by = c(strata_names, group_names))
   if (!identical(estimates_n, nrow(props))) {
-    warning("Dropped ", estimates_n - nrow(props), " group means not found in targets")
+  warning("Not all estimates could be matched with a population proportion ",
+            "using the stratifying and grouping variables. ", estimates_n -
+              nrow(props), " will be dropped from the output, ",
+            "and this may indicate a larger problem.")
   }
 
-  if (length(check_sums)) check_proportions(props, prop_name, check_sums)
+  props <- scale_props(props, prop_name, strata_names, group_names)
 
-  props <- scale_props(props, prop_name, strata_names, check_sums)
-  means <- props[, lapply(.SD, function(k) sum(k * props$scaled_prop)),
-                 by = strata_names, .SDcols = estimate_names]
-  means
+  check_proportions(props, strata_names)
+  res <- props[, lapply(.SD, function(k) sum(k * .SD$scaled_prop)),
+               by = strata_names, .SDcols = c(value_col, "scaled_prop")]
+  res[, c("scaled_prop") := NULL, with = FALSE]
+  data.table::copy(res)
 }
 
-scale_props <- function(props, prop_name, strata_names, check_sums) {
-  strata_sums <- props[, list(strata_sum = sum(get("proportion"))), by = strata_names]
+check_estimates <- function(estimates, strata_names, group_names) {
+  estimates[, lapply(.SD, sum), by = c(strata_names)]
+  estimates
+}
+
+scale_props <- function(props, prop_name, strata_names, group_names) {
+  strata_sums <- props[, list(strata_sum = sum(get(prop_name))), by = strata_names]
   props <- merge(props, strata_sums, all = FALSE, by = strata_names)
-  props[, c("scaled_prop") := get("proportion") / get("strata_sum")]
-  props
+  props[, c("scaled_prop") := get(prop_name) / get("strata_sum")]
+  return(props)
 }
 
-check_proportions <- function(tabular, prop_name, check_sums) {
-  prop_sums <- tabular[, lapply(.SD, sum), .SDcols = prop_name, by = check_sums]
-  if (!isTRUE(all.equal(1L, unique(prop_sums[[prop_name]]))))
-    stop("not all proportions sum to 1 within ", paste(check_sums, collapse = ", "))
-  else TRUE
+check_proportions <- function(tabular, strata_names) {
+  prop_sums <- tabular[, lapply(.SD, sum), .SDcols = "scaled_prop", by = strata_names]
+  if (!isTRUE(all.equal(rep(1L, nrow(prop_sums)), prop_sums$scaled_prop))) {
+    stop("Not all proportions sum to 1 within stratifying variables ", 
+         cc_and(strata_names), " even though they should have been ",
+         "rescaled. (The mean sum is ", round(mean(prop_sums$scaled_prop), 2L),
+         "). This could indicate a problem in joining the estimates and ",
+         "targets or be a bug.")
+  } else TRUE
 }
 
 check_target_levels <- function(variable, estimates, targets) {
   if (!identical(class(estimates[[variable]]), class(targets[[variable]]))) {
     stop("'", variable, "' inherits from '", class(estimates[[variable]]),
-      "' in estimates and '", class(targets[[variable]]), "' in targets")
-  }
-  else if (!all(unique(estimates[[variable]] %in% targets[[variable]]))) {
-    stop("not all values of '", variable, "' in estimates are values of '", variable, "' in targets: ",
-      paste(sort(setdiff(estimates[[variable]], targets[[variable]])), collapse = ", "))
-  }
-  else TRUE
+      "' in estimates and '", class(targets[[variable]]), "' in targets.",
+      "Please reconcile the types.")
+  } else if (!all(estimates[[variable]] %in% targets[[variable]])) {
+    stop("Not all levels of '", variable, "' in estimates are levels of '",
+         variable, "' in targets: ", cc_and(setdiff(estimates[[variable]],
+                                                    targets[[variable]])),
+         ". The target data should give the population proportion of each ",
+         "group represented in the estimates.")
+  } else TRUE
 }

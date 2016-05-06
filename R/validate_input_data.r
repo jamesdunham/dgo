@@ -43,6 +43,13 @@ check_modifiers <- function(modifier_data, ctrl) {
     are_names(c("modifier_names", "t1_modifier_names"))
     has_type(c("time_name", "geo_name", "modifier_names", "t1_modifier_names"),
              modifier_data, ctrl)
+    sapply(unique(c(ctrl@modifier_names, ctrl@t1_modifier_names,
+                    ctrl@time_name, ctrl@geo_name)), 
+           function(x) {
+             if (any(is.na(modifier_data[[x]])))
+               stop("There are NA values in the ", deparse(x), " variable ",
+                    "of the modifier data.")
+           })
     check_time(modifier_data, ctrl@time_name) 
   }
 }
@@ -84,7 +91,7 @@ has_type <- function(slots, where, ctrl, valid_types = var_types) {
   }
 }
 
-valid_names <- function(where, s_four = NULL, len = 0L) {
+valid_names <- function(where, s_four = NULL, len = 0L, verb = "give") {
   stop_if_empty(where)
   tab_name <- deparse(substitute(where))
   function(all_v) {
@@ -102,7 +109,7 @@ valid_names <- function(where, s_four = NULL, len = 0L) {
         stop(v_name, " should be length ", len, ", not ", length(val))
       }
       if (!all(val %in% names(where)) || any(val == "")) {
-        stop(v_name, " should give",
+        stop(v_name, " should ", verb, 
              ngettext(len, " a variable name", " variable names"),
              " in ", deparse(tab_name))
       }
@@ -139,3 +146,12 @@ cc_or <- function(..., oxford = FALSE) {
   or <- ifelse(length(x) > 1L, " or ", "")
   paste0(res, comma, or, x[length(x)])
 }
+
+cc_and <- function(..., oxford = FALSE) {
+  x = unlist(list(...))
+  res <- cc(x[-length(x)])
+  comma <- ifelse(isTRUE(oxford) && length(x) > 2, ",", "")
+  and <- ifelse(length(x) > 1L, " and ", "")
+  paste0(res, comma, and, x[length(x)])
+}
+
