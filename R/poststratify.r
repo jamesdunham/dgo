@@ -1,43 +1,3 @@
-#' \code{poststratify}: post-stratify \code{dgirt} estimates
-#'
-#' Given estimates for modeled groups and their incidence in population strata
-#' of interest (typically defined in part geographically), \code{poststratify}
-#' returns estimates for the strata. The estimate for each stratum is the mean
-#' over the estimates for the groups it comprises, weighted by the proportion of
-#' the stratum population the groups contribute.
-
-#' @param x A \code{data.frame} or \code{dgirtfit} object.
-#'
-#' @param target_data A table giving the proportions contributed to strata
-#' populations by modeled groups.
-#'
-#' @param group_names The names of the columns in \code{x} and
-#' \code{target_data} for grouping variables.
-#'
-#' @param strata_names The names of the columns in \code{x} and
-#' \code{target_data} that define strata.
-#'
-#' @param prop_name The name of the column in \code{target_data} that gives
-#' strata proportions.
-#'
-#' @param aggregate Whether to sum over multiple observations of strata and
-#' grouping variables. 
-#'
-#' @return A table giving poststratified estimates for each stratum.
-#'
-#' @export
-#' @rdname poststratify
-#' @examples
-#' #  dgirtfit method
-#' poststratify(toy_dgirtfit, targets, strata_names = c("year", "state"), aggregate = TRUE)
-#'
-#' # method for data.frame
-#' x <- get_posterior_mean(toy_dgirtfit, pars = 'theta_bar')
-#' poststratify(x, target_data = targets, group_names = "race", strata_names = c("year", "state") , aggregate = TRUE)
-#'
-#' # this is a parameter indexed t
-#' x <- get_posterior_mean(toy_dgirtfit, pars = 'xi')
-#' poststratify(x, target_data = targets, group_names = "race", strata_names = c("year", "state") , aggregate = TRUE)
 post_generic <- function(x, target_data, strata_names, group_names,
                          prop_name = "proportion", aggregate = FALSE, ...) { 
 
@@ -89,8 +49,8 @@ post_generic <- function(x, target_data, strata_names, group_names,
 }
 
 check_estimates <- function(estimates, strata_names, group_names) {
-  estimates[, lapply(.SD, sum), by = c(stata_names)]
-  res
+  estimates[, lapply(.SD, sum), by = c(strata_names)]
+  estimates
 }
 
 scale_props <- function(props, prop_name, strata_names, group_names) {

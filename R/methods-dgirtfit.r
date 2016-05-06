@@ -1,5 +1,4 @@
 #' \code{show} method for \code{dgirtfit-class} objects
-#' @param object An object of class \code{dgirtIn} as returned by \code{shape}.
 #' @rdname dgirtfit-class
 #' @export
 #' @examples
@@ -61,6 +60,9 @@ setMethod("get_posterior_mean", "dgirtfit",
             posterior_means
           })
 
+#' \code{poststratify}: reweight and aggregate estimates
+#' @rdname poststratify
+#' @param ... Additional arguments to methods.
 setGeneric("poststratify", signature = "x",
            function(x, prop_name = "proportion", ...) {
             standardGeneric("poststratify")
@@ -70,27 +72,6 @@ setGeneric("poststratify", signature = "x",
 #'
 #' @include poststratify.r 
 #' @rdname poststratify
-#' @param x A \code{data.frame}.
-#'
-#' @param target_data A table giving the proportions contributed to strata
-#' populations by modeled groups.
-#'
-#' @param group_names The names of the columns in \code{x} and
-#' \code{target_data} for grouping variables.
-#'
-#' @param strata_names The names of the columns in \code{x} and
-#' \code{target_data} that define strata.
-#'
-#' @param prop_name The name of the column in \code{target_data} that gives
-#' strata proportions.
-#'
-#' @param aggregate Whether to sum over multiple observations of strata and
-#' grouping variables. 
-#'
-#' @param pars The names of model parameters of interest. Others will be
-#' excluded.
-#'
-#' @return A table giving poststratified estimates for each stratum.
 #' @export
 setMethod("poststratify", c("data.frame"),
   function(x = data.frame, target_data, strata_names, group_names, prop_name =

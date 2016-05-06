@@ -20,15 +20,13 @@
   pars = "theta_bar", name = TRUE, ...)
 }
 \arguments{
-\item{object}{An object of class \code{dgirtIn} as returned by \code{shape}.}
+\item{object}{A \code{dgirtfit}-class object.}
 
 \item{...}{Further arguments to \code{\link{stanfit-class}} methods.}
 
 \item{pars}{Selected parameter names.}
 
 \item{name}{Whether to move descriptive rownames into columns.}
-
-\item{object}{A \code{dgirtfit}-class object.}
 }
 \description{
 All \code{\link{rstan}} methods for superclass

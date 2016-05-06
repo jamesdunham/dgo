@@ -1,4 +1,4 @@
-#' \code{expand_rownames}: extract parameter descriptions in rownames
+#' \code{expand_rownames}: expand parameter descriptions in rownames
 #'
 #' Move rownames that describe parameters (e.g. xi[2009]) to columns.
 #'
@@ -13,8 +13,11 @@
 #' @param x A table with rownames in the format \code{param[group1__groupK,t]}
 #' or \code{param[t]}.
 #'
-#' @param col_names A character vector of column names to be created, in the
-#' same order that their values appear in the rownames.
+#' @param time_name A name for any resulting time variable.
+#'
+#' @param geo_name A name for any resulting geographic variable.
+#'
+#' @param group_names Names for any resulting group variables.
 #'
 #' @return \code{x} with additional columns (see details).
 #'
@@ -22,15 +25,10 @@
 #' data(toy_dgirtfit)
 #' tb_means <- get_posterior_mean(toy_dgirtfit, name = FALSE)
 #' # rownames are e.g. "theta_bar[CO__black,2011]"
-#' tb_means <- expand_rownames(tb_means, time_name = "year", geo_name = "state", group_names = "race")
+#' tb_means <- expand_rownames(tb_means, time_name = "year", geo_name = "state",
+#'   group_names = "race")
 #' # result has columns state, race, year (and original rownames in rn)
 #' head(tb_means)
-#'
-#' # similarly for a parameter indexed t
-#' xi_means <- get_posterior_mean(toy_dgirtfit, pars = 'xi')
-#' xi_means <- get_posterior_mean(toy_dgirtfit, pars = 'gamma')
-#' xi_means <- expand_rownames(xi_means, time_name = "year")
-#' head(xi_means)
 #' @seealso \code{\link{dgirtfit-class}}
 #' @include data-toy_dgirtfit.r
 expand_rownames <- function(x, time_name, geo_name, group_names) {
@@ -70,8 +68,9 @@ expand_rownames <- function(x, time_name, geo_name, group_names) {
   }
   if (length(time_name) && "time_name" %in% names(x)) {
     names(x)[names(x) == "time_name"] <- time_name
-    x[, c(time_name) := type.convert(x[[time_name]]), with = FALSE]
+    if (is.character(x[[time_name]])) {
+      x[, c(time_name) := type.convert(x[[time_name]]), with = FALSE]
+    }
   }
   data.table::copy(x)
 }
-
