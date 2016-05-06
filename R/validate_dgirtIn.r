@@ -42,4 +42,5 @@ check_dimensions <- function(d_in) {
   assertthat::assert_that(all_equal(dim(d_in$ZZ), c(d_in$T, d_in$P, d_in$H)))
   assertthat::assert_that(all_equal(dim(d_in$ZZ_prior), c(d_in$T, d_in$P, d_in$H)))
   assertthat::assert_that(not_empty((d_in$constant_item)))
+  stopifnot(all.equal(d_in$N, d_in$G * d_in$T * d_in$Q))
 }

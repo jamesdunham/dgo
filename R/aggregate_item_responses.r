@@ -54,43 +54,58 @@ make_group_counts <- function(item_data, aggregate_data, d_in, ctrl) {
   item_means[, c(drop_cols) := NULL, with = FALSE]
 
   # join response counts with means 
-  counts_means <- item_n[item_means]
-  counts_means <- counts_means[, c(ctrl@time_name, ctrl@geo_name,
+  count_means <- item_n[item_means]
+  count_means <- count_means[, c(ctrl@time_name, ctrl@geo_name,
                                    ctrl@group_names, item_mean_vars,
                                    item_n_vars), with = FALSE]
 
   # the group success count for an item is the product of its count and mean
   item_s_vars <- paste0(d_in$gt_items, "_s_grp")
-  counts_means[, c(item_s_vars) := round(counts_means[, (item_mean_vars), with = FALSE] *
-                                         counts_means[, (item_n_vars), with = FALSE], 0)]
-  counts_means <- counts_means[, -grep("_mean$", names(counts_means)), with = FALSE]
+  count_means[, c(item_s_vars) := round(count_means[, (item_mean_vars), with = FALSE] *
+                                         count_means[, (item_n_vars), with = FALSE], 0)]
+  count_means <- count_means[, -grep("_mean$", names(count_means)), with = FALSE]
 
 
   # we want a long table of successes (s_grp) and trials (n_grp) by group and
   # item; items need to move from columns to rows
-  melted <- melt(counts_means, id.vars = c(ctrl@time_name, ctrl@geo_name, ctrl@group_names), variable.name = "item")
+  melted <- melt(count_means, id.vars = c(ctrl@time_name, ctrl@geo_name,
+                                           ctrl@group_names),
+                 variable.name = "item")
   melted[, c("variable") := list(gsub(".*([sn]_grp)$", "\\1", get("item")))]
   melted[, c("item") := list(gsub("(.*)_[sn]_grp$", "\\1", get("item")))]
-  f <- as.formula(paste0(paste(ctrl@time_name, ctrl@geo_name, paste(ctrl@group_names, collapse = " + "),
+  f <- as.formula(paste0(paste(ctrl@time_name, ctrl@geo_name,
+                               paste(ctrl@group_names, collapse = " + "),
                                "item", sep = "+"), " ~ variable"))
-  group_counts <- data.table::dcast.data.table(melted, f, drop = FALSE, fill = 0L)
-
-  # stan code expects unobserved group-items to be omitted
-  group_counts[is.na(get("s_grp")), c("s_grp") := 0]
-  group_counts[is.na(get("n_grp")), c("n_grp") := 0]
+  counts <- data.table::dcast.data.table(melted, f, drop = FALSE, fill = 0L)
 
   # include aggregates, if any
   if (length(aggregate_data) && nrow(aggregate_data) > 0) {
-    group_counts <- rbind(group_counts, aggregate_data)
+    counts <- data.table::rbindlist(list(counts, aggregate_data), use.names =
+                                    TRUE)
     message("Added ", length(ctrl@aggregate_item_names), " items from aggregate data.")
+    data.table::setkeyv(counts, c(ctrl@time_name, "item", ctrl@group_names,
+                                  ctrl@geo_name))
   }
 
+  # include unobserved cells
+  all_groups = expand.grid(c(setNames(list(ctrl@geo_filter), ctrl@geo_name),
+                             setNames(list(ctrl@time_filter), ctrl@time_name),
+                             lapply(counts[, c(ctrl@group_names,
+                                                     "item"), with = FALSE],
+                                    function(x) sort(unique(x)))),
+                           stringsAsFactors = FALSE)
+  counts <- merge(counts, all_groups, all = TRUE)
+
+  # stan code expects unobserved group-items to be omitted
+  counts[is.na(get("s_grp")), c("s_grp") := 0]
+  counts[is.na(get("n_grp")), c("n_grp") := 0]
+
   # create an identifier for use in n_vec and s_vec 
-  group_counts[, c("name") := do.call(paste, c(.SD, sep = "__")), .SDcols =
+  counts[, c("name") := do.call(paste, c(.SD, sep = "__")), .SDcols =
                c(ctrl@time_name, ctrl@geo_name, ctrl@group_names, "item")]
 
-  setkeyv(group_counts, c(ctrl@time_name, "item", ctrl@group_names, ctrl@geo_name))
-  group_counts
+  setkeyv(counts, c(ctrl@time_name, "item", ctrl@group_names, ctrl@geo_name))
+  counts
 }
 
 count_items <- function(x, n_responses, def) {

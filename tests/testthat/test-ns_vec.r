@@ -30,4 +30,16 @@ suppressMessages({
   expect_equal_to_reference(d_agg$s_vec, "d_agg_s_vec.Rds")
   })
 
+  test_that("unobserved groups are added to group counts", {
+    d <- shape(item_data = dgirt::opinion,
+               time_filter = c(0, 2006),
+               item_names = "Q_cces2006_abortion",
+               time_name = "year",
+               geo_name = "state",
+               group_names = "female",
+               survey_name = "source",
+               weight_name = "weight")
+    expect_equal(unique(d$group_counts$year), c(0, 2006))
+  })
+
 })
