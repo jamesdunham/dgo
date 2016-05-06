@@ -55,16 +55,23 @@ restrict_modifier <- function(item_data, modifier_data, ctrl) {
       modifier_data[, c(extra_colnames) := NULL, with = FALSE]
     }
 
-    missing_geo <- setdiff(ctrl@geo_filter, unique(modifier_data[[ctrl@geo_name]]))
-    if (length(missing_geo)) {
-      stop("local geographic areas in \"geo_filter\" are missing in modifier ",
-           "data: ", paste(missing_geo, sep = ", "))
-    }
-
-    missing_time <- setdiff(ctrl@time_filter, unique(modifier_data[[ctrl@time_name]]))
-    if (length(missing_time)) {
-      stop("time periods in \"time_filter\" are missing in modifier data: ",
-           paste(missing_time, sep = ", "))
+    all_combos <- setNames(expand.grid(ctrl@geo_filter, ctrl@time_filter,
+                                       stringsAsFactors = FALSE),
+                           list(ctrl@geo_name, ctrl@time_name))
+    setDT(all_combos, key = c(ctrl@geo_name, ctrl@time_name))
+    missing_combos <- all_combos[!modifier_data, on = names(all_combos)]
+    if (nrow(missing_combos)) {
+      missing_t_range <- unique(c(min(missing_combos[[ctrl@time_name]]),
+                                  max(missing_combos[[ctrl@time_name]])))
+      stop("Not all pairs of time periods and geographic areas are in ",
+           "modifier_data. ", nrow(missing_combos), 
+           ngettext(nrow(missing_combos),
+                    " observation is ",
+                    " observations are "),
+           "missing, ", ngettext(length(missing_t_range), 
+                                paste("in", cc(missing_t_range)),
+                                paste("between", cc_and(missing_t_range))),
+           ".")
     }
 
     modifier_data <- modifier_data[modifier_data[[ctrl@geo_name]] %chin%
@@ -276,5 +283,7 @@ drop_items_rare_in_polls <- function(item_data, ctrl) {
 }
 
 get_observed <- function(item_data, aggregate_data, varname) {
-  unique(item_data[[varname]], aggregate_data[[varname]])
+  obs <- Map(unique.data.frame, list(item_data[, varname, with = FALSE],
+                                     aggregate_data[, varname, with = FALSE]))
+  sort.default(unique.default(unname(unlist(obs))))
 }

@@ -189,8 +189,10 @@ shape <- function(item_data,
   # dimnames(d_in$XX)
   # dimnames(d_in$ZZ)
   d_in$XX <- make_design_matrix(item_data, d_in, ctrl)
-  d_in$ZZ <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl)
-  d_in$ZZ_prior <- d_in$ZZ
+  d_in$ZZ <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl,
+                                     t1 = FALSE)
+  d_in$ZZ_prior <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl,
+                                           t1 = TRUE)
   d_in$hier_names <- dimnames(d_in$ZZ)[[2]]
 
   d_in$D <- ifelse(ctrl@constant_item, 1L, d_in$T)
@@ -216,7 +218,7 @@ shape <- function(item_data,
   d_in
 }
 
-shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl) {
+shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
   if (!length(modifier_data)) {
     zz.names <- list(ctrl@time_filter, dimnames(d_in$XX)[[2]], "")
     zz <- array(data = 0, dim = lapply(zz.names, length), dimnames = zz.names)
@@ -226,11 +228,20 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl) {
     # (including the geographic), and H is the number of predictors for
     # geographic unit effects
 
+    hier_frame <- data.table::copy(modifier_data)
+
+    modifier_names <- ifelse(t1, ctrl@t1_modifier_names, ctrl@modifier_names)
+    extra_colnames <- setdiff(names(hier_frame),
+                             c(ctrl@geo_name, ctrl@time_name, modifier_names))
+    if (length(extra_colnames)) {
+      hier_frame[, c(extra_colnames) := NULL, with = FALSE]
+    }
+
     # NOTE: We create param by renaming geo_name. Thus the requirement to model
     # geographic predictors.
-    hier_frame <- data.table::copy(modifier_data)
     hier_frame[, c("param", ctrl@geo_name) := list(hier_frame[[ctrl@geo_name]], NULL), with = FALSE]
-    setkeyv(hier_frame, c("param", ctrl@time_name))
+    data.table::setkeyv(hier_frame, c("param", ctrl@time_name))
+    all(ctrl@time_filter %in% hier_frame$D_year)
 
     # "param" is just the unique values of the geo var at the moment
     modeled_param_names <- unique(hier_frame[, get("param")])
@@ -242,22 +253,21 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl) {
     param_levels <- c(modeled_param_names, unmodeled_param_levels)
 
     # make a zeroed table for unmodeled parameters by time period
-    unmodeled_frame <- expand.grid(c(list(unmodeled_param_levels,
-                                          sort(unique(hier_frame[[ctrl@time_name]]))),
-                                          rep(list(0L), length(ctrl@modifier_names))))
-    unmodeled_frame <- setNames(unmodeled_frame, c("param", ctrl@time_name, ctrl@modifier_names))
+    unmodeled_frame <- expand.grid(c(list(unmodeled_param_levels, ctrl@time_filter),
+                                          rep(list(0L), length(modifier_names))))
+    unmodeled_frame <- setNames(unmodeled_frame, c("param", ctrl@time_name, modifier_names))
     data.table::setDT(unmodeled_frame, key = c("param", ctrl@time_name))
 
     hier_frame <- rbind(hier_frame, unmodeled_frame)
 
-    zz <- sapply(ctrl@modifier_names, function(x) { 
+    zz <- sapply(modifier_names, function(x) { 
                    matrix(hier_frame[[x]],
                           # We have T rows, so filling by column is correct SO
                           # LONG AS time varies fastest then param in
                           # hier_frame
-                          nrow = length(unique(hier_frame$year)),
+                          nrow = length(unique(hier_frame[[ctrl@time_name]])),
                           ncol = length(unique(hier_frame$param)),
-                          dimnames = list(unique(hier_frame$year),
+                          dimnames = list(unique(hier_frame[[ctrl@time_name]]),
                                           unique(hier_frame$param)))
                         }, simplify = 'array')
     # omit first geo parameter
