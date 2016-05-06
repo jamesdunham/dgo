@@ -32,9 +32,8 @@ knitr::opts_chunk$set(
 
 # Quick start
 
-Install from GitHub. `dgirt` requires [RStan](https://github.com/stan-dev/rstan).
-See the RStan [installation instructions](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#how-to-install-rstan)
-for help.
+Install from GitHub. dgirt requires [RStan](http://mc-stan.org/interfaces/rstan.html) and its
+(prerequisites)[https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#prerequisites].
 ```
 devtools::install_github("jamesdunham/dgirt", dependencies = TRUE)
 ```
