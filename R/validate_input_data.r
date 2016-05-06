@@ -91,7 +91,7 @@ has_type <- function(slots, where, ctrl, valid_types = var_types) {
   }
 }
 
-valid_names <- function(where, s_four = NULL, len = 0L) {
+valid_names <- function(where, s_four = NULL, len = 0L, verb = "give") {
   stop_if_empty(where)
   tab_name <- deparse(substitute(where))
   function(all_v) {
@@ -109,7 +109,7 @@ valid_names <- function(where, s_four = NULL, len = 0L) {
         stop(v_name, " should be length ", len, ", not ", length(val))
       }
       if (!all(val %in% names(where)) || any(val == "")) {
-        stop(v_name, " should give",
+        stop(v_name, " should ", verb, 
              ngettext(len, " a variable name", " variable names"),
              " in ", deparse(tab_name))
       }

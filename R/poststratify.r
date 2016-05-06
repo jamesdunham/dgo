@@ -20,31 +20,35 @@
 #' @param prop_name The name of the column in \code{target_data} that gives
 #' strata proportions.
 #'
+#' @param aggregate Whether to sum over multiple observations of strata and
+#' grouping variables. 
+#'
 #' @return A table giving poststratified estimates for each stratum.
 #'
 #' @export
+#' @rdname poststratify
 #' @examples
 #' #  dgirtfit method
-#' poststratify(toy_dgirtfit, targets, strata_names = c("year", "state"),
-#'                   aggregate = TRUE)
+#' poststratify(toy_dgirtfit, targets, strata_names = c("year", "state"), aggregate = TRUE)
 #'
-#' # matrix/data.frame method
+#' # method for data.frame
 #' x <- get_posterior_mean(toy_dgirtfit, pars = 'theta_bar')
-#' x <- expand_rownames(x, c("state", "race", "year"))
-#' poststratify(x, targets, "race", c("year", "state") , aggregate = TRUE)
-poststratify.default <- function(x,
-                         target_data,
-                         group_names,
-                         strata_names,
-                         prop_name = "proportion",
-                         aggregate = FALSE) {
+#' poststratify(x, target_data = targets, group_names = "race", strata_names = c("year", "state") , aggregate = TRUE)
+#'
+#' # this is a parameter indexed t
+#' x <- get_posterior_mean(toy_dgirtfit, pars = 'xi')
+#' poststratify(x, target_data = targets, group_names = "race", strata_names = c("year", "state") , aggregate = TRUE)
+post_generic <- function(x, target_data, strata_names, group_names,
+                         prop_name = "proportion", aggregate = FALSE, ...) { 
 
-  if (is.matrix(x)) x <- as.data.frame(x)
   estimates <- data.table::setDT(data.table::copy(x))
+  if (!length(target_data)) stop("target_data is missing")
   targets <- data.table::setDT(data.table::copy(target_data))
 
-  vapply(c(group_names, strata_names), check_target_levels, FUN.VALUE = logical(1L),
-         estimates, targets)
+  if (!all(strata_names %in% names(estimates)))
+    stop("All variables in strata_names should be variables in estimates.")
+  if (!all(strata_names %in% names(target_data)))
+    stop("All variables in strata_names should be variables in targets.")
 
   targets_n <- nrow(unique(targets[, c(strata_names, group_names), with = FALSE]))
 
@@ -64,60 +68,34 @@ poststratify.default <- function(x,
   if (length(extra_cols)) {
     targets[, c(extra_cols) := NULL, with = FALSE]
   }
-  iter_col <- setdiff(names(estimates), c(strata_names, group_names, prop_name, "rn"))
-
-  check_estimates(estimates, strata_names, group_names)
-  props <- scale_props(targets, prop_name, strata_names)
+  value_col <- setdiff(names(estimates), c(strata_names, group_names, prop_name, "rn"))
 
   estimates_n <- nrow(estimates)
-  props <- merge(estimates, props, all = FALSE, by = c(strata_names, group_names))
+  props <- merge(estimates, targets, all = FALSE, by = c(strata_names, group_names))
   if (!identical(estimates_n, nrow(props))) {
-    warning("Not all estimates could be matched with a population proportion ",
+  warning("Not all estimates could be matched with a population proportion ",
             "using the stratifying and grouping variables. ", estimates_n -
               nrow(props), " will be dropped from the output, ",
             "and this may indicate a larger problem.")
   }
+
+  props <- scale_props(props, prop_name, strata_names, group_names)
+
   check_proportions(props, strata_names)
   res <- props[, lapply(.SD, function(k) sum(k * .SD$scaled_prop)),
-               by = strata_names, .SDcols = c(iter_col, "scaled_prop")]
+               by = strata_names, .SDcols = c(value_col, "scaled_prop")]
   res[, c("scaled_prop") := NULL, with = FALSE]
-  return(res[])
+  data.table::copy(res)
 }
 
 check_estimates <- function(estimates, strata_names, group_names) {
-  if (any(duplicated(estimates[, c(strata_names, group_names), with = FALSE]))) {
-    stop("Combinations of strata and grouping variables are duplicated in ",
-         "the provided estimates. For correct rescaling of population ",
-         "proportions, the combinations should be unique. Were labels ",
-         "extracted successfully (e.g. with `extract_rownames`)?")
-  }
+  estimates[, lapply(.SD, sum), by = c(stata_names)]
+  res
 }
 
-setGeneric("poststratify", signature = c("x"),
-           function(x, ...) standardGeneric("poststratify"))
-setMethod("poststratify", c("x" = "data.frame"), poststratify.default)
-setMethod("poststratify", c("x" = "matrix"), poststratify.default)
-
-poststratify.dgirtfit <- function(x, target_data, strata_names,
-                                  prop_name = "proportion",
-                                  pars = "theta_bar", 
-                                  aggregate = FALSE) {
-    ctrl <- x@dgirt_in$control
-    estimates <- t(as.data.frame(x, par = pars))
-    id_col <- c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)
-    estimates <- expand_rownames(estimates, col_names = id_col)
-    res <- poststratify.default(estimates, target_data, ctrl@group_names,
-                                strata_names, prop_name, aggregate)
-    melted <- data.table::melt(res, id.vars = strata_names, variable.name =
-                             "iteration", variable.factor = FALSE)
-    melted[, c("iteration") := type.convert(sub("V", "", get("iteration"),
-                                              fixed = TRUE)), with = FALSE]
-    return(melted)
-}
-
-scale_props <- function(targets, prop_name, strata_names) {
-  strata_sums <- targets[, list(strata_sum = sum(get(prop_name))), by = strata_names]
-  props <- merge(targets, strata_sums, all = FALSE, by = strata_names)
+scale_props <- function(props, prop_name, strata_names, group_names) {
+  strata_sums <- props[, list(strata_sum = sum(get(prop_name))), by = strata_names]
+  props <- merge(props, strata_sums, all = FALSE, by = strata_names)
   props[, c("scaled_prop") := get(prop_name) / get("strata_sum")]
   return(props)
 }
@@ -136,11 +114,13 @@ check_proportions <- function(tabular, strata_names) {
 check_target_levels <- function(variable, estimates, targets) {
   if (!identical(class(estimates[[variable]]), class(targets[[variable]]))) {
     stop("'", variable, "' inherits from '", class(estimates[[variable]]),
-      "' in estimates and '", class(targets[[variable]]), "' in targets")
+      "' in estimates and '", class(targets[[variable]]), "' in targets.",
+      "Please reconcile the types.")
   } else if (!all(estimates[[variable]] %in% targets[[variable]])) {
-    stop("not all levels of '", variable, "' in estimates are levels of '",
+    stop("Not all levels of '", variable, "' in estimates are levels of '",
          variable, "' in targets: ", cc_and(setdiff(estimates[[variable]],
-                                                    targets[[variable]])))
+                                                    targets[[variable]])),
+         ". The target data should give the population proportion of each ",
+         "group represented in the estimates.")
   } else TRUE
 }
-setMethod("poststratify", c("x" = "dgirtfit"), poststratify.dgirtfit)
