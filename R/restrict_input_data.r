@@ -86,12 +86,19 @@ restrict_modifier <- function(item_data, modifier_data, ctrl) {
       stop("no rows in modifier data remaining after subsetting to time ",
            "periods in item data")
 
-    n <- nrow(unique(modifier_data[, c(ctrl@geo_name, ctrl@time_name), with = FALSE]))
+    n <- nrow(unique(modifier_data[, c(ctrl@geo_name, ctrl@time_name),
+                     with = FALSE]))
     if (!identical(nrow(modifier_data), n))
       stop("time and geo identifiers don't uniquely identify modifier data ",
            "observations")
    
     message("\nRestricted modifier data to time and geo observed in item data.")
+
+    if (isTRUE(ctrl@standardize)) {
+      std_vars <- unique(c(ctrl@modifier_names, ctrl@t1_modifier_names))
+      modifier_data[, c(std_vars) := lapply(.SD, function(x) (x - mean(x)) /
+                                            sd(x)), .SDcols = std_vars]
+    }
   }
   invisible(modifier_data)
 }

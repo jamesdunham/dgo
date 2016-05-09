@@ -9,6 +9,7 @@ setClass("Control",
                       min_t_filter = "numeric",
                       modifier_names = "character",
                       prop_name = "character",
+                      standardize = "logical",
                       strata_names = "character",
                       survey_name = "character",
                       target_group_names = "character",
@@ -20,6 +21,7 @@ setClass("Control",
          prototype = prototype(constant_item = TRUE,
                                min_t_filter = 1L,
                                min_survey_filter = 1L,
+                               standardize = FALSE,
                                prop_name = "proportion"),
          validity = function(object) {
            if (!length(object@time_name) == 1L)
@@ -28,11 +30,14 @@ setClass("Control",
              "\"geo_name\" should be a single variable name"
            else if (!length(object@survey_name) == 1L)
              "\"survey_name\" should be a single variable name"
+           else if (!length(object@standardize) == 1L)
+             "\"standardize\" should be a single logical"
            else if (!length(object@weight_name) == 1L)
              "\"weight_name\" should be a single variable name"
            else if (!length(unique(object@group_names)) > 0L)
              "\"group_names\" should be at least one variable name" 
-           else if (!length(object@constant_item) == 1L && is.logical(object@constant_item))
+           else if (!length(object@constant_item) == 1L &&
+                    is.logical(object@constant_item))
              "\"constant_item\" should be a single logical value"
            else if (length(unique(object@time_filter)) == 1L)
              "if specified \"time_filter\" should give at least two time periods"
@@ -40,7 +45,8 @@ setClass("Control",
              "if specified \"geo_filter\" should give at least two local geographic areas"
            else if (length(object@min_survey_filter) != 1L || object@min_survey_filter <= 0L)
              "\"min_survey_filter\" should be a positive integer"
-           else if (!length(object@min_t_filter) == 1L && object@min_t_filter > 0L)
+           else if (!length(object@min_t_filter) == 1L &&
+                    object@min_t_filter > 0L)
              "\"min_t_filter\" should be a positive integer"
            else 
              TRUE

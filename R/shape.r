@@ -1,50 +1,58 @@
 #' \code{shape}: prepare data for modeling with \code{dgirt}
 #'
-#' \code{shape} takes four kinds of data. Only \code{item_data} is required. For each
-#' other data type passed to \code{shape}, additional arguments are required, as
-#' described in the sections below. Most arguments give the name or names of key
-#' variables in the data; they end in \code{_name} or \code{_names} and should be
-#' character vectors.  Some implement preprocessing and modeling choices.
+#' \code{shape} takes four kinds of data. Only \code{item_data} is required. For
+#' each other data type passed to \code{shape}, additional arguments are
+#' required, as described in the sections below. Most arguments give the name or
+#' names of key variables in the data; they end in \code{_name} or \code{_names}
+#' and should be character vectors.  Some implement preprocessing and modeling
+#' choices.
 
 #' @section Modifier Data:
 #' These arguments are required to model hierarchical parameters with
-#' \code{modifier_data}.  At the moment, modeling geographic parameters is supported.
+#' \code{modifier_data}. At the moment, modeling geographic parameters is
+#' supported.
 #' \describe{
-#'   \item{\code{modifier_names}:}{Modifiers of geographic hierarchical parameters, e.g.
-#'   median household income in each local-area and time-period combination.}
+#'   \item{\code{modifier_names}:}{Modifiers of geographic hierarchical
+#'   parameters, e.g. median household income in each local-area and
+#'   time-period combination.}
 #'   \item{\code{t1_modifier_names}:}{Modifiers to be used instead of those in
 #'   \code{modifier_names}, only in the first period.}
+#'   \item{\code{standardize}:}{Whether to standardize hierarchical modifier
+#'   data to be zero-mean and unit-variance for performance gains. For
+#'   discussion see the Stan Language Reference section "Standardizing
+#'   Predictors and Outputs."}
 #' }
 
 #' @section Aggregate Data:
-#' Specifying \code{aggregate_data} requires no additional arguments; instead, we
-#' make many assumptions about the data. This implementation is likely to change
-#' in the future.
+#' Specifying \code{aggregate_data} requires no additional arguments; instead,
+#' we make many assumptions about the data. This implementation is likely to
+#' change in the future.
 #'
-#' \code{aggregate_data} is expected to be a long table of trial and success counts
-#' by group and item. Some variable names given for \code{item_data} are expected in
-#' the table of aggregates: \code{group_names}, \code{geo_name}, and \code{time_name}. Three
-#' fixed variable names are also expected in \code{aggregate_data}: \code{item} giving
-#' item identifiers, \code{n_grp} giving adjusted counts of item-response trials, and
-#' \code{s_grp} giving adjusted counts of item-response successes. The counts should
-#' be adjusted consistently with the transformations applied to the individual
+#' \code{aggregate_data} is expected to be a long table of trial and success
+#' counts by group and item. Some variable names given for \code{item_data} are
+#' expected in the table of aggregates: \code{group_names}, \code{geo_name}, and
+#' \code{time_name}. Three fixed variable names are also expected in
+#' \code{aggregate_data}: \code{item} giving item identifiers, \code{n_grp}
+#' giving adjusted counts of item-response trials, and \code{s_grp} giving
+#' adjusted counts of item-response successes. The counts should be adjusted
+#' consistently with the transformations applied to the individual
 #' \code{item_data}.
 
 #' @section Preprocessing:
-#' If \code{target_data} is specified \code{shape} will adjust the weighting of groups
-#' toward population targets via raking. This relies on an adaptation of
+#' If \code{target_data} is specified \code{shape} will adjust the weighting of
+#' groups toward population targets via raking. This relies on an adaptation of
 #' \code{\link[survey]{rake}}. The additional required arguments are
-#' \code{target_proportion_name} and \code{strata_names}. The implementation will be more
-#' flexible in the future, but at the moment the strata are defined additively
-#' when more than one variable is given in \code{strata_names}.
+#' \code{target_proportion_name} and \code{strata_names}. The implementation
+#' will be more flexible in the future, but at the moment the strata are defined
+#' additively when more than one variable is given in \code{strata_names}.
 #'
-#' \code{shape} can restrict data row-wise in \code{item_data}, \code{modifier_data}, and
-#' \code{aggregate_data} to that within specified time periods (\code{time_filter}) and
-#' local geographic areas (\code{geo_filter}). Data can also be filtered for
-#' sparsity, to keep items that appear in a minimum of time periods or surveys.
-#' This is a column-wise operation. If both row-wise and column-wise
-#' restrictions are specified, \code{shape} iterates over them until they leave the
-#' data unchanged.
+#' \code{shape} can restrict data row-wise in \code{item_data},
+#' \code{modifier_data}, and \code{aggregate_data} to that within specified time
+#' periods (\code{time_filter}) and local geographic areas (\code{geo_filter}).
+#' Data can also be filtered for sparsity, to keep items that appear in a
+#' minimum of time periods or surveys.  This is a column-wise operation. If both
+#' row-wise and column-wise restrictions are specified, \code{shape} iterates
+#' over them until they leave the data unchanged.
 
 #' \describe{
 #'   \item{\code{target_data}}{.}
@@ -63,9 +71,9 @@
 #' }
 
 #' @section Modeling Choices:
-#' Optional. Most arguments like this one are now in the \code{dgirt} signature, but
-#' \code{constant_item} affects the shape of the data. It may move to \code{dgirt} in the
-#' future.
+#' Optional. Most arguments like this one are now in the \code{dgirt} signature,
+#' but \code{constant_item} affects the shape of the data. It may move to
+#' \code{dgirt} in the future.
 #' \describe{
 #'   \item{constant_item}{Whether item difficulty parameters should be constant
 #'   over time. Default \code{TRUE}.}
@@ -101,7 +109,8 @@
 #' @param ... Further arguments for more complex models, input data, and
 #' preprocessing.
 #'
-#' @return An object of class \code{dgirtIn}, i.e., that expected by \code{\link{dgirt}}.
+#' @return An object of class \code{dgirtIn}, i.e., that expected by
+#' \code{\link{dgirt}}.
 #'
 #' @examples
 #' # model individual item responses

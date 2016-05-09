@@ -45,4 +45,25 @@ suppressMessages({
                  "There are NA values in the \"year\" variable of the modifier data.")
   })
 
+  context("standardizing modifier data")
+
+  test_that("standardize argument for modifier_data works", {
+
+    data(states)
+    std_res <- min_modifier_call(standardize = TRUE)
+    expect_true(std_res$control@standardize)
+    expect_equivalent(mean(std_res$modifier_data$prop_evangelicals), 0)
+    expect_equivalent(sd(std_res$modifier_data$prop_evangelicals), 1)
+
+    nonstd_res <- min_modifier_call()
+    expect_false(nonstd_res$control@standardize)
+    expect_equivalent(mean(nonstd_res$modifier_data$prop_evangelicals),
+                      mean(states$prop_evangelicals))
+    expect_equivalent(sd(nonstd_res$modifier_data$prop_evangelicals),
+                      sd(states$prop_evangelicals))
+
+    expect_false(min_item_call()$control@standardize)
+
+  })
 })
+
