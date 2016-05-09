@@ -15,6 +15,13 @@ Shape item response data for modeling:
 
 ``` r
 library(dgirt)
+#> Loading required package: Rcpp
+#> Loading required package: rstan
+#> Loading required package: ggplot2
+#> rstan (Version 2.9.0-3, packaged: 2016-02-11 15:54:41 UTC, GitRev: 05c3d0058b6a)
+#> For execution on a local, multicore CPU with excess RAM we recommend calling
+#> rstan_options(auto_write = TRUE)
+#> options(mc.cores = parallel::detectCores())
 dgirt_in <- shape(opinion, item_names = "Q_cces2006_abortion",
                   time_name = "year", geo_name = "state", group_names = "race",
                   time_filter = 2006:2008, geo_filter = c("MA", "NY"),
