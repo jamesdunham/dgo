@@ -1,4 +1,4 @@
-devtools::load_all()
+library(dgirt)
 data(opinion)
 toy_dgirt_in <- shape(opinion,
                  time_name = "year",

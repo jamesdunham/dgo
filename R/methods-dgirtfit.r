@@ -4,9 +4,9 @@
 #' @examples
 #' toy_dgirtfit
 setMethod("show", "dgirtfit",
-          function(object = dgirtfit) {
+          function(object) {
             object@sim$fnames_oi <- flatnames(object)
-            print(object)
+            callNextMethod(object)
           })
 
 #' \code{summary} method for \code{dgirtfit-class} objects
@@ -16,7 +16,7 @@ setMethod("show", "dgirtfit",
 #' @examples
 #' summary(toy_dgirtfit)
 setMethod("summary", "dgirtfit",
-          function(object = dgirtfit, ...) {
+          function(object, ...) {
             object@sim$fnames_oi <- flatnames(object)
             callNextMethod(object, ...)
           })
@@ -28,7 +28,7 @@ setMethod("summary", "dgirtfit",
 #' @examples
 #' extract(toy_dgirtfit)
 setMethod("extract", "dgirtfit",
-          function(object = dgirtfit, ...) {
+          function(object, ...) {
             extracted <- callNextMethod(object, ...)
             if (is.list(extracted)) {
               extracted <- arraynames(extracted, object)
@@ -47,7 +47,7 @@ setMethod("extract", "dgirtfit",
 #' @examples
 #' get_posterior_mean(toy_dgirtfit)
 setMethod("get_posterior_mean", "dgirtfit",
-          function(object = dgirtfit, pars = 'theta_bar', name = TRUE, ...) {
+          function(object, pars = 'theta_bar', name = TRUE, ...) {
             posterior_means <- callNextMethod(object, pars = pars, ...)
             rownames(posterior_means) <- flatnames(object,
               rownames(posterior_means))
@@ -70,56 +70,55 @@ setGeneric("poststratify", signature = "x",
 
 #' \code{poststratify} method for \code{data.frame}s
 #'
+#' Identifiers in the table of estimates to be poststratified should be given as
+#' \code{strata_names} or \code{aggregated_names}. There will be a row in the
+#' result for each interaction of the variables in \code{strata_names}
+#' containing the values of \code{estimate_names} poststratified over the
+#' variables in \code{aggregated_names}.
+#'
+#' @param x A \code{data.frame}.
+#' @param target_data A table giving the proportions contributed to strata by
+#' the interaction of \code{strata_names} and \code{aggregated_names}.
+#' @param strata_names Names of variables whose interaction defines
+#' population strata.
+#' @param aggregated_names Names of variables to be aggregated over in
+#' poststratification. 
+#' @param estimate_names Names of columns to be poststratified.
+#' @param prop_name Name of the column in \code{target_data} that gives
+#' strata proportions.
+#' @param keep Whether to keep the original estimates and return them alongside
+#' the poststratified estimates. 
+#' @return A table of poststratified estimates.
 #' @include poststratify.r 
 #' @rdname poststratify
 #' @export
 setMethod("poststratify", c("data.frame"),
-  function(x = data.frame, target_data, strata_names, group_names, prop_name =
-           "proportion", aggregate = FALSE, pars = "theta_bar")  {
-    post_generic(x, target_data = target_data, strata_names = strata_names,
-                 group_names = group_names, prop_name = prop_name,
-                 aggregate = aggregate, pars = pars)
+  function(x, target_data, strata_names, aggregated_names, estimate_names,
+           prop_name = "proportion", keep = FALSE) {
+    post_generic(x, target_data, strata_names, aggregated_names, estimate_names,
+                 prop_name, keep = FALSE)
   })
 
 #' \code{poststratify} method for \code{dgirtfit}-class objects
 #' @include poststratify.r 
-#' @param x A \code{dgirtfit}-class object.
-#'
-#' @param target_data A table giving the proportions contributed to strata
-#' populations by modeled groups.
-#'
-#' @param group_names The names of the columns in \code{x} and
-#' \code{target_data} for grouping variables.
-#'
-#' @param strata_names The names of the columns in \code{x} and
-#' \code{target_data} that define strata.
-#'
-#' @param prop_name The name of the column in \code{target_data} that gives
-#' strata proportions.
-#'
-#' @param aggregate Whether to sum over multiple observations of strata and
-#' grouping variables. 
-#'
-#' @param pars The names of model parameters of interest. Others will be
-#' excluded.
-#'
-#' @return A table giving poststratified estimates for each stratum.
+#' @param pars Selected parameter names.
 #' @export
 #' @rdname poststratify 
 #' @export
 setMethod("poststratify", c("dgirtfit"),
-  function(x = dgirtfit, target_data, strata_names, prop_name = "proportion",
-           aggregate = FALSE, pars = "theta_bar") {
+  function(x, target_data, strata_names, aggregated_names, estimate_names,
+           prop_name = "proportion", keep = FALSE, pars = "theta_bar") {
     ctrl <- x@dgirt_in$control
     estimates <- t(as.data.frame(x, par = pars))
     estimates <- expand_rownames(estimates, geo_name = ctrl@geo_name,
-                                 group_names = ctrl@group_names, time_name =
-                                   ctrl@time_name)
+                                 group_names = ctrl@group_names,
+                                 time_name = ctrl@time_name)
+    estimate_names <- grep("^V\\d+", names(estimates), value = TRUE)
     res <- post_generic(x = estimates, target_data = target_data,
-                        group_names = ctrl@group_names,
                         strata_names = strata_names,
-                        prop_name = prop_name,
-                        aggregate = aggregate)
+                        aggregated_names = aggregated_names,
+                        estimate_names = estimate_names,
+                        prop_name = prop_name)
     melted <- data.table::melt(res, id.vars = strata_names, variable.name =
                              "iteration", variable.factor = FALSE)
     melted[, c("iteration") := type.convert(sub("V", "", get("iteration"),

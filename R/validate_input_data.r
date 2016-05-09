@@ -132,26 +132,3 @@ check_time <- function(where, name) {
          name, ") should be integers for now")
   }
 }
-
-cc <- function(...) {
-  s <- unlist(list(...))
-  s <- trimws(s)
-  paste(s, sep = ", ", collapse = ", ")
-}
-
-cc_or <- function(..., oxford = FALSE) {
-  x = unlist(list(...))
-  res <- cc(x[-length(x)])
-  comma <- ifelse(isTRUE(oxford) && length(x) > 2, ",", "")
-  or <- ifelse(length(x) > 1L, " or ", "")
-  paste0(res, comma, or, x[length(x)])
-}
-
-cc_and <- function(..., oxford = FALSE) {
-  x = unlist(list(...))
-  res <- cc(x[-length(x)])
-  comma <- ifelse(isTRUE(oxford) && length(x) > 2, ",", "")
-  and <- ifelse(length(x) > 1L, " and ", "")
-  paste0(res, comma, and, x[length(x)])
-}
-

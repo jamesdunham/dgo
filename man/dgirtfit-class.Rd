@@ -10,14 +10,14 @@
 \alias{summary,dgirtfit-method}
 \title{Class \code{dgirtfit}: fitted DGIRT model}
 \usage{
-\S4method{show}{dgirtfit}(object = dgirtfit)
+\S4method{show}{dgirtfit}(object)
 
-\S4method{summary}{dgirtfit}(object = dgirtfit, ...)
+\S4method{summary}{dgirtfit}(object, ...)
 
-\S4method{extract}{dgirtfit}(object = dgirtfit, ...)
+\S4method{extract}{dgirtfit}(object, ...)
 
-\S4method{get_posterior_mean}{dgirtfit}(object = dgirtfit,
-  pars = "theta_bar", name = TRUE, ...)
+\S4method{get_posterior_mean}{dgirtfit}(object, pars = "theta_bar",
+  name = TRUE, ...)
 }
 \arguments{
 \item{object}{A \code{dgirtfit}-class object.}

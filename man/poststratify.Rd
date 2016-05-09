@@ -9,43 +9,48 @@
 \usage{
 poststratify(x, prop_name = "proportion", ...)
 
-\S4method{poststratify}{data.frame}(x = data.frame, target_data, strata_names,
-  group_names, prop_name = "proportion", aggregate = FALSE,
-  pars = "theta_bar")
+\S4method{poststratify}{data.frame}(x, target_data, strata_names,
+  aggregated_names, estimate_names, prop_name = "proportion", keep = FALSE)
 
-\S4method{poststratify}{dgirtfit}(x = dgirtfit, target_data, strata_names,
-  prop_name = "proportion", aggregate = FALSE, pars = "theta_bar")
+\S4method{poststratify}{dgirtfit}(x, target_data, strata_names,
+  aggregated_names, estimate_names, prop_name = "proportion", keep = FALSE,
+  pars = "theta_bar")
 }
 \arguments{
-\item{x}{A \code{dgirtfit}-class object.}
+\item{x}{A \code{data.frame}.}
 
-\item{prop_name}{The name of the column in \code{target_data} that gives
+\item{prop_name}{Name of the column in \code{target_data} that gives
 strata proportions.}
 
 \item{...}{Additional arguments to methods.}
 
-\item{target_data}{A table giving the proportions contributed to strata
-populations by modeled groups.}
+\item{target_data}{A table giving the proportions contributed to strata by
+the interaction of \code{strata_names} and \code{aggregated_names}.}
 
-\item{strata_names}{The names of the columns in \code{x} and
-\code{target_data} that define strata.}
+\item{strata_names}{Names of variables whose interaction defines
+population strata.}
 
-\item{group_names}{The names of the columns in \code{x} and
-\code{target_data} for grouping variables.}
+\item{aggregated_names}{Names of variables to be aggregated over in
+poststratification.}
 
-\item{aggregate}{Whether to sum over multiple observations of strata and
-grouping variables.}
+\item{estimate_names}{Names of columns to be poststratified.}
 
-\item{pars}{The names of model parameters of interest. Others will be
-excluded.}
+\item{keep}{Whether to keep the original estimates and return them alongside
+the poststratified estimates.}
+
+\item{pars}{Selected parameter names.}
 }
 \value{
-A table giving poststratified estimates for each stratum.
+A table of poststratified estimates.
 }
 \description{
 \code{poststratify}: reweight and aggregate estimates
 
-\code{poststratify} method for \code{data.frame}s
+Identifiers in the table of estimates to be poststratified should be given as
+\code{strata_names} or \code{aggregated_names}. There will be a row in the
+result for each interaction of the variables in \code{strata_names}
+containing the values of \code{estimate_names} poststratified over the
+variables in \code{aggregated_names}.
 
 \code{poststratify} method for \code{dgirtfit}-class objects
 }

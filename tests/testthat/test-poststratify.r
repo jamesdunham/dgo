@@ -1,24 +1,33 @@
 context("poststratification")
 library(data.table)
 
-test_that("dispatch (probably) works", {
+test_that("dispatch seems to work", {
   data(targets)
-  expect_silent(suppressWarnings(poststratify(toy_dgirtfit,
-                                              target_data = targets,
-                                              pars = 'theta_bar',
-                                              strata_names = c('year', 'state'),
-                                              prop_name = 'proportion',
-                                              aggregate = TRUE)))
-  estimates <- as.data.frame(t(as.data.frame(toy_dgirtfit, par = 'theta_bar'))[, 1])
-  estimates <- expand_rownames(estimates, time_name = "year", geo_name = "state", group_names = "race")
-  expect_silent(suppressWarnings(poststratify(estimates,
-                                              target_data = targets,
-                                              group_names = "race",
-                                              strata_names = c("year", "state"),
-                                              aggregate = TRUE)))
+  setDT(targets)
+  targets <- targets[year %in% 2006:2008,
+                     list("proportion" = sum(proportion)),
+                     by = c("year", "state", "race")]
+  expect_silent(poststratify(toy_dgirtfit,
+                             target_data = targets,
+                             pars = 'theta_bar',
+                             strata_names = c('year', 'state'),
+                             aggregated_names = 'race'))
+
+  estimates <- get_posterior_mean(toy_dgirtfit, par = 'theta_bar')
+  data(targets)
+  setDT(targets)
+  targets <- targets[year %in% 2006:2008,
+                     list("proportion" = sum(proportion)),
+                     by = c("year", "state", "race")]
+  expect_silent(poststratify(estimates,
+                             targets,
+                             strata_names = c("year", "state"),
+                             aggregated_names = "race",
+                             estimate_names = grep('mean', names(estimates),
+                                                   value = TRUE)))
 })
 
-test_that("poststratify works", {
+test_that("poststratify and weighted.mean results are equivalent", {
   data(warpbreaks)
   target_data <- warpbreaks[, c("wool", "tension")]
   target_data <- setDT(target_data)[, .N, by = c('wool', 'tension')]
@@ -27,40 +36,70 @@ test_that("poststratify works", {
   x = setDT(x)[!duplicated(x[, list(wool, tension)])]
 
   tapply_res <- tapply(x$breaks, x$wool, mean)
-  res <- poststratify(x, target_data = target_data, group_names = "tension",
-                      strata_names = "wool", "prop")
+  res <- poststratify(x, target_data = target_data, aggregated_names = "tension",
+                      strata_names = "wool", estimate_names = "breaks",
+                      prop_name = "prop")
   expect_equivalent(res[["breaks"]], as.vector(tapply_res))
 
   target_data$prop[c(1,2,4,5)] <- c(1/3, 0, 1/3, 0)
-  res <- poststratify(x, target_data = target_data, group_names = "tension",
-                      strata_names = "wool", "prop")
+  res <- poststratify(x, target_data = target_data, aggregated_names = "tension",
+                      strata_names = "wool", estimate_names = "breaks",
+                      prop_name = "prop")
   expect_equivalent(weighted.mean(x$breaks[1:3], c(2, 0, 1)), res$breaks[1])
   expect_equivalent(weighted.mean(x$breaks[4:6], c(2, 0, 1)), res$breaks[2])
 })
 
-test_that("poststratify can aggregate over grouping and geograhpic variables", {
-  data(toy_dgirtfit)
-  expect_silent(poststratify(toy_dgirtfit, targets, strata_names = c("state", "year") , aggregate = TRUE))
-  expect_silent(poststratify(toy_dgirtfit,
-                             targets,
-                             strata_names = "state",
-                             aggregate = TRUE))
-  expect_silent(poststratify(toy_dgirtfit, targets, strata_names = "year" , aggregate = TRUE))
-  expect_silent(poststratify(toy_dgirtfit, targets, strata_names = "race" , aggregate = TRUE))
-})
-
 test_that("omitted arguments produce errors", {
+
+  data(targets)
+  setDT(targets)
+  targets <- targets[year %in% 2006:2008,
+                     list("proportion" = sum(proportion)),
+                     by = c("year", "state", "race")]
+  expect_silent(poststratify(toy_dgirtfit,
+                             target_data = targets,
+                             strata_names = c('year', 'state'),
+                             aggregated_names = 'race'))
   
 })
 
-test_that("poststratify works for any estimated parameter", {
-  for (name in names(index_names)) {
-    expect_silent(poststratify(toy_dgirtfit, target_data = targets,
-                               strata_names = c("year", "state"),
-                               pars = name, aggregate = TRUE))
-    samples = as.data.frame(toy_dgirtfit, pars = name)
-    expect_silent(poststratify(samples, target_data = targets,
-                               strata_names = c("year", "state"),
-                               pars = name, aggregate = TRUE))
+test_that("missing variables produce stop", {
+  data(targets)
+  expect_error(poststratify(toy_dgirtfit, target_data = targets,
+                               strata_names = "foo", aggregate = TRUE),
+               "foo .* isn't a name in the table of estimates")
+  expect_error(poststratify(toy_dgirtfit, target_data = targets[, -1],
+                               strata_names = "state", aggregate = TRUE),
+               "state .* isn't a name in target_data")
+})
+
+test_that("poststratify works for gamma, gamma_raw, and theta_bar", {
+  params <- index_names[c("gamma", "gamma_raw", "theta_bar")]
+  data(toy_dgirtfit)
+  data(targets)
+  for (i in seq_along(params)) {
+    i_names <- setdiff(params[[i]], "hier_params")
+    indexes <- sapply(i_names, function(x)
+                      slot(toy_dgirtfit@dgirt_in$control, x))
+    if (length(indexes) > 1L) {
+      for (index in indexes) {
+        data(targets)
+        setDT(targets)
+        targets <- targets[year %in% 2006:2008,
+                           list("proportion" = sum(proportion)),
+                           by = indexes]
+        expect_silent(
+        poststratify(toy_dgirtfit,
+                     target_data = targets,
+                     strata_names = index,
+                     aggregated_names = setdiff(indexes, index),
+                     pars = names(params)[i]))
+      }
+    }
   }
+})
+
+test_that("variables duplicated between strata_ and group_names produce a stop", {
+  # expect_error(poststratify(toy_dgirtfit, target_data = targets,
+  #                              strata_names = "race"))
 })

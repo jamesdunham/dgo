@@ -13,6 +13,11 @@ exportMethods(show)
 exportMethods(summary)
 import(data.table)
 import(rstan)
+import(concatenate)
 import(R6)
 import(methods)
 import(Rcpp)
+importFrom("stats", "as.formula", "formula", "model.frame",
+    "model.matrix", "na.fail", "na.omit", "sd", "setNames",
+    "weighted.mean", "weights")
+importFrom("utils", "type.convert")
