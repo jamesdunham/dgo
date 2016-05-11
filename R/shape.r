@@ -173,6 +173,7 @@ shape <- function(item_data,
   d_in$group_grid <- make_group_grid(item_data, aggregate_data, ctrl)
   d_in$group_grid_t <- make_group_grid_t(d_in$group_grid, ctrl)
   d_in$group_counts <- make_group_counts(item_data, aggregate_data, d_in, ctrl)
+  d_in$gt_items <- unique(d_in$group_counts$item)
   d_in$observed <- which(d_in$group_counts[["n_grp"]] > 0)
   d_in$N_observed <- length(d_in$observed)
 
@@ -185,9 +186,7 @@ shape <- function(item_data,
   d_in$G_hier <- ifelse(!length(modifier_data), nlevels(gl(1L, d_in$G)),
                         max(unlist(length(ctrl@modifier_names)), 1L))
   d_in$T <- length(ctrl@time_filter)
-  d_in$Q <- length(c(intersect(d_in$gt_items, names(item_data)),
-                     intersect(ctrl@aggregate_item_names,
-                               unique(aggregate_data$item))))
+  d_in$Q <- length(d_in$gt_items)
 
   d_in$WT <- array(1, dim = c(d_in$T, d_in$G_hier, d_in$G))
 
@@ -248,7 +247,8 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
 
     # NOTE: We create param by renaming geo_name. Thus the requirement to model
     # geographic predictors.
-    hier_frame[, c("param", ctrl@geo_name) := list(hier_frame[[ctrl@geo_name]], NULL), with = FALSE]
+    hier_frame[, c("param", ctrl@geo_name) := list(hier_frame[[ctrl@geo_name]],
+                                                   NULL), with = FALSE]
     data.table::setkeyv(hier_frame, c("param", ctrl@time_name))
     all(ctrl@time_filter %in% hier_frame$D_year)
 
@@ -262,9 +262,11 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
     param_levels <- c(modeled_param_names, unmodeled_param_levels)
 
     # make a zeroed table for unmodeled parameters by time period
-    unmodeled_frame <- expand.grid(c(list(unmodeled_param_levels, ctrl@time_filter),
-                                          rep(list(0L), length(modifier_names))))
-    unmodeled_frame <- setNames(unmodeled_frame, c("param", ctrl@time_name, modifier_names))
+    unmodeled_frame <- expand.grid(c(list(unmodeled_param_levels,
+                                          ctrl@time_filter), rep(list(0L),
+                                          length(modifier_names))))
+    unmodeled_frame <- setNames(unmodeled_frame, c("param", ctrl@time_name,
+                                                   modifier_names))
     data.table::setDT(unmodeled_frame, key = c("param", ctrl@time_name))
 
     hier_frame <- rbind(hier_frame, unmodeled_frame)
@@ -296,6 +298,8 @@ make_design_matrix <- function(item_data, d_in, ctrl) {
                 d_in$group_grid_t[, c(ctrl@geo_name, ctrl@group_names),
                                   with = FALSE])
   rownames(design_matrix) <- rn
+  colnames(design_matrix) <- sub(paste0("^", ctrl@geo_name), "",
+                                 colnames(design_matrix))
 
   design_matrix <- subset(design_matrix, select = -1)
 

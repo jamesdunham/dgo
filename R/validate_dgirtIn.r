@@ -1,7 +1,11 @@
 # TODO: move to s4 class validation
 
 check_names <- function(d_in) {
-  # assertthat::assert_that(identical(dimnames(d_in$ZZ)[[2]], dimnames(d_in$XX)[[2]]))
+   if (!all.equal(dimnames(d_in$ZZ)[[2]], colnames(d_in$XX)) &&
+       all.equal(dimnames(d_in$ZZ_prior)[[2]], colnames(d_in$XX)))
+     stop("Names in the design matrix and array of hierarchical data are ",
+          "expected to match but don't.")
+
   n_vec_groups <- data.table::copy(d_in$group_counts)
   n_vec_groups[, `:=`(group = do.call(paste, c(.SD, sep = "__"))),
                .SDcols = c(d_in$control@geo_name,
