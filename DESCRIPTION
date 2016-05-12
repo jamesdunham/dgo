@@ -1,30 +1,64 @@
 Package: dgirt
-Title: Group-Level Dynamic IRT and Small Area Estimation
-Version: 0.0.10
-Description: What the package does (one paragraph).
-Authors@R: c(person("James", "Dunham", email = "jdunham@mit.edu", role = c("aut", "cre")),
-  person("Christopher", "Warshaw", email = "cwarshaw@mit.edu", role = c("aut")),
-  person("Devin", "Caughey", email = "dcaughey@mit.edu", role = c("aut")))
+Maintainer: James Dunham <jdunham@mit.edu>
+Version: 0.1.6
+Title: Dynamic Group-Level IRT and Small Area Estimation
+Author: James Dunham, Christopher Warshaw, and Devin Caughey.
+Description: Fit dynamic group-level IRT models from individual or aggregated
+    item response data. This package handles common preprocessing tasks and extends
+    functions for inspecting results, poststratification, and quick iteration over
+    alternative models. Under active development.
 License: GPL-3
+URL: https://github.com/jamesdunham/dgirt
+BugReports: https://github.com/jamesdunham/dgirt/issues
 Depends:
     R (>= 3.2.2),
-    rstan
+    Rcpp (>= 0.11.0),
+    rstan (>= 2.8.1)
 LazyData: true
 Imports:
     assertthat,
-    devtools,
-    dplyr,
-    ggplot2,
-    lazyeval,
-    reshape2,
+    concatenate,
+    data.table,
+    methods,
     R6,
     stringi,
-    survey,
-    tidyr
+    survey
 RoxygenNote: 5.0.1
 Suggests:
     knitr,
-    lintr,
     rmarkdown,
     testthat
-VignetteBuilder: knitr
+LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>=
+    0.11.0), RcppEigen
+RcppModules: stan_fit42016_04_20_mod, stan_fit42015_12_16_mod
+NeedsCompilation: yes
+Collate:
+    'RcppExports.R'
+    'aggregate_item_responses.r'
+    'assertions.r'
+    'class-control.r'
+    'class-dgirtfit.r'
+    'constants.r'
+    'class-dgirtin.r'
+    'data-opinion.r'
+    'data-states.r'
+    'data-targets.r'
+    'require_namespace.r'
+    'shape.r'
+    'data-toy_dgirt_in.r'
+    'dgirt.r'
+    'data-toy_dgirtfit.r'
+    'discretize_item_responses.r'
+    'expand_rownames.r'
+    'methods-control.r'
+    'poststratify.r'
+    'methods-dgirtfit.r'
+    'methods-dgirtin.r'
+    'name_helpers.r'
+    'rake_partial.r'
+    'restrict_input_data.r'
+    'reweight_item_responses.r'
+    'stanmodels.R'
+    'validate_dgirtIn.r'
+    'validate_input_data.r'
+    'zzz.R'

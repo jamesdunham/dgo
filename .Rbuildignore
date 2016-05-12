@@ -1,10 +1,11 @@
 ^.*\.Rproj$
+^.*\.Rdata$
 ^.*\.png$
 ^README.Rmd$
 ^\.DS_Store$
-^\.Rprofile$
-^\.Rproj\.user$
 ^\.travis.yml$
 ^packrat/
-^todo.txt$
+^data-ext/
 ^wercker.yml$
+^setup.r$
+^Makefile$

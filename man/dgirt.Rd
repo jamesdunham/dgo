@@ -2,53 +2,48 @@
 % Please edit documentation in R/dgirt.r
 \name{dgirt}
 \alias{dgirt}
-\title{Estimate dynamic group-level IRT model}
+\title{\code{dgirt}: fit a DGIRT model}
 \usage{
-dgirt(dgirt_data, n_iter = 2000, n_chain = 2, max_save = 2000,
-  n_warm = min(10000, floor(n_iter * 3/4)), n_thin = ceiling((n_iter -
-  n_warm)/(max_save/n_chain)), init_range = 1, seed = 1,
-  save_pars = c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
-  "nu_geo", "nu_geo_prior", "kappa", "sd_item", "sd_theta", "sd_theta_bar",
-  "sd_gamma", "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd", "sd_total",
-  "theta_l2", "var_theta_bar_l2"), parallel = TRUE, method = "rstan",
-  optimize_algorithm = "lbfgs")
+dgirt(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.5,
+  delta_tbar_prior_sd = 0.5, innov_sd_delta_scale = 2.5,
+  innov_sd_theta_scale = 2.5, version = "2016_04_20")
 }
 \arguments{
-\item{dgirt_data}{Data prepared for use with `dgirt` by `wrangle`.}
+\item{shaped_data}{Output from \code{\link{shape}}.}
 
-\item{n_iter}{See \code{iter} in \code{rstan::stan}.}
+\item{...}{Further arguments passed to \code{\link[rstan]{stan}}.}
 
-\item{n_chain}{See \code{chains} in \code{rstan::stan}.}
+\item{separate_t}{Whether smoothing of estimates over time should be
+disabled. Default \code{FALSE}.}
 
-\item{max_save}{Maximum iterations to save; only used in the default value of n_thin.}
+\item{delta_tbar_prior_mean}{Prior mean for \code{delta_tbar}, the normal
+weight on \code{theta_bar} in the previous period.  Default \code{0.5}.}
 
-\item{n_warm}{See \code{warmup} in \code{rstan::stan}.}
+\item{delta_tbar_prior_sd}{Prior standard deviation for \code{delta_bar}.
+Default \code{0.5}.}
 
-\item{n_thin}{See \code{thin} in \code{rstan::stan}.}
+\item{innov_sd_delta_scale}{Prior scale for \code{sd_innov_delta}, the Cauchy
+innovation standard deviation of \code{nu_geo} and \code{delta_gamma}.
+Default \code{2.5}.}
 
-\item{init_range}{See \code{init} in \code{rstan::stan}.}
+\item{innov_sd_theta_scale}{Prior scale for \code{sd_innov_theta}, the Cauchy
+innovation standard deviation of \code{gamma}, \code{xi}, and if
+\code{constant_item} is \code{FALSE} the item difficulty \code{diff}. Default
+\code{2.5}.}
 
-\item{seed}{See \code{seed} in \code{rstan::stan}.}
-
-\item{save_pars}{See \code{pars} in \code{rstan::rstan_options}}
-
-\item{parallel}{See \code{rstan::rstan_options(auto_write = parallel)}.}
-
-\item{method}{By default, `rstan::stan` estimates the model using MCMC
-sampling. Alternatively, `cmdstan optimize` or `cmdstan variational`
-can be used if CmdStan is available. Note that these methods
-are faster than MCMC sampling but return only point estimates.
-See \url{http://mc-stan.org/interfaces/cmdstan.html} for CmdStan
-installation instructions.}
-
-\item{optimize_algorithm}{The optimization algorithm for CmdStan to use if
-`method` is `"optimize"`, one of `"bfgs"`, `"lbfgs"` (the default),
-and `"newton"`. See CmdStan documentation for details.}
+\item{version}{The version of the DGIRT model to use.}
 }
 \value{
-An object of S4 class `stanfit` as returned by `rstan::stan`.
+A \code{\link{dgirtfit-class}} object that extends
+\code{\link[rstan]{stanfit-class}}.
 }
 \description{
-Estimate dynamic group-level IRT model
+\code{dgirt} makes a call to \code{\link[rstan]{stan}} with the Stan code and
+data for a DGIRT model. By default the call overrides the
+\code{\link[rstan]{stan}} defaults for \code{pars} to specify typical DGIRT
+parameters of interest and sets \code{iter_r} to \code{1L}.
+}
+\seealso{
+\code{\link{dgirtfit-class}} \code{\link{shape}}
 }
 
