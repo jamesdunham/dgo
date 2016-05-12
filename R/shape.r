@@ -167,17 +167,16 @@ shape <- function(item_data,
 
   # aggregate individual item response data to group level #
   weight(item_data, target_data, ctrl)
-  item_data <- dichotomize(item_data, ctrl)
-  d_in$gt_items <- attr(item_data, "gt_names")
+  dichotomize(item_data, ctrl)
 
   d_in$group_grid <- make_group_grid(item_data, aggregate_data, ctrl)
   d_in$group_grid_t <- make_group_grid_t(d_in$group_grid, ctrl)
-  d_in$group_counts <- make_group_counts(item_data, aggregate_data, d_in, ctrl)
+  d_in$group_counts <- make_group_counts(item_data, aggregate_data, ctrl)
   d_in$gt_items <- unique(d_in$group_counts$item)
-  d_in$observed <- which(d_in$group_counts[["n_grp"]] > 0)
-  d_in$N_observed <- length(d_in$observed)
 
   # make objects used by dgirt.stan #
+  d_in$observed <- which(d_in$group_counts[["n_grp"]] > 0)
+  d_in$N_observed <- length(d_in$observed)
   d_in$n_vec <- setNames(d_in$group_counts$n_grp, d_in$group_counts$name)
   d_in$s_vec <- setNames(d_in$group_counts$s_grp, d_in$group_counts$name)
 

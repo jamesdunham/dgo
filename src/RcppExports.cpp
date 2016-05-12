@@ -6,14 +6,14 @@
 
 using namespace Rcpp;
 
-// is_greater
-DataFrame is_greater(NumericVector response);
-RcppExport SEXP dgirt_is_greater(SEXP responseSEXP) {
+// dichotomize_cpp
+DataFrame dichotomize_cpp(NumericVector response);
+RcppExport SEXP dgirt_dichotomize_cpp(SEXP responseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< NumericVector >::type response(responseSEXP);
-    __result = Rcpp::wrap(is_greater(response));
+    __result = Rcpp::wrap(dichotomize_cpp(response));
     return __result;
 END_RCPP
 }

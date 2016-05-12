@@ -4,7 +4,7 @@ using namespace Rcpp;
 
 //' @export
 // [[Rcpp::export()]]
-DataFrame is_greater (NumericVector response) {
+DataFrame dichotomize_cpp (NumericVector response) {
 
   NumericVector rlevels = sort_unique(response);
 
@@ -47,5 +47,5 @@ DataFrame is_greater (NumericVector response) {
 
   res.attr("names") = col_names;
 
-  return(res);
+  return(wrap(res));
 }
