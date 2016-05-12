@@ -7,14 +7,14 @@
 using namespace Rcpp;
 
 // is_greater
-Rcpp::IntegerVector is_greater(Rcpp::NumericVector response, int level);
-RcppExport SEXP dgirt_is_greater(SEXP responseSEXP, SEXP levelSEXP) {
+DataFrame is_greater(NumericVector response, IntegerVector levels);
+RcppExport SEXP dgirt_is_greater(SEXP responseSEXP, SEXP levelsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type response(responseSEXP);
-    Rcpp::traits::input_parameter< int >::type level(levelSEXP);
-    __result = Rcpp::wrap(is_greater(response, level));
+    Rcpp::traits::input_parameter< NumericVector >::type response(responseSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type levels(levelsSEXP);
+    __result = Rcpp::wrap(is_greater(response, levels));
     return __result;
 END_RCPP
 }

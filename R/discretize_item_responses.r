@@ -1,5 +1,5 @@
-discretize <- function(item_data, ctrl) {
-  # Discretize item response variables
+dichotomize <- function(item_data, ctrl) {
+  # Dichotomize item response variables
   #
   # For item response variables with K ordered levels, make K - 1 indicators for
   # whether a response is ranked higher than k.
@@ -37,9 +37,8 @@ create_gt_variables <- function(item_data, ctrl) {
     }
 
     print_varinfo(item_data, i, i_levels, gt_levels, widths)
-    gt_cols <- lapply(gt_levels, function(gt) {
-      is_greater(values, gt)
-    })
+    gt_cols <- is_greater(values, gt_levels)
+
     assertthat::assert_that(not_empty(gt_cols))
     setNames(gt_cols, paste(i, gt_levels, sep = "_gt"))
   })
@@ -61,7 +60,8 @@ print_varinfo_rule <- function(widths) {
 print_varinfo <- function(item_data, i, i_levels, gt_levels, widths) {
   item_name = ifelse(nchar(i) > 30,paste0(stringi::stri_sub(i, 1, 26), '...'), i)
   responses = format(sum(!is.na(item_data[[i]])), big.mark = ",")
-  values <- c("item" = item_name, "class" = class(item_data[[i]]), "levels" = length(i_levels), responses = responses)
+  values <- c("item" = item_name, "class" = class(item_data[[i]]),
+              "levels" = length(i_levels), responses = responses)
   pad_side <- c("right", rep("left", length(values) - 1))
   assertthat::assert_that(identical(length(widths), length(values)))
   message(concat_varinfo(widths, values, pad_side))

@@ -167,7 +167,7 @@ shape <- function(item_data,
 
   # aggregate individual item response data to group level #
   weight(item_data, target_data, ctrl)
-  item_data <- discretize(item_data, ctrl)
+  item_data <- dichotomize(item_data, ctrl)
   d_in$gt_items <- attr(item_data, "gt_names")
 
   d_in$group_grid <- make_group_grid(item_data, aggregate_data, ctrl)
