@@ -2,7 +2,7 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #' @export
-is_greater <- function(response, levels) {
-    .Call('dgirt_is_greater', PACKAGE = 'dgirt', response, levels)
+is_greater <- function(response) {
+    .Call('dgirt_is_greater', PACKAGE = 'dgirt', response)
 }
 
