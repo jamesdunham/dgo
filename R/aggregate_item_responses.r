@@ -24,7 +24,7 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   # Because of how DGIRT Stan code iterates over the data, the result must be
   # ordered by time, item, and then group. The order of the grouping variables
   # doesn't matter so long as it's consistent between here and MMM.
-  gt_names <- grep("_gt\\d$", names(item_data), value = TRUE)
+  gt_names <- attr(item_data, "gt_items")
   item_data[, c("n_responses") := list(rowSums(!is.na(.SD))),
             .SDcols = gt_names]
   item_data[, c("def") := lapply(.SD, calc_design_effects),

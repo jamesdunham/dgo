@@ -166,8 +166,10 @@ shape <- function(item_data,
   d_in$geo_observed <- get_observed(item_data, aggregate_data, ctrl@geo_name)
 
   # aggregate individual item response data to group level #
-  weight(item_data, target_data, ctrl)
-  dichotomize(item_data, ctrl)
+  item_data <- weight(item_data, target_data, ctrl)
+  # this assignment should be redundant, but without it some variables created
+  # in dichotomize() weren't appearing in item_data 
+  item_data <- dichotomize(item_data, ctrl)
 
   d_in$group_grid <- make_group_grid(item_data, aggregate_data, ctrl)
   d_in$group_grid_t <- make_group_grid_t(d_in$group_grid, ctrl)

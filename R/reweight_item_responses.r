@@ -5,7 +5,7 @@ weight <- function(item_data, target_data, control) {
   # population targets, or if there's missingness in the stratifying variables.
 
   if (!length(target_data)) {
-    return(NULL)
+    return(item_data)
   }
 
   target_data <- data.table::setDT(data.table::copy(target_data))

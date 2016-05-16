@@ -1,0 +1,31 @@
+# wrangle signature:
+# function (data = list(level1, level2 = NULL, targets = NULL,
+#     aggregates = NULL), vars = list(items, groups, time_id, geo_id,
+#     survey_id, survey_weight, target_groups = NULL, target_proportion = NULL,
+#     level2_modifiers = NULL, level2_period1_modifiers = NULL),
+#     filters = list(periods = NULL, geo_ids = NULL, min_surveys = 1L,
+#         min_periods = 1L), params = list(separate_periods = FALSE,
+#         constant_item = TRUE, delta_tbar_prior_mean = 0.5, delta_tbar_prior_sd = 0.5,
+#         innov_sd_delta_scale = 2.5, innov_sd_theta_scale = 2.5))
+wrangle2shape <- function(data, vars, filters, params) {
+  shape(item_data = data$level1,
+        target_data = data$targets,
+        modifier_data = data$level2,
+        aggregate_data = data$aggregates,
+        item_names = vars$items,
+        aggregate_item_names = unique(as.character(data$aggregates$item)),
+        group_names = vars$groups,
+        time_name = vars$time_id,
+        geo_name = vars$geo_id,
+        weight_name = vars$survey_weight,
+        survey_name = vars$survey_id,
+        modifier_names = vars$level2_modifiers,
+        strata_names = vars$target_groups,
+        target_proportion_name = vars$target_proportion,
+        t1_modifier_names = vars$level2_period1_modifiers,
+        time_filter = filters$periods,
+        geo_filter = filters$geo_ids,
+        min_t_filter = filters$min_periods,
+        min_survey_filter = filters$min_surveys,
+        constant_item = params$constant_item)
+}
