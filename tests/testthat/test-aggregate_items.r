@@ -1,22 +1,9 @@
-make_group_grid <- function(item_data, aggregate_data, ctrl) {
-  # Make a table giving combinations of the grouping variables
-  group_grid <- expand.grid(c(
-    setNames(list(ctrl@time_filter), ctrl@time_name),
-    lapply(rbind(item_data[, c(ctrl@geo_name, ctrl@group_names), with = FALSE],
-                 aggregate_data[, c(ctrl@group_names, ctrl@geo_name), with =
-                                FALSE]),
-           function(x) sort(unique(x)))), stringsAsFactors = FALSE)
-  data.table::setDT(group_grid, key = c(ctrl@group_names, ctrl@time_name, ctrl@geo_name))
-  invisible(group_grid)
-}
-
-make_group_grid_t <- function(group_grid, ctrl) {
-  # Make a table giving combinations of grouping variables, excluding time
-  group_grid_t <- data.table::copy(group_grid)[, ctrl@time_name := NULL, with = FALSE]
-  group_grid_t <- group_grid_t[!duplicated(group_grid_t)]
-  data.table::setkeyv(group_grid_t, c(ctrl@group_names, ctrl@geo_name))
-  group_grid_t
-}
+data(opinion)
+item_data <- opinion
+ctrl <- dgirt:::init_control(opinion, item_names = "Q_cces2006_abortion",
+                  time_name = "year", geo_name = "state", group_names = "race",
+                  time_filter = 2006:2008, geo_filter = c("MA", "NY"),
+                  survey_name = "source", weight_name = "weight")
 
 make_group_counts <- function(item_data, aggregate_data, ctrl) {
   # Make a table giving success and trial counts by group and item.
@@ -107,8 +94,4 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
 
   setkeyv(counts, c(ctrl@time_name, "item", ctrl@group_names, ctrl@geo_name))
   counts
-}
-
-count_items <- function(x, n_responses, def) {
-  ceiling(sum(as.integer(!is.na(x)) / n_responses / def, na.rm = TRUE))
 }
