@@ -20,11 +20,12 @@ restrict_items <- function(item_data, ctrl) {
   iter <- 1L
   while (!identical(initial_dim, final_dim)) {
     message("Applying restrictions, pass ", iter, "...")
-    if (identical(iter, 1L)) item_data <-
-      drop_rows_missing_covariates(item_data, ctrl)
+    if (iter == 1L) { 
+      item_data <- drop_rows_missing_covariates(item_data, ctrl)
+      item_data <- keep_t(item_data, ctrl)
+      item_data <- keep_geo(item_data, ctrl)
+    }
     initial_dim <- dim(item_data)
-    item_data <- keep_t(item_data, ctrl)
-    item_data <- keep_geo(item_data, ctrl)
     drop_responseless_items(item_data, ctrl)
     drop_items_rare_in_time(item_data, ctrl)
     drop_items_rare_in_polls(item_data, ctrl)
