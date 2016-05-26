@@ -55,7 +55,7 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   # include unobserved cells
   all_groups = expand.grid(c(setNames(list(ctrl@geo_filter), ctrl@geo_name),
                              setNames(list(ctrl@time_filter), ctrl@time_name),
-                             "item" = list(gt_names),
+                             "item" = list(c(gt_names, ctrl@aggregate_item_names)),
                              lapply(item_data[, ctrl@group_names, with = FALSE],
                                     function(x) sort(unique(x)))),
                            stringsAsFactors = FALSE)
