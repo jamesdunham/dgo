@@ -220,11 +220,11 @@ drop_itemless_respondents <- function(item_data, ctrl) {
   item_names <- intersect(ctrl@item_names, names(item_data))
   if (!length(item_names)) stop("no items remaining")
   if (!nrow(item_data)) stop("no rows remaining")
-  item_data[, c("n_responses") := list(rowSums(!is.na(.SD)) == 0L),
+  item_data[, c("no_responses") := list(rowSums(!is.na(.SD)) == 0L),
             .SDcols = item_names]
-  n_itemless <- sum(item_data[["n_responses"]])
+  n_itemless <- sum(item_data[["no_responses"]])
   if (n_itemless > 0) {
-    item_data <- item_data[!get("n_responses")]
+    item_data <- item_data[!get("no_responses")]
     message(sprintf(ngettext(n_itemless,
           "\tDropped %i row for lacking item responses",
           "\tDropped %i rows for lacking item responses"),
