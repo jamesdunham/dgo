@@ -2,22 +2,7 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #' @export
-agg_items <- function(x, row_n, wt) {
-    .Call('dgirt_agg_items', PACKAGE = 'dgirt', x, row_n, wt)
-}
-
-#' @export
-count_items_cpp <- function(x, row_n, wt) {
-    .Call('dgirt_count_items_cpp', PACKAGE = 'dgirt', x, row_n, wt)
-}
-
-#' @export
 dichotomize_cpp <- function(response) {
     .Call('dgirt_dichotomize_cpp', PACKAGE = 'dgirt', response)
-}
-
-#' @export
-weighted_mean <- function(x, wt) {
-    .Call('dgirt_weighted_mean', PACKAGE = 'dgirt', x, wt)
 }
 
