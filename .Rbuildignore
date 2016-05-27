@@ -9,3 +9,4 @@
 ^wercker.yml$
 ^setup.r$
 ^Makefile$
+^.*tar.gz$
