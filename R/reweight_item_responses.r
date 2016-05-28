@@ -23,8 +23,10 @@ weight <- function(item_data, target_data, control) {
   target_design <- survey::svydesign(ids = ~1, data = target_data,
     weights = formula(paste0("~", control@target_proportion_name)))
 
-  item_data[, c("preweight") := rake_weight(item_data, formulas = weight_formulas,
-                                            target_design = target_design)]
+  item_data[, c("preweight") := rake_weight(item_data,
+                                            formulas = weight_formulas,
+                                            target_design = target_design,
+                                            control = control)]
 
   item_data[, c("preweight_new") := list(get("preweight") /
                                          mean(get("preweight"), na.rm = TRUE)),
