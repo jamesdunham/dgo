@@ -3,10 +3,9 @@ check_targets <- function(target_data, ctrl) {
     is_name <- valid_names(target_data, ctrl, 1L)
     are_names <- valid_names(target_data, ctrl)
     is_name(c("time_name", "geo_name", "target_proportion_name"))
-    are_names(c("strata_names", "group_names"))
-    has_type(c("time_name", "geo_name",
-               "target_proportion_name", "strata_names",
-               "group_names"), target_data, ctrl)
+    are_names("strata_names")
+    has_type(c("time_name", "geo_name", "target_proportion_name",
+               "strata_names"), target_data, ctrl)
     check_time(target_data, ctrl@time_name) 
   }
 }
