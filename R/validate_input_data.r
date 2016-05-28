@@ -39,7 +39,13 @@ check_modifiers <- function(modifier_data, ctrl) {
     is_name <- valid_names(modifier_data, ctrl, 1L)
     are_names <- valid_names(modifier_data, ctrl)
     is_name(c("time_name", "geo_name"))
-    are_names(c("modifier_names", "t1_modifier_names"))
+    if (length(ctrl@modifier_names))
+      are_names("modifier_names")
+    if (length(ctrl@t1_modifier_names))
+      are_names("t1_modifier_names")
+    else if (!length(ctrl@modifier_names) && !length(ctrl@t1_modifier_names))
+      stop("Either \"modifier_names\" or \"t1_modifier_names\" is required ",
+           "when using modifier data")
     has_type(c("time_name", "geo_name", "modifier_names", "t1_modifier_names"),
              modifier_data, ctrl)
     sapply(unique(c(ctrl@modifier_names, ctrl@t1_modifier_names,

@@ -76,24 +76,20 @@ restrict_modifier <- function(item_data, modifier_data, ctrl) {
     }
 
     modifier_data <- modifier_data[modifier_data[[ctrl@geo_name]] %chin%
-                                   item_data[[ctrl@geo_name]]]
+                                   ctrl@geo_filter]
     if (!nrow(modifier_data))
-      stop("no rows in modifier data remaining after subsetting to local ",
-           "geographic areas in item data")
+      stop("no rows in modifier data remaining after applying geo_filter")
 
     modifier_data <- modifier_data[modifier_data[[ctrl@time_name]] %in%
-                                   item_data[[ctrl@time_name]]]
+                                   ctrl@time_filter]
     if (!nrow(modifier_data))
-      stop("no rows in modifier data remaining after subsetting to time ",
-           "periods in item data")
+      stop("no rows in modifier data remaining after applying time_filter")
 
     n <- nrow(unique(modifier_data[, c(ctrl@geo_name, ctrl@time_name),
                      with = FALSE]))
     if (!identical(nrow(modifier_data), n))
       stop("time and geo identifiers don't uniquely identify modifier data ",
            "observations")
-   
-    message("\nRestricted modifier data to time and geo observed in item data.")
 
     if (isTRUE(ctrl@standardize)) {
       std_vars <- unique(c(ctrl@modifier_names, ctrl@t1_modifier_names))
