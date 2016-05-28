@@ -207,8 +207,8 @@ drop_responseless_items <- function(item_data, ctrl) {
   if (length(responseless_items)) {
     item_data[, c(responseless_items) := NULL]
     message(sprintf(ngettext(length(responseless_items),
-          "\tDropped %i item for lack of responses",
-          "\tDropped %i items for lack of responses"),
+          "\tDropped %i item for lacking respondents",
+          "\tDropped %i items for lacking respondents"),
         length(responseless_items)))
     if (!length(intersect(ctrl@item_names, names(item_data))))
       stop("no items remaining after dropping items without responses")
