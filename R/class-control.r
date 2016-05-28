@@ -10,7 +10,7 @@ setClass("Control",
                       modifier_names = "character",
                       prop_name = "character",
                       standardize = "logical",
-                      strata_names = "character",
+                      strata_names = "ANY",
                       survey_name = "character",
                       target_group_names = "character",
                       target_proportion_name = "character",
@@ -48,6 +48,14 @@ setClass("Control",
            else if (!length(object@min_t_filter) == 1L &&
                     object@min_t_filter > 0L)
              "\"min_t_filter\" should be a positive integer"
+           else if (length(object@strata_names) &&
+                    !is.character(object@strata_names) &&
+                    !is.list(object@strata_names))
+             "\"strata_names\" should give variable names in a character vector or list of vectors"
+           else if (length(object@strata_names) &&
+                    is.list(object@strata_names) &&
+                    !is.character(unlist(object@strata_names, recursive = TRUE)))
+             "\"strata_names\" should give variable names in a character vector or list of vectors"
            else 
              TRUE
          })
