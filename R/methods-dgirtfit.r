@@ -104,12 +104,24 @@ setMethod("poststratify", c("data.frame"),
 #' @param pars Selected parameter names.
 #' @export
 #' @rdname poststratify 
+#' @examples
+#' 
+#' data(toy_dgirtfit)
+#'
+#' # the stratifying variables should uniquely identify proportions in the
+#' # target data; to achieve this, sum over the other variables
+#' targets <- aggregate(proportion ~ state + year + race, targets, sum)
+#'
+#' # the dgirtfit method of poststratify takes a dgirtfit object, the target
+#' # data, the names of variables that define population strata, and the  names
+#' # of variables to be aggregated over
+#' post <- poststratify(toy_dgirtfit, targets, c("state", "year"), "race")
 #' @export
 setMethod("poststratify", c("dgirtfit"),
-  function(x, target_data, strata_names, aggregated_names, estimate_names,
+  function(x, target_data, strata_names, aggregated_names,
            prop_name = "proportion", keep = FALSE, pars = "theta_bar") {
     ctrl <- x@dgirt_in$control
-    estimates <- t(as.data.frame(x, par = pars))
+    estimates <- as.data.frame(t(as.data.frame(x, par = pars)))
     estimates <- expand_rownames(estimates, geo_name = ctrl@geo_name,
                                  group_names = ctrl@group_names,
                                  time_name = ctrl@time_name)

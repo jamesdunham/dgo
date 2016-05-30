@@ -1,6 +1,6 @@
 Package: dgirt
 Maintainer: James Dunham <james@jamesdunham.io>
-Version: 0.1.8
+Version: 0.1.9
 Title: Dynamic Group-Level IRT and Small Area Estimation
 Author: James Dunham, Christopher Warshaw, and Devin Caughey.
 Description: Fit dynamic group-level IRT models from individual or aggregated
