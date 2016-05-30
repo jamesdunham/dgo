@@ -13,7 +13,7 @@ poststratify(x, prop_name = "proportion", ...)
   aggregated_names, estimate_names, prop_name = "proportion", keep = FALSE)
 
 \S4method{poststratify}{dgirtfit}(x, target_data, strata_names,
-  aggregated_names, estimate_names, prop_name = "proportion", keep = FALSE,
+  aggregated_names, prop_name = "proportion", keep = FALSE,
   pars = "theta_bar")
 }
 \arguments{
@@ -53,5 +53,18 @@ containing the values of \code{estimate_names} poststratified over the
 variables in \code{aggregated_names}.
 
 \code{poststratify} method for \code{dgirtfit}-class objects
+}
+\examples{
+
+data(toy_dgirtfit)
+
+# the stratifying variables should uniquely identify proportions in the
+# target data; to achieve this, sum over the other variables
+targets <- aggregate(proportion ~ state + year + race, targets, sum)
+
+# the dgirtfit method of poststratify takes a dgirtfit object, the target
+# data, the names of variables that define population strata, and the  names
+# of variables to be aggregated over
+post <- poststratify(toy_dgirtfit, targets, c("state", "year"), "race")
 }
 
