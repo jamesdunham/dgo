@@ -65,27 +65,35 @@ suppressMessages({
 
   context("required arguments for modifier_data")
 
-  test_that("(t1_)modifier_names are required", {
-    expect_error(shape(opinion,
-                       modifier_data = states,
-                       t1_modifier_names = "prop_evangelicals",
-                       item_names = "Q_cces2006_abortion",
-                       time_name = "year",
-                       geo_name = "state",
-                       group_names = "female",
-                       survey_name = "source",
-                       weight_name = "weight"),
-                 "\"modifier_names\" is required when using \"modifier_data\"")
-    expect_error(shape(opinion,
-                       modifier_data = states,
-                       modifier_names = "prop_evangelicals",
-                       item_names = "Q_cces2006_abortion",
-                       time_name = "year",
-                       geo_name = "state",
-                       group_names = "female",
-                       survey_name = "source",
-                       weight_name = "weight"),
-                 "\"t1_modifier_names\" is required when using \"modifier_data\"")
+  test_that("either modifier_names or t1_modifier_names is required", {
+    expect_silent(suppressMessages(shape(opinion,
+                        modifier_data = states,
+                        t1_modifier_names = "prop_evangelicals",
+                        item_names = "Q_cces2006_abortion",
+                        time_name = "year",
+                        geo_name = "state",
+                        group_names = "female",
+                        survey_name = "source",
+                        weight_name = "weight")))
+    expect_silent(suppressMessages(shape(opinion,
+                        modifier_data = states,
+                        modifier_names = "prop_evangelicals",
+                        item_names = "Q_cces2006_abortion",
+                        time_name = "year",
+                        geo_name = "state",
+                        group_names = "female",
+                        survey_name = "source",
+                        weight_name = "weight")))
+    expect_error(suppressMessages(shape(opinion,
+                        modifier_data = states,
+                        item_names = "Q_cces2006_abortion",
+                        time_name = "year",
+                        geo_name = "state",
+                        group_names = "female",
+                        survey_name = "source",
+                        weight_name = "weight")),
+                 "Either \"modifier_names\" or \"t1_modifier_names\" is required ",
+                 "when using modifier data")
   })
 
   context("required arguments for target_data")

@@ -6,32 +6,6 @@
 
 using namespace Rcpp;
 
-// agg_items
-DataFrame agg_items(DataFrame x, NumericVector row_n, NumericVector wt);
-RcppExport SEXP dgirt_agg_items(SEXP xSEXP, SEXP row_nSEXP, SEXP wtSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< DataFrame >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type row_n(row_nSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type wt(wtSEXP);
-    __result = Rcpp::wrap(agg_items(x, row_n, wt));
-    return __result;
-END_RCPP
-}
-// count_items_cpp
-List count_items_cpp(NumericVector x, NumericVector row_n, NumericVector wt);
-RcppExport SEXP dgirt_count_items_cpp(SEXP xSEXP, SEXP row_nSEXP, SEXP wtSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type row_n(row_nSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type wt(wtSEXP);
-    __result = Rcpp::wrap(count_items_cpp(x, row_n, wt));
-    return __result;
-END_RCPP
-}
 // dichotomize_cpp
 DataFrame dichotomize_cpp(NumericVector response);
 RcppExport SEXP dgirt_dichotomize_cpp(SEXP responseSEXP) {
@@ -40,18 +14,6 @@ BEGIN_RCPP
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< NumericVector >::type response(responseSEXP);
     __result = Rcpp::wrap(dichotomize_cpp(response));
-    return __result;
-END_RCPP
-}
-// weighted_mean
-double weighted_mean(NumericVector x, NumericVector wt);
-RcppExport SEXP dgirt_weighted_mean(SEXP xSEXP, SEXP wtSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type wt(wtSEXP);
-    __result = Rcpp::wrap(weighted_mean(x, wt));
     return __result;
 END_RCPP
 }

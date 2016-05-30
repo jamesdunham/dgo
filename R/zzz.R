@@ -1,11 +1,4 @@
 .onLoad <- function(libname, pkgname) {
-  if (!substr(as.character(sys.call(1L))[1], 1, 8) == "devtools") {
-    Rcpp::loadRcppModules()
-  }
-}
-
-if (substr(as.character(sys.call(1L))[1], 1, 8) == "devtools") {
-  .onAttach <- function(libname, pkgname) {
-    Rcpp::loadModule("stan_fit42016_04_20_mod", TRUE)
-  }
+  modules <- paste0("stan_fit4", names(stanmodels), "_mod")
+  for (m in modules) loadModule(m, what = TRUE)
 }

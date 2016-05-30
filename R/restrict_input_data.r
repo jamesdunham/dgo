@@ -76,24 +76,20 @@ restrict_modifier <- function(item_data, modifier_data, ctrl) {
     }
 
     modifier_data <- modifier_data[modifier_data[[ctrl@geo_name]] %chin%
-                                   item_data[[ctrl@geo_name]]]
+                                   ctrl@geo_filter]
     if (!nrow(modifier_data))
-      stop("no rows in modifier data remaining after subsetting to local ",
-           "geographic areas in item data")
+      stop("no rows in modifier data remaining after applying geo_filter")
 
     modifier_data <- modifier_data[modifier_data[[ctrl@time_name]] %in%
-                                   item_data[[ctrl@time_name]]]
+                                   ctrl@time_filter]
     if (!nrow(modifier_data))
-      stop("no rows in modifier data remaining after subsetting to time ",
-           "periods in item data")
+      stop("no rows in modifier data remaining after applying time_filter")
 
     n <- nrow(unique(modifier_data[, c(ctrl@geo_name, ctrl@time_name),
                      with = FALSE]))
     if (!identical(nrow(modifier_data), n))
       stop("time and geo identifiers don't uniquely identify modifier data ",
            "observations")
-   
-    message("\nRestricted modifier data to time and geo observed in item data.")
 
     if (isTRUE(ctrl@standardize)) {
       std_vars <- unique(c(ctrl@modifier_names, ctrl@t1_modifier_names))
@@ -207,8 +203,8 @@ drop_responseless_items <- function(item_data, ctrl) {
   if (length(responseless_items)) {
     item_data[, c(responseless_items) := NULL]
     message(sprintf(ngettext(length(responseless_items),
-          "\tDropped %i item for lack of responses",
-          "\tDropped %i items for lack of responses"),
+          "\tDropped %i item for lacking respondents",
+          "\tDropped %i items for lacking respondents"),
         length(responseless_items)))
     if (!length(intersect(ctrl@item_names, names(item_data))))
       stop("no items remaining after dropping items without responses")
@@ -220,11 +216,11 @@ drop_itemless_respondents <- function(item_data, ctrl) {
   item_names <- intersect(ctrl@item_names, names(item_data))
   if (!length(item_names)) stop("no items remaining")
   if (!nrow(item_data)) stop("no rows remaining")
-  item_data[, c("n_responses") := list(rowSums(!is.na(.SD)) == 0L),
+  item_data[, c("no_responses") := list(rowSums(!is.na(.SD)) == 0L),
             .SDcols = item_names]
-  n_itemless <- sum(item_data[["n_responses"]])
+  n_itemless <- sum(item_data[["no_responses"]])
   if (n_itemless > 0) {
-    item_data <- item_data[!get("n_responses")]
+    item_data <- item_data[!get("no_responses")]
     message(sprintf(ngettext(n_itemless,
           "\tDropped %i row for lacking item responses",
           "\tDropped %i rows for lacking item responses"),

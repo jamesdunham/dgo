@@ -73,9 +73,38 @@ suppressMessages({
                  "should be integer or numeric")
   })
 
-  test_that('elements in ZZ corresponding to the grouping variable are zeroed', {
-    expect_identical(d_mod$ZZ[, length(hier_names), 1L],
-                     setNames(rep(0, 3), unique(states$year)))
+  test_that('ZZ is zeroed appropriately when only t1_modifier_names is given', {
+
+    d_t1_only <- shape(item_data = dgirt::opinion,
+                       item_names = "Q_cces2006_abortion",
+                       time_name = "year",
+                       geo_name = "state",
+                       group_names = "female",
+                       survey_name = "source",
+                       weight_name = "weight",
+                       modifier_data = dgirt::states,
+                       t1_modifier_names = "prop_evangelicals")
+    expect_true(all(d_t1_only$ZZ == 0))
+    expect_identical(hier_names, d_t1_only$hier_names)
+    expect_identical(hier_names, dimnames(d_t1_only$ZZ)[[2]])
+    expect_identical(dimnames(d_t1_only$ZZ)[[3]], "")
+  })
+
+  test_that('ZZ_prior is zeroed appropriately when only modifier_names is given', {
+
+    d_tprime_only <- shape(item_data = dgirt::opinion,
+                       item_names = "Q_cces2006_abortion",
+                       time_name = "year",
+                       geo_name = "state",
+                       group_names = "female",
+                       survey_name = "source",
+                       weight_name = "weight",
+                       modifier_data = dgirt::states,
+                       modifier_names = "prop_evangelicals")
+    expect_true(all(d_tprime_only$ZZ_prior == 0))
+    expect_identical(hier_names, d_tprime_only$hier_names)
+    expect_identical(hier_names, dimnames(d_tprime_only$ZZ_prior)[[2]])
+    expect_identical(dimnames(d_tprime_only$ZZ_prior)[[3]], "")
   })
 
 })

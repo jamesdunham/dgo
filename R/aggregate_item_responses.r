@@ -32,7 +32,7 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
             by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
 
   # get design-effect-adjusted nonmissing response counts by group and item
-  item_n <- item_data[, lapply(.SD, count_items_cpp, get("n_responses"), get("def")),
+  item_n <- item_data[, lapply(.SD, count_items, get("n_responses"), get("def")),
                       .SDcols = c(gt_names),
                       by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
   # append _n_grp to the response count columns
@@ -44,7 +44,7 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
 
   # get mean ystar
   item_data[, c("adj_weight") := get(ctrl@weight_name) / get("n_responses")]
-  item_means <- item_data[, lapply(.SD, function(x) weighted_mean(x, .SD$adj_weight)),
+  item_means <- item_data[, lapply(.SD, function(x) weighted.mean(x, .SD$adj_weight, na.rm = TRUE)),
                           .SDcols = c(gt_names, "adj_weight"),
                           by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
   # append _mean to the mean response columns 
