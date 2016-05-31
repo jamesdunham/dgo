@@ -2,13 +2,14 @@
 #'
 #' Move rownames that describe parameters (e.g. xi[2009]) to columns.
 #'
-#' Tables of \code{\link{dgirtfit}}-class \code{\link{dgirt}} output  will often
-#' have descriptive rownames of the format \code{param[group1__groupK,t]} for
+#' It should rarely be necessary to call \code{expand_rownames} directly.
+#' Tables of \code{\link{dgirtfit}}-class \code{\link{dgirt}} output may have
+#' descriptive rownames of the format \code{param[group1__groupK,t]} for
 #' parameters indexed by group and time period, or \code{param[t]} for
-#' parameters indexed by time period.  \code{expand_rownames} is a convenience
-#' function for moving this information to columns in those tables whose names
-#' are given by the \code{col_names} argument. The rownames in their original
-#' format will appear in the column \code{rn}.
+#' parameters indexed by time period. \code{expand_rownames} moves this
+#' information to columns tables whose names are given by the \code{col_names}
+#' argument. The rownames in their original format will appear in the column
+#' \code{rn}. 
 #'
 #' @param x A table with rownames in the format \code{param[group1__groupK,t]}
 #' or \code{param[t]}.
@@ -20,15 +21,6 @@
 #' @param group_names Names for any resulting group variables.
 #'
 #' @return \code{x} with additional columns (see details).
-#'
-#' @examples
-#' data(toy_dgirtfit)
-#' tb_means <- get_posterior_mean(toy_dgirtfit, name = FALSE)
-#' # rownames are e.g. "theta_bar[CO__black,2011]"
-#' tb_means <- expand_rownames(tb_means, time_name = "year", geo_name = "state",
-#'   group_names = "race")
-#' # result has columns state, race, year (and original rownames in rn)
-#' head(tb_means)
 #' @seealso \code{\link{dgirtfit-class}}
 #' @include data-toy_dgirtfit.r
 expand_rownames <- function(x, time_name, geo_name, group_names) {

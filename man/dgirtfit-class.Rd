@@ -2,6 +2,7 @@
 % Please edit documentation in R/class-dgirtfit.r, R/methods-dgirtfit.r
 \docType{class}
 \name{dgirtfit-class}
+\alias{as.data.frame.dgirtfit}
 \alias{dgirtfit}
 \alias{dgirtfit-class}
 \alias{extract,dgirtfit-method}
@@ -16,8 +17,9 @@
 
 \S4method{extract}{dgirtfit}(object, ...)
 
-\S4method{get_posterior_mean}{dgirtfit}(object, pars = "theta_bar",
-  name = TRUE, ...)
+\S4method{get_posterior_mean}{dgirtfit}(object, pars = "theta_bar", ...)
+
+\method{as.data.frame}{dgirtfit}(x, ..., pars = "theta_bar", discard = TRUE)
 }
 \arguments{
 \item{object}{A \code{dgirtfit}-class object.}
@@ -26,7 +28,9 @@
 
 \item{pars}{Selected parameter names.}
 
-\item{name}{Whether to move descriptive rownames into columns.}
+\item{x}{A \code{dgirtfit}-class object.}
+
+\item{discard}{Whether to discard samples from warmup iterations.}
 }
 \description{
 All \code{\link{rstan}} methods for superclass
@@ -41,6 +45,8 @@ will be added to most output.
 \code{extract} method for \code{dgirtfit-class} objects
 
 \code{get_posterior_mean} method for \code{dgirtfit-class} objects
+
+\code{as.data.frame} method for \code{dgirtfit-class} objects
 }
 \section{Slots}{
 
@@ -53,7 +59,7 @@ data(toy_dgirtfit)
 summary(toy_dgirtfit, pars = 'xi')
 
 # get posterior means with a convenience function
-get_posterior_mean(toy_dgirtfit, pars = 'xi')
+get_posterior_mean(toy_dgirtfit, pars = 'theta_bar')
 
 # generally apply functions to posterior samples after warmup; n.b.
 # `as.array` is iterations x chains x parameters so `MARGIN = 3` applies
@@ -61,13 +67,14 @@ get_posterior_mean(toy_dgirtfit, pars = 'xi')
 apply(as.array(toy_dgirtfit, pars = 'xi'), 3, mean)
 
 # access the posterior samples
-as.array(toy_dgirtfit, pars = 'xi')  # samples after warmup
-as.data.frame(toy_dgirtfit, pars = 'xi')  # all samples
-extract(toy_dgirtfit, pars = 'theta_bar')  # all samples
+as.array(toy_dgirtfit, pars = 'theta_bar')
+as.data.frame(toy_dgirtfit, pars = 'theta_bar')
+extract(toy_dgirtfit, pars = 'theta_bar')
 toy_dgirtfit
 summary(toy_dgirtfit)
 extract(toy_dgirtfit)
 get_posterior_mean(toy_dgirtfit)
+as.data.frame(toy_dgirtfit)
 }
 \seealso{
 \code{\link{stanfit-class}} \code{\link{dgirtin-class}}

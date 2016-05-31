@@ -102,8 +102,11 @@ Data can also be filtered for sparsity, to keep items that appear in a
 minimum of time periods or surveys.  This is a column-wise operation. If both
 row-wise and column-wise restrictions are specified, \code{shape} iterates
 over them until they leave the data unchanged.
+}
+
+\section{Target Data}{
+
 \describe{
-  \item{\code{target_data}}{.}
   \item{target_proportion_name}{The variable giving population proportions
   for strata.}
   \item{strata_names}{Variables that define population strata.}

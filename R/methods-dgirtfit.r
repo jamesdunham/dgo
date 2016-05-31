@@ -1,3 +1,5 @@
+utils::globalVariables(c("value", "iteration"))
+
 #' \code{show} method for \code{dgirtfit-class} objects
 #' @rdname dgirtfit-class
 #' @export
@@ -24,6 +26,7 @@ setMethod("summary", "dgirtfit",
 #' \code{extract} method for \code{dgirtfit-class} objects
 #' @rdname dgirtfit-class
 #' @param object A \code{dgirtfit}-class object.
+#' @param x A \code{dgirtfit}-class object.
 #' @export
 #' @examples
 #' extract(toy_dgirtfit)
@@ -42,98 +45,41 @@ setMethod("extract", "dgirtfit",
 #' \code{get_posterior_mean} method for \code{dgirtfit-class} objects
 #' @rdname dgirtfit-class
 #' @param pars Selected parameter names.
-#' @param name Whether to move descriptive rownames into columns.
 #' @export
 #' @examples
 #' get_posterior_mean(toy_dgirtfit)
 setMethod("get_posterior_mean", "dgirtfit",
-          function(object, pars = 'theta_bar', name = TRUE, ...) {
-            posterior_means <- callNextMethod(object, pars = pars, ...)
-            rownames(posterior_means) <- flatnames(object,
-              rownames(posterior_means))
-            if (isTRUE(name)) {
-              ctrl <- object@dgirt_in$control
-              posterior_means <- expand_rownames(posterior_means,
-                geo_name = ctrl@geo_name, group_names = ctrl@group_names,
-                time_name = ctrl@time_name)
-            }
-            posterior_means
+          function(object, pars = "theta_bar", ...) {
+            samples <- as.data.frame(object, pars = pars)
+            ctrl <- object@dgirt_in$control
+            samples[, list(mean = mean(value)),
+                    by = c(ctrl@time_name, ctrl@geo_name, ctrl@group_names)]
           })
 
-#' \code{poststratify}: reweight and aggregate estimates
-#' @rdname poststratify
-#' @param ... Additional arguments to methods.
-setGeneric("poststratify", signature = "x",
-           function(x, prop_name = "proportion", ...) {
-            standardGeneric("poststratify")
-           })
-
-#' \code{poststratify} method for \code{data.frame}s
-#'
-#' Identifiers in the table of estimates to be poststratified should be given as
-#' \code{strata_names} or \code{aggregated_names}. There will be a row in the
-#' result for each interaction of the variables in \code{strata_names}
-#' containing the values of \code{estimate_names} poststratified over the
-#' variables in \code{aggregated_names}.
-#'
-#' @param x A \code{data.frame}.
-#' @param target_data A table giving the proportions contributed to strata by
-#' the interaction of \code{strata_names} and \code{aggregated_names}.
-#' @param strata_names Names of variables whose interaction defines
-#' population strata.
-#' @param aggregated_names Names of variables to be aggregated over in
-#' poststratification. 
-#' @param estimate_names Names of columns to be poststratified.
-#' @param prop_name Name of the column in \code{target_data} that gives
-#' strata proportions.
-#' @param keep Whether to keep the original estimates and return them alongside
-#' the poststratified estimates. 
-#' @return A table of poststratified estimates.
-#' @include poststratify.r 
-#' @rdname poststratify
+#' \code{as.data.frame} method for \code{dgirtfit-class} objects
+#' @rdname dgirtfit-class
+#' @param discard Whether to discard samples from warmup iterations.
 #' @export
-setMethod("poststratify", c("data.frame"),
-  function(x, target_data, strata_names, aggregated_names, estimate_names,
-           prop_name = "proportion", keep = FALSE) {
-    post_generic(x, target_data, strata_names, aggregated_names, estimate_names,
-                 prop_name, keep = FALSE)
-  })
-
-#' \code{poststratify} method for \code{dgirtfit}-class objects
-#' @include poststratify.r 
-#' @param pars Selected parameter names.
-#' @export
-#' @rdname poststratify 
 #' @examples
-#' 
-#' data(toy_dgirtfit)
-#'
-#' # the stratifying variables should uniquely identify proportions in the
-#' # target data; to achieve this, sum over the other variables
-#' targets <- aggregate(proportion ~ state + year + race, targets, sum)
-#'
-#' # the dgirtfit method of poststratify takes a dgirtfit object, the target
-#' # data, the names of variables that define population strata, and the  names
-#' # of variables to be aggregated over
-#' post <- poststratify(toy_dgirtfit, targets, c("state", "year"), "race")
-#' @export
-setMethod("poststratify", c("dgirtfit"),
-  function(x, target_data, strata_names, aggregated_names,
-           prop_name = "proportion", keep = FALSE, pars = "theta_bar") {
-    ctrl <- x@dgirt_in$control
-    estimates <- as.data.frame(t(as.data.frame(x, par = pars)))
-    estimates <- expand_rownames(estimates, geo_name = ctrl@geo_name,
-                                 group_names = ctrl@group_names,
-                                 time_name = ctrl@time_name)
-    estimate_names <- grep("^V\\d+", names(estimates), value = TRUE)
-    res <- post_generic(x = estimates, target_data = target_data,
-                        strata_names = strata_names,
-                        aggregated_names = aggregated_names,
-                        estimate_names = estimate_names,
-                        prop_name = prop_name)
-    melted <- data.table::melt(res, id.vars = strata_names, variable.name =
+#' as.data.frame(toy_dgirtfit)
+as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar", discard = TRUE) {
+  if (length(pars) > 1L)
+    stop("\"pars\" should be a single parameter name")
+  ctrl <- x@dgirt_in$control
+  estimates <- as.data.frame.matrix(t(as.matrix(x, pars = pars)))
+  estimates <- expand_rownames(estimates, geo_name = ctrl@geo_name,
+                               group_names = ctrl@group_names,
+                               time_name = ctrl@time_name)
+  estimates[, c("rn") := NULL]
+  estimate_names <- grep("^V\\d+", names(estimates), value = TRUE)
+  id_vars <- c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)
+  melted <- data.table::melt(estimates, id.vars = id_vars, variable.name =
                              "iteration", variable.factor = FALSE)
-    melted[, c("iteration") := type.convert(sub("V", "", get("iteration"),
+  melted[, c("iteration") := type.convert(sub("V", "", get("iteration"),
                                               fixed = TRUE)), with = FALSE]
-    return(melted[])
-  })
+  if (isTRUE(discard)) {
+    warmup <- x@stan_args[[1]]$warmup
+    melted <- melted[iteration > warmup]
+  }
+  melted
+}

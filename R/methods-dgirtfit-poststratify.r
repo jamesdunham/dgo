@@ -1,6 +1,60 @@
-post_generic <- function(x = data.frame, target_data, strata_names,
-                         aggregated_names, estimate_names, prop_name,
-                         keep = FALSE) {
+utils::globalVariables(c("value", "scaled_prop"))
+
+#' \code{poststratify}: reweight and aggregate estimates
+#' @rdname poststratify
+#' @param ... Additional arguments to methods.
+setGeneric("poststratify", signature = "x",
+           function(x, target_data, strata_names, aggregated_names,
+                    prop_name = "proportion", ...)
+             standardGeneric("poststratify"))
+
+#' \code{poststratify} method for \code{dgirtfit}-class objects
+#' @param pars Selected parameter names.
+#' @export
+#' @rdname poststratify 
+#' @examples
+#' 
+#' data(toy_dgirtfit)
+#'
+#' # the stratifying variables should uniquely identify proportions in the
+#' # target data; to achieve this, sum over the other variables
+#' targets <- aggregate(proportion ~ state + year + race, targets, sum)
+#'
+#' # the dgirtfit method of poststratify takes a dgirtfit object, the target
+#' # data, the names of variables that define population strata, and the  names
+#' # of variables to be aggregated over
+#' post <- poststratify(toy_dgirtfit, targets, c("state", "year"), "race")
+#' @export
+setMethod("poststratify", c("dgirtfit"),
+  function(x, target_data, strata_names, aggregated_names,
+           prop_name = "proportion", pars = "theta_bar") {
+    x <- as.data.frame(x, pars = pars)
+    callGeneric(x, target_data, strata_names, aggregated_names, prop_name)
+})
+
+#' \code{poststratify} method for \code{data.frame}s
+#'
+#' Identifiers in the table of estimates to be poststratified should be given as
+#' \code{strata_names} or \code{aggregated_names}. There will be a row in the
+#' result for each interaction of the variables in \code{strata_names}
+#' containing the values of \code{estimate_names} poststratified over the
+#' variables in \code{aggregated_names}.
+#'
+#' @param x A \code{data.frame}.
+#' @param target_data A table giving the proportions contributed to strata by
+#' the interaction of \code{strata_names} and \code{aggregated_names}.
+#' @param strata_names Names of variables whose interaction defines
+#' population strata.
+#' @param aggregated_names Names of variables to be aggregated over in
+#' poststratification. 
+#' @param prop_name Name of the column in \code{target_data} that gives
+#' strata proportions.
+#' @return A table of poststratified estimates.
+#' @rdname poststratify
+#' @export
+setMethod("poststratify", "data.frame",
+          function(x, target_data, strata_names, aggregated_names,
+                   prop_name = "proportion", pars = "theta_bar") {
 
   x <- data.table::setDT(data.table::copy(x))
   if (!length(target_data)) stop("target_data is missing")
@@ -57,11 +111,9 @@ post_generic <- function(x = data.frame, target_data, strata_names,
   props <- scale_props(props, prop_name, strata_names)
 
   check_proportions(props, strata_names)
-  res <- props[, lapply(.SD, function(k) sum(k * .SD$scaled_prop)),
-               by = strata_names, .SDcols = c(estimate_names, "scaled_prop")]
-  res[, c("scaled_prop") := NULL, with = FALSE]
-  data.table::copy(res)
-}
+  res <- props[, list(value = sum(value * scaled_prop)), by = strata_names] 
+  res[]
+})
 
 check_estimates <- function(estimates, strata_names) {
   estimates[, lapply(.SD, sum), by = c(strata_names)]

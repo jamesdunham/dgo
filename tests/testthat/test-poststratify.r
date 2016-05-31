@@ -1,7 +1,8 @@
 context("poststratification")
-library(data.table)
 
 test_that("dispatch seems to work", {
+  suppressMessages(library(data.table))
+  data(toy_dgirtfit)
   data(targets)
   setDT(targets)
   targets <- targets[year %in% 2006:2008,
@@ -13,7 +14,7 @@ test_that("dispatch seems to work", {
                              strata_names = c('year', 'state'),
                              aggregated_names = 'race'))
 
-  estimates <- get_posterior_mean(toy_dgirtfit, par = 'theta_bar')
+  estimates <- as.data.frame(toy_dgirtfit)
   data(targets)
   setDT(targets)
   targets <- targets[year %in% 2006:2008,
@@ -22,9 +23,7 @@ test_that("dispatch seems to work", {
   expect_silent(poststratify(estimates,
                              targets,
                              strata_names = c("year", "state"),
-                             aggregated_names = "race",
-                             estimate_names = grep('mean', names(estimates),
-                                                   value = TRUE)))
+                             aggregated_names = "race"))
 })
 
 test_that("poststratify and weighted.mean results are equivalent", {
@@ -34,19 +33,18 @@ test_that("poststratify and weighted.mean results are equivalent", {
   target_data[, prop := N / sum(N)]
   x = warpbreaks
   x = setDT(x)[!duplicated(x[, list(wool, tension)])]
+  names(x)[1] <- "value"
 
-  tapply_res <- tapply(x$breaks, x$wool, mean)
+  tapply_res <- tapply(x$value, x$wool, mean)
   res <- poststratify(x, target_data = target_data, aggregated_names = "tension",
-                      strata_names = "wool", estimate_names = "breaks",
-                      prop_name = "prop")
-  expect_equivalent(res[["breaks"]], as.vector(tapply_res))
+                      strata_names = "wool", prop_name = "prop")
+  expect_equivalent(res[["value"]], as.vector(tapply_res))
 
   target_data$prop[c(1,2,4,5)] <- c(1/3, 0, 1/3, 0)
   res <- poststratify(x, target_data = target_data, aggregated_names = "tension",
-                      strata_names = "wool", estimate_names = "breaks",
-                      prop_name = "prop")
-  expect_equivalent(weighted.mean(x$breaks[1:3], c(2, 0, 1)), res$breaks[1])
-  expect_equivalent(weighted.mean(x$breaks[4:6], c(2, 0, 1)), res$breaks[2])
+                      strata_names = "wool", prop_name = "prop")
+  expect_equivalent(weighted.mean(x$value[1:3], c(2, 0, 1)), res$value[1])
+  expect_equivalent(weighted.mean(x$value[4:6], c(2, 0, 1)), res$value[2])
 })
 
 test_that("omitted arguments produce errors", {

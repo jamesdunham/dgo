@@ -17,7 +17,7 @@
 #' summary(toy_dgirtfit, pars = 'xi')
 #' 
 #' # get posterior means with a convenience function
-#' get_posterior_mean(toy_dgirtfit, pars = 'xi')
+#' get_posterior_mean(toy_dgirtfit, pars = 'theta_bar')
 #'
 #' # generally apply functions to posterior samples after warmup; n.b.
 #' # `as.array` is iterations x chains x parameters so `MARGIN = 3` applies
@@ -25,9 +25,9 @@
 #' apply(as.array(toy_dgirtfit, pars = 'xi'), 3, mean)
 #'
 #' # access the posterior samples
-#' as.array(toy_dgirtfit, pars = 'xi')  # samples after warmup
-#' as.data.frame(toy_dgirtfit, pars = 'xi')  # all samples
-#' extract(toy_dgirtfit, pars = 'theta_bar')  # all samples
+#' as.array(toy_dgirtfit, pars = 'theta_bar')
+#' as.data.frame(toy_dgirtfit, pars = 'theta_bar')
+#' extract(toy_dgirtfit, pars = 'theta_bar')
 dgirtfit <- setClass("dgirtfit",
                      contains = "stanfit",
                      slots = list(dgirt_in = "ANY",
