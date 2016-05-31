@@ -5,51 +5,74 @@ flatnames <- function(dgirt_out, fnames = NULL) {
     fnames <- dgirt_out@sim$fnames_oi
   }
 
-  indexed_t <- c('delta_gamma', 'delta_tbar', 'sd_theta', 'sd_theta_bar',
-                 'sd_total', 'var_theta', 'xi')
-  for (varname in indexed_t) {
-    fnames[grep(paste0('^', varname, "\\[\\d+\\]", "$"), fnames)] <-
-      paste0(varname, "[", control@time_filter, "]")
+  fname_len <- length(fnames)
+  ftab <- data.table::setDT(list(fname = fnames))
+  ftab[, param := sub("(^.*)\\[.*", "\\1", fname)]
+  i_match = regexpr("(?<=\\[)\\d+(?=\\]|,)", fnames, perl = TRUE)
+  j_match = regexpr("(?<=,|\\[)\\d+(?=\\])", fnames, perl = TRUE)
+  match_end <- function(x) x + attr(x, "match.length") - 1L
+  ftab[, `:=`(i_start = i_match,
+              i_end = match_end(i_match),
+              j_start = j_match,
+              j_end = match_end(j_match))]
+  ftab[i_start > 0, i := type.convert(substr(fname, i_start, i_end))]
+  ftab[j_start > 0, j := type.convert(substr(fname, j_start, j_end))]
+  ftab[, grep("_start|_end", names(ftab)) := NULL]
+
+  for (parname in unique(ftab[["param"]])) {
+    # index_names is a list for looking up the names of parameter indexes
+    for (i in index_names[[parname]]) {
+      if (length(i)) {
+        pos <- c("i", "j")[which(index_names[[parname]] == i)]
+        ftab[param == parname, c(i) := get(pos), with = FALSE]
+      }
+    }
   }
 
-  theta_bar_indices <- paste(do.call(function(...) paste(..., sep = "__"),
-                     dgirt_out@dgirt_in$group_grid[, -c(control@time_name), with = FALSE]),
-             dgirt_out@dgirt_in$group_grid[[control@time_name]], sep = ",")
-
-  fnames[grep(paste0('^', "theta_bar", "\\[\\d+,\\d+\\]", "$"), fnames)] <-
-    paste0("theta_bar[", theta_bar_indices, "]")
-  fnames[grep(paste0('^', "theta_bar_raw", "\\[\\d+,\\d+\\]", "$"), fnames)] <-
-    paste0("theta_bar_raw[", theta_bar_indices, "]")
-
-  gamma_indices <- do.call(function(...) paste(..., sep = ","),
-                           list(dgirt_out@dgirt_in$hier_names, control@time_filter))
-  fnames[grep(paste0('^', "gamma", "\\[\\d+,\\d+\\]", "$"), fnames)] <-
-    paste0("gamma[", gamma_indices, "]")
-  fnames[grep(paste0('^', "gamma_raw", "\\[\\d+,\\d+\\]", "$"), fnames)] <-
-    paste0("gamma_raw[", gamma_indices, "]")
-
-  indexed_th <- c('nu_geo', 'theta_l2', 'var_theta_bar_l2')
-  for (varname in indexed_th) {
-    fnames[grep(paste0('^', varname, "\\[\\d+,\\d+\\]", "$"), fnames)] <-
-      paste0(varname, "[", control@time_filter, ",", 1, "]")
+  if ("group_names" %in% names(ftab)) {
+    group_grid <- data.table::setDT(dgirt_out@dgirt_in$group_grid_t)
+    group_grid[, group_names := .I]
+    ftab <- merge(ftab, group_grid, by = "group_names", all.x = TRUE)
   }
 
-  if (!control@constant_item) {
-    fnames[grep(paste0('^kappa\\[\\d+,\\d+\\]$'), fnames)] <-
-      paste0("kappa[", control@time_filter, "]")
+  if ("time_name" %in% names(ftab)) {
+    time_grid <- data.table::setDT(setNames(list(seq_along(control@time_filter),
+                                                 control@time_filter),
+                                            c("time_name", control@time_name)))
+    ftab <- merge(ftab, time_grid, by = "time_name", all.x = TRUE)
   }
 
-  # TODO: prob and z are indexed T x Q x G; take from MMM
-  # TODO: prob_l2 and z_l2 are indexed T x Q
+  if ("hier_params" %in% names(ftab)) {
+    hier_grid <- data.table::setDT(list(hier_params = seq_along(dgirt_out@dgirt_in$hier_names),
+                                        hier_param = dgirt_out@dgirt_in$hier_names))
+    ftab <- merge(ftab, hier_grid, by = "hier_params", all.x = TRUE)
+  }
 
-  mu_theta_bar_indices <- paste(dgirt_out@dgirt_in$group_grid[[control@time_name]],
-                                do.call(function(...) paste(..., sep = "__"),
-                                        dgirt_out@dgirt_in$group_grid[, -control@time_name, with = FALSE]),
-                                sep = ",")
-  fnames[grep(paste0('^', "mu_theta_bar", "\\[\\d+,\\d+\\]", "$"), fnames)] <-
-    paste0("mu_theta_bar[", mu_theta_bar_indices, "]")
+  if ("item_names" %in% names(ftab)) {
+    item_grid <- data.table::setDT(list(item_names = seq_along(dgirt_out@dgirt_in$gt_items),
+                                        item = dgirt_out@dgirt_in$gt_items))
+    ftab <- merge(ftab, item_grid, by = "item_names", all.x = TRUE)
+  }
 
-  fnames
+  drop_cols <- intersect(names(ftab), c("item_names", "hier_params",
+                                        "time_name", "group_names", "i", "j"))
+  if (length(drop_cols))
+    ftab[, drop_cols := NULL, with = FALSE]
+
+  # index_cols <- intersect(c(control@geo_name, control@group_names,
+  #                           control@time_name, "hier_param", "item"),
+  #                         names(ftab))
+  # concat_cols <- function(SD) {
+  #   SD <- lapply(SD, function(x) replace(x, is.na(x), ""))
+  #   res <- do.call(paste, c(SD, sep = "__"))
+  #   lapply(res, function(x) gsub("^__|__{2,}|__$", "", x))
+  # }
+  # ftab[, iname := concat_cols(.SD), .SDcols = index_cols]
+  # ftab[, res := paste0(param, "[", iname, "]")]
+  # ftab[, res := sub("\\[\\]", "", res)]
+
+  stopifnot(identical(nrow(ftab), fname_len))
+  ftab
 }
 
 arraynames <- function(dgirt_extract, dgirt_out) {

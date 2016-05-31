@@ -1,46 +1,46 @@
 utils::globalVariables(c("value", "iteration"))
 
-#' \code{show} method for \code{dgirtfit-class} objects
-#' @rdname dgirtfit-class
-#' @export
-#' @examples
-#' toy_dgirtfit
-setMethod("show", "dgirtfit",
-          function(object) {
-            object@sim$fnames_oi <- flatnames(object)
-            callNextMethod(object)
-          })
-
-#' \code{summary} method for \code{dgirtfit-class} objects
-#' @rdname dgirtfit-class
-#' @param ... Further arguments to \code{\link{stanfit-class}} methods.
-#' @export
-#' @examples
-#' summary(toy_dgirtfit)
-setMethod("summary", "dgirtfit",
-          function(object, ...) {
-            object@sim$fnames_oi <- flatnames(object)
-            callNextMethod(object, ...)
-          })
-
-#' \code{extract} method for \code{dgirtfit-class} objects
-#' @rdname dgirtfit-class
-#' @param object A \code{dgirtfit}-class object.
-#' @param x A \code{dgirtfit}-class object.
-#' @export
-#' @examples
-#' extract(toy_dgirtfit)
-setMethod("extract", "dgirtfit",
-          function(object, ...) {
-            extracted <- callNextMethod(object, ...)
-            if (is.list(extracted)) {
-              extracted <- arraynames(extracted, object)
-            } else if (is.array(extracted)) {
-              dimnames(extracted)[[3]] <- flatnames(object,
-                dimnames(extracted)[[3]])
-            }
-            extracted
-          })
+# #' \code{show} method for \code{dgirtfit-class} objects
+# #' @rdname dgirtfit-class
+# #' @export
+# #' @examples
+# #' toy_dgirtfit
+# setMethod("show", "dgirtfit",
+#           function(object) {
+#             # object@sim$fnames_oi <- flatnames(object)
+#             callNextMethod(object)
+#           })
+#
+# #' \code{summary} method for \code{dgirtfit-class} objects
+# #' @rdname dgirtfit-class
+# #' @param ... Further arguments to \code{\link{stanfit-class}} methods.
+# #' @export
+# #' @examples
+# #' summary(toy_dgirtfit)
+# setMethod("summary", "dgirtfit",
+#           function(object, ...) {
+#             # object@sim$fnames_oi <- flatnames(object)
+#             callNextMethod(object, ...)
+#           })
+#
+# #' \code{extract} method for \code{dgirtfit-class} objects
+# #' @rdname dgirtfit-class
+# #' @param object A \code{dgirtfit}-class object.
+# #' @param x A \code{dgirtfit}-class object.
+# #' @export
+# #' @examples
+# #' extract(toy_dgirtfit)
+# setMethod("extract", "dgirtfit",
+#           function(object, ...) {
+#             extracted <- callNextMethod(object, ...)
+#             # if (is.list(extracted)) {
+#             #   extracted <- arraynames(extracted, object)
+#             # } else if (is.array(extracted)) {
+#             #   dimnames(extracted)[[3]] <- flatnames(object,
+#             #     dimnames(extracted)[[3]])
+#             # }
+#             extracted
+#           })
 
 #' \code{get_posterior_mean} method for \code{dgirtfit-class} objects
 #' @rdname dgirtfit-class
@@ -67,12 +67,18 @@ as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar", discard = TRUE) {
     stop("\"pars\" should be a single parameter name")
   ctrl <- x@dgirt_in$control
   estimates <- as.data.frame.matrix(t(as.matrix(x, pars = pars)))
-  estimates <- expand_rownames(estimates, geo_name = ctrl@geo_name,
-                               group_names = ctrl@group_names,
-                               time_name = ctrl@time_name)
+  estimates <- data.table::setDT(estimates, keep.rownames = TRUE)
+
+  ftab <- flatnames(x)
+  ftab <- merge(estimates[, .(rn)], ftab, all = FALSE, by.x = "rn", by.y = "fname")
+  all_na <- sapply(ftab, function(x) all(is.na(x)))
+  if (any(all_na))
+    ftab[, names(all_na)[all_na] := NULL, with = FALSE]
+  estimates <- merge(estimates, ftab, all.x = TRUE, by = "rn")
   estimates[, c("rn") := NULL]
+
   estimate_names <- grep("^V\\d+", names(estimates), value = TRUE)
-  id_vars <- c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)
+  id_vars <- intersect(names(estimates), names(ftab))
   melted <- data.table::melt(estimates, id.vars = id_vars, variable.name =
                              "iteration", variable.factor = FALSE)
   melted[, c("iteration") := type.convert(sub("V", "", get("iteration"),
