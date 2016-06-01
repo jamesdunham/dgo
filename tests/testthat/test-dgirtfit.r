@@ -11,16 +11,12 @@ suppressMessages({
   test_that("dgirt methods work", {
     res <- suppressWarnings(dgirt(toy_dgirt_in, iter = 5, chains = 1,
                                   seed = 42))
-    # NOTE: this doesn't work inside devtools::test
-    # expect_output(print(res), "Samples were drawn")
-    expect_silent(summary(res))
-    expect_silent(extract(res))
-    expect_silent(get_posterior_mean(res))
-  })
+    expect_output(print(res), "dgirt samples from")
+    expect_output(summary(res), "dgirt samples from")
+    expect_is(summary(res, verbose = TRUE), "list")
 
-  test_that("pars takes a single parameter name", {
-  expect_error(as.data.frame(toy_dgirtfit, pars = c("theta_bar", "xi")),
-               "\"pars\" should be a single parameter name")
+    tab <- get_posterior_mean(res)
+    expect_named(tab, c(attr(tab, "id_vars"), "mean"))
   })
 
 })

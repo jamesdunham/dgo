@@ -10,6 +10,8 @@ exportMethods(get_item_names)
 exportMethods(get_n)
 exportMethods(get_posterior_mean)
 exportMethods(show)
+exportMethods(summarize)
+exportMethods(print)
 exportMethods(summary)
 import(data.table)
 import(rstan)
@@ -18,6 +20,6 @@ import(R6)
 import(methods)
 import(Rcpp)
 importFrom("stats", "as.formula", "formula", "model.frame",
-    "model.matrix", "na.fail", "na.omit", "sd", "setNames",
-    "weighted.mean", "weights")
-importFrom("utils", "type.convert")
+    "model.matrix", "na.fail", "na.omit", "quantile", "sd",
+    "setNames", "weighted.mean", "weights")
+importFrom("utils", "type.convert", "packageVersion")

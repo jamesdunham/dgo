@@ -218,6 +218,7 @@ shape <- function(item_data,
   d_in$target_data <- target_data
   d_in$control <- ctrl
   d_in$call <- match.call()
+  d_in$pkg_version <- packageVersion("dgirt")
 
   # validate input to model #
   check_dimensions(d_in)

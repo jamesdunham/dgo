@@ -1,3 +1,6 @@
+utils::globalVariables(c("fname", "group_names", "i_end", "i_start", "j",
+                         "j_end", "j_start", "param"))
+
 flatnames <- function(dgirt_out, fnames = NULL) {
 
   control <- dgirt_out@dgirt_in$control
@@ -59,68 +62,6 @@ flatnames <- function(dgirt_out, fnames = NULL) {
   if (length(drop_cols))
     ftab[, drop_cols := NULL, with = FALSE]
 
-  # index_cols <- intersect(c(control@geo_name, control@group_names,
-  #                           control@time_name, "hier_param", "item"),
-  #                         names(ftab))
-  # concat_cols <- function(SD) {
-  #   SD <- lapply(SD, function(x) replace(x, is.na(x), ""))
-  #   res <- do.call(paste, c(SD, sep = "__"))
-  #   lapply(res, function(x) gsub("^__|__{2,}|__$", "", x))
-  # }
-  # ftab[, iname := concat_cols(.SD), .SDcols = index_cols]
-  # ftab[, res := paste0(param, "[", iname, "]")]
-  # ftab[, res := sub("\\[\\]", "", res)]
-
   stopifnot(identical(nrow(ftab), fname_len))
   ftab
-}
-
-arraynames <- function(dgirt_extract, dgirt_out) {
-
-  control <- dgirt_out@dgirt_in$control
-
-  dim2_indexed_t <- c('theta_bar', 'xi', 'gamma', 'delta_gamma', 'delta_tbar',
-                      'nu_geo', 'sd_theta', 'sd_theta_bar', 'sd_total',
-                      'theta_l2', 'var_theta_bar_l2')
-  if (!as.logical(control@constant_item)) dim2_indexed_t <- c(dim2_indexed_t, "kappa")
-  dim2_indexed_t <- intersect(dim2_indexed_t, names(dgirt_extract))
-
-  for (i in dim2_indexed_t) {
-    names(attributes(dgirt_extract[[i]])$dimnames)[2] <- 'time'
-    stopifnot(identical(dim(dgirt_extract[[i]])[2], length(control@time_filter)))
-    dimnames(dgirt_extract[[i]])[[2]] <- control@time_filter
-  }
-
-  if ('theta_bar' %chin% names(dgirt_extract)) {
-    names(attributes(dgirt_extract[['theta_bar']])$dimnames)[3] <- 'group'
-    groups_concat <- do.call(function(...) paste(..., sep = "__"), dgirt_out@dgirt_in$group_grid_t)
-    stopifnot(identical(dim(dgirt_extract[['theta_bar']])[3], length(groups_concat)))
-    dimnames(dgirt_extract[['theta_bar']])[[3]] <- groups_concat
-  }
-
-  if ('gamma' %chin% names(dgirt_extract)) {
-    names(attributes(dgirt_extract[['gamma']])$dimnames)[3] <- 'param'
-    assertthat::assert_that(identical(dim(dgirt_extract[['gamma']])[3], length(dgirt_out@dgirt_in$hier_names)))
-    dimnames(dgirt_extract[['gamma']])[[3]] <- dgirt_out@dgirt_in$hier_names
-  }
-
-  if ('kappa' %chin% names(dgirt_extract)) {
-    names(attributes(dgirt_extract[['kappa']])$dimnames)[3] <- 'item'
-    assertthat::assert_that(identical(dim(dgirt_extract[['kappa']])[3], length(dgirt_out@dgirt_in$gt_items)))
-    dimnames(dgirt_extract[['kappa']])[[3]] <- dgirt_out@dgirt_in$gt_items
-  }
-
-  if ('sd_item' %chin% names(dgirt_extract)) {
-    names(attributes(dgirt_extract[['sd_item']])$dimnames)[2] <- 'item'
-    assertthat::assert_that(identical(dim(dgirt_extract[['sd_item']])[2], length(dgirt_out@dgirt_in$gt_items)))
-    dimnames(dgirt_extract[['sd_item']])[[2]] <- dgirt_out@dgirt_in$gt_items
-  }
-
-  if ('var_theta' %chin% names(dgirt_extract)) {
-    names(attributes(dgirt_extract[['var_theta']])$dimnames)[2] <- 'time'
-    assertthat::assert_that(identical(dim(dgirt_extract[['var_theta']])[2], length(control@time_filter)))
-    dimnames(dgirt_extract[['var_theta']])[[2]] <- control@time_filter
-  }
-
-  dgirt_extract
 }

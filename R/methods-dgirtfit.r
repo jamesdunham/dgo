@@ -1,48 +1,90 @@
-utils::globalVariables(c("value", "iteration"))
+utils::globalVariables(c("value", "iteration", ".", "rn"))
 
-# #' \code{show} method for \code{dgirtfit-class} objects
+#' \code{show} method for \code{dgirtfit-class} objects
+#'
+#' @rdname dgirtfit-class
+#' @param object A \code{dgirtfit-class} object.
+#' @param x A \code{dgirtfit-class} object.
+#' @export
+#' @examples
+#' toy_dgirtfit
+setMethod("show", "dgirtfit",
+          function(object) {
+            print.dgirtfit(object)
+          })
+
+# #' S4 \code{print} generic
+# #'
 # #' @rdname dgirtfit-class
-# #' @export
-# #' @examples
-# #' toy_dgirtfit
-# setMethod("show", "dgirtfit",
-#           function(object) {
-#             # object@sim$fnames_oi <- flatnames(object)
-#             callNextMethod(object)
-#           })
-#
-# #' \code{summary} method for \code{dgirtfit-class} objects
-# #' @rdname dgirtfit-class
-# #' @param ... Further arguments to \code{\link{stanfit-class}} methods.
-# #' @export
-# #' @examples
-# #' summary(toy_dgirtfit)
-# setMethod("summary", "dgirtfit",
-#           function(object, ...) {
-#             # object@sim$fnames_oi <- flatnames(object)
-#             callNextMethod(object, ...)
-#           })
-#
-# #' \code{extract} method for \code{dgirtfit-class} objects
-# #' @rdname dgirtfit-class
-# #' @param object A \code{dgirtfit}-class object.
-# #' @param x A \code{dgirtfit}-class object.
-# #' @export
-# #' @examples
-# #' extract(toy_dgirtfit)
-# setMethod("extract", "dgirtfit",
-#           function(object, ...) {
-#             extracted <- callNextMethod(object, ...)
-#             # if (is.list(extracted)) {
-#             #   extracted <- arraynames(extracted, object)
-#             # } else if (is.array(extracted)) {
-#             #   dimnames(extracted)[[3]] <- flatnames(object,
-#             #     dimnames(extracted)[[3]])
-#             # }
-#             extracted
-#           })
+# setGeneric("print", signature = "x",
+#            function(x, ...) standardGeneric("print"))
+
+#' \code{print} method for \code{dgirtfit-class} objects
+#'
+#' @rdname dgirtfit-class
+#' @export
+#' @examples
+#' print(toy_dgirtfit)
+setMethod("print", "dgirtfit", function(x, ...) {
+            print.dgirtfit(x) 
+         })
+
+#' \code{print} method for \code{dgirtfit-class} objects
+#'
+#' @rdname dgirtfit-class
+print.dgirtfit <- function(x, ...) {
+  ctrl <- x@dgirt_in$control
+  sf <- x
+  class(sf) <- "stanfit"
+  ss <- summary(sf, ..., use_cache = FALSE)
+  ss <- ss[["summary"]]
+  arg <- x@stan_args[[1]]
+  chains <- length(x@stan_args)
+  pkg_version <- ifelse(length(x@dgirt_in$package_version),
+                        x@dgirt_in$package_version,
+                        "not available (< 0.2.2)")
+  cat("dgirt samples from", chains, "chains of", arg$iter,
+      "iterations,", arg$warmup, "warmup, thinned every", arg$thin,
+      "\n")
+
+  cat("  Drawn", x@date, "\n")
+  cat("  Package version", pkg_version, "\n")
+  cat("  Model version", x@model_name, "\n")
+  cat(" ", nrow(ss), "parameters; ")
+  cat(sum(grepl("^theta_bar", rownames(ss))), "theta_bars ")
+  cat("(", concatenate::cc_and(ctrl@time_name, ctrl@geo_name,
+        ctrl@group_names), ")", "\n", sep = "")
+  cat(" ", x@dgirt_in$T, "periods", min(ctrl@time_filter), "to",
+      max(ctrl@time_filter), "\n")
+
+  cat("\nn_eff\n")
+  print(summary((ss[, "n_eff"])))
+
+  cat("\nRhat\n")
+  print(summary(ss[, "Rhat"]))
+}
+
+#' \code{summary} method for \code{dgirtfit-class} objects
+#'
+#' @rdname dgirtfit-class
+#' @param ... Further arguments to \code{\link{stanfit-class}} methods.
+#' @param verbose Whether to show the verbose RStan summary.
+#' @export
+#' @examples
+#' summary(toy_dgirtfit)
+#' summary(toy_dgirtfit, pars = "theta_bar", verbose = TRUE)
+setMethod("summary", "dgirtfit", function(object, ..., verbose = FALSE) {
+  if (isTRUE(verbose)) {
+    sf <- object
+    class(sf) <- "stanfit"
+    summary(sf, ...)
+  } else {
+    object
+  }
+})
 
 #' \code{get_posterior_mean} method for \code{dgirtfit-class} objects
+#'
 #' @rdname dgirtfit-class
 #' @param pars Selected parameter names.
 #' @export
@@ -50,11 +92,38 @@ utils::globalVariables(c("value", "iteration"))
 #' get_posterior_mean(toy_dgirtfit)
 setMethod("get_posterior_mean", "dgirtfit",
           function(object, pars = "theta_bar", ...) {
-            samples <- as.data.frame(object, pars = pars)
-            ctrl <- object@dgirt_in$control
-            samples[, list(mean = mean(value)),
-                    by = c(ctrl@time_name, ctrl@geo_name, ctrl@group_names)]
+            summarize(object, pars, funs = "mean")
           })
+
+#' S4 \code{summarize} generic
+#'
+#' @rdname dgirtfit-class
+setGeneric("summarize", signature = "x",
+           function(x, ...) standardGeneric("summarize"))
+
+#' \code{summarize} method for \code{dgirtfit-class} objects
+#'
+#' @param funs Quoted names of summary functions. `q_025` is accepted as
+#' shorthand for `function(x) quantile(x, .025)`, and similarly `q_975`.
+#' @rdname dgirtfit-class
+#' @examples
+#' summarize(toy_dgirtfit)
+#' summarize(toy_dgirtfit, pars = "xi")
+#' summarize(toy_dgirtfit, funs = "mean")
+setMethod("summarize", "dgirtfit",
+  function(x, pars = "theta_bar",
+              funs = c("mean", "sd", "median", "q_025", "q_975")) {
+    samples <- as.data.frame(x, pars = pars)
+    ctrl <- x@dgirt_in$control
+    res <- samples[, do_funs(list(value), funs),
+                   by = c(attr(samples, "id_vars"))]
+    data.table::setnames(res, grep("^V\\d+", names(res), value = TRUE), funs)
+    setattr(res, "id_vars", attr(samples, "id_vars"))
+    res
+})
+q_025 <- function(x) quantile(x, .025)
+q_975 <- function(x) quantile(x, .975)
+do_funs <- function(value, funs) lapply(funs, function(f) do.call(f, value))
 
 #' \code{as.data.frame} method for \code{dgirtfit-class} objects
 #' @rdname dgirtfit-class
@@ -63,8 +132,6 @@ setMethod("get_posterior_mean", "dgirtfit",
 #' @examples
 #' as.data.frame(toy_dgirtfit)
 as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar", discard = TRUE) {
-  if (length(pars) > 1L)
-    stop("\"pars\" should be a single parameter name")
   ctrl <- x@dgirt_in$control
   estimates <- as.data.frame.matrix(t(as.matrix(x, pars = pars)))
   estimates <- data.table::setDT(estimates, keep.rownames = TRUE)
@@ -87,5 +154,6 @@ as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar", discard = TRUE) {
     warmup <- x@stan_args[[1]]$warmup
     melted <- melted[iteration > warmup]
   }
+  data.table::setattr(melted, "id_vars", id_vars)
   melted
 }

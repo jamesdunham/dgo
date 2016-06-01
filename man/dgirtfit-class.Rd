@@ -5,30 +5,45 @@
 \alias{as.data.frame.dgirtfit}
 \alias{dgirtfit}
 \alias{dgirtfit-class}
-\alias{extract,dgirtfit-method}
 \alias{get_posterior_mean,dgirtfit-method}
+\alias{print,dgirtfit-method}
+\alias{print.dgirtfit}
 \alias{show,dgirtfit-method}
+\alias{summarize}
+\alias{summarize,dgirtfit-method}
 \alias{summary,dgirtfit-method}
 \title{Class \code{dgirtfit}: fitted DGIRT model}
 \usage{
 \S4method{show}{dgirtfit}(object)
 
-\S4method{summary}{dgirtfit}(object, ...)
+\S4method{print}{dgirtfit}(x, ...)
 
-\S4method{extract}{dgirtfit}(object, ...)
+print.dgirtfit(x, ...)
+
+\S4method{summary}{dgirtfit}(object, ..., verbose = FALSE)
 
 \S4method{get_posterior_mean}{dgirtfit}(object, pars = "theta_bar", ...)
+
+summarize(x, ...)
+
+\S4method{summarize}{dgirtfit}(x, pars = "theta_bar", funs = c("mean", "sd",
+  "median", "q_025", "q_975"))
 
 \method{as.data.frame}{dgirtfit}(x, ..., pars = "theta_bar", discard = TRUE)
 }
 \arguments{
-\item{object}{A \code{dgirtfit}-class object.}
+\item{object}{A \code{dgirtfit-class} object.}
+
+\item{x}{A \code{dgirtfit-class} object.}
 
 \item{...}{Further arguments to \code{\link{stanfit-class}} methods.}
 
+\item{verbose}{Whether to show the verbose RStan summary.}
+
 \item{pars}{Selected parameter names.}
 
-\item{x}{A \code{dgirtfit}-class object.}
+\item{funs}{Quoted names of summary functions. `q_025` is accepted as
+shorthand for `function(x) quantile(x, .025)`, and similarly `q_975`.}
 
 \item{discard}{Whether to discard samples from warmup iterations.}
 }
@@ -40,11 +55,17 @@ will be added to most output.
 
 \code{show} method for \code{dgirtfit-class} objects
 
+\code{print} method for \code{dgirtfit-class} objects
+
+\code{print} method for \code{dgirtfit-class} objects
+
 \code{summary} method for \code{dgirtfit-class} objects
 
-\code{extract} method for \code{dgirtfit-class} objects
-
 \code{get_posterior_mean} method for \code{dgirtfit-class} objects
+
+S4 \code{summarize} generic
+
+\code{summarize} method for \code{dgirtfit-class} objects
 
 \code{as.data.frame} method for \code{dgirtfit-class} objects
 }
@@ -71,9 +92,13 @@ as.array(toy_dgirtfit, pars = 'theta_bar')
 as.data.frame(toy_dgirtfit, pars = 'theta_bar')
 extract(toy_dgirtfit, pars = 'theta_bar')
 toy_dgirtfit
+print(toy_dgirtfit)
 summary(toy_dgirtfit)
-extract(toy_dgirtfit)
+summary(toy_dgirtfit, pars = "theta_bar", verbose = TRUE)
 get_posterior_mean(toy_dgirtfit)
+summarize(toy_dgirtfit)
+summarize(toy_dgirtfit, pars = "xi")
+summarize(toy_dgirtfit, funs = "mean")
 as.data.frame(toy_dgirtfit)
 }
 \seealso{
