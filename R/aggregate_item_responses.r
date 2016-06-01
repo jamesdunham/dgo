@@ -23,7 +23,7 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   #
   # Because of how DGIRT Stan code iterates over the data, the result must be
   # ordered by time, item, and then group. The order of the grouping variables
-  # doesn't matter so long as it's consistent between here and MMM.
+  # doesn't matter.
   gt_names <- attr(item_data, "gt_items")
   item_data[, c("n_responses") := list(rowSums(!is.na(.SD))),
             .SDcols = gt_names]
@@ -97,7 +97,7 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
                            stringsAsFactors = FALSE)
   counts <- merge(counts, all_groups, all = TRUE)
 
-  # stan code expects unobserved group-items to be omitted
+  # unobserved cells should be zeroed
   counts[is.na(get("s_grp")), c("s_grp") := 0]
   counts[is.na(get("n_grp")), c("n_grp") := 0]
 
