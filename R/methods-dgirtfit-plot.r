@@ -41,8 +41,8 @@ dgirt_plot <- function(x, y_fun = "median", y_min = "q_025", y_max = "q_975",
 
 #' \code{plot} plot method for \code{dgirtfit}-class objects
 #'
-#' @param x An object of class \code{dgirtfit}.
-#' @param ... Further arguments to \link\code{dgirt_plot}}.
+#' @param y Ignored.
+#' @param ... Further arguments to \code{\link{dgirt_plot}}.
 #'
 #' @rdname plot-method
 #' @examples

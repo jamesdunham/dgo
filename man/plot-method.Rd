@@ -23,6 +23,10 @@ dgirt_plot(x, y_fun = "median", y_min = "q_025", y_max = "q_975",
 \code{geom_pointrange} object.}
 
 \item{pars}{Selected parameter.}
+
+\item{y}{Ignored.}
+
+\item{...}{Further arguments to \code{\link{dgirt_plot}}.}
 }
 \description{
 \code{dgirt_plot} plot \code{dgirtfit}-class objects
@@ -35,7 +39,6 @@ dgirt_plot(toy_dgirtfit, y_min = NULL, y_max = NULL)
 p <- dgirt_plot(toy_dgirtfit)
 p \%+\% ylab("posterior median")
 
-# plot calls dgirt_plot
 plot(toy_dgirtfit)
 }
 
