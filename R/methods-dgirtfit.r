@@ -16,6 +16,9 @@ setMethod("show", "dgirtfit",
 #' S4 \code{print} generic
 #'
 #' @rdname dgirtfit-class
+#' @export
+#' @examples
+#' print(toy_dgirtfit)
 setGeneric("print", signature = "x",
            function(x, ...) standardGeneric("print"))
 
@@ -26,7 +29,7 @@ setGeneric("print", signature = "x",
 #' @examples
 #' print(toy_dgirtfit)
 setMethod("print", "dgirtfit", function(x, ...) {
-            print.dgirtfit(x) 
+            print.dgirtfit(x, ...)
          })
 
 #' \code{print} method for \code{dgirtfit-class} objects

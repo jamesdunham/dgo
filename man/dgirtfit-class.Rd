@@ -32,7 +32,8 @@ summarize(x, ...)
 \S4method{summarize}{dgirtfit}(x, pars = "theta_bar", funs = c("mean", "sd",
   "median", "q_025", "q_975"))
 
-\method{as.data.frame}{dgirtfit}(x, ..., pars = "theta_bar", discard = TRUE)
+\method{as.data.frame}{dgirtfit}(x, ..., pars = "theta_bar", discard = TRUE,
+  keep.rownames = FALSE)
 }
 \arguments{
 \item{object}{A \code{dgirtfit-class} object.}
@@ -49,6 +50,9 @@ summarize(x, ...)
 shorthand for `function(x) quantile(x, .025)`, and similarly `q_975`.}
 
 \item{discard}{Whether to discard samples from warmup iterations.}
+
+\item{keep.rownames}{Whether to retain original parameter names with numeric
+indexes, as output from RStan.}
 }
 \description{
 All \code{\link{rstan}} methods for superclass
@@ -98,6 +102,7 @@ as.data.frame(toy_dgirtfit, pars = 'theta_bar')
 extract(toy_dgirtfit, pars = 'theta_bar')
 toy_dgirtfit
 print(toy_dgirtfit)
+print(toy_dgirtfit)
 summary(toy_dgirtfit)
 summary(toy_dgirtfit, pars = "theta_bar", verbose = TRUE)
 get_posterior_mean(toy_dgirtfit)
@@ -105,6 +110,7 @@ summarize(toy_dgirtfit)
 summarize(toy_dgirtfit, pars = "xi")
 summarize(toy_dgirtfit, funs = "mean")
 as.data.frame(toy_dgirtfit)
+as.data.frame(toy_dgirtfit, keep.rownames = TRUE)
 }
 \seealso{
 \code{\link{stanfit-class}} \code{\link{dgirtin-class}}
