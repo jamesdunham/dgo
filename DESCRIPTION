@@ -19,6 +19,7 @@ Imports:
     assertthat,
     concatenate,
     data.table,
+    ggplot2,
     methods,
     R6,
     survey
@@ -50,6 +51,7 @@ Collate:
     'dichotomize_item_responses.r'
     'expand_rownames.r'
     'methods-control.r'
+    'methods-dgirtfit-plot.r'
     'methods-dgirtfit-poststratify.r'
     'methods-dgirtfit.r'
     'methods-dgirtin.r'

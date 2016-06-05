@@ -13,11 +13,11 @@ setMethod("show", "dgirtfit",
             print.dgirtfit(object)
           })
 
-# #' S4 \code{print} generic
-# #'
-# #' @rdname dgirtfit-class
-# setGeneric("print", signature = "x",
-#            function(x, ...) standardGeneric("print"))
+#' S4 \code{print} generic
+#'
+#' @rdname dgirtfit-class
+setGeneric("print", signature = "x",
+           function(x, ...) standardGeneric("print"))
 
 #' \code{print} method for \code{dgirtfit-class} objects
 #'

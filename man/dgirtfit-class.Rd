@@ -6,6 +6,7 @@
 \alias{dgirtfit}
 \alias{dgirtfit-class}
 \alias{get_posterior_mean,dgirtfit-method}
+\alias{print}
 \alias{print,dgirtfit-method}
 \alias{print.dgirtfit}
 \alias{show,dgirtfit-method}
@@ -15,6 +16,8 @@
 \title{Class \code{dgirtfit}: fitted DGIRT model}
 \usage{
 \S4method{show}{dgirtfit}(object)
+
+print(x, ...)
 
 \S4method{print}{dgirtfit}(x, ...)
 
@@ -54,6 +57,8 @@ parameters on time periods, local geographic areas, and grouping variables
 will be added to most output.
 
 \code{show} method for \code{dgirtfit-class} objects
+
+S4 \code{print} generic
 
 \code{print} method for \code{dgirtfit-class} objects
 
