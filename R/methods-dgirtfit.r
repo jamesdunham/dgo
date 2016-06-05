@@ -128,10 +128,14 @@ do_funs <- function(value, funs) lapply(funs, function(f) do.call(f, value))
 #' \code{as.data.frame} method for \code{dgirtfit-class} objects
 #' @rdname dgirtfit-class
 #' @param discard Whether to discard samples from warmup iterations.
+#' @param keep.rownames Whether to retain original parameter names with numeric
+#' indexes, as output from RStan.
 #' @export
 #' @examples
 #' as.data.frame(toy_dgirtfit)
-as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar", discard = TRUE) {
+#' as.data.frame(toy_dgirtfit, keep.rownames = TRUE)
+as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar", discard = TRUE,
+                                   keep.rownames = FALSE) {
   ctrl <- x@dgirt_in$control
   estimates <- as.data.frame.matrix(t(as.matrix(x, pars = pars)))
   estimates <- data.table::setDT(estimates, keep.rownames = TRUE)
@@ -142,7 +146,8 @@ as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar", discard = TRUE) {
   if (any(all_na))
     ftab[, names(all_na)[all_na] := NULL, with = FALSE]
   estimates <- merge(estimates, ftab, all.x = TRUE, by = "rn")
-  estimates[, c("rn") := NULL]
+  if (!isTRUE(keep.rownames))
+    estimates[, c("rn") := NULL]
 
   estimate_names <- grep("^V\\d+", names(estimates), value = TRUE)
   id_vars <- intersect(names(estimates), names(ftab))
@@ -150,6 +155,7 @@ as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar", discard = TRUE) {
                              "iteration", variable.factor = FALSE)
   melted[, c("iteration") := type.convert(sub("V", "", get("iteration"),
                                               fixed = TRUE)), with = FALSE]
+  setkeyv(melted, id_vars)
   if (isTRUE(discard)) {
     warmup <- x@stan_args[[1]]$warmup
     melted <- melted[iteration > warmup]
