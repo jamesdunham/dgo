@@ -137,7 +137,7 @@ do_funs <- function(value, funs) lapply(funs, function(f) do.call(f, value))
 #' @examples
 #' as.data.frame(toy_dgirtfit)
 #' as.data.frame(toy_dgirtfit, keep.rownames = TRUE)
-as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar", discard = TRUE,
+as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar",
                                    keep.rownames = FALSE) {
   ctrl <- x@dgirt_in$control
   estimates <- as.data.frame.matrix(t(as.matrix(x, pars = pars)))
@@ -159,10 +159,6 @@ as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar", discard = TRUE,
   melted[, c("iteration") := type.convert(sub("V", "", get("iteration"),
                                               fixed = TRUE)), with = FALSE]
   setkeyv(melted, id_vars)
-  if (isTRUE(discard)) {
-    warmup <- x@stan_args[[1]]$warmup
-    melted <- melted[iteration > warmup]
-  }
   data.table::setattr(melted, "id_vars", id_vars)
   melted
 }
