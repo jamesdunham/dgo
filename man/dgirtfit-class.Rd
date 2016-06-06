@@ -32,7 +32,7 @@ summarize(x, ...)
 \S4method{summarize}{dgirtfit}(x, pars = "theta_bar", funs = c("mean", "sd",
   "median", "q_025", "q_975"))
 
-\method{as.data.frame}{dgirtfit}(x, ..., pars = "theta_bar", discard = TRUE,
+\method{as.data.frame}{dgirtfit}(x, ..., pars = "theta_bar",
   keep.rownames = FALSE)
 }
 \arguments{
@@ -48,8 +48,6 @@ summarize(x, ...)
 
 \item{funs}{Quoted names of summary functions. `q_025` is accepted as
 shorthand for `function(x) quantile(x, .025)`, and similarly `q_975`.}
-
-\item{discard}{Whether to discard samples from warmup iterations.}
 
 \item{keep.rownames}{Whether to retain original parameter names with numeric
 indexes, as output from RStan.}

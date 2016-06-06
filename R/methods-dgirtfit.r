@@ -130,7 +130,6 @@ do_funs <- function(value, funs) lapply(funs, function(f) do.call(f, value))
 
 #' \code{as.data.frame} method for \code{dgirtfit-class} objects
 #' @rdname dgirtfit-class
-#' @param discard Whether to discard samples from warmup iterations.
 #' @param keep.rownames Whether to retain original parameter names with numeric
 #' indexes, as output from RStan.
 #' @export
