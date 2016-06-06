@@ -13,28 +13,11 @@ setMethod("show", "dgirtfit",
             print.dgirtfit(object)
           })
 
-#' S4 \code{print} generic
-#'
-#' @rdname dgirtfit-class
-#' @export
-#' @examples
-#' print(toy_dgirtfit)
 setGeneric("print", signature = "x",
            function(x, ...) standardGeneric("print"))
 
-#' \code{print} method for \code{dgirtfit-class} objects
-#'
-#' @rdname dgirtfit-class
-#' @export
-#' @examples
-#' print(toy_dgirtfit)
-setMethod("print", "dgirtfit", function(x, ...) {
-            print.dgirtfit(x, ...)
-         })
+setMethod("print", "dgirtfit", function(x, ...) print.dgirtfit(x, ...))
 
-#' \code{print} method for \code{dgirtfit-class} objects
-#'
-#' @rdname dgirtfit-class
 print.dgirtfit <- function(x, ...) {
   ctrl <- x@dgirt_in$control
   sf <- x

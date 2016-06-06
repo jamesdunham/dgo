@@ -39,7 +39,7 @@ setMethod("summary", c(object = "dgirtIn"),
           })
 
 setGeneric("print")
-setMethod("print", c(x = "dgirtIn"),
+setMethod("print", c("x" = "dgirtIn"),
           function(x, ...) summary(x))
 
 setGeneric("get_item_names", signature = "x",
