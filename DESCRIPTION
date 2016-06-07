@@ -63,4 +63,4 @@ Collate:
     'validate_dgirtIn.r'
     'validate_input_data.r'
     'wrangle.r'
-    'zzz.r'
+    'zzz.R'
