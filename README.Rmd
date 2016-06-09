@@ -6,19 +6,7 @@ output:
 [![Build Status](https://travis-ci.org/jamesdunham/dgirt.svg?branch=master)](https://travis-ci.org/jamesdunham/dgirt)
 
 dgirt is an R package for dynamic group-level IRT models as developed in
-[Caughey and Warshaw 2014](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html):
-
-> Over the past eight decades, millions of people have been surveyed on their
-> political opinions. Until recently, however, polls rarely included enough
-> questions in a given domain to apply scaling techniques such as IRT models at
-> the individual level, preventing scholars from taking full advantage of
-> historical survey data. To address this problem, we develop a Bayesian
-> group-level IRT approach that models latent traits at the level of demographic
-> and/or geographic groups rather than individuals. We use a hierarchical model
-> to borrow strength cross-sectionally and dynamic linear models to do so across
-> time. The group-level estimates can be weighted to generate estimates for
-> geographic units. This framework opens up vast new areas of research on
-> historical public opinion, especially at the subnational level.
+[Caughey and Warshaw 2014](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html).
 
 ```{r, knitr-options, echo = FALSE}
 # rmarkdown::render("README.Rmd")
@@ -76,17 +64,19 @@ grouping variables will be added to most output.
 
 Summarize the results:
 ```{r}
-summary(dgirt_out, pars = "theta_bar", probs = NULL)[[1]][, c("n_eff", "Rhat")]
+summary(dgirt_out)
 ```
 
-Get posterior means with a convenience function:
+Get posterior means with a convenience function, by default for the group means
+`theta_bar`:
 ```{r}
 get_posterior_mean(dgirt_out, pars = "theta_bar")
 ```
 
-Or generally access posterior samples:
+Or generally access posterior samples, by default for the group means
+`theta_bar`:
 ```{r}
-apply(as.array(dgirt_out, pars = "theta_bar"), 3, mean)
+as.data.frame(dgirt_out)
 ```
 
 See `help("dgirtfit-class")` and `help("stanfit-class")` for more.
