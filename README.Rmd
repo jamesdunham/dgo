@@ -18,18 +18,19 @@ knitr::opts_chunk$set(
   cache = FALSE)
 ```
 
-# Quick start
+## Install
 
-Install from GitHub. dgirt requires
-[RStan](http://mc-stan.org/interfaces/rstan.html) and its
-[prerequisites](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#prerequisites).
+Install dgirt from GitHub. Installation requires
+[RStan](http://mc-stan.org/interfaces/rstan.html) and its prerequisites, in
+particular a C++ toolchain. If you don't have RStan, follow its "[Getting
+Started](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)" guide.
 
 ```
 devtools::install_github("jamesdunham/dgirt", dependencies = TRUE)
 ```
 
-RStan's recommended option settings on a local, multicore machine with excess
-RAM are equally appropriate for dgirt.
+RStan's recommended options on a local, multicore machine with excess RAM are
+also appropriate for dgirt:
 
 ```{r}
 library(dgirt)
@@ -37,21 +38,24 @@ rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 ```
 
-The minimal workflow from raw data to estimation is to 1) shape input data using
-the `shape` function, and 2) pass the result to the `dgirt` function to fit a
-dgirt model.
+## Getting started
 
-For this example we'll model responses to a single survey item in the bundled
+The minimal workflow from raw data to estimation is:
+
+  1. shape input data using the `shape` function; and
+  2. pass the result to the `dgirt` function to fit a dgirt model.
+
+### Prepare input data with `shape`
+
+The following example models responses to a single survey item in the bundled
 `opinion` data. dgirt models are *dynamic*, so we need to specify which variable
-in the data represents time. They are also *group-level*, so we need to define
-the groups with one variable for respondents' local geographic area and one or
-more variables for respondent characteristics.
+in the data represents time. They are also *group-level*, with groups defined by
+one variable for respondents' local geographic area and one or more variables
+for respondent characteristics.
 
 The `time_filter` and `geo_filter` arguments optionally subset the example data.
-`time_filter` may include unobserved periods.
-
-Finally, `shape` requires the names of the survey identifier and survey weight
-variables in the data.
+`time_filter` may include unobserved periods. Finally, `shape` requires the
+names of the survey identifier and survey weight variables in the data.
 
 ```{r}
 dgirt_in <- shape(opinion, item_names = "Q_cces2006_abortion",
@@ -69,19 +73,23 @@ get_n(dgirt_in, by = c("year", "source"))
 get_item_n(dgirt_in, by = "year")
 ```
 
-Fit a model to data from `shape` using `dgirt`. Under the hood, this function
-uses RStan for MCMC sampling, and arguments can be passed to RStan's `stan` via
-`dgirt`'s `...` argument. This will almost always be desirable, at a minimum to
-specify the number of sampler iterations, chains, and cores.
+### Fit a model with `dgirt`
+
+We use `dgirt` to fit a model to data from `shape`. Under the hood, this
+function uses RStan for MCMC sampling, and arguments can be passed to RStan's
+`stan` via the `...` argument of `dgirt`. This will almost always be desirable,
+at a minimum to specify the number of sampler iterations, chains, and cores.
 
 ```{r, warning = FALSE}
-dgirt_out <- dgirt(dgirt_in, iter = 2000, chains = 2, cores = 2, seed = 42,
+dgirt_out <- dgirt(dgirt_in, iter = 2000, chains = 4, cores = 4, seed = 42,
                    refresh = 0)
 ```
 
-The model results are held in a `dgirtfit` object.  This means that methods from
-RStan like `extract` are available if needed. But dgirt provides methods for a
-typical workflow.
+The model results are held in a `dgirtfit` object. This means that methods from
+RStan like `extract` are available if needed. But dgirt provides its own methods
+for typical post-estimation tasks.
+
+### Work with `dgirt` results
 
 For a high-level summary of the result, use `summary`.
 
@@ -99,8 +107,8 @@ summarize(dgirt_out)
 ```
 
 Alternatively, `summarize` can apply arbitrary functions to posterior samples
-for whatever parameter is given by its `pars` argument. Function names should be
-quoted. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th
+for whatever parameter is given by its `pars` argument. Enclose function names
+with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th
 posterior quantiles.
 
 ```{r}
@@ -109,19 +117,20 @@ summarize(dgirt_out, pars = "xi", funs = "var")
 
 To access posterior samples in tabular form use `as.data.frame`. By default,
 this method returns post-warmup samples for the `theta_bar` parameters, but like
-most other methods takes a `pars` argument.
+other methods takes a `pars` argument.
 
 ```{r}
 as.data.frame(dgirt_out)
 ```
 
-To poststratify the results use `poststratify`. More details are given in
-`help("poststratify")`. This example uses the group population proportions
-bundled as `targets` to reweight and aggregate estimates to strata defined by
-states and years.
+To poststratify the results use `poststratify`. This example uses the group
+population proportions bundled as `state_year_targets` to reweight and aggregate
+estimates to strata defined by state-years. Read `help("poststratify")` for more
+details. 
 
 ```{r}
-# poststratify(dgirt_out, targets, c("state", "year"), "race")
+poststratify(dgirt_out, state_year_targets, strata_names = c("state", "year"),
+             aggregated_names = "race")
 ```
 
 To plot the results use `dgirt_plot`. This method plots summaries of posterior
@@ -130,16 +139,12 @@ posterior medians for the `theta_bar` parameters, for each local geographic
 area. 
 
 ```{r}
-# dgirt_plot(dgirt_out)
+dgirt_plot(dgirt_out)
 ```
 
 Output from `dgirt_plot` can be customized using objects from the ggplot2
-package. Chain them to the `dgirt_plot` call with `+` or use the `%+%` operator
-with existing `ggplot` objects.
+package.
 
 ```{r}
-# dgirt_plot(dgirt_out) + ylab("median")
-
-# p <- dgirt_plot(dgirt_out)
-# p <- p %+% ylab("median")
+dgirt_plot(dgirt_out) + theme_classic()
 ```

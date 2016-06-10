@@ -23,3 +23,13 @@ readme: dgirt_$(VERSION).tar.gz
 
 doc: dgirt_$(VERSION).tar.gz
 	R CMD CHECK --no-install --no-tests --no-examples dgirt_$(VERSION).tar.gz
+
+quick-install:
+	R CMD INSTALL --no-multiarch --no-docs --no-html \
+	  --with-keep.source .
+
+quick-check dgirt_$(VERSION).tar.gz:
+	R --no-site-file --no-environ  \
+	  --no-save --no-restore --quiet CMD build .  \
+	  --no-resave-data --no-manual
+	R CMD CHECK dgirt_$(VERSION).tar.gz

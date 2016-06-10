@@ -13,28 +13,11 @@ setMethod("show", "dgirtfit",
             print.dgirtfit(object)
           })
 
-#' S4 \code{print} generic
-#'
-#' @rdname dgirtfit-class
-#' @export
-#' @examples
-#' print(toy_dgirtfit)
 setGeneric("print", signature = "x",
            function(x, ...) standardGeneric("print"))
 
-#' \code{print} method for \code{dgirtfit-class} objects
-#'
-#' @rdname dgirtfit-class
-#' @export
-#' @examples
-#' print(toy_dgirtfit)
-setMethod("print", "dgirtfit", function(x, ...) {
-            print.dgirtfit(x, ...)
-         })
+setMethod("print", "dgirtfit", function(x, ...) print.dgirtfit(x, ...))
 
-#' \code{print} method for \code{dgirtfit-class} objects
-#'
-#' @rdname dgirtfit-class
 print.dgirtfit <- function(x, ...) {
   ctrl <- x@dgirt_in$control
   sf <- x
@@ -130,14 +113,13 @@ do_funs <- function(value, funs) lapply(funs, function(f) do.call(f, value))
 
 #' \code{as.data.frame} method for \code{dgirtfit-class} objects
 #' @rdname dgirtfit-class
-#' @param discard Whether to discard samples from warmup iterations.
 #' @param keep.rownames Whether to retain original parameter names with numeric
 #' indexes, as output from RStan.
 #' @export
 #' @examples
 #' as.data.frame(toy_dgirtfit)
 #' as.data.frame(toy_dgirtfit, keep.rownames = TRUE)
-as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar", discard = TRUE,
+as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar",
                                    keep.rownames = FALSE) {
   ctrl <- x@dgirt_in$control
   estimates <- as.data.frame.matrix(t(as.matrix(x, pars = pars)))
@@ -159,10 +141,6 @@ as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar", discard = TRUE,
   melted[, c("iteration") := type.convert(sub("V", "", get("iteration"),
                                               fixed = TRUE)), with = FALSE]
   setkeyv(melted, id_vars)
-  if (isTRUE(discard)) {
-    warmup <- x@stan_args[[1]]$warmup
-    melted <- melted[iteration > warmup]
-  }
   data.table::setattr(melted, "id_vars", id_vars)
   melted
 }
