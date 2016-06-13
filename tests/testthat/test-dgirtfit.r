@@ -1,4 +1,5 @@
 suppressMessages({
+  library(data.table)
   context("dgirtfit class")
 
   res <- suppressWarnings(dgirt(toy_dgirt_in, iter = 5, chains = 1,
@@ -17,6 +18,26 @@ suppressMessages({
 
     tab <- get_posterior_mean(res)
     expect_named(tab, c(attr(tab, "id_vars"), "mean"))
+  })
+
+  test_that("dgirtfit and stanfit as.data.frame methods give the same values", {
+    sf <- toy_dgirtfit
+    class(sf) <- "stanfit"
+    sf <- as.data.frame(sf, "theta_bar")
+
+    # including warmup
+    tab <- as.data.frame(toy_dgirtfit, discard = FALSE)
+    setDT(tab)
+    setorderv(tab, c("race", "state", "year", "iteration"))
+
+    expect_equal(tab$value, unname(unlist(sf)))
+
+    # excluding warmup
+    tab <- as.data.frame(toy_dgirtfit)
+    setDT(tab)
+    setorderv(tab, c("race", "state", "year", "iteration"))
+
+    expect_equal(tab$value, unname(unlist(sf)))
   })
 
 })
