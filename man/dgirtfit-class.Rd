@@ -1,13 +1,14 @@
-\name{dgirtfit-class}
-
 \docType{class}
-\title{Class \code{dgirtfit}: fitted DGIRT model}
+
+\title{\code{dgirtfit}: a class for fitted DGIRT models}
+\name{dgirtfit-class}
 
 \alias{as.data.frame.dgirtfit}
 \alias{dgirtfit}
 \alias{dgirtfit-class}
 \alias{get_posterior_mean,dgirtfit-method}
 \alias{print,dgirtfit-method}
+\alias{print.dgirtfit}
 \alias{print-method}
 \alias{show,dgirtfit-method}
 \alias{summarize}
@@ -16,15 +17,18 @@
 
 
 \usage{
+print(x, ...)
+print.dgirtfit(x, ...)
+summarize(x, ...)
+\method{as.data.frame}{dgirtfit}(x, ..., pars = "theta_bar",
+  keep.rownames = FALSE)
+summarize(x, ...)
 \S4method{show}{dgirtfit}(object)
 \S4method{print}{dgirtfit}(x, ...)
 \S4method{summary}{dgirtfit}(object, ..., verbose = FALSE)
 \S4method{get_posterior_mean}{dgirtfit}(object, pars = "theta_bar", ...)
 \S4method{summarize}{dgirtfit}(x, pars = "theta_bar", funs = c("mean", "sd",
   "median", "q_025", "q_975"))
-\method{as.data.frame}{dgirtfit}(x, ..., pars = "theta_bar",
-  keep.rownames = FALSE)
-summarize(x, ...)
 }
 
 \arguments{
@@ -39,10 +43,32 @@ indexes, as output from RStan.}
 }
 
 \description{
-All \code{\link{rstan}} methods for superclass
-\code{\link[rstan]{stanfit-class}} are available. Descriptive labels for
-parameters on time periods, local geographic areas, and grouping variables
-will be added to most output.
+Fitting a dgirt model results in a \code{dgirtfit} object that inherits from
+\code{\link{rstan}}'s \code{\link[rstan]{stanfit-class}}. 
+
+The \code{rstan} methods will be dispatched only if a \code{dgirtfit} method
+does not exist
+
+Descriptive labels for parameters on time periods, local geographic areas, and
+grouping variables will be added to most output.
+
+\code{show} method for \code{dgirtfit-class} objects
+
+S4 \code{print} generic
+
+\code{print} method for \code{dgirtfit-class} objects
+
+\code{print} method for \code{dgirtfit-class} objects
+
+\code{summary} method for \code{dgirtfit-class} objects
+
+\code{get_posterior_mean} method for \code{dgirtfit-class} objects
+
+S4 \code{summarize} generic
+
+\code{summarize} method for \code{dgirtfit-class} objects
+
+\code{as.data.frame} method for \code{dgirtfit-class} objects
 }
 
 \section{Slots}{

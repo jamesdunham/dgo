@@ -1,12 +1,17 @@
 Package: dgirt
-Maintainer: James Dunham <james@jamesdunham.io>
-Version: 0.2.3
 Title: Dynamic Group-Level IRT and Small Area Estimation
-Author: James Dunham, Christopher Warshaw, and Devin Caughey.
+Version: 0.2.3
+Date: 2016-06-08
 Description: Fit dynamic group-level IRT models from individual or aggregated
     item response data. This package handles common preprocessing tasks and extends
     functions for inspecting results, poststratification, and quick iteration over
     alternative models. Under active development.
+Maintainer: James Dunham <james@jamesdunham.io>
+Authors@R: c(
+    person("James", "Dunham", email = "james@jamesdunham.io", role = c("aut", "cre")),
+    person("Devin", "Caughey", email = "caughey@mit.edu", role = c("aut")),
+    person("Christopher", "Warshaw", email = "cwarshaw@mit.edu", role = c("aut"))
+    )
 License: GPL-3
 URL: https://github.com/jamesdunham/dgirt
 BugReports: https://github.com/jamesdunham/dgirt/issues
@@ -23,7 +28,6 @@ Imports:
     methods,
     R6,
     survey
-RoxygenNote: 5.0.1
 Suggests:
     knitr,
     rmarkdown,
@@ -63,4 +67,5 @@ Collate:
     'validate_dgirtIn.r'
     'validate_input_data.r'
     'wrangle.r'
-    'zzz.r'
+    'zzz.R'
+RoxygenNote: 5.0.1

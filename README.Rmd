@@ -6,19 +6,7 @@ output:
 [![Build Status](https://travis-ci.org/jamesdunham/dgirt.svg?branch=master)](https://travis-ci.org/jamesdunham/dgirt)
 
 dgirt is an R package for dynamic group-level IRT models as developed in
-[Caughey and Warshaw 2014](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html):
-
-> Over the past eight decades, millions of people have been surveyed on their
-> political opinions. Until recently, however, polls rarely included enough
-> questions in a given domain to apply scaling techniques such as IRT models at
-> the individual level, preventing scholars from taking full advantage of
-> historical survey data. To address this problem, we develop a Bayesian
-> group-level IRT approach that models latent traits at the level of demographic
-> and/or geographic groups rather than individuals. We use a hierarchical model
-> to borrow strength cross-sectionally and dynamic linear models to do so across
-> time. The group-level estimates can be weighted to generate estimates for
-> geographic units. This framework opens up vast new areas of research on
-> historical public opinion, especially at the subnational level.
+[Caughey and Warshaw 2014](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html).
 
 ```{r, knitr-options, echo = FALSE}
 # rmarkdown::render("README.Rmd")
@@ -30,63 +18,134 @@ knitr::opts_chunk$set(
   cache = FALSE)
 ```
 
-# Quick start
+## Install
 
-Install from GitHub. dgirt requires [RStan](http://mc-stan.org/interfaces/rstan.html) and its
-[prerequisites](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#prerequisites).
+Install dgirt from GitHub. Installation requires
+[RStan](http://mc-stan.org/interfaces/rstan.html) and its prerequisites, in
+particular a C++ toolchain. If you don't have RStan, follow its "[Getting
+Started](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)" guide.
+
 ```
 devtools::install_github("jamesdunham/dgirt", dependencies = TRUE)
 ```
 
-Shape item response data for modeling:
+RStan's recommended options on a local, multicore machine with excess RAM are
+also appropriate for dgirt:
+
 ```{r}
 library(dgirt)
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+```
+
+## Getting started
+
+The minimal workflow from raw data to estimation is:
+
+  1. shape input data using the `shape` function; and
+  2. pass the result to the `dgirt` function to fit a dgirt model.
+
+### Prepare input data with `shape`
+
+The following example models responses to a single survey item in the bundled
+`opinion` data. dgirt models are *dynamic*, so we need to specify which variable
+in the data represents time. They are also *group-level*, with groups defined by
+one variable for respondents' local geographic area and one or more variables
+for respondent characteristics.
+
+The `time_filter` and `geo_filter` arguments optionally subset the data.
+`time_filter` can also be used to include unobserved periods in the model.
+Finally, `shape` requires the names of the survey identifier and survey weight
+variables in the data.
+
+```{r}
 dgirt_in <- shape(opinion, item_names = "Q_cces2006_abortion",
                   time_name = "year", geo_name = "state", group_names = "race",
-                  time_filter = 2006:2008, geo_filter = c("MA", "NY"),
+                  geo_filter = c("CA", "GA", "LA", "MA"),
                   survey_name = "source", weight_name = "weight")
 ```
 
-Summarize the data:
+The reshaped and subsetted data can be summarized in a few ways before model
+fitting.
+
 ```{r}
 summary(dgirt_in)
-```
-
-Get item response counts:
-```{r}
-get_item_n(dgirt_in, by = "year")
-
-```
-
-Or response counts generally:
-```{r}
 get_n(dgirt_in, by = c("year", "source"))
+get_item_n(dgirt_in, by = "year")
 ```
 
-Fit a DGIRT model:
-```{r, warning = FALSE}
-dgirt_out <- dgirt(dgirt_in, iter = 2000, chains = 2, cores = 2, seed = 42,
+### Fit a model with `dgirt`
+
+We use `dgirt` to fit a model to data from `shape`. Under the hood, this
+function uses RStan for MCMC sampling, and arguments can be passed to RStan's
+`stan` via the `...` argument of `dgirt`. This will almost always be desirable,
+at a minimum to specify the number of sampler iterations, chains, and cores.
+
+```{r, warning = FALSE, cache = TRUE}
+dgirt_out <- dgirt(dgirt_in, iter = 1500, chains = 4, cores = 4, seed = 42,
                    refresh = 0)
 ```
 
-All `rstan` methods for the `stanfit` class are available for `dgirt` output, so
-[do things the RStan way](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started#how-to-use-rstan).
-Descriptive labels for parameters on time periods, local geographic areas, and
-grouping variables will be added to most output.
+The model results are held in a `dgirtfit` object. This means that methods from
+RStan like `extract` are available if needed. But dgirt provides its own methods
+for typical post-estimation tasks.
 
-Summarize the results:
+### Work with `dgirt` results
+
+For a high-level summary of the result, use `summary`.
+
 ```{r}
-summary(dgirt_out, pars = "theta_bar", probs = NULL)[[1]][, c("n_eff", "Rhat")]
+summary(dgirt_out)
 ```
 
-Get posterior means with a convenience function:
+To summarize posterior samples, use `summarize`. The default output gives
+summary statistics for the `theta_bar` parameters, which represent the mean of
+the latent outcome for the groups defined by time, local geographic area, and
+the demographic characteristics specified in the earlier call to `shape`.
+
 ```{r}
-get_posterior_mean(dgirt_out, pars = "theta_bar")
+summarize(dgirt_out)
 ```
 
-Or generally access posterior samples:
+Alternatively, `summarize` can apply arbitrary functions to posterior samples
+for whatever parameter is given by its `pars` argument. Enclose function names
+with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th
+posterior quantiles.
+
 ```{r}
-apply(as.array(dgirt_out, pars = "theta_bar"), 3, mean)
+summarize(dgirt_out, pars = "xi", funs = "var")
 ```
 
-See `help("dgirtfit-class")` and `help("stanfit-class")` for more.
+To access posterior samples in tabular form use `as.data.frame`. By default,
+this method returns post-warmup samples for the `theta_bar` parameters, but like
+other methods takes a `pars` argument.
+
+```{r}
+as.data.frame(dgirt_out)
+```
+
+To poststratify the results use `poststratify`. The following example uses the
+group population proportions bundled as `state_year_targets` to reweight and
+aggregate estimates to strata defined by state-years. Read
+`help("poststratify")` for more details.
+
+```{r}
+poststratify(dgirt_out, state_year_targets, strata_names = c("state", "year"),
+             aggregated_names = "race")
+```
+
+To plot the results use `dgirt_plot`. This method plots summaries of posterior
+samples by time period. By default, it shows a 95% credible interval around
+posterior medians for the `theta_bar` parameters, for each local geographic
+area. For this toy example we omit the CIs.
+
+```{r}
+dgirt_plot(dgirt_out, y_min = NULL, y_max = NULL)
+```
+
+Output from `dgirt_plot` can be customized to some extent using objects from the
+ggplot2 package.
+
+```{r}
+dgirt_plot(dgirt_out, y_min = NULL, y_max = NULL) + theme_classic()
+```
