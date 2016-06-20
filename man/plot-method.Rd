@@ -3,16 +3,25 @@
 \docType{methods}
 \name{dgirt_plot}
 \alias{dgirt_plot}
+\alias{dgirt_plot,data.frame-method}
+\alias{dgirt_plot,dgirtfit-method}
 \alias{plot,dgirtfit,missing-method}
-\title{\code{dgirt_plot} plot \code{dgirtfit}-class objects}
+\title{\code{dgirt_plot}: plot \code{dgirtfit}-class objects}
 \usage{
-dgirt_plot(x, y_fun = "median", y_min = "q_025", y_max = "q_975",
-  pars = "theta_bar")
+dgirt_plot(x, ...)
+
+\S4method{dgirt_plot}{dgirtfit}(x, y_fun = "median", y_min = "q_025",
+  y_max = "q_975", pars = "theta_bar")
+
+\S4method{dgirt_plot}{data.frame}(x, group_names, time_name, geo_name,
+  y_fun = "median", y_min = "q_025", y_max = "q_975")
 
 \S4method{plot}{dgirtfit,missing}(x, y, ...)
 }
 \arguments{
 \item{x}{A \code{dgirtfit-class} object.}
+
+\item{...}{Further arguments to \code{\link{dgirt_plot}}.}
 
 \item{y_fun}{Summary function to be plotted as \code{y}.}
 
@@ -24,12 +33,21 @@ dgirt_plot(x, y_fun = "median", y_min = "q_025", y_max = "q_975",
 
 \item{pars}{Selected parameter.}
 
-\item{y}{Ignored.}
+\item{group_names}{Discrete grouping variables, if any, which will be used as
+the \code{color} argument in \code{aes}.}
 
-\item{...}{Further arguments to \code{\link{dgirt_plot}}.}
+\item{time_name}{A time variable with numeric values that will be plotted on
+the x axis.}
+
+\item{geo_name}{A variable representing local areas that will be used in
+faceting.}
+
+\item{y}{Ignored.}
 }
 \description{
-\code{dgirt_plot} plot \code{dgirtfit}-class objects
+\code{dgirt_plot}: plot \code{dgirtfit}-class objects
+
+\code{dgirt_plot}: plot \code{data.frame} objects
 
 \code{plot} plot method for \code{dgirtfit}-class objects
 }
@@ -38,6 +56,10 @@ dgirt_plot(toy_dgirtfit)
 dgirt_plot(toy_dgirtfit, y_min = NULL, y_max = NULL)
 p <- dgirt_plot(toy_dgirtfit)
 p \%+\% ylab("posterior median")
+data(state_year_targets)
+ps <- poststratify(toy_dgirtfit, state_year_targets, strata_names =
+                   c("state", "year"), aggregated_names = "race")
+dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 
 plot(toy_dgirtfit)
 }
