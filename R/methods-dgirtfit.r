@@ -1,13 +1,5 @@
 utils::globalVariables(c("value", "iteration", ".", "rn"))
 
-#' \code{show} method for \code{dgirtfit-class} objects
-#'
-#' @rdname dgirtfit-class
-#' @param object A \code{dgirtfit-class} object.
-#' @param x A \code{dgirtfit-class} object.
-#' @export
-#' @examples
-#' toy_dgirtfit
 setMethod("show", "dgirtfit",
           function(object) {
             print.dgirtfit(object)
@@ -50,15 +42,6 @@ print.dgirtfit <- function(x, ...) {
   print(summary(ss[, "Rhat"]))
 }
 
-#' \code{summary} method for \code{dgirtfit-class} objects
-#'
-#' @rdname dgirtfit-class
-#' @param ... Further arguments to \code{\link{stanfit-class}} methods.
-#' @param verbose Whether to show the verbose RStan summary.
-#' @export
-#' @examples
-#' summary(toy_dgirtfit)
-#' summary(toy_dgirtfit, pars = "theta_bar", verbose = TRUE)
 setMethod("summary", "dgirtfit", function(object, ..., verbose = FALSE) {
   if (isTRUE(verbose)) {
     sf <- object
@@ -69,33 +52,14 @@ setMethod("summary", "dgirtfit", function(object, ..., verbose = FALSE) {
   }
 })
 
-#' \code{get_posterior_mean} method for \code{dgirtfit-class} objects
-#'
-#' @rdname dgirtfit-class
-#' @param pars Selected parameter names.
-#' @export
-#' @examples
-#' get_posterior_mean(toy_dgirtfit)
 setMethod("get_posterior_mean", "dgirtfit",
           function(object, pars = "theta_bar", ...) {
             summarize(object, pars, funs = "mean")
           })
 
-#' S4 \code{summarize} generic
-#'
-#' @rdname dgirtfit-class
 setGeneric("summarize", signature = "x",
            function(x, ...) standardGeneric("summarize"))
 
-#' \code{summarize} method for \code{dgirtfit-class} objects
-#'
-#' @param funs Quoted names of summary functions. `q_025` is accepted as
-#' shorthand for `function(x) quantile(x, .025)`, and similarly `q_975`.
-#' @rdname dgirtfit-class
-#' @examples
-#' summarize(toy_dgirtfit)
-#' summarize(toy_dgirtfit, pars = "xi")
-#' summarize(toy_dgirtfit, funs = "mean")
 setMethod("summarize", "dgirtfit",
   function(x, pars = "theta_bar",
               funs = c("mean", "sd", "median", "q_025", "q_975")) {
@@ -111,14 +75,6 @@ q_025 <- function(x) quantile(x, .025)
 q_975 <- function(x) quantile(x, .975)
 do_funs <- function(value, funs) lapply(funs, function(f) do.call(f, value))
 
-#' \code{as.data.frame} method for \code{dgirtfit-class} objects
-#' @rdname dgirtfit-class
-#' @param keep.rownames Whether to retain original parameter names with numeric
-#' indexes, as output from RStan.
-#' @export
-#' @examples
-#' as.data.frame(toy_dgirtfit)
-#' as.data.frame(toy_dgirtfit, keep.rownames = TRUE)
 as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar",
                                    keep.rownames = FALSE) {
   ctrl <- x@dgirt_in$control

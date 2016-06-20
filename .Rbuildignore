@@ -2,6 +2,7 @@
 ^.*\.Rdata$
 ^.*\.png$
 ^README.Rmd$
+^README_cache$
 ^\.DS_Store$
 ^\.travis.yml$
 ^packrat/

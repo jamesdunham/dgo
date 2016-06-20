@@ -7,6 +7,7 @@
 \alias{dgirtfit}
 \alias{dgirtfit-class}
 \alias{get_posterior_mean,dgirtfit-method}
+\alias{print}
 \alias{print,dgirtfit-method}
 \alias{print.dgirtfit}
 \alias{print-method}
