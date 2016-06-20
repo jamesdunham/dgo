@@ -17,7 +17,7 @@ poststratify(x, target_data, strata_names, aggregated_names,
   aggregated_names, prop_name = "proportion", pars = "theta_bar")
 }
 \arguments{
-\item{x}{A \code{data.frame}.}
+\item{x}{A \code{data.frame} or \code{dgirtfit} object.}
 
 \item{target_data}{A table giving the proportions contributed to strata by
 the interaction of \code{strata_names} and \code{aggregated_names}.}
@@ -39,15 +39,15 @@ strata proportions.}
 A table of poststratified estimates.
 }
 \description{
-\code{poststratify}: reweight and aggregate estimates
-
-\code{poststratify} method for \code{dgirtfit}-class objects
-
-Identifiers in the table of estimates to be poststratified should be given as
-\code{strata_names} or \code{aggregated_names}. There will be a row in the
-result for each interaction of the variables in \code{strata_names}
-containing the values of \code{estimate_names} poststratified over the
-variables in \code{aggregated_names}.
+This function reweights and aggregates estimates from \code{dgirt} for strata
+defined by modeled variables. The names of each of the model's time,
+geographic, and demographic grouping variables can be given in either the
+\code{strata_names} or \code{aggregated_names} argument. The result has
+estimates for the strata indicated by the \code{strata_names} argument,
+aggregated over the variables specified in \code{aggregated_names}.
+\code{poststratify} requires a table given as \code{target_data} with
+population proportions for the interaction of the variables given in
+\code{strata_names} and \code{aggregated_names}.
 }
 \examples{
 
