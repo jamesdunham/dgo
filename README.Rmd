@@ -76,10 +76,10 @@ get_item_n(dgirt_in, by = "year")
 
 ### Fit a model with `dgirt`
 
-We use `dgirt` to fit a model to data from `shape`. Under the hood, this
-function uses RStan for MCMC sampling, and arguments can be passed to RStan's
-`stan` via the `...` argument of `dgirt`. This will almost always be desirable,
-at a minimum to specify the number of sampler iterations, chains, and cores.
+`dgirt` fits a model to data from `shape`. Under the hood, this function uses
+RStan for MCMC sampling, and arguments can be passed to RStan's `stan` via the
+`...` argument of `dgirt`. This will almost always be desirable, at a minimum to
+specify the number of sampler iterations, chains, and cores.
 
 ```{r, warning = FALSE, cache = TRUE}
 dgirt_out <- dgirt(dgirt_in, iter = 1500, chains = 4, cores = 4, seed = 42,
@@ -149,3 +149,16 @@ ggplot2 package.
 ```{r}
 dgirt_plot(dgirt_out, y_min = NULL, y_max = NULL) + theme_classic()
 ```
+
+Output from `poststratify` can also be plotted. `dgirt_plot` has a method for
+`data.frame` that just requires a bit more information passed as arguments than
+the `dgirtfit` method. Below `poststratify` aggregates over the demographic
+grouping variable, so in the subsequent call to `dgirt_plot` we set the
+`group_names` argument to `NULL.` 
+
+```{r}
+ps <- poststratify(dgirt_out, state_year_targets,
+                   strata_names = c("state", "year"), aggregated_names = "race")
+dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
+```
+
