@@ -13,7 +13,6 @@ RStan's recommended options on a local, multicore machine with excess RAM are al
 
 ``` r
 library(dgirt)
-#> Loading required package: Rcpp
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 ```
@@ -42,6 +41,8 @@ dgirt_in <- shape(opinion, item_names = "Q_cces2006_abortion",
 #>  Dropped 555 rows for lacking item responses
 #> Applying restrictions, pass 2...
 #>  No changes
+#> Warning in `[.data.table`(item_n, , `:=`(c(drop_cols), NULL), with =
+#> FALSE): length(LHS) = 0, meaning no columns to delete or assign RHS to.
 ```
 
 The reshaped and subsetted data can be summarized in a few ways before model fitting.
@@ -86,7 +87,7 @@ dgirt_out <- dgirt(dgirt_in, iter = 1500, chains = 4, cores = 4, seed = 42,
                    refresh = 0)
 ```
 
-The model results are held in a `dgirtfit` object. This means that methods from RStan like `extract` are available if needed. But dgirt provides its own methods for typical post-estimation tasks.
+The model results are held in a `dgirtfit` object. Methods from RStan like `extract` are available if needed because `dgirtfit` inherits from `stanfit`. But dgirt provides its own methods for typical post-estimation tasks.
 
 ### Work with `dgirt` results
 
@@ -113,83 +114,21 @@ summary(dgirt_out)
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
 
 ``` r
-summarize(dgirt_out)
-#>         param state  race year        mean         sd       median
-#>  1: theta_bar    CA black 2006  10.1783840   5.154298   9.21579611
-#>  2: theta_bar    CA black 2007  28.6757279  20.659388  23.42522881
-#>  3: theta_bar    CA black 2008 140.1491684 234.721772  61.04397619
-#>  4: theta_bar    CA other 2006   7.5087801   3.866240   6.76632563
-#>  5: theta_bar    CA other 2007  16.8367059  13.273454  13.51326088
-#>  6: theta_bar    CA other 2008  75.7255300 138.758648  30.13313021
-#>  7: theta_bar    CA white 2006   7.3647375   3.670777   6.68848315
-#>  8: theta_bar    CA white 2007  21.1761928  14.849486  17.60975425
-#>  9: theta_bar    CA white 2008  97.4976873 160.271008  43.32026624
-#> 10: theta_bar    GA black 2006   8.2682419   4.308085   7.40594498
-#> 11: theta_bar    GA black 2007  19.8359831  15.759313  15.78736208
-#> 12: theta_bar    GA black 2008  89.4606800 156.772580  37.32120679
-#> 13: theta_bar    GA other 2006   3.9279664   2.631318   3.35157214
-#> 14: theta_bar    GA other 2007   3.3293869   8.503309   1.99519851
-#> 15: theta_bar    GA other 2008   1.9704036  64.607092  -1.01611895
-#> 16: theta_bar    GA white 2006   2.4062512   1.364987   2.13641067
-#> 17: theta_bar    GA white 2007   2.3837484   3.840942   1.66868663
-#> 18: theta_bar    GA white 2008  -8.2277029  28.769625  -4.18542411
-#> 19: theta_bar    LA black 2006   2.5901626   2.143351   2.16696176
-#> 20: theta_bar    LA black 2007   2.0700925   6.861788   1.49434430
-#> 21: theta_bar    LA black 2008  -1.3949747  47.308607  -1.55754857
-#> 22: theta_bar    LA other 2006   0.2164769   2.402552   0.08052373
-#> 23: theta_bar    LA other 2007  -8.1767409  10.420386  -6.31183764
-#> 24: theta_bar    LA other 2008 -57.5061495 106.853869 -24.76840297
-#> 25: theta_bar    LA white 2006  -1.9043446   1.506080  -1.56537887
-#> 26: theta_bar    LA white 2007 -11.3325847   9.262449  -8.84843476
-#> 27: theta_bar    LA white 2008 -77.5922288 117.661450 -36.70334571
-#> 28: theta_bar    MA black 2006  13.3597880   6.891625  11.89909284
-#> 29: theta_bar    MA black 2007  43.0731947  29.660330  35.71147279
-#> 30: theta_bar    MA black 2008 205.0983691 338.622223  90.33508381
-#> 31: theta_bar    MA other 2006  10.2500485   5.424927   9.26182809
-#> 32: theta_bar    MA other 2007  29.9792545  22.297994  24.78322435
-#> 33: theta_bar    MA other 2008 133.9016343 234.190336  57.15242284
-#> 34: theta_bar    MA white 2006   9.5473423   4.789013   8.59759936
-#> 35: theta_bar    MA white 2007  32.8486671  21.861877  27.71128936
-#> 36: theta_bar    MA white 2008 145.6829214 238.065557  64.17700429
-#>         param state  race year        mean         sd       median
-#>            q_025        q_975
-#>  1:    3.1155550   23.7086819
-#>  2:    6.8371637   82.5814374
-#>  3:    8.2583533  805.3522650
-#>  4:    2.2121960   16.8860319
-#>  5:    3.5659762   50.7522511
-#>  6:    3.0844126  471.0773713
-#>  7:    2.3437977   16.6911425
-#>  8:    5.2791924   56.6607516
-#>  9:    5.9238111  556.4075350
-#> 10:    2.4229394   19.0616946
-#> 11:    4.0576387   58.4639998
-#> 12:    4.1711179  514.3227980
-#> 13:    0.4895117   10.4655598
-#> 14:   -9.8080030   23.0288058
-#> 15:  -78.3092301  113.4156466
-#> 16:    0.6079124    5.7308249
-#> 17:   -2.9960586   11.7120838
-#> 18:  -65.7817394   20.9515471
-#> 19:   -0.3445474    8.1109730
-#> 20:  -10.8996770   17.4174756
-#> 21:  -83.9464928   89.9639052
-#> 22:   -4.3270279    5.3252195
-#> 23:  -33.4896707    8.6878184
-#> 24: -329.4388599   10.4615276
-#> 25:   -5.9470300    0.1054171
-#> 26:  -34.5766354   -0.6985035
-#> 27: -405.9435828   -4.8537516
-#> 28:    4.0379472   30.5041425
-#> 29:   10.6602152  115.7860715
-#> 30:   11.6850546 1200.1301890
-#> 31:    2.8912746   22.8764571
-#> 32:    6.7686103   84.3154085
-#> 33:    5.5421754  801.7730088
-#> 34:    3.0295938   20.7599436
-#> 35:    8.5392350   86.7140199
-#> 36:    8.2475177  817.3714253
-#>            q_025        q_975
+head(summarize(dgirt_out))
+#>        param state  race year      mean         sd    median    q_025
+#> 1: theta_bar    CA black 2006  10.17838   5.154298  9.215796 3.115555
+#> 2: theta_bar    CA black 2007  28.67573  20.659388 23.425229 6.837164
+#> 3: theta_bar    CA black 2008 140.14917 234.721772 61.043976 8.258353
+#> 4: theta_bar    CA other 2006   7.50878   3.866240  6.766326 2.212196
+#> 5: theta_bar    CA other 2007  16.83671  13.273454 13.513261 3.565976
+#> 6: theta_bar    CA other 2008  75.72553 138.758648 30.133130 3.084413
+#>        q_975
+#> 1:  23.70868
+#> 2:  82.58144
+#> 3: 805.35226
+#> 4:  16.88603
+#> 5:  50.75225
+#> 6: 471.07737
 ```
 
 Alternatively, `summarize` can apply arbitrary functions to posterior samples for whatever parameter is given by its `pars` argument. Enclose function names with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th posterior quantiles.
@@ -205,7 +144,14 @@ summarize(dgirt_out, pars = "xi", funs = "var")
 To access posterior samples in tabular form use `as.data.frame`. By default, this method returns post-warmup samples for the `theta_bar` parameters, but like other methods takes a `pars` argument.
 
 ``` r
-as.data.frame(dgirt_out)
+head(as.data.frame(dgirt_out))
+#>        param state  race year iteration     value
+#> 1: theta_bar    CA black 2006         1  8.024511
+#> 2: theta_bar    CA black 2006         2  5.436505
+#> 3: theta_bar    CA black 2006         3  5.027471
+#> 4: theta_bar    CA black 2006         4 13.951022
+#> 5: theta_bar    CA black 2006         5  9.436819
+#> 6: theta_bar    CA black 2006         6  9.541294
 ```
 
 To poststratify the results use `poststratify`. The following example uses the group population proportions bundled as `state_year_targets` to reweight and aggregate estimates to strata defined by state-years. Read `help("poststratify")` for more details.
@@ -228,7 +174,7 @@ poststratify(dgirt_out, state_year_targets, strata_names = c("state", "year"),
 #> 12:    MA 2008 147.8684415
 ```
 
-To plot the results use `dgirt_plot`. This method plots summaries of posterior samples by time period. By default, it shows a 95% credible interval around posterior medians for the `theta_bar` parameters, for each local geographic area. For this toy example we omit the CIs.
+To plot the results use `dgirt_plot`. This method plots summaries of posterior samples by time period. By default, it shows a 95% credible interval around posterior medians for the `theta_bar` parameters, for each local geographic area. For this (unconverged) toy example we omit the CIs.
 
 ``` r
 dgirt_plot(dgirt_out, y_min = NULL, y_max = NULL)
@@ -244,12 +190,35 @@ dgirt_plot(dgirt_out, y_min = NULL, y_max = NULL) + theme_classic()
 
 ![](README-unnamed-chunk-11-1.png)
 
-Output from `poststratify` can also be plotted. `dgirt_plot` has a method for `data.frame` that just requires a bit more information passed as arguments than the `dgirtfit` method. Below `poststratify` aggregates over the demographic grouping variable, so in the subsequent call to `dgirt_plot` we set the `group_names` argument to `NULL.`
+`dgirt_plot` can also plot the `data.frame` output from `poststratify`. This requires arguments that identify the relevant variables in the `data.frame`. Below, `poststratify` aggregates over the demographic grouping variable `race`, resulting in a `data.frame` of estimates by state-year. So, in the subsequent call to `dgirt_plot`, we pass the names of the state and year variables. The `group_names` argument is `NULL` because there are no grouping variables left after aggregating over `race`.
 
 ``` r
 ps <- poststratify(dgirt_out, state_year_targets,
                    strata_names = c("state", "year"), aggregated_names = "race")
+head(ps)
+#>    state year     value
+#> 1:    CA 2006  7.605241
+#> 2:    CA 2007 20.640547
+#> 3:    CA 2008 95.119639
+#> 4:    GA 2006  4.188233
+#> 5:    GA 2007  7.603386
+#> 6:    GA 2008 21.494767
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
 ![](README-unnamed-chunk-12-1.png)
+
+Troubleshooting
+---------------
+
+OS X only: RStan creates temporary files during estimation in a location given by `tempdir`, typically an arbitrary location in `/var/folders`. If a model runs for days, these files can be cleaned up while still needed, which induces an error. A good solution is to set a safer path for temporary files, using an environment variable checked at session startup. As described in `?tempdir`,
+
+> The environment variables ‘TMPDIR’, ‘TMP’ and ‘TEMP’ are checked in turn and the first found which points to a writable directory is used: if none succeeds ‘/tmp’ is used. The path should not contain spaces.
+
+For help setting environment variables, see the Stack Overflow question [here](https://stackoverflow.com/questions/17107206/change-temporary-directory). Confirm the new path before starting your model run by restarting R and checking the output from `tempdir()`.
+
+``` r
+# Problematic temporary directories on OS X look like this
+tempdir()   
+#> [1] "/var/folders/2p/_d3c95qd6ljg28j1f5l2jqxm0000gn/T//Rtmp6t0Jn8"
+```

@@ -86,9 +86,9 @@ dgirt_out <- dgirt(dgirt_in, iter = 1500, chains = 4, cores = 4, seed = 42,
                    refresh = 0)
 ```
 
-The model results are held in a `dgirtfit` object. This means that methods from
-RStan like `extract` are available if needed. But dgirt provides its own methods
-for typical post-estimation tasks.
+The model results are held in a `dgirtfit` object. Methods from RStan like
+`extract` are available if needed because `dgirtfit` inherits from `stanfit`.
+But dgirt provides its own methods for typical post-estimation tasks.
 
 ### Work with `dgirt` results
 
@@ -104,7 +104,7 @@ the latent outcome for the groups defined by time, local geographic area, and
 the demographic characteristics specified in the earlier call to `shape`.
 
 ```{r}
-summarize(dgirt_out)
+head(summarize(dgirt_out))
 ```
 
 Alternatively, `summarize` can apply arbitrary functions to posterior samples
@@ -121,7 +121,7 @@ this method returns post-warmup samples for the `theta_bar` parameters, but like
 other methods takes a `pars` argument.
 
 ```{r}
-as.data.frame(dgirt_out)
+head(as.data.frame(dgirt_out))
 ```
 
 To poststratify the results use `poststratify`. The following example uses the
@@ -137,7 +137,7 @@ poststratify(dgirt_out, state_year_targets, strata_names = c("state", "year"),
 To plot the results use `dgirt_plot`. This method plots summaries of posterior
 samples by time period. By default, it shows a 95% credible interval around
 posterior medians for the `theta_bar` parameters, for each local geographic
-area. For this toy example we omit the CIs.
+area. For this (unconverged) toy example we omit the CIs.
 
 ```{r}
 dgirt_plot(dgirt_out, y_min = NULL, y_max = NULL)
@@ -150,15 +150,39 @@ ggplot2 package.
 dgirt_plot(dgirt_out, y_min = NULL, y_max = NULL) + theme_classic()
 ```
 
-Output from `poststratify` can also be plotted. `dgirt_plot` has a method for
-`data.frame` that just requires a bit more information passed as arguments than
-the `dgirtfit` method. Below `poststratify` aggregates over the demographic
-grouping variable, so in the subsequent call to `dgirt_plot` we set the
-`group_names` argument to `NULL.` 
+`dgirt_plot` can also plot the `data.frame` output from `poststratify`. This
+requires arguments that identify the relevant variables in the `data.frame`.
+Below, `poststratify` aggregates over the demographic grouping variable `race`,
+resulting in a `data.frame` of estimates by state-year. So, in the subsequent
+call to `dgirt_plot`, we pass the names of the state and year variables. The
+`group_names` argument is `NULL` because there are no grouping variables left
+after aggregating over `race`.
 
 ```{r}
 ps <- poststratify(dgirt_out, state_year_targets,
                    strata_names = c("state", "year"), aggregated_names = "race")
+head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
+## Troubleshooting
+
+OS X only: RStan creates temporary files during estimation in a location given
+by `tempdir`, typically an arbitrary location in `/var/folders`. If a model runs
+for days, these files can be cleaned up while still needed, which induces an
+error. A good solution is to set a safer path for temporary files, using an
+environment variable checked at session startup. As described in `?tempdir`, 
+
+> The environment variables ‘TMPDIR’, ‘TMP’ and ‘TEMP’ are checked in turn and
+> the first found which points to a writable directory is used: if none succeeds
+> ‘/tmp’ is used. The path should not contain spaces.  
+
+For help setting environment variables, see the Stack Overflow question
+[here](https://stackoverflow.com/questions/17107206/change-temporary-directory).
+Confirm the new path before starting your model run by restarting R and checking
+the output from `tempdir()`.
+
+```{r}
+# Problematic temporary directories on OS X look like this
+tempdir()   
+```
