@@ -40,7 +40,9 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   names(item_n) <- replace(names(item_n), match(gt_names, names(item_n)), item_n_vars)
   data.table::setkeyv(item_n, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
   drop_cols <- setdiff(names(item_n), c(key(item_n), item_n_vars))
-  item_n[, c(drop_cols) := NULL, with = FALSE]
+  if (length(drop_cols)) {
+    item_n[, c(drop_cols) := NULL, with = FALSE]
+  }
 
   # get mean ystar
   item_data[, c("adj_weight") := get(ctrl@weight_name) / get("n_responses")]
