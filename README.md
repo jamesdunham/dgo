@@ -259,4 +259,4 @@ dgirt is under development and we welcome [suggestions](https://github.com/james
 
 The package citation is
 
-> Dunham, James, Devin Caughey, and Christopher Warshaw. 2016. dgirt: Dynamic Group-level IRT Models in R. R package. <https://jamesdunham>. github.io/dgirt/.
+> Dunham, James, Devin Caughey, and Christopher Warshaw. 2016. dgirt: Dynamic Group-level IRT Models in R. R package. <https://jamesdunham.github.io/dgirt/>.
