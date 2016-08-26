@@ -98,5 +98,5 @@ as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar",
                                               fixed = TRUE)), with = FALSE]
   setkeyv(melted, id_vars)
   data.table::setattr(melted, "id_vars", id_vars)
-  melted
+  melted[]
 }
