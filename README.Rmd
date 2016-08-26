@@ -5,8 +5,17 @@ output:
 ---
 [![Build Status](https://travis-ci.org/jamesdunham/dgirt.svg?branch=master)](https://travis-ci.org/jamesdunham/dgirt)
 
-dgirt is an R package for dynamic group-level IRT models as developed in
-[Caughey and Warshaw 2014](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html).
+dgirt is an R package for dynamic group-level item response theory (DGIRT)
+models. The DGIRT model is a Bayesian method for estimating subpopulation
+groups' average conservatism (or other trait) from individuals' responses to
+dichotomous questions. It is "dynamic" both in the sense that groups are allowed
+to evolve over time and in the sense that the model "borrows strength" from
+other time periods, to a degree specified by the user. [This
+document](https://github.com/jamesdunham/dgirt/blob/master/man/dgirt_details.pdf)
+describes the model in detail.
+
+It is a modified version of the hierarchical group-level IRT model
+implemented by [Caughey and Warshaw 2015](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html).
 
 ```{r, knitr-options, echo = FALSE}
 # rmarkdown::render("README.Rmd")
@@ -18,51 +27,63 @@ knitr::opts_chunk$set(
   cache = FALSE)
 ```
 
-## Install
+## Prerequisites
 
-Install dgirt from GitHub. Installation requires
-[RStan](http://mc-stan.org/interfaces/rstan.html) and its prerequisites, in
-particular a C++ toolchain. If you don't have RStan, follow its "[Getting
-Started](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)" guide.
+Installation requires [RStan](http://mc-stan.org/interfaces/rstan.html) and its
+prerequisites, in particular a C++ toolchain. If you don't have RStan, follow
+its "[Getting
+Started](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)" guide
+before continuing.
 
+## Installation
+
+dgirt can be installed from [GitHub](https://github.com/jamesdunham/dgirt) using
+[devtools](https://github.com/hadley/devtools/):
 ```
 devtools::install_github("jamesdunham/dgirt", dependencies = TRUE)
 ```
 
-RStan's recommended options on a local, multicore machine with excess RAM are
-also appropriate for dgirt:
+## Getting started
 
 ```{r}
 library(dgirt)
-rstan_options(auto_write = TRUE)
-options(mc.cores = parallel::detectCores())
 ```
-
-## Getting started
 
 The minimal workflow from raw data to estimation is:
 
   1. shape input data using the `shape` function; and
   2. pass the result to the `dgirt` function to fit a dgirt model.
 
+### Set RStan options
+
+These are RStan's recommended options on a local, multicore machine with excess
+RAM:
+
+```{r}
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+```
+
 ### Prepare input data with `shape`
 
-The following example models responses to a single survey item in the bundled
-`opinion` data. dgirt models are *dynamic*, so we need to specify which variable
-in the data represents time. They are also *group-level*, with groups defined by
-one variable for respondents' local geographic area and one or more variables
-for respondent characteristics.
+dgirt models are *dynamic*, so we need to specify which variable in the data
+represents time. They are also *group-level*, with groups defined by one
+variable for respondents' local geographic area and one or more variables for
+respondent characteristics.
 
 The `time_filter` and `geo_filter` arguments optionally subset the data.
-`time_filter` can also be used to include unobserved periods in the model.
 Finally, `shape` requires the names of the survey identifier and survey weight
 variables in the data.
 
 ```{r}
-dgirt_in <- shape(opinion, item_names = "Q_cces2006_abortion",
-                  time_name = "year", geo_name = "state", group_names = "race",
+dgirt_in <- shape(opinion,
+                  item_names = "Q_cces2006_abortion",
+                  time_name = "year",
+                  geo_name = "state",
+                  group_names = "race",
                   geo_filter = c("CA", "GA", "LA", "MA"),
-                  survey_name = "source", weight_name = "weight")
+                  survey_name = "source",
+                  weight_name = "weight")
 ```
 
 The reshaped and subsetted data can be summarized in a few ways before model
@@ -70,7 +91,15 @@ fitting.
 
 ```{r}
 summary(dgirt_in)
+```
+
+Response counts by survey-year:
+```{r}
 get_n(dgirt_in, by = c("year", "source"))
+```
+
+Response counts by item-year:
+```{r}
 get_item_n(dgirt_in, by = "year")
 ```
 
@@ -87,7 +116,7 @@ dgirt_out <- dgirt(dgirt_in, iter = 1500, chains = 4, cores = 4, seed = 42,
 ```
 
 The model results are held in a `dgirtfit` object. Methods from RStan like
-`extract` are available if needed because `dgirtfit` inherits from `stanfit`.
+`extract` are available if needed because `dgirtfit` is a subclass of `stanfit`.
 But dgirt provides its own methods for typical post-estimation tasks.
 
 ### Work with `dgirt` results
@@ -167,6 +196,9 @@ dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 
 ## Troubleshooting
 
+Please [report issues](https://github.com/jamesdunham/dgirt/issues) that you
+encounter.
+
 OS X only: RStan creates temporary files during estimation in a location given
 by `tempdir`, typically an arbitrary location in `/var/folders`. If a model runs
 for days, these files can be cleaned up while still needed, which induces an
@@ -182,7 +214,18 @@ For help setting environment variables, see the Stack Overflow question
 Confirm the new path before starting your model run by restarting R and checking
 the output from `tempdir()`.
 
-```{r}
+``` r
 # Problematic temporary directories on OS X look like this
 tempdir()   
+#> [1] "/var/folders/2p/_d3c95qd6ljg28j1f5l2jqxm0000gn/T//Rtmp38a10A"
 ```
+
+## Contributing and citing
+
+dgirt is under development and we welcome
+[suggestions](https://github.com/jamesdunham/dgirt/issues).
+
+The package citation is 
+
+> Dunham, James, Devin Caughey, and Christopher Warshaw. 2016. dgirt: Dynamic
+> Group-level IRT Models in R. R package. <https://jamesdunham. github.io/dgirt/>.
