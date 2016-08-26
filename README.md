@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/jamesdunham/dgirt.svg?branch=master)](https://travis-ci.org/jamesdunham/dgirt)
 
-dgirt is an R package for dynamic group-level item response theory (DGIRT) models. The DGIRT model is a Bayesian method for estimating subpopulation groups' average conservatism (or other trait) from individuals' responses to dichotomous questions. It is "dynamic" both in the sense that groups are allowed to evolve over time and in the sense that the model "borrows strength" from other time periods, to a degree specified by the user. [This document](https://github.com/jamesdunham/dgirt/blob/master/man/dgirt_details.pdf) describes the model in detail.
+dgirt is an R package for dynamic group-level item response theory (DGIRT) models.
+
+DGIRT is a Bayesian method for estimating subpopulation groups' average conservatism (or other trait) from individuals' responses to dichotomous questions. It is "dynamic" both in the sense that groups are allowed to evolve over time and in the sense that the model "borrows strength" from other time periods, to a degree specified by the user. [This document](https://github.com/jamesdunham/dgirt/blob/master/man/dgirt_details.pdf) describes the model in detail.
 
 It is a modified version of the hierarchical group-level IRT model implemented by [Caughey and Warshaw 2015](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html).
 
@@ -21,6 +23,7 @@ Getting started
 
 ``` r
 library(dgirt)
+#> Loading required package: Rcpp
 ```
 
 The minimal workflow from raw data to estimation is:
@@ -256,4 +259,4 @@ dgirt is under development and we welcome [suggestions](https://github.com/james
 
 The package citation is
 
-> Dunham, James, Devin Caughey, and Christopher Warshaw. 2016. dgirt: Dynamic Group-level IRT Models in R. R package. <https://jamesdunham. github.io/dgirt/>.
+> Dunham, James, Devin Caughey, and Christopher Warshaw. 2016. dgirt: Dynamic Group-level IRT Models in R. R package. <https://jamesdunham>. github.io/dgirt/.
