@@ -20,7 +20,10 @@ setGeneric("dgirt_plot", signature = "x", function(x, ...)
 setMethod("dgirt_plot", signature(x = "dgirtfit"),
   function(x, y_fun = "median", y_min = "q_025", y_max = "q_975", pars =
            "theta_bar") {
-  stopifnot(length(pars) == 1L)
+  assert(assertthat::is.string(pars))
+  if (length(y_fun)) assert(assertthat::is.string(y_fun))
+  if (length(y_min)) assert(assertthat::is.string(y_min))
+  if (length(y_max)) assert(assertthat::is.string(y_max))
 
   ctrl <- x@dgirt_in$control
   samples <- summarize(x, funs = c(y_fun, y_min, y_max))
@@ -53,12 +56,19 @@ setMethod("dgirt_plot", signature(x = "dgirtfit"),
 setMethod("dgirt_plot", signature(x = "data.frame"),
   function(x, group_names, time_name, geo_name, y_fun = "median", y_min =
            "q_025", y_max = "q_975") {
+         assert(all_strings(group_names))
+         assert(assertthat::is.string(time_name))
+         assert(assertthat::is.string(geo_name))
+         assert(assertthat::is.string(y_fun))
+         assert(assertthat::is.string(y_min))
+         assert(assertthat::is.string(y_max))
+
     if (length(y_fun)) {
       x <- x[, do_funs(list(value), c(y_fun, y_min, y_max)),
              by = c(group_names, time_name, geo_name)]
       data.table::setnames(x, grep("^V\\d+", names(x),value = TRUE),
                            c(y_fun, y_min, y_max))
-    } 
+    }
     plot_internal(x, group_names, time_name, geo_name, y_fun, y_min, y_max)
 })
 
@@ -91,7 +101,7 @@ plot_internal <- function(samples, group_names, time_name, geo_name, y_fun,
   p
 }
 
-#' \code{plot} plot method for \code{dgirtfit}-class objects
+#' \code{plot}: plot method for \code{dgirtfit}-class objects
 #'
 #' @param y Ignored.
 #' @param ... Further arguments to \code{\link{dgirt_plot}}.
@@ -105,3 +115,81 @@ setMethod("plot", signature(x = "dgirtfit", y = "missing"),
             dgirt_plot(x, ...)
           })
 
+#' @rdname plot-method
+setGeneric("rhats", signature = "x", function(x, ...)
+           standardGeneric("rhats"))
+
+#' \code{rhats}: extract split R-hats from \code{dgirtfit}-class objects
+#'
+#' @rdname plot-method
+#' @examples
+#' rhats(toy_dgirtfit)
+setMethod("rhats", signature(x = "dgirtfit"),
+          function(x, pars = "theta_bar") {
+  assert(all_strings(pars))
+  fnames = flatnames(x)
+  rhats = summary(x, par = pars, verbose = TRUE)$summary[, "Rhat", drop = FALSE]
+  rhats = data.table::setDT(as.data.frame(rhats), keep.rownames = TRUE)
+  rhats = rhats[fnames, on = c("rn" = "fname")][!is.na(Rhat)]
+  drop_cols = names(rhats)[vapply(rhats, function(x) all(is.na(x)), logical(1))]
+  rhats[, c(drop_cols, "rn") := NULL, with = FALSE]
+  data.table::setcolorder(rhats, c(setdiff(names(rhats), "Rhat"), "Rhat"))
+  rhats[]
+})
+
+#' @rdname plot-method
+setGeneric("plot_rhats", signature = "x", function(x, ...)
+           standardGeneric("plot_rhats"))
+
+#' \code{plot_rhats}: plot split R-hats from \code{dgirtfit}-class objects
+#'
+#' This function plots R-hats from a dgirt model.
+#'
+#' @param x
+#' @rdname plot-method
+#' @examples
+#' plot_rhats(toy_dgirtfit)
+setMethod("plot_rhats", signature(x = "dgirtfit"),
+          function(x, pars = "theta_bar", facet_vars = NULL, shape_var = NULL,
+                   color_var = NULL, x_var = NULL) {
+
+  if (length(pars)) assert(assertthat::is.character(pars))
+  if (length(facet_vars)) assert(is.character(facet_vars))
+  if (length(shape_var)) assert(assertthat::is.string(shape_var))
+  if (length(color_var)) assert(assertthat::is.string(color_var))
+  if (length(x_var)) assert(assertthat::is.string(x_var))
+
+  rhats <- rhats(x, pars = pars)
+  time_var = x@dgirt_in$control@time_name
+  free_vars = setdiff(names(rhats), c(time_var, "Rhat", "param", facet_vars,
+                                      shape_var, color_var, x_var))
+  if (!length(x_var)) {
+    if (time_var %in% names(rhats)) {
+      x_var = time_var
+    } else if (length(free_vars)) {
+      x_var = free_vars[1]
+      free_vars = free_vars[-1]
+    } else {
+      x_var = "param"
+    }
+  }
+  if (length(free_vars) && !length(color_var)) {
+      color_var = free_vars[1]
+      free_vars = free_vars[-1]
+  }
+  if (length(free_vars) && !length(shape_var)) {
+      shape_var = free_vars[1]
+      free_vars = free_vars[-1]
+  }
+  if (length(free_vars) && !length(facet_var)) {
+      facet_vars = free_vars
+  }
+
+  p = ggplot(rhats, aes_string(x = x_var, y = "Rhat", color = color_var,
+                               shape = shape_var)) +
+        geom_jitter(height = 0, width = 0.2)
+  if (length(facet_vars)) {
+    p = p + facet_wrap(facet_vars)
+  }
+  p
+})
