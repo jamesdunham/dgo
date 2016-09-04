@@ -116,28 +116,6 @@ setMethod("plot", signature(x = "dgirtfit", y = "missing"),
           })
 
 #' @rdname plot-method
-setGeneric("rhats", signature = "x", function(x, ...)
-           standardGeneric("rhats"))
-
-#' \code{rhats}: extract split R-hats from \code{dgirtfit}-class objects
-#'
-#' @rdname plot-method
-#' @examples
-#' rhats(toy_dgirtfit)
-setMethod("rhats", signature(x = "dgirtfit"),
-          function(x, pars = "theta_bar") {
-  assert(all_strings(pars))
-  fnames = flatnames(x)
-  rhats = summary(x, par = pars, verbose = TRUE)$summary[, "Rhat", drop = FALSE]
-  rhats = data.table::setDT(as.data.frame(rhats), keep.rownames = TRUE)
-  rhats = rhats[fnames, on = c("rn" = "fname")][!is.na(Rhat)]
-  drop_cols = names(rhats)[vapply(rhats, function(x) all(is.na(x)), logical(1))]
-  rhats[, c(drop_cols, "rn") := NULL, with = FALSE]
-  data.table::setcolorder(rhats, c(setdiff(names(rhats), "Rhat"), "Rhat"))
-  rhats[]
-})
-
-#' @rdname plot-method
 setGeneric("plot_rhats", signature = "x", function(x, ...)
            standardGeneric("plot_rhats"))
 
@@ -145,15 +123,17 @@ setGeneric("plot_rhats", signature = "x", function(x, ...)
 #'
 #' This function plots R-hats from a dgirt model.
 #'
-#' @param x
+#' @param x A \code{dgirtfit-class} object.
 #' @rdname plot-method
 #' @examples
 #' plot_rhats(toy_dgirtfit)
+#' plot_rhats(toy_dgirtfit, facet_vars = c("race", "state")) +
+#'   scale_x_continuous(breaks = seq.int(2006, 2008))
 setMethod("plot_rhats", signature(x = "dgirtfit"),
           function(x, pars = "theta_bar", facet_vars = NULL, shape_var = NULL,
                    color_var = NULL, x_var = NULL) {
 
-  if (length(pars)) assert(assertthat::is.character(pars))
+  if (length(pars)) assert(is.character(pars))
   if (length(facet_vars)) assert(is.character(facet_vars))
   if (length(shape_var)) assert(assertthat::is.string(shape_var))
   if (length(color_var)) assert(assertthat::is.string(color_var))

@@ -6,6 +6,8 @@
 \alias{dgirt_plot,data.frame-method}
 \alias{dgirt_plot,dgirtfit-method}
 \alias{plot,dgirtfit,missing-method}
+\alias{plot_rhats}
+\alias{plot_rhats,dgirtfit-method}
 \title{\code{dgirt_plot}: plot \code{dgirtfit}-class objects}
 \usage{
 dgirt_plot(x, ...)
@@ -17,6 +19,11 @@ dgirt_plot(x, ...)
   y_fun = "median", y_min = "q_025", y_max = "q_975")
 
 \S4method{plot}{dgirtfit,missing}(x, y, ...)
+
+plot_rhats(x, ...)
+
+\S4method{plot_rhats}{dgirtfit}(x, pars = "theta_bar", facet_vars = NULL,
+  shape_var = NULL, color_var = NULL, x_var = NULL)
 }
 \arguments{
 \item{x}{A \code{dgirtfit-class} object.}
@@ -43,13 +50,17 @@ the x axis.}
 faceting.}
 
 \item{y}{Ignored.}
+
+\item{x}{A \code{dgirtfit-class} object.}
 }
 \description{
 \code{dgirt_plot}: plot \code{dgirtfit}-class objects
 
 \code{dgirt_plot}: plot \code{data.frame} objects
 
-\code{plot} plot method for \code{dgirtfit}-class objects
+\code{plot}: plot method for \code{dgirtfit}-class objects
+
+This function plots R-hats from a dgirt model.
 }
 \examples{
 dgirt_plot(toy_dgirtfit) 
@@ -62,5 +73,8 @@ ps <- poststratify(toy_dgirtfit, state_year_targets, strata_names =
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 
 plot(toy_dgirtfit)
+plot_rhats(toy_dgirtfit)
+plot_rhats(toy_dgirtfit, facet_vars = c("race", "state")) +
+  scale_x_continuous(breaks = seq.int(2006, 2008))
 }
 

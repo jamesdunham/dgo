@@ -18,8 +18,7 @@ print.dgirtfit <- function(x, ...) {
   ss <- ss[["summary"]]
   arg <- x@stan_args[[1]]
   chains <- length(x@stan_args)
-  pkg_version <- ifelse(length(x@dgirt_in$package_version),
-                        x@dgirt_in$package_version,
+  pkg_version <- ifelse(length(x@dgirt_in$pkg_version), x@dgirt_in$pkg_version,
                         "not available (< 0.2.2)")
   cat("dgirt samples from", chains, "chains of", arg$iter,
       "iterations,", arg$warmup, "warmup, thinned every", arg$thin,
@@ -48,7 +47,7 @@ setMethod("summary", "dgirtfit", function(object, ..., verbose = FALSE) {
     class(sf) <- "stanfit"
     summary(sf, ...)
   } else {
-    object
+    print(object)
   }
 })
 
@@ -100,3 +99,27 @@ as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar",
   data.table::setattr(melted, "id_vars", id_vars)
   melted
 }
+
+#' \code{rhats}: extract split R-hats from \code{dgirtfit}-class objects
+setGeneric("rhats", signature = "x", function(x, ...)
+           standardGeneric("rhats"))
+
+#' \code{rhats}: extract split R-hats from \code{dgirtfit}-class objects
+#'
+#' @param x A \code{dgirtfit}-class object
+#' @param pars Parameter name(s)
+#' @return A table giving split R-hats for model parameters
+#' @examples
+#' rhats(toy_dgirtfit)
+setMethod("rhats", signature(x = "dgirtfit"),
+          function(x, pars = "theta_bar") {
+  assert(all_strings(pars))
+  fnames = flatnames(x)
+  rhats = summary(x, par = pars, verbose = TRUE)$summary[, "Rhat", drop = FALSE]
+  rhats = data.table::setDT(as.data.frame(rhats), keep.rownames = TRUE)
+  rhats = rhats[fnames, on = c("rn" = "fname")][!is.na(Rhat)]
+  drop_cols = names(rhats)[vapply(rhats, function(x) all(is.na(x)), logical(1))]
+  rhats[, c(drop_cols, "rn") := NULL, with = FALSE]
+  data.table::setcolorder(rhats, c(setdiff(names(rhats), "Rhat"), "Rhat"))
+  rhats[]
+})
