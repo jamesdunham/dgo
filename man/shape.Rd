@@ -40,22 +40,18 @@ See details below.}
 preprocessing.}
 }
 \value{
-An object of class \code{dgirtIn}, i.e., that expected by
-\code{\link{dgirt}}.
+An object of class \code{dgirtIn} expected by \code{\link{dgirt}}.
 }
 \description{
-\code{shape} takes four kinds of data. Only \code{item_data} is required. For
-each other data type passed to \code{shape}, additional arguments are
-required, as described in the sections below. Most arguments give the name or
-names of key variables in the data; they end in \code{_name} or \code{_names}
-and should be character vectors.  Some implement preprocessing and modeling
-choices.
+This function shapes various kinds of data for use in a dgirt model. Most
+arguments give the name or names of key variables in the data; they end in
+\code{_name} or \code{_names} and should be character vectors. Some others
+implement preprocessing and modeling choices.
 }
 \section{Modifier Data}{
 
-These arguments are required to model hierarchical parameters with
-\code{modifier_data}. At the moment, modeling geographic parameters is
-supported.
+Geographic hierarchical parameters can be modeled with \code{modifier_data}.
+These arguments are also required:
 \describe{
   \item{\code{modifier_names}:}{Modifiers of geographic hierarchical
   parameters, e.g. median household income in each local-area and
@@ -91,15 +87,15 @@ consistently with the transformations applied to the individual
 If \code{target_data} is specified \code{shape} will adjust the weighting of
 groups toward population targets via raking. This relies on an adaptation of
 \code{\link[survey]{rake}}. The additional required arguments are
-\code{target_proportion_name} and \code{strata_names}. The implementation
-will be more flexible in the future, but at the moment the strata are defined
+\code{target_proportion_name} and \code{strata_names}. Strata are defined
 additively when more than one variable is given in \code{strata_names}.
+More complex strata require variables created in advance.
 
 \code{shape} can restrict data row-wise in \code{item_data},
 \code{modifier_data}, and \code{aggregate_data} to that within specified time
 periods (\code{time_filter}) and local geographic areas (\code{geo_filter}).
 Data can also be filtered for sparsity, to keep items that appear in a
-minimum of time periods or surveys.  This is a column-wise operation. If both
+minimum of time periods or surveys. This is a column-wise operation. If both
 row-wise and column-wise restrictions are specified, \code{shape} iterates
 over them until they leave the data unchanged.
 }

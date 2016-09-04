@@ -23,14 +23,13 @@ or \code{param[t]}.}
 Move rownames that describe parameters (e.g. xi[2009]) to columns.
 }
 \details{
-It should rarely be necessary to call \code{expand_rownames} directly.
-Tables of \code{\link{dgirtfit}}-class \code{\link{dgirt}} output may have
-descriptive rownames of the format \code{param[group1__groupK,t]} for
-parameters indexed by group and time period, or \code{param[t]} for
-parameters indexed by time period. \code{expand_rownames} moves this
-information to columns tables whose names are given by the \code{col_names}
-argument. The rownames in their original format will appear in the column
-\code{rn}.
+It should rarely be necessary to call \code{expand_rownames} directly. But
+elements extracted from \code{\link{dgirtfit}}-class objects may have
+rownames of the format \code{param[group1__groupK,t]} for parameters indexed
+by group and time period, or \code{param[t]} for parameters indexed by time
+period. \code{expand_rownames} moves this information to columns whose names
+are given by the \code{col_names} argument. The rownames in their original
+format will appear in another column called \code{rn}.
 }
 \seealso{
 \code{\link{dgirtfit-class}}
