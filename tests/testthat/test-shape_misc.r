@@ -1,8 +1,15 @@
 source("setup.r")
 suppressMessages({
 
+  test_that("minimal shape calls are successful", {
+    expect_silent(suppressMessages(min_item_call()))
+    expect_silent(suppressMessages(min_modifier_call()))
+    expect_silent(suppressMessages(min_groupless_call()))
+  })
+
   d_min <- min_item_call()
   d_mod <- min_modifier_call()
+  d_nogroups <- min_groupless_call()
 
   context("dgirtIn classes")
 

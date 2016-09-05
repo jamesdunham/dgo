@@ -132,7 +132,7 @@ shape <- function(item_data,
                   item_names,
                   time_name,
                   geo_name,
-                  group_names,
+                  group_names = NULL,
                   weight_name,
                   survey_name,
                   modifier_data = NULL,
@@ -140,8 +140,9 @@ shape <- function(item_data,
                   aggregate_data = NULL,
                   ...) {
 
+  factors = c(time_name, geo_name, group_names)
   ctrl <- init_control(item_data, item_names, time_name, geo_name, group_names,
-                       weight_name, survey_name, ...)
+                       weight_name, survey_name, factors, ...)
   d_in <- dgirtIn$new(ctrl)
 
   # validate inputs #
@@ -284,11 +285,13 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
   }
   zz
 }
-
 make_design_matrix <- function(item_data, d_in, ctrl) {
-  design_formula <- as.formula(paste("~ 0", ctrl@geo_name,
-                                     paste(ctrl@group_names, collapse = " + "),
-                                     sep = " + "))
+  design_formula <- paste("~ 0", ctrl@geo_name, sep = " + ")
+  if (length(ctrl@group_names)) {
+    design_formula <- paste(design_formula, ctrl@group_names, collapse = " + ",
+                            sep = " + ")
+  }
+  design_formula = as.formula(design_formula)
   design_matrix <- with_contr.treatment(model.matrix(design_formula,
                                                      d_in$group_grid_t))
   

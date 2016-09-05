@@ -11,6 +11,18 @@ min_item_call <- function(...) {
   invisible(do.call(shape, dots))
 }
 
+min_groupless_call <- function(...) {
+  default <- list(item_data = dgirt::opinion,
+                  item_names = "Q_cces2006_abortion",
+                  time_name = "year",
+                  geo_name = "state",
+                  survey_name = "source",
+                  weight_name = "weight")
+  dots <- list(...)
+  dots <- c(dots, default[!names(default) %in% names(dots)])
+  invisible(do.call(shape, dots))
+}
+
 min_modifier_call <- function(...) {
   default <- list(item_data = dgirt::opinion,
                   item_names = "Q_cces2006_abortion",

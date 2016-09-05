@@ -2,7 +2,8 @@ setClass("Control",
          slots = list(constant_item = "logical",
                       geo_name = "character",
                       geo_filter = "character",
-                      group_names = "character",
+                      group_names = "ANY",
+                      factors = "character",
                       item_names = "character",
                       aggregate_item_names = "character",
                       min_survey_filter = "numeric",
@@ -30,12 +31,14 @@ setClass("Control",
              "\"geo_name\" should be a single variable name"
            else if (!length(object@survey_name) == 1L)
              "\"survey_name\" should be a single variable name"
+           else if (length(object@group_names) && !is.character(object@group_names))
+             "if specified \"group_names\" should give variable names in a character vector"
            else if (!length(object@standardize) == 1L)
              "\"standardize\" should be a single logical"
            else if (!length(object@weight_name) == 1L)
              "\"weight_name\" should be a single variable name"
-           else if (!length(unique(object@group_names)) > 0L)
-             "\"group_names\" should be at least one variable name" 
+           else if (!length(unique(object@factors)) >= 2L)
+             "\"factors\" should contain at least the time and geo names" 
            else if (!length(object@constant_item) == 1L &&
                     is.logical(object@constant_item))
              "\"constant_item\" should be a single logical value"
