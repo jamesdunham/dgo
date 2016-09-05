@@ -57,6 +57,11 @@ setMethod("poststratify", c("dgirtfit"),
 setMethod("poststratify", "data.frame",
           function(x, target_data, strata_names, aggregated_names,
                    prop_name = "proportion", pars = "theta_bar") {
+  assert(is.data.frame(target_data))
+  assert(all_strings(strata_names))
+  assert(all_strings(strata_names))
+  assert(assertthat::is.string(prop_name))
+  assert(all_strings(pars))
 
   x <- data.table::setDT(data.table::copy(x))
   if (!length(target_data)) stop("target_data is missing")

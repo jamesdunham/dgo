@@ -13,3 +13,10 @@ test_that("plot calls dgirt_plot", {
   dp <- dgirt_plot(toy_dgirtfit)
   expect_equal(p, dp)
 })
+
+test_that("plot_rhats handles parameters", {
+  expect_error(plot_rhats(toy_dgirtfit, pars = NULL))
+  expect_error(plot_rhats(toy_dgirtfit, pars = "xi",
+                          facet_vars = "state"),
+               "'xi' is not indexed by 'state'")
+})
