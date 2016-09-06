@@ -65,23 +65,23 @@ transformed parameters {
   vector[G_hier] prob_l2[T, Q]; ## array of probabilities
   vector[G_hier] theta_l2[T]; ## second-level group abililities
   ## scale (product = 1)
-  disc <- disc_raw * pow(exp(sum(log(disc_raw))), (-inv(Q)));
+  disc = disc_raw * pow(exp(sum(log(disc_raw))), (-inv(Q)));
   for (q in 1:Q) {
-    sd_item[q] <- inv(disc[q]); ## item standard deviations
+    sd_item[q] = inv(disc[q]); ## item standard deviations
   }
   for (d in 1:D) {
     ## location (mean in first year = 0)
-    diff[d] <- diff_raw[d] - mean(diff_raw[1]);
-    kappa[d] <- diff[d] ./ disc; ## item thresholds
+    diff[d] = diff_raw[d] - mean(diff_raw[1]);
+    kappa[d] = diff[d] ./ disc; ## item thresholds
   }
-  var_item <- sd_item .* sd_item;
-  var_theta <- sd_theta .* sd_theta;
+  var_item = sd_item .* sd_item;
+  var_theta = sd_theta .* sd_theta;
   for (t in 1:T) { ## loop over years
     if (t == 1 || separate_t == 1) {
-      mu_gamma[t] <- ZZ_prior[t] * nu_geo_prior;
-      gamma[t] <- mu_gamma[t] + sd_gamma * gamma_raw[t];
-      mu_theta_bar[t] <- xi[t] + XX * gamma[t];
-      ##mu_theta_bar[t] <- XX * gamma[t];
+      mu_gamma[t] = ZZ_prior[t] * nu_geo_prior;
+      gamma[t] = mu_gamma[t] + sd_gamma * gamma_raw[t];
+      mu_theta_bar[t] = xi[t] + XX * gamma[t];
+      ##mu_theta_bar[t] = XX * gamma[t];
     }
     if (t > 1 && separate_t == 0) {
       if (t == 2) {
@@ -92,63 +92,63 @@ transformed parameters {
         ## than one centered on its lagged value, because gamma is likely to be
         ## very different in periods 1 and 2 because only in 2 is
         ## theta_bar[t - 1] used to inform theta_bar[t].
-        mu_gamma[t] <- ZZ_prior[t] * nu_geo_prior;
-        gamma[t] <- mu_gamma[t] + sd_gamma * gamma_raw[t];
+        mu_gamma[t] = ZZ_prior[t] * nu_geo_prior;
+        gamma[t] = mu_gamma[t] + sd_gamma * gamma_raw[t];
       } else {
         ## 2016-02-05: maybe delta_gamma should differ for geographic and demographic parameters ;
         ## could do random walk DLM for demographic parameters
-        mu_gamma[t] <- gamma[t - 1] * delta_gamma[t] + ZZ[t] * nu_geo[t];
-        gamma[t] <- mu_gamma[t] + sd_innov_gamma * gamma_raw[t];
+        mu_gamma[t] = gamma[t - 1] * delta_gamma[t] + ZZ[t] * nu_geo[t];
+        gamma[t] = mu_gamma[t] + sd_innov_gamma * gamma_raw[t];
       }
-      mu_theta_bar[t] <- xi[t] + XX * gamma[t] + theta_bar[t - 1] * delta_tbar[t];
-      ##mu_theta_bar[t] <- theta_bar[t - 1] * delta_tbar[t] + XX * gamma[t];
+      mu_theta_bar[t] = xi[t] + XX * gamma[t] + theta_bar[t - 1] * delta_tbar[t];
+      ##mu_theta_bar[t] = theta_bar[t - 1] * delta_tbar[t] + XX * gamma[t];
     }
     ## Matt trick for group means
-    theta_bar[t] <- mu_theta_bar[t] + sd_theta_bar[t] * theta_bar_raw[t]; #!#
+    theta_bar[t] = mu_theta_bar[t] + sd_theta_bar[t] * theta_bar_raw[t]; #!#
     ## Weighted average of group means (weights must sum to 1)
-    theta_l2[t] <- WT[t] * theta_bar[t]; ## G_hierx1 = G_hierxG * Gx1
+    theta_l2[t] = WT[t] * theta_bar[t]; ## G_hierx1 = G_hierxG * Gx1
     for (n in 1:G_hier) {
       matrix[G, G] WTdiag;
       for (g in 1:G) {
         for (h in 1:G) {
           if (g == h) {
-            WTdiag[g, h] <- WT[t][n][g];
+            WTdiag[g, h] = WT[t][n][g];
           }
           if (g != h) {
-            WTdiag[g, h] <- 0;
+            WTdiag[g, h] = 0;
           }
         }
       }
       ## (y - w'y)' W (y - w'y) = weighted variance
-      var_theta_bar_l2[t][n] <- (theta_bar[t] - theta_l2[t, n])' * WTdiag *
+      var_theta_bar_l2[t][n] = (theta_bar[t] - theta_l2[t, n])' * WTdiag *
       (theta_bar[t] - theta_l2[t, n]);
     }
     for (q in 1:Q) { ## loop over questions
       real sd_tq;
       real sd_l2_tq[G_hier];
-      sd_tq <- sqrt(var_theta[t] + var_item[q]);
+      sd_tq = sqrt(var_theta[t] + var_item[q]);
       for (n in 1:G_hier) {
-        sd_l2_tq[n] <- sqrt(square(sd_tq) + var_theta_bar_l2[t, n]);
+        sd_l2_tq[n] = sqrt(square(sd_tq) + var_theta_bar_l2[t, n]);
       }
       ## Group-level IRT model
       if (constant_item == 0) {
-        z[t, q] <- (theta_bar[t] - kappa[t][q]) / sd_tq;
+        z[t, q] = (theta_bar[t] - kappa[t][q]) / sd_tq;
         for (n in 1:G_hier) {
-          z_l2[t, q, n] <-
+          z_l2[t, q, n] =
             (theta_l2[t, n] - kappa[t][q]) / sd_l2_tq[n];
-          prob_l2[t, q, n] <- Phi_approx(z_l2[t, q, n]);
+          prob_l2[t, q, n] = Phi_approx(z_l2[t, q, n]);
         }
       }
       if (constant_item == 1) {
-        z[t, q] <- (theta_bar[t] - kappa[1][q]) / sd_tq;
+        z[t, q] = (theta_bar[t] - kappa[1][q]) / sd_tq;
         for (n in 1:G_hier) {
-          z_l2[t, q, n] <-
+          z_l2[t, q, n] =
             (theta_l2[t, n] - kappa[1][q]) / sd_l2_tq[n];
-          prob_l2[t, q, n] <- Phi_approx(z_l2[t, q, n]);
+          prob_l2[t, q, n] = Phi_approx(z_l2[t, q, n]);
         }
       }
       for (g in 1:G) { ## loop over groups
-        prob[t, q, g] <- Phi_approx(z[t, q, g]); ## fast normal CDF
+        prob[t, q, g] = Phi_approx(z[t, q, g]); ## fast normal CDF
       }
     } ## end question loop
   } ## end year loop
@@ -157,7 +157,7 @@ model {
   ## TEMPORARY VARIABLES
   real prob_vec[N]; ## long vector of probabilities (empty cells omitted)
   int pos;
-  pos <- 0;
+  pos = 0;
   ## PRIORS
   if (constant_item == 1) {
     diff_raw[1] ~ normal(0, 1); ## item difficulty (constant)
@@ -210,8 +210,8 @@ model {
       }
       for (g in 1:G) { ## loop over groups
         if (MMM[t, q, g] == 0) { ## Use only if not missing
-          pos <- pos + 1;
-          prob_vec[pos] <- prob[t, q, g];
+          pos = pos + 1;
+          prob_vec[pos] = prob[t, q, g];
         }
       } ## end group loop
     } ## end question loop
@@ -222,6 +222,6 @@ model {
 generated quantities {
   vector<lower=0>[T] sd_total;
   for (t in 1:T) {
-    sd_total[t] <- sqrt(variance(theta_bar[t]) + square(sd_theta[t]));
+    sd_total[t] = sqrt(variance(theta_bar[t]) + square(sd_theta[t]));
   }
 }
