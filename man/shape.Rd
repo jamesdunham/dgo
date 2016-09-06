@@ -104,8 +104,7 @@ over them until they leave the data unchanged.
   \item{target_proportion_name}{The variable giving population proportions
   for strata.}
   \item{raking}{A formula or list of formulas specifying the variables on
-  which to rake. See the \code{formulas} argument of
-  \code{\link[survey]{rake}} for details.}
+  which to rake.}
   \item{geo_filter}{A character vector giving values of the geographic
   variable. Defaults to observed values.}
   \item{time_filter}{A numeric vector giving possible values of the time
