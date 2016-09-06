@@ -98,9 +98,10 @@ suppressMessages({
 
   context("required arguments for target_data")
 
-  test_that("requirements enforced", {
+  test_that("omitted arguments produce error", {
     expect_error(shape(opinion,
                        target_data = targets,
+                       raking = ~ state,
                        item_names = "Q_cces2006_abortion",
                        time_name = "year",
                        geo_name = "state",
@@ -117,7 +118,7 @@ suppressMessages({
                        group_names = "female",
                        survey_name = "source",
                        weight_name = "weight"),
-                 "\"strata_names\" is required when using \"target_data\"")
+                 "\"raking\" is required when using \"target_data\"")
   })
 
 })

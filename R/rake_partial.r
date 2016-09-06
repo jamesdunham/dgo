@@ -12,7 +12,6 @@ rake_partial <- function(design, sample.margins, population.margins, control = l
         compress <- inherits(design$repweights, "repweights_compressed")
     if (is.rep)
         design$degf <- NULL
-    assertthat::assert_that(equal_length(sample.margins, population.margins))
     nmar <- length(sample.margins)
     if (control$epsilon < 1)
         epsilon <- control$epsilon * sum(weights(design, "sampling"))

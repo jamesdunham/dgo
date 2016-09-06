@@ -1,11 +1,19 @@
 check_targets <- function(target_data, ctrl) {
   if (length(target_data)) {
+    if (!length(ctrl@raking)) {
+      stop("\"raking\" is required when using \"target_data\"")
+    }
     is_name <- valid_names(target_data, ctrl, 1L)
-    are_names <- valid_names(target_data, ctrl)
     is_name(c("time_name", "geo_name", "target_proportion_name"))
-    are_names("strata_names")
-    has_type(c("time_name", "geo_name", "target_proportion_name",
-               "strata_names"), target_data, ctrl)
+    if (is.list(ctrl@raking)) {
+      raking = unlist(lapply(ctrl@raking, all.vars))
+    } else {
+      raking = all.vars(ctrl@raking)
+    }
+    are_names <- valid_names(target_data, len = 1, stub = "is a raking formula term but isn't")
+    are_names(raking)
+    has_type(c("time_name", "geo_name", "target_proportion_name"),
+             target_data, ctrl)
     check_time(target_data, ctrl@time_name) 
   }
 }
@@ -15,7 +23,6 @@ check_aggregates <- function(aggregate_data, ctrl) {
     is_name <- valid_names(aggregate_data, ctrl, 1L)
     are_names <- valid_names(aggregate_data, ctrl)
     each_is_name <- valid_names(aggregate_data)
-    are_names("factors")
     each_is_name(c("item", "n_grp", "s_grp"))
     if (!length(ctrl@aggregate_item_names)) {
       stop("argument \"aggregate_item_names\" is missing, with no default")
@@ -60,12 +67,19 @@ check_modifiers <- function(modifier_data, ctrl) {
 
 check_item <- function(item_data, ctrl) {
   is_name <- valid_names(item_data, ctrl, 1L)
-  are_names <- valid_names(item_data, ctrl)
   is_name(c("time_name", "geo_name", "survey_name", "weight_name"))
-  are_names(c("factors","item_names"))
+  are_names <- valid_names(item_data, ctrl)
+  are_names("item_names")
   has_type(c("time_name", "geo_name", "group_names", "survey_name",
              "item_names", "weight_name"), item_data, ctrl)
   check_time(item_data, ctrl@time_name) 
+  if (is.list(ctrl@raking)) {
+    raking = unlist(lapply(ctrl@raking, all.vars))
+  } else {
+    raking = all.vars(ctrl@raking)
+  }
+  are_valid_terms <- valid_names(item_data, len = 1, stub = "is a raking formula term but isn't")
+  are_valid_terms(raking)
 }
 
 stop_if_empty <- function(object) {
@@ -96,7 +110,7 @@ has_type <- function(slots, where, ctrl, valid_types = var_types) {
   }
 }
 
-valid_names <- function(where, s_four = NULL, len = 0L, verb = "give") {
+valid_names <- function(where, s_four = NULL, len = 0L, stub = "should give") {
   # Construct a function that reports whether one or more names exist in a table
   stop_if_empty(where)
   tab_name <- deparse(substitute(where))
@@ -115,7 +129,7 @@ valid_names <- function(where, s_four = NULL, len = 0L, verb = "give") {
         stop(v_name, " should be length ", len, ", not ", length(val))
       }
       if (!all(val %in% names(where)) || any(val == "")) {
-        stop(v_name, " should ", verb, 
+        stop(v_name, " ", stub, 
              ngettext(len, " a variable name", " variable names"),
              " in ", deparse(tab_name))
       }

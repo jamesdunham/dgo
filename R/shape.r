@@ -134,15 +134,15 @@ shape <- function(item_data,
                   geo_name,
                   group_names = NULL,
                   weight_name,
+                  raking = NULL,
                   survey_name,
                   modifier_data = NULL,
                   target_data = NULL,
                   aggregate_data = NULL,
                   ...) {
 
-  factors = c(time_name, geo_name, group_names)
   ctrl <- init_control(item_data, item_names, time_name, geo_name, group_names,
-                       weight_name, survey_name, factors, ...)
+                       weight_name, survey_name, raking, ...)
   d_in <- dgirtIn$new(ctrl)
 
   # validate inputs #
@@ -164,6 +164,7 @@ shape <- function(item_data,
 
   # aggregate individual item response data to group level #
   item_data <- weight(item_data, target_data, ctrl)
+
   # this assignment should be redundant, but without it some variables created
   # in dichotomize() weren't appearing in item_data 
   item_data <- dichotomize(item_data, ctrl)

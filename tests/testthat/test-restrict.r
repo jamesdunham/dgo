@@ -6,12 +6,12 @@ suppressMessages({
 
     expect_error(new("Control", geo_filter = "AK", time_name = "time", geo_name =
                      "state", survey_name = "survey", weight_name = "weight",
-                   group_names = "foo", time_filter = 2006:2007, factors = c("state", "foo")),
+                   group_names = "foo", time_filter = 2006:2007),
                  "if specified \"geo_filter\" should give at least two local geographic areas")
 
     expect_error(new("Control", time_filter = 2007, geo_filter = c("AK", "MO"),
                      time_name = "time", geo_name = "state", survey_name = "survey",
-                     weight_name = "weight", group_names = "foo", factors = c("state", "foo")),
+                     weight_name = "weight", group_names = "foo"),
                  "if specified \"time_filter\" should give at least two time periods")
 
     expect_error(suppressMessages(min_modifier_call(geo_filter = "AK")),

@@ -9,12 +9,12 @@ init_control <- function(item_data,
                          group_names,
                          weight_name,
                          survey_name,
-                         factors,
+                         raking,
                          ...) {
   ctrl <- new("Control", item_names = item_names,
                  time_name = time_name, geo_name = geo_name, group_names =
                    group_names, weight_name = weight_name, survey_name =
-                   survey_name, factors = factors, ...)
+                   survey_name, raking = raking, ...)
 
   is_name <- valid_names(item_data, ctrl, 1L)
   is_name(c("time_name", "geo_name"))
@@ -24,6 +24,13 @@ init_control <- function(item_data,
   }
   if (!length(ctrl@geo_filter)) {
     ctrl@geo_filter <- sort(unique(as.character(item_data[[ctrl@geo_name]])))
+  }
+  if (length(raking)) {
+    if (is.list(ctrl@raking)) {
+      ctrl@rake_names = unlist(lapply(ctrl@raking, all.vars))
+    } else {
+      ctrl@rake_names = all.vars(ctrl@raking)
+    }
   }
   ctrl
 }
