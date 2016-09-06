@@ -4,9 +4,9 @@
 \alias{shape}
 \title{\code{shape}: prepare data for modeling with \code{dgirt}}
 \usage{
-shape(item_data, item_names, time_name, geo_name, group_names, weight_name,
-  survey_name, modifier_data = NULL, target_data = NULL,
-  aggregate_data = NULL, ...)
+shape(item_data, item_names, time_name, geo_name, group_names = NULL,
+  weight_name, raking = NULL, survey_name, modifier_data = NULL,
+  target_data = NULL, aggregate_data = NULL, ...)
 }
 \arguments{
 \item{item_data}{A table in which items appear in columns and each row
@@ -87,9 +87,7 @@ consistently with the transformations applied to the individual
 If \code{target_data} is specified \code{shape} will adjust the weighting of
 groups toward population targets via raking. This relies on an adaptation of
 \code{\link[survey]{rake}}. The additional required arguments are
-\code{target_proportion_name} and \code{strata_names}. Strata are defined
-additively when more than one variable is given in \code{strata_names}.
-More complex strata require variables created in advance.
+\code{target_proportion_name} and \code{raking}. 
 
 \code{shape} can restrict data row-wise in \code{item_data},
 \code{modifier_data}, and \code{aggregate_data} to that within specified time
@@ -105,7 +103,9 @@ over them until they leave the data unchanged.
 \describe{
   \item{target_proportion_name}{The variable giving population proportions
   for strata.}
-  \item{strata_names}{Variables that define population strata.}
+  \item{raking}{A formula or list of formulas specifying the variables on
+  which to rake. See the \code{formulas} argument of
+  \code{\link[survey]{rake}} for details.}
   \item{geo_filter}{A character vector giving values of the geographic
   variable. Defaults to observed values.}
   \item{time_filter}{A numeric vector giving possible values of the time
