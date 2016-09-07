@@ -1,7 +1,9 @@
 source("setup.r")
 suppressMessages({
 
-  test_that("minimal shape calls are successful", {
+  context("shape calls")
+
+  test_that("minimal calls are successful", {
     expect_silent(suppressMessages(min_item_call()))
     expect_silent(suppressMessages(min_modifier_call()))
     expect_silent(suppressMessages(min_groupless_call()))
@@ -11,9 +13,9 @@ suppressMessages({
   d_mod <- min_modifier_call()
   d_nogroups <- min_groupless_call()
 
-  context("dgirtIn classes")
+  context("shape return values are valid")
 
-  test_that("creation works", { 
+  test_that("dgirtIn creation works", { 
     expect_is(d_min, "dgirtIn")
     expect_is(d_min, "R6")
     expect_is(d_min$control, "Control")
