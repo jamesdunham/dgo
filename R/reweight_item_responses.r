@@ -1,15 +1,8 @@
 weight <- function(item_data, target_data, control) {
-  # Create individual survey weights from population targets
-  #
-  # We stop if strata in the sampled data aren't a subset of those in the
-  # population targets, or if there's missingness in the stratifying variables.
-
-  if (!length(target_data)) {
-    return(item_data)
-  }
+  # Adjust individual survey weights given population targets
 
   item_data[, c("preweight") := rake_weights(item_data, target_data, control)]
-  item_data[, c("preweight_new") := list(get("preweight") /
+  item_data[, c("raked_weight") := list(get("preweight") /
                                          mean(get("preweight"), na.rm = TRUE)),
             by = eval(control@time_name)]
 
@@ -17,7 +10,7 @@ weight <- function(item_data, target_data, control) {
   message(paste0(capture.output(summary(item_data[[control@weight_name]])),
                                 collapse = "\n"))
   message("\nRaked weights:")
-  message(paste0(capture.output(summary(item_data[, preweight_new])),
+  message(paste0(capture.output(summary(item_data[, raked_weight])),
                                 collapse = "\n"))
   item_data
 }

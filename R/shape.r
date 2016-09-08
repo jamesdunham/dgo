@@ -161,12 +161,17 @@ shape <- function(item_data,
   d_in$time_observed <- get_observed(item_data, aggregate_data, ctrl@time_name)
   d_in$geo_observed <- get_observed(item_data, aggregate_data, ctrl@geo_name)
 
-  # aggregate individual item response data to group level #
-  item_data <- weight(item_data, target_data, ctrl)
+  # rake survey weights #
 
+  if (length(target_data)) {
+    item_data <- weight(item_data, target_data, ctrl)
+    ctrl@weight_name <- "raked_weight"
+  }
+
+  # aggregate individual item response data to group level #
+  item_data <- dichotomize(item_data, ctrl)
   # this assignment should be redundant, but without it some variables created
   # in dichotomize() weren't appearing in item_data 
-  item_data <- dichotomize(item_data, ctrl)
 
   d_in$group_grid <- make_group_grid(item_data, aggregate_data, ctrl)
   d_in$group_grid_t <- make_group_grid_t(d_in$group_grid, ctrl)
@@ -192,8 +197,6 @@ shape <- function(item_data,
   d_in$NNl2 <- array(0L, dim = c(d_in$T, d_in$Q, d_in$G_hier))
   d_in$SSl2 <- d_in$NNl2
 
-  # dimnames(d_in$XX)
-  # dimnames(d_in$ZZ)
   d_in$XX <- make_design_matrix(item_data, d_in, ctrl)
   d_in$ZZ <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl,
                                      t1 = FALSE)
