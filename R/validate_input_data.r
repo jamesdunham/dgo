@@ -80,12 +80,9 @@ check_item <- function(item_data, ctrl) {
   }
   are_valid_terms <- valid_names(item_data, len = 1, stub = "is a raking formula term but isn't")
   are_valid_terms(raking)
-}
-
-stop_if_empty <- function(object) {
-  if (!all(dim(object)) > 0) {
-    stop("all dimensions of ", deparse(substitute(object)),
-         " should be positive")
+  for (name in c(ctrl@group_names, ctrl@geo_name)) {
+    if (!length(unique(item_data[[name]])) > 1)
+      stop(name, " doesn't vary in item_data")
   }
 }
 
@@ -152,3 +149,11 @@ check_time <- function(where, name) {
          name, ") should be integers for now")
   }
 }
+
+stop_if_empty <- function(object) {
+  if (!all(dim(object)) > 0) {
+    stop("all dimensions of ", deparse(substitute(object)),
+         " should be positive")
+  }
+}
+

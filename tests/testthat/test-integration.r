@@ -47,7 +47,7 @@ suppressMessages({
              group_names = "female",
              survey_name = "source",
              weight_name = "weight")
-    }), "grouping variable 'state' doesn't vary")
+    }), "state doesn't vary in item_data")
   })
 
   test_that("no variation in grouping produces an error", {
@@ -59,7 +59,7 @@ suppressMessages({
              group_names = "female",
              survey_name = "source",
              weight_name = "weight")
-    }), "grouping variable 'female' doesn't vary")
+    }), "female doesn't vary in item_data")
   })
 
 })

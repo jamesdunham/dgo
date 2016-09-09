@@ -29,7 +29,8 @@ rake_weights <- function(item_data, target_data, control) {
                           design = target_design)
   raked_design <- rake_partial(design = item_design,
                                sample.margins = formulas,
-                               population.margins = target_tables)
+                               population.margins = target_tables,
+                               control = list(epsilon = 1e-09))
   raked_weights <- 1 / raked_design$prob
   assertthat::assert_that(is.numeric(raked_weights))
   assertthat::assert_that(all(raked_weights > 0))

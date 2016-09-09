@@ -139,15 +139,7 @@ suppressMessages({
     toy_data = set_up_sample(w = rep(c(0.5, 1), each = 3))
     toy_targets = set_up_pop(props = NULL)
     ctrl = new("Ctrl", raking = ~ wool)
-
     toy_data
-    #    wool tension t weight
-    # 1:    A       L 1    0.5
-    # 2:    A       M 1    0.5
-    # 3:    A       H 1    0.5
-    # 4:    B       L 1    1.0
-    # 5:    B       M 1    1.0
-    # 6:    B       H 1    1.0
 
     # When raking on wool, we should recover equal weights
     rake_result = weight(copy(toy_data), toy_targets, ctrl)
@@ -208,6 +200,46 @@ suppressMessages({
     tension_sums = sum_by(rake_result, "tension")
     expect_length(unique(tension_sums), 2)
     expect_length(unique(wool_sums), 1)
+
+    toy_data = rbind(set_up_sample(w = 1), set_up_sample(w = 2))
+    toy_targets = set_up_pop(props = NULL)
+    
+    # # When raking on wool-tension, there's no observation we can upweight to
+    # # balance the sample.
+    ctrl = new("Ctrl", raking = ~ wool + tension)
+    rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+    expect_equal(length(unique(rake_result$raked_weight)), 2)
+    
+    # When raking on wool, the sum of raked weights within wool A and wool B
+    # should be equal.
+    ctrl = new("Ctrl", raking = ~ wool)
+    rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+    sums = rake_result[, .(sums = sum(raked_weight)), by = "wool"][["sums"]]
+    expect_length(unique(sums), 1)
+
+    # When raking on tension, the observation with tension L should be
+    # upweighted 2:1 against the others. Equivalently, the sum of weights in
+    # tensions L, M, and H should be the same.
+    ctrl = new("Ctrl", raking = list(~ tension))
+    rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+    sums = rake_result[, .(sums = sum(raked_weight)), by = "tension"][["sums"]]
+    expect_length(unique(sums), 1)
+
+    # When raking on wool, then tension, weights are made equal
+    ctrl = new("Ctrl", raking = list(~ wool, ~ tension))
+    rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+    wool_sums = sum_by(rake_result, "wool")
+    tension_sums = sum_by(rake_result, "tension")
+    Reduce(expect_equal, wool_sums)
+    Reduce(expect_equal, tension_sums)
+
+    # When raking on tension, then wool, weights are made equal
+    ctrl = new("Ctrl", raking = list(~ tension, ~ wool))
+    rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+    wool_sums = sum_by(rake_result, "wool")
+    tension_sums = sum_by(rake_result, "tension")
+    Reduce(expect_equal, wool_sums)
+    Reduce(expect_equal, tension_sums)
   })
 
 })
