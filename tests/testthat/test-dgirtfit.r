@@ -2,9 +2,9 @@ suppressMessages({
   library(data.table)
   context("dgirtfit class")
 
-  res <- suppressWarnings({
+  suppressWarnings({
     sink(type = "output")
-    dgirt(toy_dgirt_in, iter = 5, chains = 1, seed = 42)
+    res <- dgirt(toy_dgirt_in, iter = 5, chains = 1, seed = 42)
     sink()
   })
   test_that("dgirt returns class dgirtfit", {
@@ -13,9 +13,9 @@ suppressMessages({
   })
 
   test_that("dgirt methods work", {
-    res <- suppressWarnings({
+    suppressWarnings({
       sink(type = "output")
-      dgirt(toy_dgirt_in, iter = 5, chains = 1, seed = 42)
+      res <- dgirt(toy_dgirt_in, iter = 5, chains = 1, seed = 42)
       sink()
     })
     expect_output(print(res), "dgirt samples from")
