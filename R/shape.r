@@ -140,11 +140,13 @@ shape <- function(item_data,
                   modifier_data = NULL,
                   target_data = NULL,
                   aggregate_data = NULL,
+                  aggregate_item_names = NULL,
                   id_vars = NULL,
                   ...) {
 
   ctrl <- init_control(item_data, item_names, time_name, geo_name, group_names,
-                       weight_name, survey_name, raking, id_vars, ...)
+                       weight_name, survey_name, raking, id_vars, aggregate_data, 
+                       aggregate_item_names, ...)
   d_in <- dgirtIn$new(ctrl)
 
   # validate inputs #

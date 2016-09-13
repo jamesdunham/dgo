@@ -1,6 +1,8 @@
 source("setup.r")
 suppressMessages({
 
+  context("variation in inputs")
+
   test_that("no variation in time (a single period) is OK", {
     expect_silent(suppressMessages({
       d_in = shape(opinion[year == 2006],

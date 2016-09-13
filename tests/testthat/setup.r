@@ -41,7 +41,6 @@ min_modifier_call <- function(...) {
 
 min_agg_call <- function(...) {
   default <- list(aggregate_data = aggregates,
-                  aggregate_item_names = unique(aggregates$item),
                   item_data = dgirt::opinion,
                   item_names = "Q_cces2006_abortion",
                   time_name = "year",

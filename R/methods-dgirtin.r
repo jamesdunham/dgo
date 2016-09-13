@@ -29,10 +29,10 @@ setGeneric("summary")
 setMethod("summary", c(object = "dgirtIn"),
           function(object, ...) {
             cat("Items:\n")
-            print(unique(c(object$control@item_names,
-                    object$control@aggregate_item_names)))
+            print(sort(unique(c(object$control@item_names,
+                                object$control@aggregate_item_names))))
             cat("Respondents:\n")
-            cat("  ", format(get_n(object), big.mark = ","), "in `item_data` (unadjusted)\n")
+            cat("  ", format(get_n(object), big.mark = ","), "in `item_data`\n")
             if (length(object$aggregate_data))
               cat("  ", format(sum(get_n(object, aggregate_name = "item")$n),big.mark = ","),
                   "in `aggregate_data` (design-effect adjusted)\n")
