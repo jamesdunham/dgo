@@ -65,4 +65,22 @@ suppressMessages({
     expect_false(min_item_call()$control@standardize)
 
   })
+
+  context("keeping id_vars in item_data")
+
+  test_that("id_vars are kept in item_data", {
+    opinion$respondent = 1:nrow(opinion)
+    d_min = min_modifier_call(item_data = opinion, id_vars = "respondent")
+    expect_true("respondent" %in% names(d_min$item_data))
+  })
+
+  test_that("id_vars can be NULL", {
+    expect_silent(suppressMessages(min_modifier_call(id_vars = NULL)))
+  })
+
+  test_that("id_vars has to exist if specified", {
+    expect_error(min_modifier_call(id_vars = "foo"),
+                 "\"id_vars\" should give variable names in \"item_data\"")
+  })
+
 })
