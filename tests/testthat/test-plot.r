@@ -1,3 +1,5 @@
+context("plots")
+
 test_that("dgirt_plot and plot can be called", {
   expect_silent(plot(toy_dgirtfit))
   expect_silent(dgirt_plot(toy_dgirtfit))

@@ -3,10 +3,11 @@ suppressMessages({
   context("dgirtfit class")
 
   suppressWarnings({
-    sink(type = "output")
+    sink("/dev/null", type = "output")
     res <- dgirt(toy_dgirt_in, iter = 5, chains = 1, seed = 42)
     sink()
   })
+
   test_that("dgirt returns class dgirtfit", {
     expect_s4_class(res, "dgirtfit")
     expect_true(inherits(res, "stanfit"))
@@ -14,7 +15,7 @@ suppressMessages({
 
   test_that("dgirt methods work", {
     suppressWarnings({
-      sink(type = "output")
+      sink("/dev/null", type = "output")
       res <- dgirt(toy_dgirt_in, iter = 5, chains = 1, seed = 42)
       sink()
     })
