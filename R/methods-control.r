@@ -10,11 +10,12 @@ init_control <- function(item_data,
                          weight_name,
                          survey_name,
                          raking,
+                         id_vars,
                          ...) {
   ctrl <- new("Control", item_names = item_names,
                  time_name = time_name, geo_name = geo_name, group_names =
                    group_names, weight_name = weight_name, survey_name =
-                   survey_name, raking = raking, ...)
+                   survey_name, raking = raking, id_vars = id_vars, ...)
 
   is_name <- valid_names(item_data, ctrl, 1L)
   is_name(c("time_name", "geo_name"))

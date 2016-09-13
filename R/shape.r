@@ -110,13 +110,15 @@
 #' @examples
 #' # model individual item responses
 #' data(opinion)
+#' opinion$respondent = 1:nrow(opinion)
 #' shaped_responses <- shape(opinion,
 #'                           item_names = "Q_cces2006_gaymarriageamendment",
 #'                           time_name = "year",
 #'                           geo_name = "state",
 #'                           group_names = "race",
 #'                           weight_name = "weight",
-#'                           survey_name = "source")
+#'                           survey_name = "source",
+#'                           id_vars = 'respondent')
 #' # summarize result)
 #' summary(shaped_responses)
 #'
@@ -138,10 +140,11 @@ shape <- function(item_data,
                   modifier_data = NULL,
                   target_data = NULL,
                   aggregate_data = NULL,
+                  id_vars = NULL,
                   ...) {
 
   ctrl <- init_control(item_data, item_names, time_name, geo_name, group_names,
-                       weight_name, survey_name, raking, ...)
+                       weight_name, survey_name, raking, id_vars, ...)
   d_in <- dgirtIn$new(ctrl)
 
   # validate inputs #
