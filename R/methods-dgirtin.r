@@ -1,4 +1,5 @@
 setGeneric("summary")
+
 #' Summarize DGIRT Data.
 #'
 #' @param x An object of class \code{dgirtIn} as returned by \code{shape}.
@@ -14,13 +15,13 @@ setGeneric("summary")
 setMethod("summary", c(object = "dgirtIn"),
           function(object, ...) {
             cat("Items:\n")
-            print(c(object$control@item_names,
-                    object$control@aggregate_item_names))
+            print(sort(unique(c(object$control@item_names,
+                                object$control@aggregate_item_names))))
             cat("Respondents:\n")
-            cat("  ", format(get_n(object), big.mark = ","), "in `item_data` (unadjusted)\n")
+            cat("  ", format(get_n(object), big.mark = ","), "in `item_data`\n")
             if (length(object$aggregate_data))
               cat("  ", format(sum(get_n(object, aggregate_name = "item")$n),big.mark = ","),
-                  "in `aggregate_data (design-effect adjusted) `\n")
+                  "in `aggregate_data` (design-effect adjusted)\n")
             cat("Grouping variables:\n")
             print(c(object$control@time_name,
                     object$control@geo_name,
@@ -44,6 +45,7 @@ setMethod("print", c("x" = "dgirtIn"),
 
 setGeneric("get_item_names", signature = "x",
            function(x) standardGeneric("get_item_names"))
+
 #' Get Items Names in DGIRT Data.
 #'
 #' @return A list of item names.
@@ -62,6 +64,7 @@ setMethod("get_item_names", c("x" = "dgirtIn"),
 setGeneric("get_n", signature = c("x", "by", "aggregate_name"),
            function(x, by = NULL, aggregate_name = NULL)
              standardGeneric("get_n"))
+
 #' Count Respondents in DGIRT Data.
 #'
 #' @param by The name of a grouping variable.
