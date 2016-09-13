@@ -2,12 +2,13 @@ restrict_items <- function(item_data, ctrl) {
   data.table::setDT(item_data)
   extra_colnames <- setdiff(names(item_data),
                             c(ctrl@item_names,
-                              ctrl@strata_names,
                               ctrl@survey_name,
                               ctrl@geo_name,
                               ctrl@time_name,
                               ctrl@group_names,
-                              ctrl@weight_name))
+                              ctrl@weight_name,
+                              ctrl@rake_names
+                              ))
   if (length(extra_colnames)) {
     item_data[, c(extra_colnames) := NULL]
   }
@@ -170,7 +171,9 @@ rename_numerics <- function(tbl, vars) {
 
 drop_rows_missing_covariates <- function(item_data, ctrl) {
   n <- nrow(item_data)
-  is_missing <- rowSums(is.na(item_data[, c(ctrl@geo_name, ctrl@time_name, ctrl@group_names, ctrl@survey_name), with = FALSE])) > 0
+  is_missing <- rowSums(is.na(item_data[, c(ctrl@geo_name, ctrl@time_name,
+                                            ctrl@group_names, ctrl@survey_name,
+                                            ctrl@rake_names), with = FALSE])) > 0
   item_data <- subset(item_data, !is_missing)
   if (!identical(n, nrow(item_data))) {
     message("\tDropped ", format(n - nrow(item_data), big.mark = ","),

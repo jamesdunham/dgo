@@ -12,6 +12,7 @@ suppressMessages({
   test_that("minimal shape calls are successful", {
     expect_silent(suppressMessages(min_item_call()))
     expect_silent(suppressMessages(min_modifier_call()))
+    expect_silent(suppressMessages(min_groupless_call()))
   })
 
   test_that("stop_if_empty works", {

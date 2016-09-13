@@ -39,9 +39,7 @@
 #' If \code{target_data} is specified \code{shape} will adjust the weighting of
 #' groups toward population targets via raking. This relies on an adaptation of
 #' \code{\link[survey]{rake}}. The additional required arguments are
-#' \code{target_proportion_name} and \code{strata_names}. Strata are defined
-#' additively when more than one variable is given in \code{strata_names}.
-#' More complex strata require variables created in advance.
+#' \code{target_proportion_name} and \code{raking}. 
 #'
 #' \code{shape} can restrict data row-wise in \code{item_data},
 #' \code{modifier_data}, and \code{aggregate_data} to that within specified time
@@ -55,7 +53,8 @@
 #' \describe{
 #'   \item{target_proportion_name}{The variable giving population proportions
 #'   for strata.}
-#'   \item{strata_names}{Variables that define population strata.}
+#'   \item{raking}{A formula or list of formulas specifying the variables on
+#'   which to rake.}
 #'   \item{geo_filter}{A character vector giving values of the geographic
 #'   variable. Defaults to observed values.}
 #'   \item{time_filter}{A numeric vector giving possible values of the time
@@ -132,8 +131,9 @@ shape <- function(item_data,
                   item_names,
                   time_name,
                   geo_name,
-                  group_names,
+                  group_names = NULL,
                   weight_name,
+                  raking = NULL,
                   survey_name,
                   modifier_data = NULL,
                   target_data = NULL,
@@ -141,7 +141,7 @@ shape <- function(item_data,
                   ...) {
 
   ctrl <- init_control(item_data, item_names, time_name, geo_name, group_names,
-                       weight_name, survey_name, ...)
+                       weight_name, survey_name, raking, ...)
   d_in <- dgirtIn$new(ctrl)
 
   # validate inputs #
@@ -161,11 +161,17 @@ shape <- function(item_data,
   d_in$time_observed <- get_observed(item_data, aggregate_data, ctrl@time_name)
   d_in$geo_observed <- get_observed(item_data, aggregate_data, ctrl@geo_name)
 
+  # rake survey weights #
+
+  if (length(target_data)) {
+    item_data <- weight(item_data, target_data, ctrl)
+    ctrl@weight_name <- "raked_weight"
+  }
+
   # aggregate individual item response data to group level #
-  item_data <- weight(item_data, target_data, ctrl)
+  item_data <- dichotomize(item_data, ctrl)
   # this assignment should be redundant, but without it some variables created
   # in dichotomize() weren't appearing in item_data 
-  item_data <- dichotomize(item_data, ctrl)
 
   d_in$group_grid <- make_group_grid(item_data, aggregate_data, ctrl)
   d_in$group_grid_t <- make_group_grid_t(d_in$group_grid, ctrl)
@@ -191,8 +197,6 @@ shape <- function(item_data,
   d_in$NNl2 <- array(0L, dim = c(d_in$T, d_in$Q, d_in$G_hier))
   d_in$SSl2 <- d_in$NNl2
 
-  # dimnames(d_in$XX)
-  # dimnames(d_in$ZZ)
   d_in$XX <- make_design_matrix(item_data, d_in, ctrl)
   d_in$ZZ <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl,
                                      t1 = FALSE)
@@ -284,11 +288,13 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
   }
   zz
 }
-
 make_design_matrix <- function(item_data, d_in, ctrl) {
-  design_formula <- as.formula(paste("~ 0", ctrl@geo_name,
-                                     paste(ctrl@group_names, collapse = " + "),
-                                     sep = " + "))
+  design_formula <- paste("~ 0", ctrl@geo_name, sep = " + ")
+  if (length(ctrl@group_names)) {
+    design_formula <- paste(design_formula, ctrl@group_names, collapse = " + ",
+                            sep = " + ")
+  }
+  design_formula = as.formula(design_formula)
   design_matrix <- with_contr.treatment(model.matrix(design_formula,
                                                      d_in$group_grid_t))
   

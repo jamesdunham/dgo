@@ -2,15 +2,17 @@ setClass("Control",
          slots = list(constant_item = "logical",
                       geo_name = "character",
                       geo_filter = "character",
-                      group_names = "character",
+                      group_names = "ANY",
                       item_names = "character",
                       aggregate_item_names = "character",
                       min_survey_filter = "numeric",
                       min_t_filter = "numeric",
                       modifier_names = "character",
                       prop_name = "character",
+                      raking = "ANY",
+                      rake_names = "character",
                       standardize = "logical",
-                      strata_names = "ANY",
+                      sample_margins = "list",
                       survey_name = "character",
                       target_group_names = "character",
                       target_proportion_name = "character",
@@ -30,12 +32,18 @@ setClass("Control",
              "\"geo_name\" should be a single variable name"
            else if (!length(object@survey_name) == 1L)
              "\"survey_name\" should be a single variable name"
+           else if (length(object@group_names) && !is.character(object@group_names))
+             "if specified \"group_names\" should give variable names in a character vector"
            else if (!length(object@standardize) == 1L)
              "\"standardize\" should be a single logical"
            else if (!length(object@weight_name) == 1L)
              "\"weight_name\" should be a single variable name"
-           else if (!length(unique(object@group_names)) > 0L)
-             "\"group_names\" should be at least one variable name" 
+           else if (length(object@raking) && !is.list(object@raking) &
+                    !"formula" %in% class(object@raking))
+             "\"raking\" should be a formula or a list of formulas"
+           else if (length(object@raking) && is.list(object@raking) &&
+                    !all(sapply(object@raking, class) %in% "formula"))
+             "\"raking\" should be a formula or a list of formulas"
            else if (!length(object@constant_item) == 1L &&
                     is.logical(object@constant_item))
              "\"constant_item\" should be a single logical value"
@@ -48,14 +56,8 @@ setClass("Control",
            else if (!length(object@min_t_filter) == 1L &&
                     object@min_t_filter > 0L)
              "\"min_t_filter\" should be a positive integer"
-           else if (length(object@strata_names) &&
-                    !is.character(object@strata_names) &&
-                    !is.list(object@strata_names))
-             "\"strata_names\" should give variable names in a character vector or list of vectors"
-           else if (length(object@strata_names) &&
-                    is.list(object@strata_names) &&
-                    !is.character(unlist(object@strata_names, recursive = TRUE)))
-             "\"strata_names\" should give variable names in a character vector or list of vectors"
+           else if (length(object@sample_margins) && !is.list(object@sample_margins))
+             "\"sample_margins\" should be a list of formulas or data frames"
            else 
              TRUE
          })
