@@ -70,6 +70,9 @@ check_item <- function(item_data, ctrl) {
   is_name(c("time_name", "geo_name", "survey_name", "weight_name"))
   are_names <- valid_names(item_data, ctrl)
   are_names("item_names")
+  if (length(ctrl@id_vars)) {
+    are_names("id_vars")
+  }
   has_type(c("time_name", "geo_name", "group_names", "survey_name",
              "item_names", "weight_name"), item_data, ctrl)
   check_time(item_data, ctrl@time_name) 

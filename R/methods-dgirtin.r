@@ -1,4 +1,5 @@
 setGeneric("summary")
+
 #' Summarize DGIRT Data.
 #'
 #' @param x An object of class \code{dgirtIn} as returned by \code{shape}.
@@ -11,16 +12,30 @@ setGeneric("summary")
 #' @include require_namespace.r
 #' @rdname dgirtin-class
 #' @export
+#' @examples
+#' summary(toy_dgirt_in)
+#' data(opinion)
+#' shaped_responses <- shape(opinion,
+#'                           item_names = "Q_cces2006_gaymarriageamendment",
+#'                           aggregate_data = aggregates,
+#'                           aggregate_item_names = unique(aggregates$item),
+#'                           time_name = "year",
+#'                           geo_name = "state",
+#'                           group_names = "race",
+#'                           weight_name = "weight",
+#'                           survey_name = "source")
+#' summary(shaped_responses)
+#' agg_in = shape(item_data, )
 setMethod("summary", c(object = "dgirtIn"),
           function(object, ...) {
             cat("Items:\n")
-            print(c(object$control@item_names,
-                    object$control@aggregate_item_names))
+            print(sort(unique(c(object$control@item_names,
+                                object$control@aggregate_item_names))))
             cat("Respondents:\n")
-            cat("  ", format(get_n(object), big.mark = ","), "in `item_data` (unadjusted)\n")
+            cat("  ", format(get_n(object), big.mark = ","), "in `item_data`\n")
             if (length(object$aggregate_data))
               cat("  ", format(sum(get_n(object, aggregate_name = "item")$n),big.mark = ","),
-                  "in `aggregate_data (design-effect adjusted) `\n")
+                  "in `aggregate_data` (design-effect adjusted)\n")
             cat("Grouping variables:\n")
             print(c(object$control@time_name,
                     object$control@geo_name,
@@ -44,6 +59,7 @@ setMethod("print", c("x" = "dgirtIn"),
 
 setGeneric("get_item_names", signature = "x",
            function(x) standardGeneric("get_item_names"))
+
 #' Get Items Names in DGIRT Data.
 #'
 #' @return A list of item names.
@@ -62,6 +78,7 @@ setMethod("get_item_names", c("x" = "dgirtIn"),
 setGeneric("get_n", signature = c("x", "by", "aggregate_name"),
            function(x, by = NULL, aggregate_name = NULL)
              standardGeneric("get_n"))
+
 #' Count Respondents in DGIRT Data.
 #'
 #' @param by The name of a grouping variable.
@@ -111,6 +128,7 @@ setGeneric("get_item_n", signature = c("x", "by", "aggregate_data"),
            function(x, by = NULL, aggregate_data = FALSE) standardGeneric("get_item_n"))
 
 #' Count Respondents for Items in DGIRT Data
+#'
 #' @include class-dgirtin.r
 #' @include require_namespace.r
 #' @rdname dgirtin-class

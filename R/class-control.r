@@ -4,7 +4,8 @@ setClass("Control",
                       geo_filter = "character",
                       group_names = "ANY",
                       item_names = "character",
-                      aggregate_item_names = "character",
+                      id_vars = "ANY",
+                      aggregate_item_names = "ANY",
                       min_survey_filter = "numeric",
                       min_t_filter = "numeric",
                       modifier_names = "character",
@@ -34,6 +35,10 @@ setClass("Control",
              "\"survey_name\" should be a single variable name"
            else if (length(object@group_names) && !is.character(object@group_names))
              "if specified \"group_names\" should give variable names in a character vector"
+           else if (length(object@id_vars) && !is.character(object@id_vars))
+             "if specified \"id_vars\" should give variable names in a character vector"
+           else if (length(object@aggregate_item_names) && !is.character(object@aggregate_item_names))
+             "if specified \"aggregate_item_names\" should give values in an \"item\" column of aggregate_data"
            else if (!length(object@standardize) == 1L)
              "\"standardize\" should be a single logical"
            else if (!length(object@weight_name) == 1L)

@@ -1,3 +1,4 @@
+context("dichotomizing item responses")
 # library(testthat)
 # test_levels <- c(1:4, NA)
 # test_values <- sample(test_levels, 100, TRUE) 
@@ -31,5 +32,3 @@ test_that("dichotomizing item responses works", {
 
   expect_error(dichotomize_cpp("a"), "not compatible")
 })
-# x = min_item_call()
-# x$n_vec

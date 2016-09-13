@@ -110,13 +110,15 @@
 #' @examples
 #' # model individual item responses
 #' data(opinion)
+#' opinion$respondent = 1:nrow(opinion)
 #' shaped_responses <- shape(opinion,
 #'                           item_names = "Q_cces2006_gaymarriageamendment",
 #'                           time_name = "year",
 #'                           geo_name = "state",
 #'                           group_names = "race",
 #'                           weight_name = "weight",
-#'                           survey_name = "source")
+#'                           survey_name = "source",
+#'                           id_vars = 'respondent')
 #' # summarize result)
 #' summary(shaped_responses)
 #'
@@ -138,10 +140,13 @@ shape <- function(item_data,
                   modifier_data = NULL,
                   target_data = NULL,
                   aggregate_data = NULL,
+                  aggregate_item_names = NULL,
+                  id_vars = NULL,
                   ...) {
 
   ctrl <- init_control(item_data, item_names, time_name, geo_name, group_names,
-                       weight_name, survey_name, raking, ...)
+                       weight_name, survey_name, raking, id_vars, aggregate_data, 
+                       aggregate_item_names, ...)
   d_in <- dgirtIn$new(ctrl)
 
   # validate inputs #
@@ -197,7 +202,7 @@ shape <- function(item_data,
   d_in$NNl2 <- array(0L, dim = c(d_in$T, d_in$Q, d_in$G_hier))
   d_in$SSl2 <- d_in$NNl2
 
-  d_in$XX <- make_design_matrix(item_data, d_in, ctrl)
+  d_in$XX <- make_design_matrix(d_in, ctrl)
   d_in$ZZ <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl,
                                      t1 = FALSE)
   d_in$ZZ_prior <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl,
@@ -288,7 +293,8 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
   }
   zz
 }
-make_design_matrix <- function(item_data, d_in, ctrl) {
+
+make_design_matrix <- function(d_in, ctrl) {
   design_formula <- paste("~ 0", ctrl@geo_name, sep = " + ")
   if (length(ctrl@group_names)) {
     design_formula <- paste(design_formula, ctrl@group_names, collapse = " + ",

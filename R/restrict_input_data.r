@@ -7,7 +7,8 @@ restrict_items <- function(item_data, ctrl) {
                               ctrl@time_name,
                               ctrl@group_names,
                               ctrl@weight_name,
-                              ctrl@rake_names
+                              ctrl@rake_names,
+                              ctrl@id_vars
                               ))
   if (length(extra_colnames)) {
     item_data[, c(extra_colnames) := NULL]
