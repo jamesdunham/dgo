@@ -14,6 +14,18 @@ check_names <- function(d_in) {
     stop("Not all cell names appear in the rownames of the design matrix, ",
          "which shouldn't be possible.")
   }
+
+  observed_geo = unique(d_in$group_counts[[d_in$control@geo_name]])
+  if (sum(!observed_geo %in% dimnames(d_in$ZZ)[[2]]) > 1) {
+    stop("Not all geographic areas appear as ZZ columns; this is a bug.")
+  }
+  if (sum(!observed_geo %in% dimnames(d_in$XX)[[2]]) > 1) {
+    stop("Not all geographic areas appear as XX columns; this is a bug.")
+  }
+  observed_t = unique(d_in$group_counts[[d_in$control@time_name]])
+  if (!all(observed_t %in% dimnames(d_in$ZZ)[[1]])) {
+    stop("Not all time periods appear as ZZ columns; this is a bug.")
+  }
 }
 
 check_values <- function(d_in) {

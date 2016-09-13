@@ -3,8 +3,7 @@ make_group_grid <- function(item_data, aggregate_data, ctrl) {
   group_grid <- expand.grid(c(
     setNames(list(ctrl@time_filter), ctrl@time_name),
     lapply(rbind(item_data[, c(ctrl@geo_name, ctrl@group_names), with = FALSE],
-                 aggregate_data[, c(ctrl@group_names, ctrl@geo_name), with =
-                                FALSE]),
+                 aggregate_data[, c(ctrl@group_names, ctrl@geo_name), with = FALSE]),
            function(x) sort(unique(x)))), stringsAsFactors = FALSE)
   data.table::setDT(group_grid, key = c(ctrl@group_names, ctrl@time_name, ctrl@geo_name))
   invisible(group_grid)

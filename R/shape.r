@@ -200,7 +200,7 @@ shape <- function(item_data,
   d_in$NNl2 <- array(0L, dim = c(d_in$T, d_in$Q, d_in$G_hier))
   d_in$SSl2 <- d_in$NNl2
 
-  d_in$XX <- make_design_matrix(item_data, d_in, ctrl)
+  d_in$XX <- make_design_matrix(d_in, ctrl)
   d_in$ZZ <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl,
                                      t1 = FALSE)
   d_in$ZZ_prior <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl,
@@ -291,7 +291,8 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
   }
   zz
 }
-make_design_matrix <- function(item_data, d_in, ctrl) {
+
+make_design_matrix <- function(d_in, ctrl) {
   design_formula <- paste("~ 0", ctrl@geo_name, sep = " + ")
   if (length(ctrl@group_names)) {
     design_formula <- paste(design_formula, ctrl@group_names, collapse = " + ",
