@@ -13,7 +13,7 @@ conservatism (or other trait) from individuals' responses to dichotomous
 questions. It is "dynamic" both in the sense that groups are allowed to evolve
 over time and in the sense that the model "borrows strength" from other time
 periods, to a degree specified by the user. [This
-document](https://github.com/jamesdunham/dgirt/blob/master/man/dgirt_details.pdf)
+document](https://github.com/jamesdunham/dgirt/blob/master/inst/dgirt_details.pdf)
 describes the model in detail.
 
 It is a modified version of the hierarchical group-level IRT model

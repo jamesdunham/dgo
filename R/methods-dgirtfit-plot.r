@@ -1,3 +1,5 @@
+utils::globalVariables(c("facet_var"))
+
 #' @rdname plot-method
 setGeneric("dgirt_plot", signature = "x", function(x, ...)
            standardGeneric("dgirt_plot"))
@@ -34,19 +36,12 @@ setMethod("dgirt_plot", signature(x = "dgirtfit"),
 
 #' \code{dgirt_plot}: plot \code{data.frame} objects
 #'
-# #' @param x A \code{dgirtfit-class} object.
 #' @param group_names Discrete grouping variables, if any, which will be used as
 #' the \code{color} argument in \code{aes}.
 #' @param time_name A time variable with numeric values that will be plotted on
 #' the x axis.
 #' @param geo_name A variable representing local areas that will be used in
 #' faceting.
-# #' @param y_fun Summary function to be plotted as \code{y}.
-# #' @param y_min Summary function giving the \code{ymin} argument for a
-# #' \code{geom_pointrange} object.
-# #' @param y_max Summary function giving the \code{ymax} argument for a
-# #' \code{geom_pointrange} object.
-# #' @param pars Selected parameter. 
 #' @rdname plot-method
 #' @examples
 #' data(state_year_targets)
@@ -124,7 +119,10 @@ setGeneric("plot_rhats", signature = "x", function(x, ...)
 #'
 #' This function plots R-hats from a dgirt model.
 #'
-#' @param x A \code{dgirtfit-class} object.
+#' @param facet_vars Optionally, one or more variables passed to \code{facet_wrap}
+#' @param shape_var,color_var,x_var Optionally, a variable passed to the
+#' \code{shape}, \code{color}, or \code{x} arguments of \code{aes_string},
+#' respectively.
 #' @rdname plot-method
 #' @examples
 #' plot_rhats(toy_dgirtfit)
@@ -134,8 +132,8 @@ setMethod("plot_rhats", signature(x = "dgirtfit"),
           function(x, pars = "theta_bar", facet_vars = NULL, shape_var = NULL,
                    color_var = NULL, x_var = NULL) {
 
-  if (length(pars)) assert(is.character(pars))
-  if (length(facet_vars)) assert(is.character(facet_vars))
+  if (length(pars)) assert(all(is.character(pars)))
+  if (length(facet_vars)) assert(all(is.character(facet_vars)))
   if (length(shape_var)) assert(assertthat::is.string(shape_var))
   if (length(color_var)) assert(assertthat::is.string(color_var))
   if (length(x_var)) assert(assertthat::is.string(x_var))

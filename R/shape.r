@@ -99,8 +99,17 @@
 #' @param target_data A table giving population proportions for groups by local
 #' geographic area and time period. See details below.
 #'
+#' @param raking A formula or list of formulas specifying the variables on which
+#' to rake survey weights.
+#'
 #' @param aggregate_data A table of trial and success counts by group and item.
 #' See details below.
+#'
+#' @param aggregate_item_names A subset of values of the \code{item} variable in
+#' \code{aggregate_data}, for restricting the aggregate data.
+#'
+#' @param id_vars Additional variables that should be included in the result,
+#' other than those specified elsewhere.
 #'
 #' @param ... Further arguments for more complex models, input data, and
 #' preprocessing.

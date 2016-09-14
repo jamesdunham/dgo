@@ -6,6 +6,11 @@
 \usage{
 rhats(x, ...)
 }
+\arguments{
+\item{x}{A \code{dgirtfit}-class object}
+
+\item{...}{Method arguments}
+}
 \description{
 \code{rhats}: extract split R-hats from \code{dgirtfit}-class objects
 }
