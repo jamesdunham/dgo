@@ -29,22 +29,40 @@ check_names <- function(d_in) {
 }
 
 check_values <- function(d_in) {
+
   # XX is an indicator matrix
   XX_values = sort(unique(as.vector(d_in$XX)))
   assertthat::assert_that(assertthat::are_equal(XX_values, c(0L, 1L)))
 
+  assertthat::assert_that(all(d_in$WT >= 0))
+
   # n_vec is a count
-  n_vec_values = unique(as.vector(d_in$n_vec))
-  assertthat::assert_that(all(n_vec_values %% 1 == 0))
-  assertthat::assert_that(all(n_vec_values >= 0))
+  assertthat::assert_that(all(d_in$n_vec %% 1 == 0))
+  assertthat::assert_that(all(d_in$n_vec >= 0))
 
   # s_vec is a count
-  s_vec_values = unique(as.vector(d_in$s_vec))
-  assertthat::assert_that(all(s_vec_values %% 1 == 0))
-  assertthat::assert_that(all(s_vec_values >= 0))
+  assertthat::assert_that(all(d_in$s_vec %% 1 == 0))
+  assertthat::assert_that(all(d_in$s_vec >= 0))
+
+  # observed gives indexes of positive n_vec
+  assertthat::assert_that(all(d_in$observed %% 1 == 0))
+  assertthat::assert_that(all(d_in$observed >= 0))
 
   # there can be no more successes than trials
   assertthat::assert_that(all(as.vector(d_in$s_vec) <= as.vector(d_in$n_vec)))
+
+  # each of these elements gives a parameter count
+  counts = c("T", "G", "G_hier", "Q", "D", "N", "P", "S", "H", "Hprior",
+             "N_observed")
+  for (x in counts) {
+    assertthat::assert_that(assertthat::is.count(d_in[[x]]))
+  }
+
+  # S is the count of geographic predictors, which must be positive but can be
+  # no larger than the count of geographic and demographic predictors
+  assertthat::assert_that(d_in$S <= d_in$P)
+  assertthat::assert_that(d_in$S > 0)
+
 }
 
 check_dimensions <- function(d_in) {

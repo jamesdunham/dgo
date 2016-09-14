@@ -37,9 +37,11 @@
 #' @import rstan
 #' @export
 #' @include constants.r
+#' @examples
+#' dgirt(toy_dgirt_in, iter = 25, chains = 1)
 dgirt <- function(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.5,
                   delta_tbar_prior_sd = 0.5, innov_sd_delta_scale = 2.5,
-                  innov_sd_theta_scale = 2.5, version = "2016_04_20") {
+                  innov_sd_theta_scale = 2.5, version = "2016_09_14") {
 
   dots <- list(...,
                object = stanmodels[[version]],

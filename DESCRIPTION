@@ -1,7 +1,7 @@
 Package: dgirt
 Title: Dynamic Group-Level IRT and Small Area Estimation
 Version: 0.2.5
-Date: 2016-09-06
+Date: 2016-09-14
 Description: Fit dynamic group-level IRT models from individual or aggregated
     item response data. This package handles common preprocessing tasks and extends
     functions for inspecting results, poststratification, and quick iteration over
@@ -34,7 +34,7 @@ Suggests:
     testthat
 LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>=
     0.11.0), RcppEigen
-RcppModules: stan_fit42016_04_20_mod, stan_fit42015_12_16_mod
+RcppModules: stan_fit42016_09_14_mod, stan_fit42016_04_20_mod, stan_fit42015_12_16_mod
 NeedsCompilation: yes
 Collate:
     'RcppExports.R'
