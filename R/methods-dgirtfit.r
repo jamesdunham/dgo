@@ -1,4 +1,5 @@
-utils::globalVariables(c("value", "iteration", ".", "rn"))
+utils::globalVariables(c("value", "iteration", ".", "rn", "total", "warmup",
+                         "Rhat"))
 
 setMethod("show", "dgirtfit",
           function(object) {
@@ -121,6 +122,9 @@ as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar",
 }
 
 #' \code{rhats}: extract split R-hats from \code{dgirtfit}-class objects
+#'
+#' @param x A \code{dgirtfit}-class object
+#' @param ... Method arguments
 setGeneric("rhats", signature = "x", function(x, ...)
            standardGeneric("rhats"))
 

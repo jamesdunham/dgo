@@ -25,6 +25,7 @@ Imports:
     concatenate,
     data.table,
     ggplot2,
+    lubridate,
     methods,
     R6,
     survey
