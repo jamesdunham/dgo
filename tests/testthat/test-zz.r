@@ -18,9 +18,12 @@ suppressMessages({
 
   context("hierarchical parameter counts")
 
-  test_that('hier_names is a P- or S-vector', {
+  test_that('hier_names is a P-vector', {
     expect_identical(length(hier_names), d_mod$P)
-    expect_identical(length(hier_names), d_mod$S)
+  })
+
+  test_that('S is the count of geographic units - 1', {
+    expect_identical(d_min$S, length(d_min$geo_observed) - 1)
   })
 
   context("hierarchical modifier is numeric")

@@ -221,7 +221,7 @@ shape <- function(item_data,
   d_in$D <- ifelse(ctrl@constant_item, 1L, d_in$T)
   d_in$N <- nrow(d_in$group_counts)
   d_in$P <- ncol(d_in$ZZ)
-  d_in$S <- dim(d_in$ZZ)[[2]]
+  d_in$S <- length(unique(d_in$group_grid[[ctrl@geo_name]])) - 1
   d_in$H <- dim(d_in$ZZ)[[3]]
   d_in$Hprior <- d_in$H
 
