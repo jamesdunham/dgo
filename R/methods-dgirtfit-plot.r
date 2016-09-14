@@ -56,14 +56,15 @@ setMethod("dgirt_plot", signature(x = "dgirtfit"),
 setMethod("dgirt_plot", signature(x = "data.frame"),
   function(x, group_names, time_name, geo_name, y_fun = "median", y_min =
            "q_025", y_max = "q_975") {
-         assert(all_strings(group_names))
-         assert(assertthat::is.string(time_name))
-         assert(assertthat::is.string(geo_name))
-         assert(assertthat::is.string(y_fun))
-         assert(assertthat::is.string(y_min))
-         assert(assertthat::is.string(y_max))
+
+    if (length(group_names)) assert(all_strings(group_names))
+    if (length(time_name)) assert(assertthat::is.string(time_name))
+    if (length(geo_name)) assert(assertthat::is.string(geo_name))
+    if (length(y_min)) assert(assertthat::is.string(y_min))
+    if (length(y_max)) assert(assertthat::is.string(y_max))
 
     if (length(y_fun)) {
+      assert(assertthat::is.string(y_fun))
       x <- x[, do_funs(list(value), c(y_fun, y_min, y_max)),
              by = c(group_names, time_name, geo_name)]
       data.table::setnames(x, grep("^V\\d+", names(x),value = TRUE),
