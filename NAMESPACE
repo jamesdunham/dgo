@@ -21,10 +21,11 @@ import(data.table)
 import(rstan)
 importFrom("concatenate", "cc", "cc_and", "cc_or", "cn", "cn_and") 
 import(R6)
+importFrom(lubridate, "seconds_to_period")
 import(methods)
 import(Rcpp)
 import(ggplot2)
 importFrom("stats", "as.formula", "formula", "model.frame",
     "model.matrix", "na.fail", "na.omit", "quantile", "sd",
     "setNames", "weighted.mean", "weights")
-importFrom("utils", "type.convert", "packageVersion")
+importFrom("utils", "capture.output", "type.convert", "packageVersion")
