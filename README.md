@@ -2,7 +2,7 @@
 
 dgirt is an R package for dynamic group-level item response theory (DGIRT) models.
 
-DGIRT is a Bayesian method for estimating subpopulation groups' average conservatism (or other trait) from individuals' responses to dichotomous questions. It is "dynamic" both in the sense that groups are allowed to evolve over time and in the sense that the model "borrows strength" from other time periods, to a degree specified by the user. [This document](https://github.com/jamesdunham/dgirt/blob/master/man/dgirt_details.pdf) describes the model in detail.
+DGIRT is a Bayesian method for estimating subpopulation groups' average conservatism (or other trait) from individuals' responses to dichotomous questions. It is "dynamic" both in the sense that groups are allowed to evolve over time and in the sense that the model "borrows strength" from other time periods, to a degree specified by the user. [This document](https://github.com/jamesdunham/dgirt/blob/master/inst/dgirt_details.pdf) describes the model in detail.
 
 It is a modified version of the hierarchical group-level IRT model implemented by [Caughey and Warshaw 2015](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html).
 
@@ -69,7 +69,7 @@ summary(dgirt_in)
 #> Items:
 #> [1] "Q_cces2006_abortion"
 #> Respondents:
-#>    11,662 in `item_data` (unadjusted)
+#>    11,662 in `item_data`
 #> Grouping variables:
 #> [1] "year"  "state" "race" 
 #> Time periods:
@@ -124,18 +124,25 @@ For a high-level summary of the result, use `summary`.
 summary(dgirt_out)
 #> dgirt samples from 4 chains of 1500 iterations, 750 warmup, thinned every 1 
 #>   Drawn Fri Aug 26 08:19:58 2016 
-#>   Package version not available (< 0.2.2) 
+#>   Package version 0.2.4 
 #>   Model version 2016_08_11 
 #>   86 parameters; 36 theta_bars (year, state and race)
 #>   3 periods 2006 to 2008 
 #> 
 #> n_eff
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>   15.55  315.70  536.30  856.80 1148.00 3000.00 
+#>   15.55  315.70  536.30  856.80 1148.00 3000.00
 #> 
 #> Rhat
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
 #>  0.9987  1.0020  1.0060  1.0070  1.0100  1.0260       1
+#> 
+#> Elapsed time
+#>    chain warmup sample total
+#> 1:     1    28S    26S   54S
+#> 2:     2    27S    26S   53S
+#> 3:     3    30S    26S   56S
+#> 4:     4    30S    27S   57S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
