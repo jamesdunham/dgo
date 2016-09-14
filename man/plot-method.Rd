@@ -51,7 +51,11 @@ faceting.}
 
 \item{y}{Ignored.}
 
-\item{x}{A \code{dgirtfit-class} object.}
+\item{facet_vars}{Optionally, one or more variables passed to \code{facet_wrap}}
+
+\item{shape_var, color_var, x_var}{Optionally, a variable passed to the
+\code{shape}, \code{color}, or \code{x} arguments of \code{aes_string},
+respectively.}
 }
 \description{
 \code{dgirt_plot}: plot \code{dgirtfit}-class objects

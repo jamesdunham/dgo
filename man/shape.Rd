@@ -6,7 +6,8 @@
 \usage{
 shape(item_data, item_names, time_name, geo_name, group_names = NULL,
   weight_name, raking = NULL, survey_name, modifier_data = NULL,
-  target_data = NULL, aggregate_data = NULL, ...)
+  target_data = NULL, aggregate_data = NULL, aggregate_item_names = NULL,
+  id_vars = NULL, ...)
 }
 \arguments{
 \item{item_data}{A table in which items appear in columns and each row
@@ -25,6 +26,9 @@ numeric variables is allowed but not recommended.}
 
 \item{weight_name}{A variable giving survey weights.}
 
+\item{raking}{A formula or list of formulas specifying the variables on which
+to rake survey weights.}
+
 \item{survey_name}{A survey identifier.}
 
 \item{modifier_data}{Table giving characteristics of local geographic areas
@@ -35,6 +39,12 @@ geographic area and time period. See details below.}
 
 \item{aggregate_data}{A table of trial and success counts by group and item.
 See details below.}
+
+\item{aggregate_item_names}{A subset of values of the \code{item} variable in
+\code{aggregate_data}, for restricting the aggregate data.}
+
+\item{id_vars}{Additional variables that should be included in the result,
+other than those specified elsewhere.}
 
 \item{...}{Further arguments for more complex models, input data, and
 preprocessing.}
@@ -130,13 +140,15 @@ but \code{constant_item} affects the shape of the data. It may move to
 \examples{
 # model individual item responses
 data(opinion)
+opinion$respondent = 1:nrow(opinion)
 shaped_responses <- shape(opinion,
                           item_names = "Q_cces2006_gaymarriageamendment",
                           time_name = "year",
                           geo_name = "state",
                           group_names = "race",
                           weight_name = "weight",
-                          survey_name = "source")
+                          survey_name = "source",
+                          id_vars = 'respondent')
 # summarize result)
 summary(shaped_responses)
 
