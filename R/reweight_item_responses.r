@@ -1,3 +1,5 @@
+utils::globalVariables(c("raked_weight"))
+
 weight <- function(item_data, target_data, control) {
   # Adjust individual survey weights given population targets
 
