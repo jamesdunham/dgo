@@ -5,7 +5,7 @@ data {
   int<lower=1> T; ## number of years
   int<lower=1> N; ## number of cells
   int<lower=1> N_observed; ## number of observed cells
-  int<lower=1> S; ## number of geographic units (e.g., states)
+  int<lower=1> S; ## number of geographic parameters (e.g., for states)
   int<lower=1> P; ## number of hierarchical parameters, including geographic
   int<lower=1> H; ## number of predictors for geographic unit effects
   int<lower=1> Hprior; ## number of predictors for geographic unit effects (t=1)
