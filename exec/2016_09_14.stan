@@ -5,7 +5,7 @@ data {
   int<lower=1> T; ## number of years
   int<lower=1> N; ## number of cells
   int<lower=1> N_observed; ## number of observed cells
-  int<lower=1> S; ## number of geographic units (e.g., states)
+  int<lower=1> S; ## number of geographic parameters (e.g., for states)
   int<lower=1> P; ## number of hierarchical parameters, including geographic
   int<lower=1> H; ## number of predictors for geographic unit effects
   int<lower=1> Hprior; ## number of predictors for geographic unit effects (t=1)
@@ -44,7 +44,6 @@ parameters {
   #!# vector[G] theta_bar[T]; ## group means
   vector<lower=0>[T] sd_theta_bar; ## residual sd of group ability means
   vector<lower=0>[T] sd_theta; ## sd of abilities (by period)
-  real<lower=0> sd_gamma; ## prior sd of geographic effects
   real<lower=0> sd_gamma_geo; ## prior sd of geographic coefficients
   real<lower=0> sd_gamma_demo; ## prior sd of demographic coefficients
   real<lower=0> sd_innov_delta; ## innovation sd of nu_geo and delta_gamma
@@ -199,7 +198,6 @@ model {
     diff_raw[1] ~ normal(0, 1); ## item difficulty (constant)
   }
   disc_raw ~ lognormal(0, 1); ## item discrimination
-  sd_gamma ~ cauchy(0, 2.5); ## sd of geographic effects
   sd_gamma_geo ~ cauchy(0, 2.5); ## sd of geographic effects
   sd_gamma_demo ~ cauchy(0, 2.5); ## sd of demographic effects
   sd_innov_delta ~ cauchy(0, innov_sd_delta_scale); ## innovation sd of nu_geo, delta_gamma

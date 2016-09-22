@@ -1,5 +1,3 @@
-# TODO: move to s4 class validation
-
 check_names <- function(d_in) {
    if (!all.equal(dimnames(d_in$ZZ)[[2]], colnames(d_in$XX)) &&
        all.equal(dimnames(d_in$ZZ_prior)[[2]], colnames(d_in$XX)))
@@ -72,7 +70,8 @@ check_dimensions <- function(d_in) {
   assertthat::assert_that(all_equal(dim(d_in$SSl2), as.integer(c(d_in$T, d_in$Q, d_in$G_hier))))
   assertthat::assert_that(all_equal(dim(d_in$WT), as.integer(c(d_in$T, d_in$G_hier, d_in$G))))
   assertthat::assert_that(all_equal(dim(d_in$l2_only), c(d_in$T, d_in$Q)))
-  assertthat::assert_that(all_equal(dim(d_in$XX), c(d_in$G, d_in$P)))
+  hier_params = d_in$P - 1 + ifelse(d_in$P != d_in$S, d_in$P - d_in$S - 1, 0)
+  assertthat::assert_that(all_equal(dim(d_in$XX), c(d_in$G, hier_params)))
   assertthat::assert_that(all_equal(dim(d_in$ZZ), c(d_in$T, d_in$P, d_in$H)))
   assertthat::assert_that(all_equal(dim(d_in$ZZ_prior), c(d_in$T, d_in$P, d_in$H)))
   assertthat::assert_that(not_empty((d_in$constant_item)))
