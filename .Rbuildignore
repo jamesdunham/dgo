@@ -11,3 +11,4 @@
 ^setup.r$
 ^Makefile$
 ^.*tar.gz$
+^\.Rproj\.user$
