@@ -1,4 +1,4 @@
-utils::globalVariables(c("facet_var"))
+utils::globalVariables(c("facet_vars"))
 
 #' @rdname plot-method
 setGeneric("dgirt_plot", signature = "x", function(x, ...)
@@ -160,7 +160,7 @@ setMethod("plot_rhats", signature(x = "dgirtfit"),
       shape_var = free_vars[1]
       free_vars = free_vars[-1]
   }
-  if (length(free_vars) && !length(facet_var)) {
+  if (length(free_vars) && !length(facet_vars)) {
       facet_vars = free_vars
   }
 
