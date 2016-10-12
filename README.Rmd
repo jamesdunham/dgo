@@ -3,21 +3,19 @@ output:
   md_document:
     variant: markdown_github
 ---
-[![Build Status](https://travis-ci.org/jamesdunham/dgirt.svg?branch=master)](https://travis-ci.org/jamesdunham/dgirt)
+[![Build Status](https://travis-ci.org/jamesdunham/dgo.svg?branch=master)](https://travis-ci.org/jamesdunham/dgo)
 
-dgirt is an R package for dynamic group-level item response theory (DGIRT)
-models.
+dgo is an R package for dynamic estimation of group-level opinion.
 
-DGIRT is a Bayesian method for estimating subpopulation groups' average
-conservatism (or other trait) from individuals' responses to dichotomous
-questions. It is "dynamic" both in the sense that groups are allowed to evolve
-over time and in the sense that the model "borrows strength" from other time
-periods, to a degree specified by the user. [This
-document](https://github.com/jamesdunham/dgirt/blob/master/inst/dgirt_details.pdf)
-describes the model in detail.
-
-It is a modified version of the hierarchical group-level IRT model
-implemented by [Caughey and Warshaw 2015](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html).
+dgo implements DGIRT, a Bayesian method for estimating subpopulation groups'
+average conservatism (or other trait) from individuals' responses to dichotomous
+questions. It is "dynamic" both in the sense that groups are allowed to evolve 
+over time and in the sense that the model "borrows strength" from other time 
+periods, to a degree specified by the user. [This 
+document](https://github.com/jamesdunham/dgo/blob/master/inst/dgirt_details.pdf)
+describes the model in detail. It is a modified version of the hierarchical
+group-level IRT model implemented by [Caughey and Warshaw
+2015](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html).
 
 ```{r, knitr-options, echo = FALSE}
 # rmarkdown::render("README.Rmd")
@@ -39,22 +37,22 @@ before continuing.
 
 ## Installation
 
-dgirt can be installed from [GitHub](https://github.com/jamesdunham/dgirt) using
+dgo can be installed from [GitHub](https://github.com/jamesdunham/dgo) using
 [devtools](https://github.com/hadley/devtools/):
 ```
-devtools::install_github("jamesdunham/dgirt", dependencies = TRUE)
+devtools::install_github("jamesdunham/dgo", dependencies = TRUE)
 ```
 
 ## Getting started
 
 ```{r}
-library(dgirt)
+library(dgo)
 ```
 
 The minimal workflow from raw data to estimation is:
 
   1. shape input data using the `shape` function; and
-  2. pass the result to the `dgirt` function to fit a dgirt model.
+  2. pass the result to the `dgirt` function to fit a DGIRT model.
 
 ### Set RStan options
 
@@ -68,7 +66,7 @@ options(mc.cores = parallel::detectCores())
 
 ### Prepare input data with `shape`
 
-dgirt models are *dynamic*, so we need to specify which variable in the data
+DGIRT models are *dynamic*, so we need to specify which variable in the data
 represents time. They are also *group-level*, with groups defined by one
 variable for respondents' local geographic area and one or more variables for
 respondent characteristics.
@@ -112,14 +110,14 @@ RStan for MCMC sampling, and arguments can be passed to RStan's `stan` via the
 `...` argument of `dgirt`. This will almost always be desirable, at a minimum to
 specify the number of sampler iterations, chains, and cores.
 
-```{r, warning = FALSE, cache = TRUE}
+```{r, warning = FALSE, cache = FALSE}
 dgirt_out <- dgirt(dgirt_in, iter = 1500, chains = 4, cores = 4, seed = 42,
                    refresh = 0)
 ```
 
 The model results are held in a `dgirtfit` object. Methods from RStan like
 `extract` are available if needed because `dgirtfit` is a subclass of `stanfit`.
-But dgirt provides its own methods for typical post-estimation tasks.
+But dgo provides its own methods for typical post-estimation tasks.
 
 ### Work with `dgirt` results
 
@@ -198,7 +196,7 @@ dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 
 ## Troubleshooting
 
-Please [report issues](https://github.com/jamesdunham/dgirt/issues) that you
+Please [report issues](https://github.com/jamesdunham/dgo/issues) that you
 encounter.
 
 OS X only: RStan creates temporary files during estimation in a location given
@@ -224,10 +222,10 @@ tempdir()
 
 ## Contributing and citing
 
-dgirt is under development and we welcome
-[suggestions](https://github.com/jamesdunham/dgirt/issues).
+dgo is under development and we welcome
+[suggestions](https://github.com/jamesdunham/dgo/issues).
 
 The package citation is 
 
-> Dunham, James, Devin Caughey, and Christopher Warshaw. 2016. dgirt: Dynamic
-> Group-level IRT Models in R. R package. https://jamesdunham.github.io/dgirt/.
+> Dunham, James, Devin Caughey, and Christopher Warshaw. 2016. dgo: Dynamic
+> Estimation of Group-level Opinion. R package. https://jamesdunham.github.io/dgo/.
