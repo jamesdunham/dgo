@@ -1,12 +1,12 @@
 Package: dgirt
 Title: Dynamic Group-Level IRT and Small Area Estimation
-Version: 0.2.6
-Date: 2016-10-11
+Version: 0.2.7
+Date: 2016-10-12
 Description: Fit dynamic group-level IRT models from individual or aggregated
     item response data. This package handles common preprocessing tasks and extends
     functions for inspecting results, poststratification, and quick iteration over
     alternative models. Under active development.
-Maintainer: James Dunham <james@jamesdunham.io>
+Maintainer: James Dunham <james@jdunham.io>
 Authors@R: c(
     person("James", "Dunham", email = "james@jamesdunham.io", role = c("aut", "cre")),
     person("Devin", "Caughey", email = "caughey@mit.edu", role = c("aut")),
