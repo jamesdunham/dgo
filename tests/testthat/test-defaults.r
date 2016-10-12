@@ -23,7 +23,7 @@ suppressMessages({
   disjoint_geo_time <- data.table::data.table(
     race = "white", female = "male", year = 0, item = "Q_cces2006_abortion",
     state = "foo", n_grp = 10, s_grp = 10)
-  disjoint_geo_time <- data.table::rbindlist(list(dgirt:::aggregates, disjoint_geo_time))
+  disjoint_geo_time <- data.table::rbindlist(list(dgo:::aggregates, disjoint_geo_time))
   d_disjoint_agg <- min_agg_call(aggregate_data = disjoint_geo_time)
 
   test_that("time and geo defaults include disjoint values in aggregate_data", {
@@ -38,7 +38,7 @@ suppressMessages({
   test_that('aggregate_item_names defaults to unique items in aggregate_data', {
     d_agg <- min_agg_call()
     expect_equal(d_agg$control@aggregate_item_names,
-                 sort(unique(dgirt:::aggregates[n_grp > 0, item])))
+                 sort(unique(dgo:::aggregates[n_grp > 0, item])))
   })
 
 })

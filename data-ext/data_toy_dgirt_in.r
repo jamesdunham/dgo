@@ -1,4 +1,4 @@
-library(dgirt)
+library(dgo)
 data(opinion)
 toy_dgirt_in <- shape(opinion,
                  time_name = "year",
@@ -9,5 +9,5 @@ toy_dgirt_in <- shape(opinion,
                  geo_filter = c("VA", "SC"),
                  weight_name = "weight")
 devtools::use_data(toy_dgirt_in, overwrite = TRUE)
-tools::checkRdaFiles(system.file('data', package = 'dgirt'))
-tools::resaveRdaFiles(system.file('data', package = 'dgirt'))
+tools::checkRdaFiles(system.file('data', package = 'dgo'))
+tools::resaveRdaFiles(system.file('data', package = 'dgo'))

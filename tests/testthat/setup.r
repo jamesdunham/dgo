@@ -1,5 +1,5 @@
 min_item_call <- function(...) {
-  default <- list(item_data = dgirt::opinion,
+  default <- list(item_data = dgo::opinion,
                   item_names = "Q_cces2006_abortion",
                   time_name = "year",
                   geo_name = "state",
@@ -12,7 +12,7 @@ min_item_call <- function(...) {
 }
 
 min_groupless_call <- function(...) {
-  default <- list(item_data = dgirt::opinion,
+  default <- list(item_data = dgo::opinion,
                   item_names = "Q_cces2006_abortion",
                   time_name = "year",
                   geo_name = "state",
@@ -24,14 +24,14 @@ min_groupless_call <- function(...) {
 }
 
 min_modifier_call <- function(...) {
-  default <- list(item_data = dgirt::opinion,
+  default <- list(item_data = dgo::opinion,
                   item_names = "Q_cces2006_abortion",
                   time_name = "year",
                   geo_name = "state",
                   group_names = "female",
                   survey_name = "source",
                   weight_name = "weight",
-                  modifier_data = dgirt::states,
+                  modifier_data = dgo::states,
                   modifier_names = "prop_evangelicals",
                   t1_modifier_names = "prop_evangelicals")
   dots <- list(...)
@@ -41,7 +41,7 @@ min_modifier_call <- function(...) {
 
 min_agg_call <- function(...) {
   default <- list(aggregate_data = aggregates,
-                  item_data = dgirt::opinion,
+                  item_data = dgo::opinion,
                   item_names = "Q_cces2006_abortion",
                   time_name = "year",
                   geo_name = "state",

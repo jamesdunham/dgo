@@ -1,13 +1,13 @@
-#' Class \code{dgirtfit}: fitted DGIRT model
+#' Class \code{dgirtfit}: a class for fitted DGIRT modelsf
 #'
-#' All \code{\link{rstan}} methods for superclass
-#' \code{\link[rstan]{stanfit-class}} are available. Descriptive labels for
-#' parameters on time periods, local geographic areas, and grouping variables
-#' will be added to most output.
+#' Fitting a dgirt model results in a \code{dgirtfit} object that inherits from
+#' \code{\link{rstan}}'s \code{\link[rstan]{stanfit-class}}. \code{rstan}
+#' methods will be dispatched (only) if a \code{dgirtfit} method does
+#' not exist.
 #'
 #' @slot dgirt_in \code{\link{dgirtin-class}} data used to fit the model.
 #'
-#' @aliases dgirtfit dgirtfit-class 
+#' @aliases dgirtfit dgirtfit-class
 #' @seealso \code{\link{stanfit-class}} \code{\link{dgirtin-class}}
 #' @rdname dgirtfit-class
 #' @name dgirtfit-class
@@ -15,7 +15,7 @@
 #' data(toy_dgirtfit)
 #' # summarize the fitted results
 #' summary(toy_dgirtfit, pars = 'xi')
-#' 
+#'
 #' # get posterior means with a convenience function
 #' get_posterior_mean(toy_dgirtfit, pars = 'theta_bar')
 #'
@@ -29,6 +29,6 @@
 #' as.data.frame(toy_dgirtfit, pars = 'theta_bar')
 #' extract(toy_dgirtfit, pars = 'theta_bar')
 dgirtfit <- setClass("dgirtfit",
-                     contains = "stanfit",
-                     slots = list(dgirt_in = "ANY",
-                                  call = "language"))
+  contains = "stanfit",
+  slots = list(dgirt_in = "ANY",
+    call = "language"))

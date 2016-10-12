@@ -8,7 +8,7 @@
 #' by group and time period, or \code{param[t]} for parameters indexed by time
 #' period. \code{expand_rownames} moves this information to columns whose names
 #' are given by the \code{col_names} argument. The rownames in their original
-#' format will appear in another column called \code{rn}. 
+#' format will appear in another column called \code{rn}.
 #'
 #' @param x A table with rownames in the format \code{param[group1__groupK,t]}
 #' or \code{param[t]}.
@@ -22,6 +22,7 @@
 #' @return \code{x} with additional columns (see details).
 #' @seealso \code{\link{dgirtfit-class}}
 #' @include data-toy_dgirtfit.r
+#' @export
 expand_rownames <- function(x, time_name, geo_name, group_names) {
   if (is.matrix(x)) x <- as.data.frame(x, stringsAsFactors = FALSE,
                                        rownames = rownames(x))

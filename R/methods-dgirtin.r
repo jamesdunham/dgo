@@ -1,64 +1,53 @@
+#' @rdname dgirtin-class
 setGeneric("summary")
 
-#' Summarize DGIRT Data.
+#' Summarize DGIRT Data
 #'
 #' @param x An object of class \code{dgirtIn} as returned by \code{shape}.
-#'
 #' @param ... Unused.
-#'
 #' @param object An object of class \code{dgirtIn} as returned by \code{shape}.
 #'
+#' @rdname dgirtin-class
 #' @include class-dgirtin.r
 #' @include require_namespace.r
-#' @rdname dgirtin-class
 #' @export
-#' @examples
-#' summary(toy_dgirt_in)
-#' data(opinion)
-#' shaped_responses <- shape(opinion,
-#'                           item_names = "Q_cces2006_gaymarriageamendment",
-#'                           aggregate_data = aggregates,
-#'                           aggregate_item_names = unique(aggregates$item),
-#'                           time_name = "year",
-#'                           geo_name = "state",
-#'                           group_names = "race",
-#'                           weight_name = "weight",
-#'                           survey_name = "source")
-#' summary(shaped_responses)
-#' agg_in = shape(item_data, )
 setMethod("summary", c(object = "dgirtIn"),
-          function(object, ...) {
-            cat("Items:\n")
-            print(sort(unique(c(object$control@item_names,
-                                object$control@aggregate_item_names))))
-            cat("Respondents:\n")
-            cat("  ", format(get_n(object), big.mark = ","), "in `item_data`\n")
-            if (length(object$aggregate_data))
-              cat("  ", format(sum(get_n(object, aggregate_name = "item")$n),big.mark = ","),
-                  "in `aggregate_data` (design-effect adjusted)\n")
-            cat("Grouping variables:\n")
-            print(c(object$control@time_name,
-                    object$control@geo_name,
-                    object$control@group_names))
-            cat("Time periods:\n")
-            print(object$control@time_filter)
-            cat("Local geographic areas:\n")
-            print(object$control@geo_filter)
-            cat("Hierarchical parameters:\n")
-            print(object$hier_names)
-            cat("Modifiers of hierarchical parameters:\n")
-            print(object$control@modifier_names)
-            cat("Constants:\n")
-            print(c(Q = object$Q, T = object$T, P = object$P, N = object$N, G = object$G,
-                    H = object$H, D = object$D))
-          })
+  function(object, ...) {
+    cat("Items:\n")
+    print(sort(unique(c(object$control@item_names,
+      object$control@aggregate_item_names))))
+    cat("Respondents:\n")
+    cat("  ", format(get_n(object), big.mark = ","), "in `item_data`\n")
+    if (length(object$aggregate_data))
+      cat("  ", format(sum(get_n(object, aggregate_name = "item")$n),big.mark = ","),
+        "in `aggregate_data` (design-effect adjusted)\n")
+    cat("Grouping variables:\n")
+    print(c(object$control@time_name,
+      object$control@geo_name,
+      object$control@group_names))
+    cat("Time periods:\n")
+    print(object$control@time_filter)
+    cat("Local geographic areas:\n")
+    print(object$control@geo_filter)
+    cat("Hierarchical parameters:\n")
+    print(object$hier_names)
+    cat("Modifiers of hierarchical parameters:\n")
+    print(object$control@modifier_names)
+    cat("Constants:\n")
+    print(c(Q = object$Q, T = object$T, P = object$P, N = object$N, G = object$G,
+      H = object$H, D = object$D))
+  })
 
+#' @rdname dgirtin-class
 setGeneric("print")
-setMethod("print", c("x" = "dgirtIn"),
-          function(x, ...) summary(x))
 
+#' @rdname dgirtin-class
+setMethod("print", c("x" = "dgirtIn"),
+  function(x, ...) summary(x))
+
+#' @rdname dgirtin-class
 setGeneric("get_item_names", signature = "x",
-           function(x) standardGeneric("get_item_names"))
+  function(x) standardGeneric("get_item_names"))
 
 #' Get Items Names in DGIRT Data.
 #'
@@ -70,11 +59,12 @@ setGeneric("get_item_names", signature = "x",
 #' @aliases get_item_names
 #' @export
 setMethod("get_item_names", c("x" = "dgirtIn"),
-          function(x) {
+  function(x) {
             list(item_data = x$control@item_names,
                  aggregate_data = x$control@aggregate_item_names)
           })
 
+#' @rdname dgirtin-class
 setGeneric("get_n", signature = c("x", "by", "aggregate_name"),
            function(x, by = NULL, aggregate_name = NULL)
              standardGeneric("get_n"))
@@ -85,9 +75,9 @@ setGeneric("get_n", signature = c("x", "by", "aggregate_name"),
 #' @param aggregate_name If specified `get_n` will operate on the table passed
 #' to `shape` as `aggregate_data` instead of on the individual data and count
 #' nonmissingness in the given variable.
-#' 
+#'
 #' @examples
-#' # respondents count
+#' # respondent count
 #' get_n(toy_dgirt_in)
 #'
 #' # respondent count by year
@@ -124,6 +114,7 @@ setMethod("get_n", c("x" = "dgirtIn"),
     data.table::copy(n)
   })
 
+#' @rdname dgirtin-class
 setGeneric("get_item_n", signature = c("x", "by", "aggregate_data"),
            function(x, by = NULL, aggregate_data = FALSE) standardGeneric("get_item_n"))
 

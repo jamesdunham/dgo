@@ -1,4 +1,18 @@
-# dgirt 0.2.5
+# 0.2.7
+
+* Package renamed dgo: Dynamic Estimation of Group-level Opinion
+* Tweaks to pass CRAN checks: clean up examples and docs
+* Use roxygen2 for classes, methods, and `NAMESPACE`
+* Fix checks on `P`, `S` related to `group_names` change in 0.2.5
+* Fix Rcpp module issue from 0.2.6 (`Error in .doLoadActions(where, attach)`)
+* Export `expand_rownames()`
+ 
+# 0.2.6
+
+* Fix error in `dgirt_plot`
+* Fix path in `tools/make_cpp.R`
+
+# 0.2.5
 
 * `group_names` is no longer required. If omitted, the geographic variable given
   by `geo_name` will define groups.

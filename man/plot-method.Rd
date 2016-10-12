@@ -67,7 +67,7 @@ respectively.}
 This function plots R-hats from a dgirt model.
 }
 \examples{
-dgirt_plot(toy_dgirtfit) 
+dgirt_plot(toy_dgirtfit)
 dgirt_plot(toy_dgirtfit, y_min = NULL, y_max = NULL)
 p <- dgirt_plot(toy_dgirtfit)
 p \%+\% ylab("posterior median")

@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // dichotomize_cpp
 DataFrame dichotomize_cpp(NumericVector response);
-RcppExport SEXP dgirt_dichotomize_cpp(SEXP responseSEXP) {
+RcppExport SEXP dgo_dichotomize_cpp(SEXP responseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
