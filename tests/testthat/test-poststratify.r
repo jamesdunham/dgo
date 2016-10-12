@@ -1,4 +1,4 @@
-context("poststratification")
+# context("poststratification")
 
 test_that("dispatch seems to work", {
   suppressMessages(library(data.table))
@@ -58,7 +58,7 @@ test_that("omitted arguments produce errors", {
                              target_data = targets,
                              strata_names = c('year', 'state'),
                              aggregated_names = 'race'))
-  
+
 })
 
 test_that("missing variables produce stop", {

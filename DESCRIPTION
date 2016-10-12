@@ -1,5 +1,5 @@
-Package: dgirt
-Title: Dynamic Group-Level IRT and Small Area Estimation
+Package: dgo
+Title: Dynamic Estimation of Group-level Opinion
 Version: 0.2.7
 Date: 2016-10-12
 Description: Fit dynamic group-level IRT models from individual or aggregated
@@ -13,8 +13,8 @@ Authors@R: c(
     person("Christopher", "Warshaw", email = "cwarshaw@mit.edu", role = c("aut"))
     )
 License: GPL-3
-URL: https://github.com/jamesdunham/dgirt
-BugReports: https://github.com/jamesdunham/dgirt/issues
+URL: https://github.com/jamesdunham/dgo
+BugReports: https://github.com/jamesdunham/dgo/issues
 Depends:
     R (>= 3.2.2),
     Rcpp (>= 0.11.0),
@@ -35,7 +35,8 @@ Suggests:
     testthat
 LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>=
     0.11.0), RcppEigen
-RcppModules: stan_fit42016_09_14_mod, stan_fit42016_04_20_mod, stan_fit42015_12_16_mod
+RcppModules: stan_fit42016_09_14_mod, stan_fit42016_04_20_mod,
+    stan_fit42015_12_16_mod
 NeedsCompilation: yes
 Collate:
     'RcppExports.R'
@@ -61,6 +62,7 @@ Collate:
     'methods-dgirtfit.r'
     'methods-dgirtin.r'
     'name_helpers.r'
+    'package.R'
     'rake_partial.r'
     'restrict_input_data.r'
     'reweight_item_responses.r'

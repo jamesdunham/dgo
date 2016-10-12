@@ -12,10 +12,11 @@ setGeneric("dgirt_plot", signature = "x", function(x, ...)
 #' \code{geom_pointrange} object.
 #' @param y_max Summary function giving the \code{ymax} argument for a
 #' \code{geom_pointrange} object.
-#' @param pars Selected parameter. 
+#' @param pars Selected parameter.
 #' @rdname plot-method
+#' @export
 #' @examples
-#' dgirt_plot(toy_dgirtfit) 
+#' dgirt_plot(toy_dgirtfit)
 #' dgirt_plot(toy_dgirtfit, y_min = NULL, y_max = NULL)
 #' p <- dgirt_plot(toy_dgirtfit)
 #' p %+% ylab("posterior median")
@@ -43,6 +44,7 @@ setMethod("dgirt_plot", signature(x = "dgirtfit"),
 #' @param geo_name A variable representing local areas that will be used in
 #' faceting.
 #' @rdname plot-method
+#' @export
 #' @examples
 #' data(state_year_targets)
 #' ps <- poststratify(toy_dgirtfit, state_year_targets, strata_names =
@@ -82,7 +84,7 @@ plot_internal <- function(samples, group_names, time_name, geo_name, y_fun,
   p <- ggplot2::ggplot(data = samples,
          ggplot2::aes_string(x = time_name, y = y_fun, color = group_names)) +
        ggplot2::geom_line(alpha = 0.7) +
-       ggplot2::facet_wrap(geo_name) + 
+       ggplot2::facet_wrap(geo_name) +
        ggplot2::theme_bw() +
        ggplot2::scale_x_continuous(minor_breaks = NULL, breaks =
                                    unique(samples[[time_name]]))
@@ -103,6 +105,7 @@ plot_internal <- function(samples, group_names, time_name, geo_name, y_fun,
 #' @param ... Further arguments to \code{\link{dgirt_plot}}.
 #'
 #' @rdname plot-method
+#' @export
 #' @examples
 #'
 #' plot(toy_dgirtfit)
@@ -112,6 +115,7 @@ setMethod("plot", signature(x = "dgirtfit", y = "missing"),
           })
 
 #' @rdname plot-method
+#' @export
 setGeneric("plot_rhats", signature = "x", function(x, ...)
            standardGeneric("plot_rhats"))
 
@@ -124,6 +128,7 @@ setGeneric("plot_rhats", signature = "x", function(x, ...)
 #' \code{shape}, \code{color}, or \code{x} arguments of \code{aes_string},
 #' respectively.
 #' @rdname plot-method
+#' @export
 #' @examples
 #' plot_rhats(toy_dgirtfit)
 #' plot_rhats(toy_dgirtfit, facet_vars = c("race", "state")) +

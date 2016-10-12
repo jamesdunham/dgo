@@ -4,7 +4,6 @@
 using namespace Rcpp;
 using namespace std;
 
-//' @export
 // [[Rcpp::export()]]
 DataFrame dichotomize_cpp (NumericVector response) {
   // Create a dataframe whose columns indicate whether input values' ranks are
@@ -45,7 +44,7 @@ DataFrame dichotomize_cpp (NumericVector response) {
       } else if (response(i) <= ranks[j]) {
         is_greater(i) = 0;
       } else {
-        is_greater(i) = NA_INTEGER; 
+        is_greater(i) = NA_INTEGER;
       }
     }
 
