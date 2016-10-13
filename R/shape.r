@@ -39,7 +39,7 @@
 #' If \code{target_data} is specified \code{shape} will adjust the weighting of
 #' groups toward population targets via raking. This relies on an adaptation of
 #' \code{\link[survey]{rake}}. The additional required arguments are
-#' \code{target_proportion_name} and \code{raking}. 
+#' \code{target_proportion_name} and \code{raking}.
 #'
 #' \code{shape} can restrict data row-wise in \code{item_data},
 #' \code{modifier_data}, and \code{aggregate_data} to that within specified time
@@ -154,7 +154,7 @@ shape <- function(item_data,
                   ...) {
 
   ctrl <- init_control(item_data, item_names, time_name, geo_name, group_names,
-                       weight_name, survey_name, raking, id_vars, aggregate_data, 
+                       weight_name, survey_name, raking, id_vars, aggregate_data,
                        aggregate_item_names, ...)
   d_in <- dgirtIn$new(ctrl)
 
@@ -176,7 +176,6 @@ shape <- function(item_data,
   d_in$geo_observed <- get_observed(item_data, aggregate_data, ctrl@geo_name)
 
   # rake survey weights #
-
   if (length(target_data)) {
     item_data <- weight(item_data, target_data, ctrl)
     ctrl@weight_name <- "raked_weight"
@@ -185,7 +184,7 @@ shape <- function(item_data,
   # aggregate individual item response data to group level #
   item_data <- dichotomize(item_data, ctrl)
   # this assignment should be redundant, but without it some variables created
-  # in dichotomize() weren't appearing in item_data 
+  # in dichotomize() weren't appearing in item_data
 
   d_in$group_grid <- make_group_grid(item_data, aggregate_data, ctrl)
   d_in$group_grid_t <- make_group_grid_t(d_in$group_grid, ctrl)
@@ -287,7 +286,7 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
 
     hier_frame <- rbind(hier_frame, unmodeled_frame)
 
-    zz <- sapply(modifier_names, function(x) { 
+    zz <- sapply(modifier_names, function(x) {
                    matrix(hier_frame[[x]],
                           # We have T rows, so filling by column is correct SO
                           # LONG AS time varies fastest then param in
@@ -312,7 +311,7 @@ make_design_matrix <- function(d_in, ctrl) {
   design_formula = as.formula(design_formula)
   design_matrix <- with_contr.treatment(model.matrix(design_formula,
                                                      d_in$group_grid_t))
-  
+
   rn <- do.call(function(...) paste(..., sep = "__"),
                 d_in$group_grid_t[, c(ctrl@geo_name, ctrl@group_names),
                                   with = FALSE])
@@ -338,9 +337,4 @@ with_contr.treatment <- function(...) {
   res <- eval(...)
   options("contrasts"= contrast_options)
   res
-}
-
-calc_design_effects <- function(x) {
-  y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
-  ifelse(is.na(y), 1, y)
 }

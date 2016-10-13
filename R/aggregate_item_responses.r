@@ -48,14 +48,14 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   item_means <- item_data[, lapply(.SD, function(x) weighted.mean(x, .SD$adj_weight, na.rm = TRUE)),
                           .SDcols = c(gt_names, "adj_weight"),
                           by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
-  # append _mean to the mean response columns 
+  # append _mean to the mean response columns
   item_mean_vars <- paste0(gt_names, "_mean")
   names(item_means) <- replace(names(item_means), match(gt_names, names(item_means)), item_mean_vars)
   data.table::setkeyv(item_means, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
   drop_cols <- setdiff(names(item_means), c(key(item_means), item_mean_vars))
   item_means[, c(drop_cols) := NULL, with = FALSE]
 
-  # join response counts with means 
+  # join response counts with means
   count_means <- item_n[item_means]
   count_means <- count_means[, c(ctrl@time_name, ctrl@geo_name,
                                    ctrl@group_names, item_mean_vars,
@@ -102,7 +102,7 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   counts[is.na(get("s_grp")), c("s_grp") := 0]
   counts[is.na(get("n_grp")), c("n_grp") := 0]
 
-  # create an identifier for use in n_vec and s_vec 
+  # create an identifier for use in n_vec and s_vec
   counts[, c("name") := do.call(paste, c(.SD, sep = "__")), .SDcols =
                c(ctrl@time_name, ctrl@geo_name, ctrl@group_names, "item")]
 
@@ -112,4 +112,9 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
 
 count_items <- function(x, n_responses, def) {
   ceiling(sum(as.integer(!is.na(x)) / n_responses / def, na.rm = TRUE))
+}
+
+calc_design_effects <- function(x) {
+  y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
+  ifelse(is.na(y), 1, y)
 }
