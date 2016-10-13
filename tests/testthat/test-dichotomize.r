@@ -1,12 +1,4 @@
 context("dichotomizing item responses")
-# library(testthat)
-# test_levels <- c(1:4, NA)
-# test_values <- sample(test_levels, 100, TRUE) 
-# Rcpp::sourceCpp('~/projects/dgirt/src/dichotomize_cpp.cpp')
-
-# Rcpp::sourceCpp('~/projects/dgirt/src/dichotomize.cpp')
-# dichotomize_cpp(c(c(1, 3), NA))
-# dichotomize_cpp(1:3)
 
 test_that("dichotomizing item responses works", {
   expect_equal(dichotomize_cpp(0:1), data.frame(X_gt1 = 0:1))
