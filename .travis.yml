@@ -11,8 +11,8 @@ notifications:
   email:
     - jdunham@mit.edu
 
-r_packages:
-  - covr
+r_github_packages:
+  - jimhester/covr
 
 after_success:
-  - Rscript -e 'library(covr); codecov()'
+  - Rscript -e 'library(covr); codecov(line_exclusions = list("src/include/models.hpp"))'
