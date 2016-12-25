@@ -24,7 +24,7 @@ setClass("Control",
          prototype = prototype(constant_item = TRUE,
                                min_t_filter = 1L,
                                min_survey_filter = 1L,
-                               standardize = FALSE,
+                               standardize = TRUE,
                                prop_name = "proportion"),
          validity = function(object) {
            if (!length(object@time_name) == 1L)
