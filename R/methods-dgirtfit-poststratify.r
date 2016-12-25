@@ -16,7 +16,7 @@ utils::globalVariables(c("value", "scaled_prop"))
 #' @param ... Additional arguments to methods.
 setGeneric("poststratify", signature = "x",
            function(x, target_data, strata_names, aggregated_names,
-                    prop_name = "proportion", single_issue, ...)
+                    prop_name = "proportion", single_issue = "F", ...)
              standardGeneric("poststratify"))
 
 #' @param pars Selected parameter names.
@@ -66,11 +66,11 @@ setMethod("poststratify", "data.frame",
 
   x <- data.table::setDT(data.table::copy(x))
   ## CW (16-12-24) - For single issue models, translate output back to response scale 
-  print(single_issue)
+  # print(single_issue)
   if(single_issue=="T"){
   	x$value <- pnorm(x$value)
   }
-  print(x)
+  # print(x)
   
   if (!length(target_data)) stop("target_data is missing")
   targets <- data.table::setDT(data.table::copy(target_data))
