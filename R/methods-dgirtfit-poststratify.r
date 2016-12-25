@@ -16,7 +16,7 @@ utils::globalVariables(c("value", "scaled_prop"))
 #' @param ... Additional arguments to methods.
 setGeneric("poststratify", signature = "x",
            function(x, target_data, strata_names, aggregated_names,
-                    prop_name = "proportion", ...)
+                    prop_name = "proportion", single_issue, ...)
              standardGeneric("poststratify"))
 
 #' @param pars Selected parameter names.
@@ -37,11 +37,9 @@ setGeneric("poststratify", signature = "x",
 #' @export
 setMethod("poststratify", c("dgirtfit"),
   function(x, target_data, strata_names, aggregated_names,
-           prop_name = "proportion", pars = "theta_bar", single_issue = "F") {
+           prop_name = "proportion", single_issue = "F", pars = "theta_bar") {
     x <- as.data.frame(x, pars = pars)
-    x <- as.data.frame(x, single_issue = single_issue)
-    callGeneric(x, target_data, strata_names, aggregated_names, prop_name)
-   print(x)
+    callGeneric(x, target_data, strata_names, aggregated_names, prop_name, single_issue)
 })
 
 #' @param x A \code{data.frame} or \code{dgirtfit} object.
@@ -58,7 +56,7 @@ setMethod("poststratify", c("dgirtfit"),
 #' @export
 setMethod("poststratify", "data.frame",
           function(x, target_data, strata_names, aggregated_names,
-                   prop_name = "proportion", pars = "theta_bar", single_issue = "F") {
+                   prop_name = "proportion", single_issue = "F", pars = "theta_bar") {
   assert(is.data.frame(target_data))
   assert(all_strings(strata_names))
   assert(all_strings(strata_names))
