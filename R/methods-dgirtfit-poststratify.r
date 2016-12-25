@@ -39,6 +39,7 @@ setMethod("poststratify", c("dgirtfit"),
   function(x, target_data, strata_names, aggregated_names,
            prop_name = "proportion", pars = "theta_bar") {
     x <- as.data.frame(x, pars = pars)
+    x <- as.data.frame(x, single_issue = single_issue)
     callGeneric(x, target_data, strata_names, aggregated_names, prop_name)
 })
 
@@ -62,8 +63,16 @@ setMethod("poststratify", "data.frame",
   assert(all_strings(strata_names))
   assert(assertthat::is.string(prop_name))
   assert(all_strings(pars))
+  assert(all_strings(single_issue))
 
   x <- data.table::setDT(data.table::copy(x))
+  ## CW (16-12-24) - For single issue models, translate output back to response scale 
+  print(single_issue)
+  if(single_issue=="T"){
+  	x$value <- pnorm(x$value)
+  }
+  print(x)
+  
   if (!length(target_data)) stop("target_data is missing")
   targets <- data.table::setDT(data.table::copy(target_data))
 
