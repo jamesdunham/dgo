@@ -41,6 +41,7 @@ setMethod("poststratify", c("dgirtfit"),
     x <- as.data.frame(x, pars = pars)
     x <- as.data.frame(x, single_issue = single_issue)
     callGeneric(x, target_data, strata_names, aggregated_names, prop_name)
+   print(x)
 })
 
 #' @param x A \code{data.frame} or \code{dgirtfit} object.
