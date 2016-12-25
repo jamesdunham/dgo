@@ -20,6 +20,7 @@ setGeneric("poststratify", signature = "x",
              standardGeneric("poststratify"))
 
 #' @param pars Selected parameter names.
+#' @param single_issue Flag for whether DGO ran a single-issue manifest variable model. If "T", apply pnorm to convert results to response scale.
 #' @export
 #' @rdname poststratify 
 #' @examples

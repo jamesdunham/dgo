@@ -33,6 +33,8 @@ poststratification.}
 \item{prop_name}{Name of the column in \code{target_data} that gives
 strata proportions.}
 
+\item{single_issue}{Flag for whether DGO ran a single-issue manifest variable model. If "T", apply pnorm to convert results to response scale.}
+
 \item{...}{Additional arguments to methods.}
 
 \item{pars}{Selected parameter names.}
