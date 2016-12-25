@@ -14,9 +14,9 @@
 #' @param separate_t Whether smoothing of estimates over time should be
 #' disabled. Default \code{FALSE}.
 #' @param delta_tbar_prior_mean Prior mean for \code{delta_tbar}, the normal
-#' weight on \code{theta_bar} in the previous period.  Default \code{0.5}.
+#' weight on \code{theta_bar} in the previous period.  Default \code{0.65}.
 #' @param delta_tbar_prior_sd Prior standard deviation for \code{delta_bar}.
-#' Default \code{0.5}.
+#' Default \code{0.25}.
 #' @param innov_sd_delta_scale Prior scale for \code{sd_innov_delta}, the Cauchy
 #' innovation standard deviation of \code{nu_geo} and \code{delta_gamma}.
 #' Default \code{2.5}.
