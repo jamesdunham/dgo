@@ -4,8 +4,8 @@
 \alias{dgirt}
 \title{\code{dgirt}: fit a DGIRT model}
 \usage{
-dgirt(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.5,
-  delta_tbar_prior_sd = 0.5, innov_sd_delta_scale = 2.5,
+dgirt(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
+  delta_tbar_prior_sd = 0.25, innov_sd_delta_scale = 2.5,
   innov_sd_theta_scale = 2.5, version = "2016_09_14")
 }
 \arguments{
@@ -17,10 +17,10 @@ dgirt(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.5,
 disabled. Default \code{FALSE}.}
 
 \item{delta_tbar_prior_mean}{Prior mean for \code{delta_tbar}, the normal
-weight on \code{theta_bar} in the previous period.  Default \code{0.5}.}
+weight on \code{theta_bar} in the previous period.  Default \code{0.65}.}
 
 \item{delta_tbar_prior_sd}{Prior standard deviation for \code{delta_bar}.
-Default \code{0.5}.}
+Default \code{0.25}.}
 
 \item{innov_sd_delta_scale}{Prior scale for \code{sd_innov_delta}, the Cauchy
 innovation standard deviation of \code{nu_geo} and \code{delta_gamma}.

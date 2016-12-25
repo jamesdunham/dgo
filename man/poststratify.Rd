@@ -8,13 +8,15 @@
 \title{\code{poststratify}: reweight and aggregate estimates}
 \usage{
 poststratify(x, target_data, strata_names, aggregated_names,
-  prop_name = "proportion", ...)
+  prop_name = "proportion", single_issue = "F", ...)
 
 \S4method{poststratify}{dgirtfit}(x, target_data, strata_names,
-  aggregated_names, prop_name = "proportion", pars = "theta_bar")
+  aggregated_names, prop_name = "proportion", single_issue = "F",
+  pars = "theta_bar")
 
 \S4method{poststratify}{data.frame}(x, target_data, strata_names,
-  aggregated_names, prop_name = "proportion", pars = "theta_bar")
+  aggregated_names, prop_name = "proportion", single_issue = "F",
+  pars = "theta_bar")
 }
 \arguments{
 \item{x}{A \code{data.frame} or \code{dgirtfit} object.}
