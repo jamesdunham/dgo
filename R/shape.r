@@ -259,8 +259,8 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
 	if(t1==F){
 		    modifier_names <- ctrl@modifier_names
 	}	
-	if(length(modifier_names) == 0L)
-   		 modifier_names<-NA
+	if(length(modifier_names) == 0L) {
+   		 modifier_names <- NA
 	}
 	#print(modifier_names)
     if (!length(modifier_data) | is.na(modifier_names)) {
