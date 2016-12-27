@@ -1,0 +1,22 @@
+dgirt                   'dgirt': fit a DGIRT model
+dgirt_plot              'dgirt_plot': plot 'dgirtfit'-class objects
+dgirtfit-class          Class 'dgirtfit': a class for fitted DGIRT
+                        modelsf
+dgirtin-class           Class 'dgirtIn': data prepared for modeling
+                        with 'dgirt'
+dgmrp                   'dgmrp': fit a single-issue MRP model, with
+                        hierarchical covariates
+dgo                     dgo: Dynamic Estimation of Group-level Opinion
+expand_rownames         'expand_rownames': expand parameter
+                        descriptions in rownames
+opinion                 'dgirt' example data: item responses
+poststratify            'poststratify': reweight and aggregate
+                        estimates
+shape                   'shape': prepare data for modeling with 'dgirt'
+show,dgirtfit-method    'print' method for 'dgirtfit-class' objects
+state_year_targets      'dgirt' example data: state-year population
+                        targets
+states                  'dgirt' example data: state demographics
+targets                 'dgirt' example data: U.S. population targets
+toy_dgirt_in            Class 'dgirtIn': a minimal example object
+toy_dgirtfit            Class 'dgirtfit': a minimal example object

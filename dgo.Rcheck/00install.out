@@ -1,0 +1,78 @@
+* installing *source* package ‘dgo’ ...
+** libs
+clang++ -arch x86_64 -ftemplate-depth-256 -I/Library/Frameworks/R.framework/Resources/include    -I"`"/Library/Frameworks/R.framework/Resources/bin/Rscript" --vanilla -e "cat(system.file('include', 'src', package = 'StanHeaders'))"`" -DBOOST_RESULT_OF_USE_TR1 -DBOOST_NO_DECLTYPE -DBOOST_DISABLE_ASSERTS -I/usr/local/include -I/usr/local/include/freetype2 -I/opt/X11/include -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include" -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/rstan/include" -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/Rcpp/include" -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/RcppEigen/include"   -fPIC  -Wall -mtune=core2 -O3    -c Modules.cpp -o Modules.o
+In file included from Modules.cpp:3:
+In file included from ./include/models.hpp:4:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/rstan/include/rstan/rstaninc.hpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/rstan/include/rstan/stan_fit.hpp:18:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/src/stan/model/test_gradients.hpp:6:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/src/stan/model/log_prob_grad.hpp:4:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/stan/math/rev/mat.hpp:4:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/stan/math/rev/core.hpp:42:
+/Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/stan/math/rev/core/set_zero_all_adjoints.hpp:14:17: warning: unused function 'set_zero_all_adjoints' [-Wunused-function]
+    static void set_zero_all_adjoints() {
+                ^
+In file included from Modules.cpp:3:
+In file included from ./include/models.hpp:4:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/rstan/include/rstan/rstaninc.hpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/rstan/include/rstan/stan_fit.hpp:18:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/src/stan/model/test_gradients.hpp:6:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/src/stan/model/log_prob_grad.hpp:4:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/stan/math/rev/mat.hpp:4:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/stan/math/rev/core.hpp:43:
+/Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/stan/math/rev/core/set_zero_all_adjoints_nested.hpp:17:17: warning: 'static' function 'set_zero_all_adjoints_nested' declared in header file should be declared 'static inline' [-Wunneeded-internal-declaration]
+    static void set_zero_all_adjoints_nested() {
+                ^
+In file included from Modules.cpp:3:
+In file included from ./include/models.hpp:4:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/rstan/include/rstan/rstaninc.hpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/rstan/include/rstan/stan_fit.hpp:18:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/src/stan/model/test_gradients.hpp:6:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/src/stan/model/log_prob_grad.hpp:4:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/stan/math/rev/mat.hpp:11:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/stan/math/prim/mat.hpp:60:
+/Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/stan/math/prim/mat/fun/autocorrelation.hpp:17:14: warning: function 'fft_next_good_size' is not needed and will not be emitted [-Wunneeded-internal-declaration]
+      size_t fft_next_good_size(size_t N) {
+             ^
+In file included from Modules.cpp:3:
+In file included from ./include/models.hpp:4:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/rstan/include/rstan/rstaninc.hpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/rstan/include/rstan/stan_fit.hpp:18:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/src/stan/model/test_gradients.hpp:6:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/src/stan/model/log_prob_grad.hpp:4:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/stan/math/rev/mat.hpp:11:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/stan/math/prim/mat.hpp:281:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/stan/math/prim/arr.hpp:36:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include/stan/math/prim/arr/functor/integrate_ode_rk45.hpp:13:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/BH/include/boost/numeric/odeint.hpp:61:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/BH/include/boost/numeric/odeint/util/multi_array_adaption.hpp:29:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/BH/include/boost/multi_array.hpp:21:
+In file included from /Library/Frameworks/R.framework/Versions/3.3/Resources/library/BH/include/boost/multi_array/base.hpp:28:
+/Library/Frameworks/R.framework/Versions/3.3/Resources/library/BH/include/boost/multi_array/concept_checks.hpp:42:43: warning: unused typedef 'index_range' [-Wunused-local-typedef]
+      typedef typename Array::index_range index_range;
+                                          ^
+/Library/Frameworks/R.framework/Versions/3.3/Resources/library/BH/include/boost/multi_array/concept_checks.hpp:43:37: warning: unused typedef 'index' [-Wunused-local-typedef]
+      typedef typename Array::index index;
+                                    ^
+/Library/Frameworks/R.framework/Versions/3.3/Resources/library/BH/include/boost/multi_array/concept_checks.hpp:53:43: warning: unused typedef 'index_range' [-Wunused-local-typedef]
+      typedef typename Array::index_range index_range;
+                                          ^
+/Library/Frameworks/R.framework/Versions/3.3/Resources/library/BH/include/boost/multi_array/concept_checks.hpp:54:37: warning: unused typedef 'index' [-Wunused-local-typedef]
+      typedef typename Array::index index;
+                                    ^
+7 warnings generated.
+clang++ -arch x86_64 -ftemplate-depth-256 -I/Library/Frameworks/R.framework/Resources/include    -I"`"/Library/Frameworks/R.framework/Resources/bin/Rscript" --vanilla -e "cat(system.file('include', 'src', package = 'StanHeaders'))"`" -DBOOST_RESULT_OF_USE_TR1 -DBOOST_NO_DECLTYPE -DBOOST_DISABLE_ASSERTS -I/usr/local/include -I/usr/local/include/freetype2 -I/opt/X11/include -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include" -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/rstan/include" -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/Rcpp/include" -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/RcppEigen/include"   -fPIC  -Wall -mtune=core2 -O3    -c RcppExports.cpp -o RcppExports.o
+clang++ -arch x86_64 -ftemplate-depth-256 -I/Library/Frameworks/R.framework/Resources/include    -I"`"/Library/Frameworks/R.framework/Resources/bin/Rscript" --vanilla -e "cat(system.file('include', 'src', package = 'StanHeaders'))"`" -DBOOST_RESULT_OF_USE_TR1 -DBOOST_NO_DECLTYPE -DBOOST_DISABLE_ASSERTS -I/usr/local/include -I/usr/local/include/freetype2 -I/opt/X11/include -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/StanHeaders/include" -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/rstan/include" -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/BH/include" -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/Rcpp/include" -I"/Library/Frameworks/R.framework/Versions/3.3/Resources/library/RcppEigen/include"   -fPIC  -Wall -mtune=core2 -O3    -c dichotomize.cpp -o dichotomize.o
+clang++ -arch x86_64 -ftemplate-depth-256 -dynamiclib -Wl,-headerpad_max_install_names -undefined dynamic_lookup -single_module -multiply_defined suppress -L/Library/Frameworks/R.framework/Resources/lib -L/usr/local/lib -o dgo.so Modules.o RcppExports.o dichotomize.o -F/Library/Frameworks/R.framework/.. -framework R -Wl,-framework -Wl,CoreFoundation
+installing to /Users/cwarshaw/Documents/dgo/dgo.Rcheck/dgo/libs
+** R
+** data
+*** moving datasets to lazyload DB
+** exec
+** inst
+** preparing package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (dgo)
