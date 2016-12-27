@@ -73,7 +73,7 @@ check_dimensions <- function(d_in) {
   # hier_params = d_in$P - 1 + ifelse(d_in$P != d_in$S, d_in$P - d_in$S, 1)
   assertthat::assert_that(all_equal(dim(d_in$XX), c(d_in$G, dim(d_in$ZZ)[2])))
   assertthat::assert_that(all_equal(dim(d_in$ZZ), c(d_in$T, d_in$P, d_in$H)))
-  assertthat::assert_that(all_equal(dim(d_in$ZZ_prior), c(d_in$T, d_in$P, d_in$H)))
+  assertthat::assert_that(all_equal(dim(d_in$ZZ_prior), c(d_in$T, d_in$P, d_in$Hprior)))
   assertthat::assert_that(not_empty((d_in$constant_item)))
   stopifnot(all.equal(d_in$N, d_in$G * d_in$T * d_in$Q))
 }
