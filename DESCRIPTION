@@ -54,6 +54,7 @@ Collate:
     'data-toy_dgirt_in.r'
     'dgirt.r'
     'data-toy_dgirtfit.r'
+    'dgmrp.r'
     'dichotomize_item_responses.r'
     'expand_rownames.r'
     'methods-control.r'
