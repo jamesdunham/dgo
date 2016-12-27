@@ -2,6 +2,7 @@
 
 S3method(as.data.frame,dgirtfit)
 export(dgirt)
+export(dgmrp)
 export(expand_rownames)
 export(plot_rhats)
 export(shape)

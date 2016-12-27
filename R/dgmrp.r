@@ -1,14 +1,14 @@
-#' \code{dgirt}: fit a DGIRT model
+#' \code{dgmrp}: fit a single-issue MRP model, with hierarchical covariates
 #'
 #' \code{dgirt} makes a call to \code{\link[rstan]{stan}} with the Stan code and
-#' data for a DGIRT model.
+#' data for a dgmrp model.
 #'
 #' The user will typically pass further arguments to \code{\link[rstan]{stan}}
 #' via the \code{...} argument, at a minimum \code{iters} and \code{cores}.
 #'
-#' By default \code{dgirt} overrides the \code{\link[rstan]{stan}} default for its
+#' By default \code{dgmrp} overrides the \code{\link[rstan]{stan}} default for its
 #' \code{pars} argument to specify typical DGIRT parameters of interest.
-#' \code{dgirt} also sets \code{iter_r} to \code{1L}.
+#' \code{dgmrp} also sets \code{iter_r} to \code{1L}.
 #'
 #' @param shaped_data Output from \code{\link{shape}}.
 #' @param separate_t Whether smoothing of estimates over time should be
@@ -37,7 +37,7 @@
 #' @import rstan
 #' @export
 #' @include constants.r
-dgirt <- function(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
+dgmrp <- function(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
                   delta_tbar_prior_sd = 0.25, innov_sd_delta_scale = 2.5,
                   innov_sd_theta_scale = 2.5, version = "2016_09_14") {
 
