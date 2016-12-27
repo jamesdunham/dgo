@@ -251,10 +251,10 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
    ## CW: 16-12-14 - I edited the next few lines of code to make all the hierarchical 
    ## modifiers appear in ZZ.  ifelse was truncating it to only the first element.
    # modifier_names <- ifelse(t1, ctrl@t1_modifier_names, ctrl@modifier_names)
-    if(!length(t1)){
+    if(t1==T){
 		    modifier_names <- ctrl@t1_modifier_names
 	}
-	if(length(t1)){
+	if(t1==F){
 		    modifier_names <- ctrl@modifier_names
 	}	
 	print(modifier_names)
