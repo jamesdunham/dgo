@@ -223,7 +223,9 @@ shape <- function(item_data,
   d_in$P <- ncol(d_in$ZZ)
   d_in$S <- length(unique(d_in$group_grid[[ctrl@geo_name]])) - 1
   d_in$H <- dim(d_in$ZZ)[[3]]
-  d_in$Hprior <- d_in$H
+  #d_in$Hprior <- d_in$H
+  d_in$Hprior <- dim(d_in$ZZ_prior)[[3]]
+
 
   # include subset data and other objects that may be useful later #
   d_in$item_data <- item_data
