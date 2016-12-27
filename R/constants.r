@@ -16,7 +16,7 @@ default_pars <- c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
                   "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd",
                   "sd_total", "theta_l2", "var_theta_bar_l2")
 
-var_types <- list(item_names = c("integer", "numeric"),
+var_types <- list(item_names = c("integer", "numeric", "factor"),
                   group_names = c("character", "factor"),
                   geo_name = c("character", "factor"),
                   time_name = c("integer", "numeric"),
