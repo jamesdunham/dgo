@@ -54,7 +54,7 @@ dgmrp <- function(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 
                                             innov_sd_theta_scale))
 
   if (length(shaped_data$gt_items)>1) {
-  	  "Multiple items in item data. Single-issue MRP models can only include one item."
+  	  stop("Multiple items in item data. Single-issue MRP models can only include one item.")
   }
     
   if (!length(dots$pars)) {
