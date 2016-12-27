@@ -50,7 +50,7 @@ By default \code{dgmrp} overrides the \code{\link[rstan]{stan}} default for its
 \code{dgmrp} also sets \code{iter_r} to \code{1L}.
 }
 \seealso{
-\code{dgirt} expects \code{shaped_data} created by
+\code{dgmrp} expects \code{shaped_data} created by
   \code{\link{shape}} and returns an object of class
   \code{\link{dgirtfit-class}}.
 \code{\link{dgirtfit-class}} \code{\link{shape}}
