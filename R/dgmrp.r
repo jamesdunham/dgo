@@ -1,6 +1,6 @@
 #' \code{dgmrp}: fit a single-issue MRP model, with hierarchical covariates
 #'
-#' \code{dgirt} makes a call to \code{\link[rstan]{stan}} with the Stan code and
+#' \code{dgmrp} makes a call to \code{\link[rstan]{stan}} with the Stan code and
 #' data for a dgmrp model.
 #'
 #' The user will typically pass further arguments to \code{\link[rstan]{stan}}
@@ -29,7 +29,7 @@
 #'
 #' @return A \code{\link{dgirtfit-class}} object that extends
 #' \code{\link[rstan]{stanfit-class}}.
-#' @seealso \code{dgirt} expects \code{shaped_data} created by
+#' @seealso \code{dgmrp} expects \code{shaped_data} created by
 #'   \code{\link{shape}} and returns an object of class
 #'   \code{\link{dgirtfit-class}}.
 #' \code{\link{dgirtfit-class}} \code{\link{shape}}

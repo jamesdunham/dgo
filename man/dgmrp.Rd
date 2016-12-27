@@ -38,7 +38,7 @@ A \code{\link{dgirtfit-class}} object that extends
 \code{\link[rstan]{stanfit-class}}.
 }
 \description{
-\code{dgirt} makes a call to \code{\link[rstan]{stan}} with the Stan code and
+\code{dgmrp} makes a call to \code{\link[rstan]{stan}} with the Stan code and
 data for a dgmrp model.
 }
 \details{
