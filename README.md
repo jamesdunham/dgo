@@ -1,8 +1,10 @@
 [![Build Status](https://travis-ci.org/jamesdunham/dgo.svg?branch=master)](https://travis-ci.org/jamesdunham/dgo)
 
-dgo is an R package for dynamic estimation of group-level opinion.
+dgo is an R package for the dynamic estimation of group-level opinion. It can be used to estimate subpopulation groups' average latent conservatism (or other latent trait) from individuals' responses to dichotomous questions.  It can also be used to estimate smoothed estimates of subpopulation groups' average responses on individual survey questions.  
 
-dgo implements DGIRT, a Bayesian method for estimating subpopulation groups' average conservatism (or other trait) from individuals' responses to dichotomous questions. It is "dynamic" both in the sense that groups are allowed to evolve over time and in the sense that the model "borrows strength" from other time periods, to a degree specified by the user. [This document](https://github.com/jamesdunham/dgo/blob/master/inst/dgirt_details.pdf) describes the model in detail. It is a modified version of the hierarchical group-level IRT model implemented by [Caughey and Warshaw 2015](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html).
+dgo implements a Bayesian group-level IRT approach that models latent traits at the level of demographic and/or geographic groups rather than individuals. It uses a hierarchical model to borrow strength cross-sectionally and dynamic linear models to do so across time. The group-level estimates can be weighted to generate estimates for geographic units, such states. This model opens up new areas of research on historical public opinion in the United States at the subnational level. It also enables scholars of comparative politics to estimate dynamic models of public opinion opinion at the country or subnational level.
+
+[This document](https://github.com/jamesdunham/dgo/blob/master/inst/dgirt_details.pdf) describes the model in detail. It is a modified version of the hierarchical group-level IRT model implemented by [Caughey and Warshaw 2015](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html).
 
 Prerequisites
 -------------
@@ -40,7 +42,7 @@ options(mc.cores = parallel::detectCores())
 
 ### Prepare input data with `shape`
 
-DGIRT models are *dynamic2*, so we need to specify which variable in the data represents time. They are also *group-level*, with groups defined by one variable for respondents' local geographic area and one or more variables for respondent characteristics.
+DGIRT models are *dynamic*, so we need to specify which variable in the data represents time. They are also *group-level*, with groups defined by one variable for respondents' local geographic area and one or more variables for respondent characteristics.
 
 The `time_filter` and `geo_filter` arguments optionally subset the data. Finally, `shape` requires the names of the survey identifier and survey weight variables in the data.
 
