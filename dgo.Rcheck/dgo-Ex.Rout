@@ -25,7 +25,7 @@ Loading required package: Rcpp
 Loading required package: rstan
 Loading required package: ggplot2
 Loading required package: StanHeaders
-rstan (Version 2.13.2, packaged: 2016-12-18 07:04:42 UTC, GitRev: 5fa1e80eb817)
+rstan (Version 2.14.1, packaged: 2016-12-28 14:55:41 UTC, GitRev: 5fa1e80eb817)
 For execution on a local, multicore CPU with excess RAM we recommend calling
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
@@ -39528,7 +39528,7 @@ Elapsed time
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  7.039 0.482 7.671 0 0 
+Time elapsed:  7.672 0.516 8.383 0 0 
 > grDevices::dev.off()
 null device 
           1 

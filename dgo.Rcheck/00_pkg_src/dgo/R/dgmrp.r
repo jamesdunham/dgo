@@ -39,7 +39,7 @@
 #' @include constants.r
 dgmrp <- function(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
                   delta_tbar_prior_sd = 0.25, innov_sd_delta_scale = 2.5,
-                  innov_sd_theta_scale = 2.5, version = "2016_12_24") {
+                  innov_sd_theta_scale = 2.5, version = "2017_01_04_singleissue") {
 
   dots <- list(...,
                object = stanmodels[[version]],
@@ -58,7 +58,7 @@ dgmrp <- function(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 
   }
     
   if (!length(dots$pars)) {
-    dots$pars <- default_pars
+    dots$pars <- default_pars_mrp
   }
   if (!length(dots$init_r)) {
     dots$init_r <- 1L

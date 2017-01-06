@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  27 DEC 2016 17:00
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  5 JAN 2017 17:12
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -691,7 +691,7 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <7> on input line 25.
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <5> on input line 25.
-LaTeX Font Info:    Try loading font information for TS1+ptm on input line 48.
+LaTeX Font Info:    Try loading font information for TS1+ptm on input line 49.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
@@ -700,8 +700,8 @@ File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 
 {/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <14.4> not available
-(Font)              Font shape `T1/ptm/b/n' tried instead on input line 54.
-LaTeX Font Info:    Try loading font information for T1+phv on input line 54.
+(Font)              Font shape `T1/ptm/b/n' tried instead on input line 55.
+LaTeX Font Info:    Try loading font information for T1+phv on input line 55.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/t1phv.fd
 File: t1phv.fd 2001/06/04 scalable font definitions for T1/phv.
@@ -716,7 +716,7 @@ File: utf8.def 2014/09/29 v1.1m UTF-8 support for inputenc
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def
 File: utf8.def 2014/09/29 v1.1m UTF-8 support for inputenc
 )
-LaTeX Font Info:    Try loading font information for TS1+zi4 on input line 147.
+LaTeX Font Info:    Try loading font information for TS1+zi4 on input line 148.
 
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/inconsolata/ts1zi4.fd
@@ -725,13 +725,13 @@ File: ts1zi4.fd 2014/06/22 Fontinst v1.933 font definitions for TS1/zi4.
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def
 File: utf8.def 2014/09/29 v1.1m UTF-8 support for inputenc
 ) [4]
-Overfull \hbox (1.77773pt too wide) in paragraph at lines 240--243
+Overfull \hbox (1.77773pt too wide) in paragraph at lines 241--244
 []\T1/ptm/m/n/10 If spec-i-fied `get_n` will op-er-ate on the ta-ble passed to 
 `shape` as `ag-gre-gate_data`
  []
 
 
-Overfull \hbox (1.77773pt too wide) in paragraph at lines 244--246
+Overfull \hbox (1.77773pt too wide) in paragraph at lines 245--247
 []\T1/ptm/m/n/10 If spec-i-fied `get_n` will op-er-ate on the ta-ble passed to 
 `shape` as `ag-gre-gate_data`
  []
@@ -739,7 +739,7 @@ Overfull \hbox (1.77773pt too wide) in paragraph at lines 244--246
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def
 File: utf8.def 2014/09/29 v1.1m UTF-8 support for inputenc
 ) [5]
-Overfull \hbox (3.53912pt too wide) in paragraph at lines 349--352
+Overfull \hbox (3.53912pt too wide) in paragraph at lines 350--353
 []\T1/ptm/m/n/10 Optionally, a vari-able passed to the \T1/zi4/m/n/10 shape\T1/
 ptm/m/n/10 , \T1/zi4/m/n/10 color\T1/ptm/m/n/10 , or \T1/zi4/m/n/10 x \T1/ptm/m
 /n/10 ar-gu-ments of \T1/zi4/m/n/10 aes_string\T1/ptm/m/n/10 ,
@@ -760,7 +760,7 @@ File: utf8.def 2014/09/29 v1.1m UTF-8 support for inputenc
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def
 File: utf8.def 2014/09/29 v1.1m UTF-8 support for inputenc
 ) [9]
-Overfull \hbox (23.25752pt too wide) in paragraph at lines 555--557
+Overfull \hbox (23.25752pt too wide) in paragraph at lines 556--558
 []\T1/ptm/m/n/10 A ta-ble giv-ing the pro-por-tions con-tributed to strata by t
 he in-ter-ac-tion of \T1/zi4/m/n/10 strata_names
  []
@@ -794,18 +794,18 @@ LaTeX Font Warning: Font shape `T1/zi4/m/it' undefined
 [17
 
 ])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 993.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 993.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 994.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 994.
  (./Rd2.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 993.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 993.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 994.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 994.
 Package rerunfilecheck Info: File `Rd2.out' has not changed.
 (rerunfilecheck)             Checksum: F65DBBAE338D19D6C430D43A51316330;953.
 
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 993.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 994.
  ) 
 Here is how much of TeX's memory you used:
  6559 strings out of 493089
@@ -814,7 +814,7 @@ Here is how much of TeX's memory you used:
  9740 multiletter control sequences out of 15000+600000
  38763 words of font info for 50 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 38i,5n,27p,227b,593s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 38i,6n,27p,227b,593s stack positions out of 5000i,500n,10000p,200000b,80000s
 pdfTeX warning (dest): name{Rfn.rake} has been referenced but does not exist,
  replaced by a fixed one
 
@@ -836,7 +836,7 @@ exlive/2015/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/
 -dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2015/texmf-dist/font
 s/type1/urw/times/utmr8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/ur
 w/times/utmri8a.pfb>
-Output written on Rd2.pdf (17 pages, 111114 bytes).
+Output written on Rd2.pdf (17 pages, 111116 bytes).
 PDF statistics:
  494 PDF objects out of 1000 (max. 8388607)
  464 compressed objects within 5 object streams

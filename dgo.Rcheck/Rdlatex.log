@@ -74,15 +74,15 @@ exlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def)
 (/usr/local/texlive/2015/texmf-dist/tex/latex/inconsolata/ts1zi4.fd)
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [3]
-Overfull \hbox (1.77773pt too wide) in paragraph at lines 240--243
+Overfull \hbox (1.77773pt too wide) in paragraph at lines 241--244
 []\T1/ptm/m/n/10 If spec-i-fied `get_n` will op-er-ate on the ta-ble passed to 
 `shape` as `ag-gre-gate_data`
 
-Overfull \hbox (1.77773pt too wide) in paragraph at lines 244--246
+Overfull \hbox (1.77773pt too wide) in paragraph at lines 245--247
 []\T1/ptm/m/n/10 If spec-i-fied `get_n` will op-er-ate on the ta-ble passed to 
 `shape` as `ag-gre-gate_data`
 [4] (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [5]
-Overfull \hbox (3.53912pt too wide) in paragraph at lines 349--352
+Overfull \hbox (3.53912pt too wide) in paragraph at lines 350--353
 []\T1/ptm/m/n/10 Optionally, a vari-able passed to the \T1/zi4/m/n/10 shape\T1/
 ptm/m/n/10 , \T1/zi4/m/n/10 color\T1/ptm/m/n/10 , or \T1/zi4/m/n/10 x \T1/ptm/m
 /n/10 ar-gu-ments of \T1/zi4/m/n/10 aes_string\T1/ptm/m/n/10 ,
@@ -91,7 +91,7 @@ ptm/m/n/10 , \T1/zi4/m/n/10 color\T1/ptm/m/n/10 , or \T1/zi4/m/n/10 x \T1/ptm/m
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [7]
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [8]
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def)
-Overfull \hbox (23.25752pt too wide) in paragraph at lines 555--557
+Overfull \hbox (23.25752pt too wide) in paragraph at lines 556--558
 []\T1/ptm/m/n/10 A ta-ble giv-ing the pro-por-tions con-tributed to strata by t
 he in-ter-ac-tion of \T1/zi4/m/n/10 strata_names
 [9] (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [10] [11]
@@ -130,7 +130,7 @@ exlive/2015/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/
 -dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2015/texmf-dist/font
 s/type1/urw/times/utmr8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/ur
 w/times/utmri8a.pfb>
-Output written on Rd2.pdf (16 pages, 104024 bytes).
+Output written on Rd2.pdf (16 pages, 104049 bytes).
 Transcript written on Rd2.log.
 This is makeindex, version 2.15 [TeX Live 2015] (kpathsea + Thai support).
 Scanning input file Rd2.idx....done (80 entries accepted, 21 rejected).
@@ -212,15 +212,15 @@ exlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def)
 (/usr/local/texlive/2015/texmf-dist/tex/latex/inconsolata/ts1zi4.fd) [3]
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [4]
-Overfull \hbox (1.77773pt too wide) in paragraph at lines 240--243
+Overfull \hbox (1.77773pt too wide) in paragraph at lines 241--244
 []\T1/ptm/m/n/10 If spec-i-fied `get_n` will op-er-ate on the ta-ble passed to 
 `shape` as `ag-gre-gate_data`
 
-Overfull \hbox (1.77773pt too wide) in paragraph at lines 244--246
+Overfull \hbox (1.77773pt too wide) in paragraph at lines 245--247
 []\T1/ptm/m/n/10 If spec-i-fied `get_n` will op-er-ate on the ta-ble passed to 
 `shape` as `ag-gre-gate_data`
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [5]
-Overfull \hbox (3.53912pt too wide) in paragraph at lines 349--352
+Overfull \hbox (3.53912pt too wide) in paragraph at lines 350--353
 []\T1/ptm/m/n/10 Optionally, a vari-able passed to the \T1/zi4/m/n/10 shape\T1/
 ptm/m/n/10 , \T1/zi4/m/n/10 color\T1/ptm/m/n/10 , or \T1/zi4/m/n/10 x \T1/ptm/m
 /n/10 ar-gu-ments of \T1/zi4/m/n/10 aes_string\T1/ptm/m/n/10 ,
@@ -229,7 +229,7 @@ ptm/m/n/10 , \T1/zi4/m/n/10 color\T1/ptm/m/n/10 , or \T1/zi4/m/n/10 x \T1/ptm/m
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def)
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [8]
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [9]
-Overfull \hbox (23.25752pt too wide) in paragraph at lines 555--557
+Overfull \hbox (23.25752pt too wide) in paragraph at lines 556--558
 []\T1/ptm/m/n/10 A ta-ble giv-ing the pro-por-tions con-tributed to strata by t
 he in-ter-ac-tion of \T1/zi4/m/n/10 strata_names
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [10] [11] [12]
@@ -275,7 +275,7 @@ exlive/2015/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/
 -dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2015/texmf-dist/font
 s/type1/urw/times/utmr8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/ur
 w/times/utmri8a.pfb>
-Output written on Rd2.pdf (17 pages, 110952 bytes).
+Output written on Rd2.pdf (17 pages, 110956 bytes).
 Transcript written on Rd2.log.
 This is makeindex, version 2.15 [TeX Live 2015] (kpathsea + Thai support).
 Scanning input file Rd2.idx....done (80 entries accepted, 21 rejected).
@@ -357,15 +357,15 @@ exlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def)
 (/usr/local/texlive/2015/texmf-dist/tex/latex/inconsolata/ts1zi4.fd) [3]
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [4]
-Overfull \hbox (1.77773pt too wide) in paragraph at lines 240--243
+Overfull \hbox (1.77773pt too wide) in paragraph at lines 241--244
 []\T1/ptm/m/n/10 If spec-i-fied `get_n` will op-er-ate on the ta-ble passed to 
 `shape` as `ag-gre-gate_data`
 
-Overfull \hbox (1.77773pt too wide) in paragraph at lines 244--246
+Overfull \hbox (1.77773pt too wide) in paragraph at lines 245--247
 []\T1/ptm/m/n/10 If spec-i-fied `get_n` will op-er-ate on the ta-ble passed to 
 `shape` as `ag-gre-gate_data`
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [5]
-Overfull \hbox (3.53912pt too wide) in paragraph at lines 349--352
+Overfull \hbox (3.53912pt too wide) in paragraph at lines 350--353
 []\T1/ptm/m/n/10 Optionally, a vari-able passed to the \T1/zi4/m/n/10 shape\T1/
 ptm/m/n/10 , \T1/zi4/m/n/10 color\T1/ptm/m/n/10 , or \T1/zi4/m/n/10 x \T1/ptm/m
 /n/10 ar-gu-ments of \T1/zi4/m/n/10 aes_string\T1/ptm/m/n/10 ,
@@ -374,7 +374,7 @@ ptm/m/n/10 , \T1/zi4/m/n/10 color\T1/ptm/m/n/10 , or \T1/zi4/m/n/10 x \T1/ptm/m
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def)
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [8]
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [9]
-Overfull \hbox (23.25752pt too wide) in paragraph at lines 555--557
+Overfull \hbox (23.25752pt too wide) in paragraph at lines 556--558
 []\T1/ptm/m/n/10 A ta-ble giv-ing the pro-por-tions con-tributed to strata by t
 he in-ter-ac-tion of \T1/zi4/m/n/10 strata_names
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/utf8.def) [10] [11] [12]
@@ -415,8 +415,8 @@ exlive/2015/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/
 -dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2015/texmf-dist/font
 s/type1/urw/times/utmr8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/ur
 w/times/utmri8a.pfb>
-Output written on Rd2.pdf (17 pages, 111114 bytes).
+Output written on Rd2.pdf (17 pages, 111116 bytes).
 Transcript written on Rd2.log.
 Saving output to 'dgo-manual.pdf' ...
 Done
-You may want to clean up by 'rm -rf /var/folders/xv/s0xq812d13b994vjlz69_vn80000gn/T//RtmpBTq4SG/Rd2pdff8cf417d4ec'
+You may want to clean up by 'rm -rf /var/folders/xv/s0xq812d13b994vjlz69_vn80000gn/T//RtmpfxGNNF/Rd2pdf1747d1bb248be'
