@@ -39,7 +39,7 @@ Collate: 'RcppExports.R' 'aggregate_item_responses.r' 'assertions.r'
         'reweight_item_responses.r' 'stanmodels.R' 'validate_dgirtIn.r'
         'validate_input_data.r' 'wrangle.r' 'zzz.R'
 RoxygenNote: 5.0.1
-Packaged: 2017-01-05 21:53:23 UTC; cwarshaw
+Packaged: 2017-01-06 03:53:43 UTC; cwarshaw
 Author: James Dunham [aut, cre],
   Devin Caughey [aut],
   Christopher Warshaw [aut]
