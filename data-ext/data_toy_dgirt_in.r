@@ -2,7 +2,7 @@ library(dgo)
 data(opinion)
 toy_dgirt_in <- shape(opinion,
                  time_name = "year",
-                 item_names = "Q_cces2006_gaymarriageamendment",
+                 item_names = "gaymarriage_amendment",
                  geo_name = "state",
                  group_names = "race",
                  survey_name = "source",

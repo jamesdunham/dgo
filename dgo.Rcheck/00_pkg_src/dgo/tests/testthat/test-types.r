@@ -72,7 +72,7 @@ suppressMessages({
   test_that("factor values for just one of group_names in item_data produce a warning", {
     opinion$race <- as.factor(opinion$race)
     expect_warning(shape(opinion,
-                         item_names = "Q_cces2006_abortion",
+                         item_names = "abortion",
                          time_name = "year",
                          geo_name = "state",
                          group_names = c("female", "race"),
@@ -82,19 +82,19 @@ suppressMessages({
   })
 
   test_that("character values for item_names produce an error", {
-    opinion$Q_cces2006_abortion <- as.character(opinion$Q_cces2006_abortion)
+    opinion$abortion <- as.character(opinion$abortion)
     expect_error(min_item_call(item_data = opinion),
                  "should be integer or numeric")
   })
 
   test_that("unordered factor values of item_names produce an error", {
-    opinion$Q_cces2006_abortion <- as.factor(opinion$Q_cces2006_abortion)
+    opinion$abortion <- as.factor(opinion$abortion)
     expect_error(min_item_call(item_data = opinion),
                  "should be integer or numeric")
   })
 
   test_that("ordered factor values of item_names produce an error", {
-    opinion$Q_cces2006_abortion <- as.ordered(opinion$Q_cces2006_abortion)
+    opinion$abortion <- as.ordered(opinion$abortion)
     expect_error(min_item_call(item_data = opinion), "should be integer or numeric")
   })
 

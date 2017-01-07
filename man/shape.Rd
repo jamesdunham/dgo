@@ -142,7 +142,7 @@ but \code{constant_item} affects the shape of the data. It may move to
 data(opinion)
 opinion$respondent = 1:nrow(opinion)
 shaped_responses <- shape(opinion,
-                          item_names = "Q_cces2006_gaymarriageamendment",
+                          item_names = "gaymarriage_amendment",
                           time_name = "year",
                           geo_name = "state",
                           group_names = "race",

@@ -14,8 +14,9 @@
 * checking for sufficient/correct file permissions ... OK
 * checking whether package ‘dgo’ can be installed ... OK
 * checking installed package size ... NOTE
-  installed size is  6.9Mb
+  installed size is  7.7Mb
   sub-directories of 1Mb or more:
+    data   1.7Mb
     libs   5.2Mb
 * checking package directory ... OK
 * checking DESCRIPTION meta-information ... OK

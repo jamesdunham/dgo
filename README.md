@@ -31,7 +31,7 @@ library(dgo)
 The minimal workflow from raw data to estimation is:
 
 1.  shape input data using the `shape` function; and
-2.  pass the result to the `dgirt` or `dgmrp` function to fit a DGIRT model.
+2.  pass the result to the `dgirt` function to estimate a latent trait (e.g., conservatism) or `dgmrp` function to estimate opinion on a single survey question.
 
 ### Set RStan options
 

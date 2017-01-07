@@ -87,7 +87,7 @@ suppressMessages({
   context("disjoint item and modifier groups")
 
   agg_disjoint <- data.table::data.table(
-    race = "white", female = "male", year = 0, item = "Q_cces2006_abortion",
+    race = "white", female = "male", year = 0, item = "abortion",
     state = "foo", n_grp = 1, s_grp = 1)
   agg_disjoint <- data.table::rbindlist(list(dgo:::aggregates, agg_disjoint))
   agg_disjoint = agg_disjoint[n_grp > 0]
@@ -96,11 +96,11 @@ suppressMessages({
 
   test_that("all items in `aggregate_data` are used", {
     expect_equal(d_disjoint_agg$control@item_names,
-                 sort(unique("Q_cces2006_abortion", d_disjoint_agg$item)))
+                 sort(unique("abortion", d_disjoint_agg$item)))
     expect_equal(sort(unique(d_disjoint_agg$group_counts$item)),
-                 # "Q_cces2006_abortion" is given as the `item_names` argument
+                 # "abortion" is given as the `item_names` argument
                  # to min_agg_call()
-                 sort(c("Q_cces2006_abortion_gt1", unique(agg_disjoint$item))))
+                 sort(c("abortion_gt1", unique(agg_disjoint$item))))
   })
 
   test_that("all periods in `aggregate_data` are used by default", {
@@ -137,7 +137,7 @@ suppressMessages({
 
   test_that("all groups in `aggregate_data` are used", {
     disjoint_groups <- data.table::data.table(
-      race = "white", female = "other", year = 2006, item = "Q_cces2006_abortion",
+      race = "white", female = "other", year = 2006, item = "abortion",
       state = "AK", n_grp = 1, s_grp = 1)
     aggregates <- data.table::rbindlist(list(dgo:::aggregates, disjoint_groups))
     d_disjoint_groups <- min_agg_call(aggregate_data = aggregates,

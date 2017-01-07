@@ -182,7 +182,7 @@ flush(stderr()); flush(stdout())
 data(opinion)
 opinion$respondent = 1:nrow(opinion)
 shaped_responses <- shape(opinion,
-                          item_names = "Q_cces2006_gaymarriageamendment",
+                          item_names = "abortion",
                           time_name = "year",
                           geo_name = "state",
                           group_names = "race",

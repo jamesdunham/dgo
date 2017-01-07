@@ -23,7 +23,7 @@ suppressMessages({
   })
 
   test_that("*_name arguments appear in control@*_name", {
-    expect_identical(d_min$control@item_names, "Q_cces2006_abortion")
+    expect_identical(d_min$control@item_names, "abortion")
     expect_identical(d_min$control@geo_name, "state")
     expect_identical(d_min$control@time_name, "year")
     expect_identical(d_min$control@group_names, "female")

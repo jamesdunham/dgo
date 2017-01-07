@@ -1,8 +1,12 @@
 [![Build Status](https://travis-ci.org/jamesdunham/dgo.svg?branch=master)](https://travis-ci.org/jamesdunham/dgo)
 
-dgo is an R package for dynamic estimation of group-level opinion.
+dgo is an R package for the dynamic estimation of group-level opinion. The package implements a Bayesian group-level IRT approach developed by [Caughey and Warshaw 2015](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html) that models latent traits at the level of demographic and/or geographic groups rather than individuals. This approach uses a hierarchical model to borrow strength cross-sectionally and dynamic linear models to do so across time. The group-level estimates can be weighted to generate estimates for geographic units, such states. 
 
-dgo implements DGIRT, a Bayesian method for estimating subpopulation groups' average conservatism (or other trait) from individuals' responses to dichotomous questions. It is "dynamic" both in the sense that groups are allowed to evolve over time and in the sense that the model "borrows strength" from other time periods, to a degree specified by the user. [This document](https://github.com/jamesdunham/dgo/blob/master/inst/dgirt_details.pdf) describes the model in detail. It is a modified version of the hierarchical group-level IRT model implemented by [Caughey and Warshaw 2015](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html).
+dgo can be used to estimate subpopulation groups' average latent conservatism (or other latent trait) from individuals' responses to dichotomous questions.  It can also be used to estimate smoothed dynamic estimates of subpopulation groups' average responses on individual survey questions. For instance, it could be used to estimate public opinion in each state on same-sex marriage or the Affordable Care Act.
+
+This model opens up new areas of research on historical public opinion in the United States at the subnational level. It also enables scholars of comparative politics to estimate dynamic models of public opinion opinion at the country or subnational level.
+
+[This document](https://github.com/jamesdunham/dgo/blob/master/inst/dgirt_details.pdf) describes the model in detail. 
 
 Prerequisites
 -------------
@@ -27,7 +31,7 @@ library(dgo)
 The minimal workflow from raw data to estimation is:
 
 1.  shape input data using the `shape` function; and
-2.  pass the result to the `dgirt` or `dgmrp` function to fit a DGIRT model.
+2.  pass the result to the `dgirt` function to estimate a latent trait (e.g., conservatism) or `dgmrp` function to estimate opinion on a single survey question.
 
 ### Set RStan options
 
@@ -40,7 +44,7 @@ options(mc.cores = parallel::detectCores())
 
 ### Prepare input data with `shape`
 
-DGIRT models are *dynamic2*, so we need to specify which variable in the data represents time. They are also *group-level*, with groups defined by one variable for respondents' local geographic area and one or more variables for respondent characteristics.
+DGIRT models are *dynamic*, so we need to specify which variable in the data represents time. They are also *group-level*, with groups defined by one variable for respondents' local geographic area and one or more variables for respondent characteristics.
 
 The `time_filter` and `geo_filter` arguments optionally subset the data. Finally, `shape` requires the names of the survey identifier and survey weight variables in the data.
 
@@ -103,12 +107,14 @@ get_item_n(dgirt_in, by = "year")
 #> 3: 2008                4697
 ```
 
-### Fit a model with `dgirt`
+### Fit a model with `dgirt` or `dgmrp`
 
-`dgirt` fits a model to data from `shape`. Under the hood, this function uses RStan for MCMC sampling, and arguments can be passed to RStan's `stan` via the `...` argument of `dgirt`. This will almost always be desirable, at a minimum to specify the number of sampler iterations, chains, and cores.
+`dgirt` and `dgmrp` fit estimation models to data from `shape`. `dgirt` can be used to estimate a latent variable based on responses to multiple survey questions (e.g., latent policy conservatism), while `dgmrp` can be used to estimate public opinion on an individual survey question using a dynamic multi-level regression and post-stratification (MRP) model.  
+
+Under the hood, these functions use RStan for MCMC sampling, and arguments can be passed to RStan's `stan` via the `...` argument of `dgirt` and `dgmrp`. This will almost always be desirable, at a minimum to specify the number of sampler iterations, chains, and cores.
 
 ``` r
-dgirt_out <- dgirt(dgirt_in, iter = 1500, chains = 4, cores = 4, seed = 42,
+dgirt_out <- dgmrp(dgirt_in, iter = 1500, chains = 4, cores = 4, seed = 42,
                    refresh = 0)
 ```
 

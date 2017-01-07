@@ -21,7 +21,7 @@ suppressMessages({
   })
 
   disjoint_geo_time <- data.table::data.table(
-    race = "white", female = "male", year = 0, item = "Q_cces2006_abortion",
+    race = "white", female = "male", year = 0, item = "abortion",
     state = "foo", n_grp = 10, s_grp = 10)
   disjoint_geo_time <- data.table::rbindlist(list(dgo:::aggregates, disjoint_geo_time))
   d_disjoint_agg <- min_agg_call(aggregate_data = disjoint_geo_time)

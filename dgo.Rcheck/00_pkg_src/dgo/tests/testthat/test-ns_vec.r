@@ -5,7 +5,7 @@ suppressMessages({
 
   test_that("counts for minimal call haven't changed", {
     d_min <- shape(item_data = dgo::opinion,
-                   item_names = "Q_cces2006_abortion",
+                   item_names = "abortion",
                    time_name = "year",
                    geo_name = "state",
                    group_names = "female",
@@ -18,7 +18,7 @@ suppressMessages({
   test_that("counts for call with aggregates haven't changed", {
   d_agg <- shape(aggregate_data = aggregates,
                  item_data = dgo::opinion,
-                 item_names = "Q_cces2006_abortion",
+                 item_names = "abortion",
                  time_name = "year",
                  geo_name = "state",
                  group_names = "female",
@@ -33,7 +33,7 @@ suppressMessages({
   test_that("unobserved groups are added to group counts", {
     d <- shape(item_data = dgo::opinion,
                time_filter = c(0, 2006),
-               item_names = "Q_cces2006_abortion",
+               item_names = "abortion",
                time_name = "year",
                geo_name = "state",
                group_names = "female",
@@ -45,7 +45,7 @@ suppressMessages({
   test_that("n_vec and s_vec have expected order", {
     d_agg <- shape(aggregate_data = aggregates,
                    item_data = dgo::opinion,
-                   item_names = "Q_cces2006_abortion",
+                   item_names = "abortion",
                    modifier_data = dgo::states,
                    modifier_names = "prop_evangelicals",
                    t1_modifier_names = "income_percapita",

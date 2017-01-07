@@ -6,7 +6,7 @@ suppressMessages({
   test_that("no variation in time (a single period) is OK", {
     expect_silent(suppressMessages({
       d_in = shape(opinion[year == 2006],
-             item_names = "Q_cces2006_abortion",
+             item_names = "abortion",
              time_name = "year",
              geo_name = "state",
              group_names = "female",
@@ -26,7 +26,7 @@ suppressMessages({
              target_data = targets,
              target_proportion_name = "proportion",
              raking = ~ state,
-             item_names = "Q_cces2006_abortion",
+             item_names = "abortion",
              time_name = "year",
              geo_name = "state",
              group_names = "female",
@@ -43,7 +43,7 @@ suppressMessages({
   test_that("no variation in geography produces an error", {
     expect_error(suppressMessages({
       d_in = shape(opinion[state == "MA"],
-             item_names = "Q_cces2006_abortion",
+             item_names = "abortion",
              time_name = "year",
              geo_name = "state",
              group_names = "female",
@@ -55,7 +55,7 @@ suppressMessages({
   test_that("no variation in grouping produces an error", {
     expect_error(suppressMessages({
       d_in = shape(opinion[female == "female"],
-             item_names = "Q_cces2006_abortion",
+             item_names = "abortion",
              time_name = "year",
              geo_name = "state",
              group_names = "female",

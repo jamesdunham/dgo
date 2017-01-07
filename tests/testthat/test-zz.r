@@ -79,7 +79,7 @@ suppressMessages({
   test_that('ZZ is zeroed appropriately when only t1_modifier_names is given', {
 
     d_t1_only <- shape(item_data = dgo::opinion,
-                       item_names = "Q_cces2006_abortion",
+                       item_names = "abortion",
                        time_name = "year",
                        geo_name = "state",
                        group_names = "female",
@@ -96,7 +96,7 @@ suppressMessages({
   test_that('ZZ_prior is zeroed appropriately when only modifier_names is given', {
 
     d_tprime_only <- shape(item_data = dgo::opinion,
-                       item_names = "Q_cces2006_abortion",
+                       item_names = "abortion",
                        time_name = "year",
                        geo_name = "state",
                        group_names = "female",
