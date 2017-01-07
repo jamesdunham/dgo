@@ -59,7 +59,7 @@ dgirt_in <- shape(opinion,
                   weight_name = "weight")
 #> Applying restrictions, pass 1...
 #>  Dropped 5 rows for missingness in covariates
-#>  Dropped 555 rows for lacking item responses
+#>  Dropped 633 rows for lacking item responses
 #> Applying restrictions, pass 2...
 #>  No changes
 ```
@@ -71,11 +71,11 @@ summary(dgirt_in)
 #> Items:
 #> [1] "abortion"
 #> Respondents:
-#>    11,662 in `item_data`
+#>    23,007 in `item_data`
 #> Grouping variables:
 #> [1] "year"  "state" "race" 
 #> Time periods:
-#> [1] 2006 2007 2008
+#> [1] 2006 2007 2008 2009 2010
 #> Local geographic areas:
 #> [1] "CA" "GA" "LA" "MA"
 #> Hierarchical parameters:
@@ -84,8 +84,8 @@ summary(dgirt_in)
 #> character(0)
 #> Constants:
 #>  Q  T  P  N  G  H  D 
-#>  1  3  5 36 12  1  1
-```
+#>  1  5  5 60 12  1  1 
+ ```
 
 Response counts by survey-year:
 
@@ -95,6 +95,8 @@ get_n(dgirt_in, by = c("year", "source"))
 #> 1: 2006 CCES_2006 5275
 #> 2: 2007 CCES_2007 1690
 #> 3: 2008 CCES_2008 4697
+#> 4: 2009 CCES_2009 2141
+#> 5: 2010 CCES_2010 9204
 ```
 
 Response counts by item-year:
@@ -102,9 +104,12 @@ Response counts by item-year:
 ``` r
 get_item_n(dgirt_in, by = "year")
 #>    year abortion
-#> 1: 2006                5275
-#> 2: 2007                1690
-#> 3: 2008                4697
+#> 1: 2006     5275
+#> 2: 2007     1690
+#> 3: 2008     4697
+#> 4: 2009     2141
+#> 5: 2010     9204
+
 ```
 
 ### Fit a model with `dgirt` or `dgmrp`
@@ -127,56 +132,51 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgirt_out)
 #> dgirt samples from 4 chains of 1500 iterations, 750 warmup, thinned every 1 
-#>   Drawn Wed Oct 12 17:51:36 2016 
+#>   Drawn Fri Jan  6 23:35:42 2017 
 #>   Package version 0.2.7 
-#>   Model version 2016_09_14 
-#>   87 parameters; 36 theta_bars (year, state and race)
-#>   3 periods 2006 to 2008 
-#> 
+#>   Model version 2017_01_04_singleissue 
+#>   117 parameters; 60 theta_bars (year, state and race)
+#>   5 periods 2006 to 2010 
+
 #> n_eff
-#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>   12.80   32.86  164.10  498.70  668.90 3000.00
-#> 
+#>     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+#>    9.279  317.400 1038.000 1284.000 2111.000 3000.000 
+
 #> Rhat
-#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-#>  0.9987  1.0090  1.0340  1.0680  1.1020  1.3440       1
-#> 
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>  0.9992  1.0010  1.0030  1.0140  1.0150  1.6230 
+
 #> Elapsed time
 #>    chain warmup sample total
-#> 1:     1    24S    23S   47S
-#> 2:     2    23S    12S   35S
-#> 3:     3    23S    26S   49S
-#> 4:     4    23S    11S   34S
-```
+#> 1:     1    16S    10S   26S
+#> 2:     2    18S    20S   38S
+#> 3:     3    18S    19S   37S
+#> 4:     4    15S    20S   35S
+
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
 
 ``` r
 head(summarize(dgirt_out))
-#>        param state  race year      mean         sd    median      q_025
-#> 1: theta_bar    CA black 2006 0.7313650 0.07382754 0.7227690 0.59176969
-#> 2: theta_bar    CA black 2007 0.7495567 0.15265220 0.7573332 0.45713464
-#> 3: theta_bar    CA black 2008 0.5094344 0.10957805 0.5044693 0.30718504
-#> 4: theta_bar    CA other 2006 0.5719195 0.07254187 0.5688034 0.43018528
-#> 5: theta_bar    CA other 2007 0.4556545 0.14006876 0.4726040 0.17145830
-#> 6: theta_bar    CA other 2008 0.2286040 0.08608999 0.2342414 0.05529104
-#>        q_975
-#> 1: 0.8833364
-#> 2: 1.0433169
-#> 3: 0.7227528
-#> 4: 0.7218028
-#> 5: 0.7031576
-#> 6: 0.3914443
+#>        param state  race year      mean         sd    median     q_025     q_975
+#> 1: theta_bar    CA black 2006 0.7173553 0.07662729 0.7174894 0.5662267 0.8702876
+#> 2: theta_bar    CA black 2007 0.7508767 0.10914309 0.7418550 0.5545848 0.9806262
+#> 3: theta_bar    CA black 2008 0.4787463 0.07473553 0.4773249 0.3360598 0.6365967
+#> 4: theta_bar    CA black 2009 0.3994269 0.07008417 0.3993055 0.2611861 0.5383515
+#> 5: theta_bar    CA black 2010 0.5222371 0.07595806 0.5241843 0.3691531 0.6693409
+#> 6: theta_bar    CA other 2006 0.5642023 0.07408100 0.5652054 0.4232060 0.7116074
 ```
 
 Alternatively, `summarize` can apply arbitrary functions to posterior samples for whatever parameter is given by its `pars` argument. Enclose function names with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th posterior quantiles.
 
 ``` r
 summarize(dgirt_out, pars = "xi", funs = "var")
-#>    param year        var
-#> 1:    xi 2006 0.01731874
-#> 2:    xi 2007 0.08775190
-#> 3:    xi 2008 0.08601946
+#>   param year        var
+#> 1:    xi 2006 0.02247365
+#> 2:    xi 2007 0.03122596
+#> 3:    xi 2008 0.02850483
+#> 4:    xi 2009 0.02429801
+#> 5:    xi 2010 0.02585458
 ```
 
 To access posterior samples in tabular form use `as.data.frame`. By default, this method returns post-warmup samples for the `theta_bar` parameters, but like other methods takes a `pars` argument.
@@ -184,12 +184,12 @@ To access posterior samples in tabular form use `as.data.frame`. By default, thi
 ``` r
 head(as.data.frame(dgirt_out))
 #>        param state  race year iteration     value
-#> 1: theta_bar    CA black 2006         1 0.7792932
-#> 2: theta_bar    CA black 2006         2 0.5651822
-#> 3: theta_bar    CA black 2006         3 0.7411416
-#> 4: theta_bar    CA black 2006         4 0.7830560
-#> 5: theta_bar    CA black 2006         5 0.8044931
-#> 6: theta_bar    CA black 2006         6 0.7175995
+#> 1: theta_bar    CA black 2006         1 0.7486239
+#> 2: theta_bar    CA black 2006         2 0.6086190
+#> 3: theta_bar    CA black 2006         3 0.5896640
+#> 4: theta_bar    CA black 2006         4 0.7733479
+#> 5: theta_bar    CA black 2006         5 0.7697022
+#> 6: theta_bar    CA black 2006         6 0.7419776
 ```
 
 To poststratify the results use `poststratify`. The following example uses the group population proportions bundled as `state_year_targets` to reweight and aggregate estimates to strata defined by state-years. Read `help("poststratify")` for more details.
@@ -198,18 +198,18 @@ To poststratify the results use `poststratify`. The following example uses the g
 poststratify(dgirt_out, state_year_targets, strata_names = c("state", "year"),
              aggregated_names = "race")
 #>     state year       value
-#>  1:    CA 2006  0.56257458
-#>  2:    CA 2007  0.56187201
-#>  3:    CA 2008  0.34683927
-#>  4:    GA 2006  0.31502381
-#>  5:    GA 2007  0.21040094
-#>  6:    GA 2008  0.03422257
-#>  7:    LA 2006 -0.04473326
-#>  8:    LA 2007 -0.18798638
-#>  9:    LA 2008 -0.22418653
-#> 10:    MA 2006  0.70691300
-#> 11:    MA 2007  1.09862611
-#> 12:    MA 2008  0.52356572
+#> 1:    CA 2006  0.55943278
+#> 2:    CA 2007  0.58452441
+#> 3:    CA 2008  0.36074873
+#> 4:    GA 2006  0.31574732
+#> 5:    GA 2007  0.19140911
+#> 6:    GA 2008  0.03079019
+#> 7:    LA 2006 -0.04283603
+#> 8:    LA 2007 -0.22322708
+#> 9:    LA 2008 -0.22612453
+#> 10:    MA 2006  0.70998185
+#> 11:    MA 2007  0.92555553
+#> 12:    MA 2008  0.52063614
 ```
 
 To plot the results use `dgirt_plot`. This method plots summaries of posterior samples by time period. By default, it shows a 95% credible interval around posterior medians for the `theta_bar` parameters, for each local geographic area. For this (unconverged) toy example we omit the CIs.
