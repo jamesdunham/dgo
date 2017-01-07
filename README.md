@@ -50,7 +50,7 @@ The `time_filter` and `geo_filter` arguments optionally subset the data. Finally
 
 ``` r
 dgirt_in <- shape(opinion,
-                  item_names = "Q_cces2006_abortion",
+                  item_names = "abortion",
                   time_name = "year",
                   geo_name = "state",
                   group_names = "race",
@@ -69,7 +69,7 @@ The reshaped and subsetted data can be summarized in a few ways before model fit
 ``` r
 summary(dgirt_in)
 #> Items:
-#> [1] "Q_cces2006_abortion"
+#> [1] "abortion"
 #> Respondents:
 #>    11,662 in `item_data`
 #> Grouping variables:
@@ -101,7 +101,7 @@ Response counts by item-year:
 
 ``` r
 get_item_n(dgirt_in, by = "year")
-#>    year Q_cces2006_abortion
+#>    year abortion
 #> 1: 2006                5275
 #> 2: 2007                1690
 #> 3: 2008                4697
