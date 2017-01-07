@@ -56,7 +56,7 @@ setMethod("dgirt_plot", signature(x = "dgirtfit"),
 #' dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 setMethod("dgirt_plot", signature(x = "data.frame"),
   function(x, group_names, time_name, geo_name, y_fun = "median", y_min =
-           "q_025", y_max = "q_975",single_issue = "F",) {
+           "q_025", y_max = "q_975",single_issue = "F") {
 
     if (length(group_names)) assert(all_strings(group_names))
     if (length(time_name)) assert(assertthat::is.string(time_name))
