@@ -44,7 +44,7 @@ options(mc.cores = parallel::detectCores())
 
 We show two illustrative applications. First, we show an application for estimating public opinion on abortion. Second, we show an application for estimating latent policy liberalism.  
 
-### Abortion Attitudes
+## Abortion Attitudes
 
 ### Prepare input data with `shape`
 
@@ -196,7 +196,7 @@ head(as.data.frame(dgirt_out_abortion))
 #> 6: theta_bar    CA black 2006         6 0.7419776
 ```
 
-To poststratify the results use `poststratify`. The following example uses the group population proportions bundled as `state_year_targets` to reweight and aggregate estimates to strata defined by state-years. Read `help("poststratify")` for more details.
+To poststratify the results use `poststratify`. The following example uses the group population proportions bundled as `state_year_targets` to reweight and aggregate estimates to strata defined by state-years. You can convert the probit scale to the response scale using the "single_issue" parameter.  Read `help("poststratify")` for more details.
 
 ``` r
 poststratify(dgirt_out_abortion, state_year_targets, strata_names = c("state", "year"),
@@ -252,7 +252,7 @@ dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ![](README-unnamed-chunk-15-2.png)
 
 
-### Policy Liberalism
+## Policy Liberalism
 
 ### Prepare input data with `shape`
 
