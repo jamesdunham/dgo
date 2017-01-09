@@ -156,6 +156,7 @@ summary(dgirt_out_abortion)
 #> 2:     2    18S    20S   38S
 #> 3:     3    18S    19S   37S
 #> 4:     4    15S    20S   35S
+```
 
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
@@ -350,6 +351,7 @@ summary(dgirt_out_liberalism)
 #> 2:     2 1M 41S 2M 33S 3M 74S
 #> 3:     3  1M 6S 2M 34S 3M 40S
 #> 4:     4 1M 55S 2M 30S 3M 85S
+```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
 
