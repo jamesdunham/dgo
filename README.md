@@ -129,7 +129,7 @@ dgirt_out_abortion <- dgmrp(dgirt_in_abortion, iter = 1500, chains = 4, cores = 
 
 The model results are held in a `dgirtfit` object. Methods from RStan like `extract` are available if needed because `dgirtfit` is a subclass of `stanfit`. But dgo provides its own methods for typical post-estimation tasks.
 
-### Work with `dgirt` results
+### Work with `dgirt` or `dgmrp` results
 
 For a high-level summary of the result, use `summary`.
 
