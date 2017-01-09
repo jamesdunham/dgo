@@ -258,7 +258,8 @@ dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 
 ``` r
 dgirt_in_liberalism <- shape(opinion,
-                  item_names = c("abortion", "affirmative_action","stemcell_research" , "gaymarriage_amendment","partialbirth_abortion") ,
+                  item_names = c("abortion", "affirmative_action","stemcell_research" , "gaymarriage_amendment",
+                  "partialbirth_abortion") ,
                   time_name = "year",
                   geo_name = "state",
                   group_names = "race",
