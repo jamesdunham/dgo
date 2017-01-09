@@ -32,7 +32,7 @@ setMethod("dgirt_plot", signature(x = "dgirtfit"),
   samples <- summarize(x, funs = c(y_fun, y_min, y_max))
 
    if(single_issue=="T"){
-  	samples <- pnorm(samples)
+  	samples$median <- pnorm(samples$median)
   }
   
   plot_internal(samples, ctrl@group_names, ctrl@time_name, ctrl@geo_name, y_fun,
