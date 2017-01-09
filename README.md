@@ -42,7 +42,7 @@ rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 ```
 
-We show two illustrative applications. First, we show an application for estimating public opinion on abortion. Second, we show an application for estimating latent policy liberalism.  
+We show two illustrative applications. First, we show an application for estimating public opinion on abortion in four states from 2006-2010. Second, we show an application for estimating latent policy liberalism in these states.  
 
 ## Abortion Attitudes
 
