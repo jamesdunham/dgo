@@ -11,7 +11,7 @@ make_group_grid <- function(item_data, aggregate_data, ctrl) {
 
 make_group_grid_t <- function(group_grid, ctrl) {
   # Make a table giving combinations of grouping variables, excluding time
-  group_grid_t <- data.table::copy(group_grid)[, ctrl@time_name := NULL, with = FALSE]
+  group_grid_t <- data.table::copy(group_grid)[, ctrl@time_name := NULL]
   group_grid_t <- group_grid_t[!duplicated(group_grid_t)]
   data.table::setkeyv(group_grid_t, c(ctrl@group_names, ctrl@geo_name))
   group_grid_t
@@ -27,7 +27,7 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   item_data[, c("n_responses") := list(rowSums(!is.na(.SD))),
             .SDcols = gt_names]
   item_data[, c("def") := lapply(.SD, calc_design_effects),
-            .SDcols = ctrl@weight_name, with = FALSE,
+            .SDcols = ctrl@weight_name,
             by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
 
   # get design-effect-adjusted nonmissing response counts by group and item
@@ -40,7 +40,7 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   data.table::setkeyv(item_n, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
   drop_cols <- setdiff(names(item_n), c(key(item_n), item_n_vars))
   if (length(drop_cols)) {
-    item_n[, c(drop_cols) := NULL, with = FALSE]
+    item_n[, c(drop_cols) := NULL]
   }
 
   # get mean ystar
@@ -53,7 +53,7 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   names(item_means) <- replace(names(item_means), match(gt_names, names(item_means)), item_mean_vars)
   data.table::setkeyv(item_means, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
   drop_cols <- setdiff(names(item_means), c(key(item_means), item_mean_vars))
-  item_means[, c(drop_cols) := NULL, with = FALSE]
+  item_means[, c(drop_cols) := NULL]
 
   # join response counts with means 
   count_means <- item_n[item_means]

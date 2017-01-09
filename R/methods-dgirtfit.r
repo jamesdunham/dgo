@@ -147,7 +147,7 @@ as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar",
   ftab <- merge(estimates[, .(rn)], ftab, all = FALSE, by.x = "rn", by.y = "fname")
   all_na <- sapply(ftab, function(x) all(is.na(x)))
   if (any(all_na))
-    ftab[, names(all_na)[all_na] := NULL, with = FALSE]
+    ftab[, names(all_na)[all_na] := NULL]
   estimates <- merge(estimates, ftab, all.x = TRUE, by = "rn")
   if (!isTRUE(keep.rownames))
     estimates[, c("rn") := NULL]
@@ -157,7 +157,7 @@ as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar",
   melted <- data.table::melt(estimates, id.vars = id_vars, variable.name =
                              "iteration", variable.factor = FALSE)
   melted[, c("iteration") := type.convert(sub("V", "", get("iteration"),
-                                              fixed = TRUE)), with = FALSE]
+                                              fixed = TRUE))]
   setkeyv(melted, id_vars)
   data.table::setattr(melted, "id_vars", id_vars)
   melted
@@ -182,7 +182,7 @@ setMethod("rhats", signature(x = "dgirtfit"),
   rhats = data.table::setDT(as.data.frame(rhats), keep.rownames = TRUE)
   rhats = rhats[fnames, on = c("rn" = "fname")][!is.na(Rhat)]
   drop_cols = names(rhats)[vapply(rhats, function(x) all(is.na(x)), logical(1))]
-  rhats[, c(drop_cols, "rn") := NULL, with = FALSE]
+  rhats[, c(drop_cols, "rn") := NULL]
   data.table::setcolorder(rhats, c(setdiff(names(rhats), "Rhat"), "Rhat"))
   rhats[]
 })

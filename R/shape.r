@@ -273,13 +273,13 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
     extra_colnames <- setdiff(names(hier_frame),
                              c(ctrl@geo_name, ctrl@time_name, modifier_names))
     if (length(extra_colnames)) {
-      hier_frame[, c(extra_colnames) := NULL, with = FALSE]
+      hier_frame[, c(extra_colnames) := NULL]
     }
 
     # NOTE: We create param by renaming geo_name. Thus the requirement to model
     # geographic predictors.
     hier_frame[, c("param", ctrl@geo_name) := list(hier_frame[[ctrl@geo_name]],
-                                                   NULL), with = FALSE]
+                                                   NULL)]
     data.table::setkeyv(hier_frame, c("param", ctrl@time_name))
     all(ctrl@time_filter %in% hier_frame$D_year)
 

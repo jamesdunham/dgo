@@ -39,7 +39,7 @@ expand_rownames <- function(x, time_name, geo_name, group_names) {
       if (length(i)) {
         index_pos <- which(index_names[[parname]] == i)
         x[parnames == parname, c(i) :=
-          list(comma_split[[index_pos]][parnames == parname]), with = FALSE]
+          list(comma_split[[index_pos]][parnames == parname])]
       }
     }
   }
@@ -49,19 +49,17 @@ expand_rownames <- function(x, time_name, geo_name, group_names) {
     group_cols <- paste0("group_", seq.int(0, n_col - 1L))
     x[, c(group_cols) := data.table::tstrsplit(group_names, "__", fixed = TRUE)]
     if (length(geo_name)) {
-      x[, c(geo_name, group_cols[1L]) := list(get(group_cols[1L]), NULL),
-        with = FALSE]
+      x[, c(geo_name, group_cols[1L]) := list(get(group_cols[1L]), NULL)]
     }
     if (length(group_names)) {
-      x[, c(group_names, group_cols[-1L]) := list(get(group_cols[-1L]), NULL),
-        with = FALSE]
+      x[, c(group_names, group_cols[-1L]) := list(get(group_cols[-1L]), NULL)]
     }
-    x[, c("group_names") := NULL, with = FALSE]
+    x[, c("group_names") := NULL]
   }
   if (length(time_name) && "time_name" %in% names(x)) {
     names(x)[names(x) == "time_name"] <- time_name
     if (is.character(x[[time_name]])) {
-      x[, c(time_name) := type.convert(x[[time_name]]), with = FALSE]
+      x[, c(time_name) := type.convert(x[[time_name]])]
     }
   }
   x

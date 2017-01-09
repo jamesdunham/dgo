@@ -111,7 +111,7 @@ setMethod("poststratify", "data.frame",
   extra_cols <- setdiff(names(targets), c(strata_names, aggregated_names,
                                           prop_name))
   if (length(extra_cols)) {
-    targets[, c(extra_cols) := NULL, with = FALSE]
+    targets[, c(extra_cols) := NULL]
   }
 
   x_n <- nrow(x)
