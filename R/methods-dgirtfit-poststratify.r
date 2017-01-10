@@ -16,12 +16,10 @@ utils::globalVariables(c("value", "scaled_prop"))
 #' @param ... Additional arguments to methods.
 setGeneric("poststratify", signature = "x",
            function(x, target_data, strata_names, aggregated_names,
-                    prop_name = "proportion", single_issue = FALSE, ...)
+                    prop_name = "proportion", ...)
              standardGeneric("poststratify"))
 
 #' @param pars Selected parameter names.
-#' @param single_issue Flag for whether DGO ran a single-issue manifest variable
-#' model. If `TRUE`, apply pnorm to convert results to response scale.
 #' @export
 #' @rdname poststratify 
 #' @examples
@@ -39,9 +37,9 @@ setGeneric("poststratify", signature = "x",
 #' @export
 setMethod("poststratify", c("dgo_fit"),
   function(x, target_data, strata_names, aggregated_names,
-           prop_name = "proportion", single_issue = FALSE, pars = "theta_bar") {
+           prop_name = "proportion", pars = "theta_bar") {
     x <- as.data.frame(x, pars = pars)
-    callGeneric(x, target_data, strata_names, aggregated_names, prop_name, single_issue)
+    callGeneric(x, target_data, strata_names, aggregated_names, prop_name)
 })
 
 #' @param x A \code{data.frame} or \code{dgo_fit} object.
@@ -55,22 +53,19 @@ setMethod("poststratify", c("dgo_fit"),
 #' strata proportions.
 #' @return A table of poststratified estimates.
 #' @rdname poststratify
+#' @importFrom stats pnorm
 #' @export
 setMethod("poststratify", "data.frame",
           function(x, target_data, strata_names, aggregated_names,
-                   prop_name = "proportion", single_issue = FALSE, pars = "theta_bar") {
+                   prop_name = "proportion", pars = "theta_bar") {
   assert(is.data.frame(target_data))
   assert(all_strings(strata_names))
   assert(all_strings(strata_names))
   assert(assertthat::is.string(prop_name))
   assert(all_strings(pars))
-  assert(is.logical(single_issue))
 
   x <- data.table::setDT(data.table::copy(x))
-  if (isTRUE(single_issue)) {
-  	x$value <- pnorm(x$value)
-  }
-  
+
   if (!length(target_data)) stop("target_data is missing")
   targets <- data.table::setDT(data.table::copy(target_data))
 

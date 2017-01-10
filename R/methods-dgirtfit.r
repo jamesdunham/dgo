@@ -111,6 +111,8 @@ setGeneric("summarize", signature = "x",
 #'   shorthand for `function(x) quantile(x, .025)`, and similarly `q_975`.
 #' @rdname dgo_fit-methods
 #' @export
+#' @examples
+#' summarize(toy_dgirtfit)
 setMethod("summarize", "dgo_fit",
   function(x, pars = "theta_bar",
               funs = c("mean", "sd", "median", "q_025", "q_975")) {
@@ -136,11 +138,14 @@ do_funs <- function(value, funs) lapply(funs, function(f) do.call(f, value))
 #'
 #' @examples
 #' # access posterior samples
-#' as.data.frame(toy_dgo_fit, pars = 'theta_bar')
+#' as.data.frame(toy_dgirtfit, pars = 'theta_bar')
 as.data.frame.dgo_fit <- function(x, ..., pars = "theta_bar",
                                    keep.rownames = FALSE) {
   ctrl <- x@dgirt_in$control
   estimates <- as.data.frame.matrix(t(as.matrix(x, pars = pars)))
+  if (inherits(x, "dgmrp_fit")) {
+    estimates <- data.frame(lapply(estimates, pnorm))
+  }
   estimates <- data.table::setDT(estimates, keep.rownames = TRUE)
 
   ftab <- flatnames(x)
@@ -160,7 +165,7 @@ as.data.frame.dgo_fit <- function(x, ..., pars = "theta_bar",
                                               fixed = TRUE))]
   setkeyv(melted, id_vars)
   data.table::setattr(melted, "id_vars", id_vars)
-  melted
+  melted[]
 }
 
 #' @rdname dgo_fit-methods
@@ -173,7 +178,7 @@ setGeneric("rhats", signature = "x", function(x, ...)
 #' @export
 #' @rdname dgo_fit-methods
 #' @examples
-#' rhats(toy_dgo_fit)
+#' rhats(toy_dgirtfit)
 setMethod("rhats", signature(x = "dgo_fit"),
           function(x, pars = "theta_bar") {
   assert(all_strings(pars))

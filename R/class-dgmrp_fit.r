@@ -7,6 +7,6 @@
 #'
 #' @aliases dgmrp_fit dgmrp_fit-class
 #' @seealso \code{\link{dgirt_fit}} \code{\link{dgo_fit}} 
-#' @include class-dgo_fit
+#' @include class-dgo_fit.r
 #' @name dgmrp_fit-class
 dgmrp_fit <- setClass("dgmrp_fit", contains = "dgo_fit")

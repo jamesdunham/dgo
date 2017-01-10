@@ -4,30 +4,29 @@
 \name{dgirt_plot}
 \alias{dgirt_plot}
 \alias{dgirt_plot,data.frame-method}
-\alias{dgirt_plot,dgirtfit-method}
-\alias{plot,dgirtfit,missing-method}
+\alias{dgirt_plot,dgo_fit-method}
+\alias{plot,dgo_fit,missing-method}
 \alias{plot_rhats}
-\alias{plot_rhats,dgirtfit-method}
-\title{\code{dgirt_plot}: plot \code{dgirtfit}-class objects}
+\alias{plot_rhats,dgo_fit-method}
+\title{\code{dgirt_plot}: plot \code{dgo_fit}-class objects}
 \usage{
 dgirt_plot(x, ...)
 
-\S4method{dgirt_plot}{dgirtfit}(x, y_fun = "median", y_min = "q_025",
-  y_max = "q_975", single_issue = "F", pars = "theta_bar")
+\S4method{dgirt_plot}{dgo_fit}(x, y_fun = "median", y_min = "q_025",
+  y_max = "q_975", pars = "theta_bar")
 
 \S4method{dgirt_plot}{data.frame}(x, group_names, time_name, geo_name,
-  y_fun = "median", y_min = "q_025", y_max = "q_975",
-  single_issue = "F")
+  y_fun = "median", y_min = "q_025", y_max = "q_975")
 
-\S4method{plot}{dgirtfit,missing}(x, y, ...)
+\S4method{plot}{dgo_fit,missing}(x, y, ...)
 
 plot_rhats(x, ...)
 
-\S4method{plot_rhats}{dgirtfit}(x, pars = "theta_bar", facet_vars = NULL,
+\S4method{plot_rhats}{dgo_fit}(x, pars = "theta_bar", facet_vars = NULL,
   shape_var = NULL, color_var = NULL, x_var = NULL)
 }
 \arguments{
-\item{x}{A \code{dgirtfit-class} object.}
+\item{x}{A \code{dgo_fit-class} object.}
 
 \item{...}{Further arguments to \code{\link{dgirt_plot}}.}
 
@@ -59,11 +58,11 @@ faceting.}
 respectively.}
 }
 \description{
-\code{dgirt_plot}: plot \code{dgirtfit}-class objects
+\code{dgirt_plot}: plot \code{dgo_fit}-class objects
 
 \code{dgirt_plot}: plot \code{data.frame} objects
 
-\code{plot}: plot method for \code{dgirtfit}-class objects
+\code{plot}: plot method for \code{dgo_fit}-class objects
 
 This function plots R-hats from a dgirt model.
 }

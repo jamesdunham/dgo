@@ -5,6 +5,7 @@
 #' \code{\link[rstan]{stanfit-class}} in the \code{\link{rstan}} package.
 #'
 #' @slot dgirt_in \code{\link{dgirtin-class}} data used to fit the model.
+#' @slot call The function call that returned the \code{dgo_fit} object.
 #'
 #' @aliases dgo_fit dgo_fit-class
 #' @seealso \code{\link{dgmrp_fit}} \code{\link{dgo_fit}} 
