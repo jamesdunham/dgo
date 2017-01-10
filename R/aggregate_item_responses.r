@@ -53,7 +53,9 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   names(item_means) <- replace(names(item_means), match(gt_names, names(item_means)), item_mean_vars)
   data.table::setkeyv(item_means, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
   drop_cols <- setdiff(names(item_means), c(key(item_means), item_mean_vars))
-  item_means[, c(drop_cols) := NULL]
+  if (length(drop_cols)) {
+    item_means[, c(drop_cols) := NULL]
+  }
 
   # join response counts with means 
   count_means <- item_n[item_means]

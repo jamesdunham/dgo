@@ -59,8 +59,9 @@ flatnames <- function(dgirt_out, fnames = NULL) {
 
   drop_cols <- intersect(names(ftab), c("item_names", "hier_params",
                                         "time_name", "group_names", "i", "j"))
-  if (length(drop_cols))
-    ftab[, drop_cols := NULL]
+  if (length(drop_cols)) {
+    ftab[, c(drop_cols) := NULL]
+  }
 
   stopifnot(identical(nrow(ftab), fname_len))
   ftab
