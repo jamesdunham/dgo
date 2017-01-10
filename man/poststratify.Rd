@@ -8,14 +8,14 @@
 \title{\code{poststratify}: reweight and aggregate estimates}
 \usage{
 poststratify(x, target_data, strata_names, aggregated_names,
-  prop_name = "proportion", single_issue = "F", ...)
+  prop_name = "proportion", single_issue = FALSE, ...)
 
 \S4method{poststratify}{dgirtfit}(x, target_data, strata_names,
-  aggregated_names, prop_name = "proportion", single_issue = "F",
+  aggregated_names, prop_name = "proportion", single_issue = FALSE,
   pars = "theta_bar")
 
 \S4method{poststratify}{data.frame}(x, target_data, strata_names,
-  aggregated_names, prop_name = "proportion", single_issue = "F",
+  aggregated_names, prop_name = "proportion", single_issue = FALSE,
   pars = "theta_bar")
 }
 \arguments{
@@ -33,7 +33,8 @@ poststratification.}
 \item{prop_name}{Name of the column in \code{target_data} that gives
 strata proportions.}
 
-\item{single_issue}{Flag for whether DGO ran a single-issue manifest variable model. If "T", apply pnorm to convert results to response scale.}
+\item{single_issue}{Flag for whether DGO ran a single-issue manifest variable
+model. If `TRUE`, apply pnorm to convert results to response scale.}
 
 \item{...}{Additional arguments to methods.}
 

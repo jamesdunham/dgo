@@ -13,10 +13,11 @@
 dgirt_plot(x, ...)
 
 \S4method{dgirt_plot}{dgirtfit}(x, y_fun = "median", y_min = "q_025",
-  y_max = "q_975", pars = "theta_bar")
+  y_max = "q_975", single_issue = "F", pars = "theta_bar")
 
 \S4method{dgirt_plot}{data.frame}(x, group_names, time_name, geo_name,
-  y_fun = "median", y_min = "q_025", y_max = "q_975")
+  y_fun = "median", y_min = "q_025", y_max = "q_975",
+  single_issue = "F")
 
 \S4method{plot}{dgirtfit,missing}(x, y, ...)
 
