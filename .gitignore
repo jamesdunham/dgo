@@ -1,0 +1,5 @@
+.Rproj.user
+README_cache/
+src/*.o
+src/*.so
+src/include/models.hpp.bak

@@ -21,7 +21,7 @@ setGeneric("dgirt_plot", signature = "x", function(x, ...)
 #' p <- dgirt_plot(toy_dgirtfit)
 #' p %+% ylab("posterior median")
 setMethod("dgirt_plot", signature(x = "dgirtfit"),
-  function(x, y_fun = "median", y_min = "q_025", y_max = "q_975", pars =
+  function(x, y_fun = "median", y_min = "q_025", y_max = "q_975",single_issue = "F", pars =
            "theta_bar") {
   assert(assertthat::is.string(pars))
   if (length(y_fun)) assert(assertthat::is.string(y_fun))
@@ -31,6 +31,10 @@ setMethod("dgirt_plot", signature(x = "dgirtfit"),
   ctrl <- x@dgirt_in$control
   samples <- summarize(x, funs = c(y_fun, y_min, y_max))
 
+   if(single_issue=="T"){
+  	samples$median <- pnorm(samples$median)
+  }
+  
   plot_internal(samples, ctrl@group_names, ctrl@time_name, ctrl@geo_name, y_fun,
                 y_min, y_max)
 })
@@ -52,7 +56,7 @@ setMethod("dgirt_plot", signature(x = "dgirtfit"),
 #' dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 setMethod("dgirt_plot", signature(x = "data.frame"),
   function(x, group_names, time_name, geo_name, y_fun = "median", y_min =
-           "q_025", y_max = "q_975") {
+           "q_025", y_max = "q_975",single_issue = "F") {
 
     if (length(group_names)) assert(all_strings(group_names))
     if (length(time_name)) assert(assertthat::is.string(time_name))

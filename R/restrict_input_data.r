@@ -55,7 +55,7 @@ restrict_modifier <- function(item_data, modifier_data, ctrl) {
                               c(ctrl@geo_name, ctrl@time_name,
                                 ctrl@modifier_names, ctrl@t1_modifier_names))
     if (length(extra_colnames)) {
-      modifier_data[, c(extra_colnames) := NULL, with = FALSE]
+      modifier_data[, c(extra_colnames) := NULL]
     }
 
     all_combos <- setNames(expand.grid(ctrl@geo_filter, ctrl@time_filter,
@@ -134,7 +134,7 @@ restrict_aggregates <- function(aggregate_data, ctrl) {
     extra_colnames <- setdiff(names(aggregate_data),
                               c(ctrl@geo_name, ctrl@time_name, ctrl@group_names, "item", "s_grp", "n_grp"))
     if (length(extra_colnames)) {
-      aggregate_data[, c(extra_colnames) := NULL, with = FALSE]
+      aggregate_data[, c(extra_colnames) := NULL]
     }
 
     id_cols <- c(ctrl@geo_name, ctrl@time_name, ctrl@group_names, "item")

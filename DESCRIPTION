@@ -36,7 +36,8 @@ Suggests:
 LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>=
     0.11.0), RcppEigen
 RcppModules: stan_fit42016_09_14_mod, stan_fit42016_04_20_mod,
-    stan_fit42015_12_16_mod
+    stan_fit42015_12_16_mod, stan_fit42017_01_04_singleissue_mod,
+    stan_fit42017_01_04_mod
 NeedsCompilation: yes
 Collate:
     'RcppExports.R'
@@ -54,6 +55,7 @@ Collate:
     'data-toy_dgirt_in.r'
     'dgirt.r'
     'data-toy_dgirtfit.r'
+    'dgmrp.r'
     'dichotomize_item_responses.r'
     'expand_rownames.r'
     'methods-control.r'

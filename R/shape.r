@@ -121,7 +121,7 @@
 #' data(opinion)
 #' opinion$respondent = 1:nrow(opinion)
 #' shaped_responses <- shape(opinion,
-#'                           item_names = "Q_cces2006_gaymarriageamendment",
+#'                           item_names = "abortion",
 #'                           time_name = "year",
 #'                           geo_name = "state",
 #'                           group_names = "race",
@@ -222,7 +222,9 @@ shape <- function(item_data,
   d_in$P <- ncol(d_in$ZZ)
   d_in$S <- length(unique(d_in$group_grid[[ctrl@geo_name]])) - 1
   d_in$H <- dim(d_in$ZZ)[[3]]
-  d_in$Hprior <- d_in$H
+  #d_in$Hprior <- d_in$H
+  d_in$Hprior <- dim(d_in$ZZ_prior)[[3]]
+
 
   # include subset data and other objects that may be useful later #
   d_in$item_data <- item_data
@@ -242,8 +244,21 @@ shape <- function(item_data,
 }
 
 shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
-    modifier_names <- ifelse(t1, ctrl@t1_modifier_names, ctrl@modifier_names)
-    if (!length(modifier_data) | is.na(modifier_names)) {
+
+  if (isTRUE(t1)) {
+    if (!length(ctrl@t1_modifier_names)) {
+      # t1_modifier_names are missing; use modifier_names
+      ctrl@t1_modifier_names <- ctrl@modifier_names
+    }
+    modifier_names <- ctrl@t1_modifier_names
+  } else {
+    modifier_names <- ctrl@modifier_names
+  }	
+  if (!length(modifier_names)) {
+    modifier_names <- NA
+  }
+
+  if (!length(modifier_data) | is.na(modifier_names)) {
       zz.names <- list(ctrl@time_filter, dimnames(d_in$XX)[[2]], "")
       zz <- array(data = 0, dim = lapply(zz.names, length), dimnames = zz.names)
     } else {
@@ -257,13 +272,13 @@ shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
     extra_colnames <- setdiff(names(hier_frame),
                              c(ctrl@geo_name, ctrl@time_name, modifier_names))
     if (length(extra_colnames)) {
-      hier_frame[, c(extra_colnames) := NULL, with = FALSE]
+      hier_frame[, c(extra_colnames) := NULL]
     }
 
     # NOTE: We create param by renaming geo_name. Thus the requirement to model
     # geographic predictors.
     hier_frame[, c("param", ctrl@geo_name) := list(hier_frame[[ctrl@geo_name]],
-                                                   NULL), with = FALSE]
+                                                   NULL)]
     data.table::setkeyv(hier_frame, c("param", ctrl@time_name))
     all(ctrl@time_filter %in% hier_frame$D_year)
 

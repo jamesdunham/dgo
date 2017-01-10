@@ -14,9 +14,13 @@ default_pars <- c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
                   "nu_geo", "nu_geo_prior", "kappa", "sd_item", "sd_theta",
                   "sd_theta_bar", "sd_gamma_geo", "sd_gamma_demo",
                   "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd",
-                  "sd_total", "theta_l2", "var_theta_bar_l2")
+                  "sd_total")
 
-var_types <- list(item_names = c("integer", "numeric"),
+default_pars_mrp <- c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
+                  "nu_geo", "nu_geo_prior", "sd_theta_bar", "sd_gamma_geo", "sd_gamma_demo",
+                  "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd")
+
+var_types <- list(item_names = c("integer", "numeric", "factor"),
                   group_names = c("character", "factor"),
                   geo_name = c("character", "factor"),
                   time_name = c("integer", "numeric"),
