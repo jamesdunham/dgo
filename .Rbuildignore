@@ -4,11 +4,13 @@
 ^README.Rmd$
 ^README_cache$
 ^\.DS_Store$
-^\.travis.yml$
+^\.travis\.yml$
 ^packrat/
 ^data-ext/
-^wercker.yml$
+^docs/
+^wercker\.yml$
 ^setup.r$
 ^Makefile$
 ^.*tar.gz$
 ^\.Rproj\.user$
+^codecov\.yml$
