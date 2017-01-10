@@ -4,9 +4,9 @@ utils::globalVariables(c("facet_vars"))
 setGeneric("dgirt_plot", signature = "x", function(x, ...)
            standardGeneric("dgirt_plot"))
 
-#' \code{dgirt_plot}: plot \code{dgirtfit}-class objects
+#' \code{dgirt_plot}: plot \code{dgo_fit}-class objects
 #'
-#' @param x A \code{dgirtfit-class} object.
+#' @param x A \code{dgo_fit-class} object.
 #' @param y_fun Summary function to be plotted as \code{y}.
 #' @param y_min Summary function giving the \code{ymin} argument for a
 #' \code{geom_pointrange} object.
@@ -20,7 +20,7 @@ setGeneric("dgirt_plot", signature = "x", function(x, ...)
 #' dgirt_plot(toy_dgirtfit, y_min = NULL, y_max = NULL)
 #' p <- dgirt_plot(toy_dgirtfit)
 #' p %+% ylab("posterior median")
-setMethod("dgirt_plot", signature(x = "dgirtfit"),
+setMethod("dgirt_plot", signature(x = "dgo_fit"),
   function(x, y_fun = "median", y_min = "q_025", y_max = "q_975",single_issue = "F", pars =
            "theta_bar") {
   assert(assertthat::is.string(pars))
@@ -103,7 +103,7 @@ plot_internal <- function(samples, group_names, time_name, geo_name, y_fun,
   p
 }
 
-#' \code{plot}: plot method for \code{dgirtfit}-class objects
+#' \code{plot}: plot method for \code{dgo_fit}-class objects
 #'
 #' @param y Ignored.
 #' @param ... Further arguments to \code{\link{dgirt_plot}}.
@@ -113,7 +113,7 @@ plot_internal <- function(samples, group_names, time_name, geo_name, y_fun,
 #' @examples
 #'
 #' plot(toy_dgirtfit)
-setMethod("plot", signature(x = "dgirtfit", y = "missing"),
+setMethod("plot", signature(x = "dgo_fit", y = "missing"),
           function(x, ...) {
             dgirt_plot(x, ...)
           })
@@ -123,7 +123,7 @@ setMethod("plot", signature(x = "dgirtfit", y = "missing"),
 setGeneric("plot_rhats", signature = "x", function(x, ...)
            standardGeneric("plot_rhats"))
 
-#' \code{plot_rhats}: plot split R-hats from \code{dgirtfit}-class objects
+#' \code{plot_rhats}: plot split R-hats from \code{dgo_fit}-class objects
 #'
 #' This function plots R-hats from a dgirt model.
 #'
@@ -137,7 +137,7 @@ setGeneric("plot_rhats", signature = "x", function(x, ...)
 #' plot_rhats(toy_dgirtfit)
 #' plot_rhats(toy_dgirtfit, facet_vars = c("race", "state")) +
 #'   scale_x_continuous(breaks = seq.int(2006, 2008))
-setMethod("plot_rhats", signature(x = "dgirtfit"),
+setMethod("plot_rhats", signature(x = "dgo_fit"),
           function(x, pars = "theta_bar", facet_vars = NULL, shape_var = NULL,
                    color_var = NULL, x_var = NULL) {
 

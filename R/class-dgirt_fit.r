@@ -1,16 +1,15 @@
-#' Class \code{dgirtfit}: a class for fitted DGIRT modelsf
+#' Class \code{dgirt_fit}: a class for fitted models
 #'
-#' Fitting a dgirt model results in a \code{dgirtfit} object that inherits from
-#' \code{\link{rstan}}'s \code{\link[rstan]{stanfit-class}}. \code{rstan}
-#' methods will be dispatched (only) if a \code{dgirtfit} method does
-#' not exist.
+#' \code{\link{dgirt}} returns a fitted model object of class \code{dgirt_fit},
+#' which inherits from \code{\link{dgo_fit}}.
 #'
 #' @slot dgirt_in \code{\link{dgirtin-class}} data used to fit the model.
 #'
-#' @aliases dgirtfit dgirtfit-class
-#' @seealso \code{\link{stanfit-class}} \code{\link{dgirtin-class}}
-#' @rdname dgirtfit-class
-#' @name dgirtfit-class
+#' @aliases dgirt_fit dgirt_fit-class
+#' @seealso \code{\link{dgmrp_fit}} \code{\link{dgo_fit}} 
+#' @include class-dgo_fit
+#' @name dgirt_fit-class
+#d' @include class-dgo_fit
 #' @examples
 #' data(toy_dgirtfit)
 #' # summarize the fitted results
@@ -28,7 +27,12 @@
 #' as.array(toy_dgirtfit, pars = 'theta_bar')
 #' as.data.frame(toy_dgirtfit, pars = 'theta_bar')
 #' extract(toy_dgirtfit, pars = 'theta_bar')
-dgirtfit <- setClass("dgirtfit",
-  contains = "stanfit",
-  slots = list(dgirt_in = "ANY",
-    call = "language"))
+dgirt_fit <- setClass("dgirt_fit", contains = c("VIRTUAL", "dgo_fit"))
+
+#' @name dgirt_fit-class
+#'
+#' dgo 0.2.8 deprecated the \code{dgirtfit} class and replaced it with the
+#' \code{\link{dgirt_fit}} class. 
+#'
+#' @aliases dgirtfit dgirtfit-class
+dgirtfit <- setClass("dgirtfit", contains = c("VIRTUAL", "dgirt_fit"))

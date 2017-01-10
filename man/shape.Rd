@@ -97,7 +97,7 @@ consistently with the transformations applied to the individual
 If \code{target_data} is specified \code{shape} will adjust the weighting of
 groups toward population targets via raking. This relies on an adaptation of
 \code{\link[survey]{rake}}. The additional required arguments are
-\code{target_proportion_name} and \code{raking}. 
+\code{target_proportion_name} and \code{raking}.
 
 \code{shape} can restrict data row-wise in \code{item_data},
 \code{modifier_data}, and \code{aggregate_data} to that within specified time

@@ -1,29 +1,29 @@
 utils::globalVariables(c("value", "iteration", ".", "rn", "total", "warmup",
                          "Rhat"))
 
-#' @rdname dgirtfit-methods
-#' @param x A \code{dgirtfit-class} object
-#' @param object A \code{dgirtfit-class} object
+#' @rdname dgo_fit-methods
+#' @param x A \code{dgo_fit-class} object
+#' @param object A \code{dgo_fit-class} object
 #' @param pars Parameter name(s)
 #' @param ... Further arguments to \code{\link{stanfit-class}} methods.
 #' @export
-setMethod("show", "dgirtfit",
+setMethod("show", "dgo_fit",
           function(object) {
-            print.dgirtfit(object)
+            print.dgo_fit(object)
           })
 
 # Generic documented for dgirtIn
 setGeneric("print", signature = "x",
            function(x, ...) standardGeneric("print"))
 
-#' @rdname dgirtfit-methods
-setMethod("print", "dgirtfit", function(x, ...) print.dgirtfit(x, ...))
+#' @rdname dgo_fit-methods
+setMethod("print", "dgo_fit", function(x, ...) print.dgo_fit(x, ...))
 
-#' \code{print} method for \code{dgirtfit-class} objects
+#' \code{print} method for \code{dgo_fit-class} objects
 #'
 #' @return NULL
-#' @rdname dgirtfit-methods
-print.dgirtfit <- function(x, ...) {
+#' @rdname dgo_fit-methods
+print.dgo_fit <- function(x, ...) {
   ctrl <- x@dgirt_in$control
   sf <- x
   class(sf) <- "stanfit"
@@ -60,10 +60,10 @@ print.dgirtfit <- function(x, ...) {
   message(paste0(capture.output(get_elapsed_time(x)), collapse = "\n"))
 }
 
-#' \code{get_elapsed_time}: extract chain run times from \code{dgirtfit}-class
+#' \code{get_elapsed_time}: extract chain run times from \code{dgo_fit}-class
 #' objects
-#' @rdname dgirtfit-methods
-setMethod("get_elapsed_time", "dgirtfit", function(object, ...) {
+#' @rdname dgo_fit-methods
+setMethod("get_elapsed_time", "dgo_fit", function(object, ...) {
   # the stanfit method gives a matrix of time in seconds; we'd find a format
   # like 11D 2H 10M more useful
   class(object) = "stanfit"
@@ -77,13 +77,13 @@ setMethod("get_elapsed_time", "dgirtfit", function(object, ...) {
   times[]
 })
 
-#' \code{summary} method for \code{dgirtfit-class} objects
+#' \code{summary} method for \code{dgo_fit-class} objects
 #'
 #' @param verbose Whether to show the full output from the \code{rstan} method.
 #'
-#' @rdname dgirtfit-methods
+#' @rdname dgo_fit-methods
 #' @export
-setMethod("summary", "dgirtfit", function(object, ..., verbose = FALSE) {
+setMethod("summary", "dgo_fit", function(object, ..., verbose = FALSE) {
   if (isTRUE(verbose)) {
     sf <- object
     class(sf) <- "stanfit"
@@ -93,25 +93,25 @@ setMethod("summary", "dgirtfit", function(object, ..., verbose = FALSE) {
   }
 })
 
-#' @rdname dgirtfit-methods
+#' @rdname dgo_fit-methods
 #' @export
-setMethod("get_posterior_mean", "dgirtfit",
+setMethod("get_posterior_mean", "dgo_fit",
           function(object, pars = "theta_bar", ...) {
             summarize(object, pars, funs = "mean")
           })
 
-#' @rdname dgirtfit-methods
+#' @rdname dgo_fit-methods
 #' @export
 setGeneric("summarize", signature = "x",
            function(x, ...) standardGeneric("summarize"))
 
-#' \code{summarize} method for \code{dgirtfit-class} objects
+#' \code{summarize} method for \code{dgo_fit-class} objects
 #'
 #' @param funs Quoted names of summary functions. `q_025` is accepted as
 #'   shorthand for `function(x) quantile(x, .025)`, and similarly `q_975`.
-#' @rdname dgirtfit-methods
+#' @rdname dgo_fit-methods
 #' @export
-setMethod("summarize", "dgirtfit",
+setMethod("summarize", "dgo_fit",
   function(x, pars = "theta_bar",
               funs = c("mean", "sd", "median", "q_025", "q_975")) {
     samples <- as.data.frame(x, pars = pars)
@@ -126,18 +126,18 @@ q_025 <- function(x) quantile(x, .025)
 q_975 <- function(x) quantile(x, .975)
 do_funs <- function(value, funs) lapply(funs, function(f) do.call(f, value))
 
-#' \code{as.data.frame} method for \code{dgirtfit-class} objects
+#' \code{as.data.frame} method for \code{dgo_fit-class} objects
 #'
 #' @param keep.rownames Whether to retain original parameter names with numeric
 #'   indexes, as output from RStan.
 #'
-#' @rdname dgirtfit-methods
+#' @rdname dgo_fit-methods
 #' @export
 #'
 #' @examples
 #' # access posterior samples
-#' as.data.frame(toy_dgirtfit, pars = 'theta_bar')
-as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar",
+#' as.data.frame(toy_dgo_fit, pars = 'theta_bar')
+as.data.frame.dgo_fit <- function(x, ..., pars = "theta_bar",
                                    keep.rownames = FALSE) {
   ctrl <- x@dgirt_in$control
   estimates <- as.data.frame.matrix(t(as.matrix(x, pars = pars)))
@@ -163,18 +163,18 @@ as.data.frame.dgirtfit <- function(x, ..., pars = "theta_bar",
   melted
 }
 
-#' @rdname dgirtfit-methods
+#' @rdname dgo_fit-methods
 setGeneric("rhats", signature = "x", function(x, ...)
            standardGeneric("rhats"))
 
-#' \code{rhats}: extract split R-hats from \code{dgirtfit}-class objects
+#' \code{rhats}: extract split R-hats from \code{dgo_fit}-class objects
 #'
 #' @return A table giving split R-hats for model parameters
 #' @export
-#' @rdname dgirtfit-methods
+#' @rdname dgo_fit-methods
 #' @examples
-#' rhats(toy_dgirtfit)
-setMethod("rhats", signature(x = "dgirtfit"),
+#' rhats(toy_dgo_fit)
+setMethod("rhats", signature(x = "dgo_fit"),
           function(x, pars = "theta_bar") {
   assert(all_strings(pars))
   fnames = flatnames(x)

@@ -4,7 +4,7 @@
 \name{dgirtfit-class}
 \alias{dgirtfit}
 \alias{dgirtfit-class}
-\title{Class \code{dgirtfit}: a class for fitted DGIRT modelsf}
+\title{Class \code{dgirtfit}: a class for fitted DGIRT models}
 \description{
 Fitting a dgirt model results in a \code{dgirtfit} object that inherits from
 \code{\link{rstan}}'s \code{\link[rstan]{stanfit-class}}. \code{rstan}

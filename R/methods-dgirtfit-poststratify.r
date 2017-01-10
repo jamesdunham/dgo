@@ -37,14 +37,14 @@ setGeneric("poststratify", signature = "x",
 #' # of variables to be aggregated over
 #' post <- poststratify(toy_dgirtfit, targets, c("state", "year"), "race")
 #' @export
-setMethod("poststratify", c("dgirtfit"),
+setMethod("poststratify", c("dgo_fit"),
   function(x, target_data, strata_names, aggregated_names,
            prop_name = "proportion", single_issue = FALSE, pars = "theta_bar") {
     x <- as.data.frame(x, pars = pars)
     callGeneric(x, target_data, strata_names, aggregated_names, prop_name, single_issue)
 })
 
-#' @param x A \code{data.frame} or \code{dgirtfit} object.
+#' @param x A \code{data.frame} or \code{dgo_fit} object.
 #' @param target_data A table giving the proportions contributed to strata by
 #' the interaction of \code{strata_names} and \code{aggregated_names}.
 #' @param strata_names Names of variables whose interaction defines
