@@ -55,11 +55,11 @@ data(toy_dgirtfit)
 
 # the stratifying variables should uniquely identify proportions in the
 # target data; to achieve this, sum over the other variables
-targets <- aggregate(proportion ~ state + year + race, targets, sum)
+targets <- aggregate(proportion ~ state + year + race3, targets, sum)
 
 # the dgirtfit method of poststratify takes a dgirtfit object, the target
 # data, the names of variables that define population strata, and the  names
 # of variables to be aggregated over
-post <- poststratify(toy_dgirtfit, targets, c("state", "year"), "race")
+post <- poststratify(toy_dgirtfit, targets, c("state", "year"), "race3")
 }
 
