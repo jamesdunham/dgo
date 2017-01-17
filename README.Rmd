@@ -7,11 +7,13 @@ output:
 
 dgo is an R package for dynamic estimation of group-level opinion.
 
-dgo implements DGIRT, a Bayesian method for estimating subpopulation groups'
-average conservatism (or other trait) from individuals' responses to dichotomous
-questions. It is "dynamic" both in the sense that groups are allowed to evolve 
-over time and in the sense that the model "borrows strength" from other time 
-periods, to a degree specified by the user. [This 
+dgo implements Bayesian models for estimating subpopulation groups' average
+conservatism (or other trait) from individuals' responses to dichotomous
+questions. These models are "dynamic" both in the sense that groups are allowed
+to evolve over time and in the sense that the model "borrows strength" from
+other time periods, to a degree specified by the user.
+
+[This
 document](https://github.com/jamesdunham/dgo/blob/master/inst/dgirt_details.pdf)
 describes the model in detail. It is a modified version of the hierarchical
 group-level IRT model implemented by [Caughey and Warshaw
@@ -30,8 +32,7 @@ knitr::opts_chunk$set(
 ## Prerequisites
 
 Installation requires [RStan](http://mc-stan.org/interfaces/rstan.html) and its
-prerequisites, in particular a C++ toolchain. If you don't have RStan, follow
-its "[Getting
+prerequisites. If you don't have RStan, follow its "[Getting
 Started](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)" guide
 before continuing.
 
@@ -39,7 +40,8 @@ before continuing.
 
 dgo can be installed from [GitHub](https://github.com/jamesdunham/dgo) using
 [devtools](https://github.com/hadley/devtools/):
-```
+```{r, eval = FALSE}
+# install.packages("devtools")
 devtools::install_github("jamesdunham/dgo", dependencies = TRUE)
 ```
 
@@ -64,64 +66,52 @@ rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 ```
 
-### Prepare input data with `shape`
+### Prepare inputs with `shape`
 
-DGIRT models are *dynamic*, so we need to specify which variable in the data
-represents time. They are also *group-level*, with groups defined by one
-variable for respondents' local geographic area and one or more variables for
-respondent characteristics.
+The `shape()` function returns data formatted for modeling with dgo. Its minimal
+arguments give a table of individual-level survey response data, response
+variable names, and the names of variables that define subpopulation groups.
+These groups are typically defined by respondents' local geographic areas and
+demographic characteristics.
 
-The `time_filter` and `geo_filter` arguments optionally subset the data.
-Finally, `shape` requires the names of the survey identifier and survey weight
-variables in the data.
+There is also a required argument for specifying which variable in the data
+represents time, because dgo models are dynamic.
+
+Finally, `shape()` requires the names of survey identifier and survey weight
+variables.
 
 ```{r}
 dgirt_in <- shape(opinion,
-                  item_names = "Q_cces2006_abortion",
+                  item_names = c("abortion", "affirmative_action",
+                    "stemcell_research", "gaymarriage_amendment",
+                    "partialbirth_abortion"),
                   time_name = "year",
                   geo_name = "state",
-                  group_names = "race",
+                  group_names = "race3",
                   geo_filter = c("CA", "GA", "LA", "MA"),
                   survey_name = "source",
                   weight_name = "weight")
 ```
 
-The reshaped and subsetted data can be summarized in a few ways before model
-fitting.
+The result can be summarized in a few ways before model fitting, with
+the `summary()`, `get_n()`, and `get_item_n()` functions.
 
-```{r}
-summary(dgirt_in)
-```
-
-Response counts by survey-year:
-```{r}
-get_n(dgirt_in, by = c("year", "source"))
-```
-
-Response counts by item-year:
-```{r}
-get_item_n(dgirt_in, by = "year")
-```
 
 ### Fit a model with `dgirt`
 
-`dgirt` fits a model to data from `shape`. Under the hood, this function uses
-RStan for MCMC sampling, and arguments can be passed to RStan's `stan` via the
-`...` argument of `dgirt`. This will almost always be desirable, at a minimum to
-specify the number of sampler iterations, chains, and cores.
+`dgirt()` fits a model to data from `shape()`. `dgirt()` uses RStan for MCMC
+sampling and has a `...` argument passed to `stan()`. 
 
 ```{r, warning = FALSE, cache = FALSE}
 dgirt_out <- dgirt(dgirt_in, iter = 1500, chains = 4, cores = 4, seed = 42,
                    refresh = 0)
 ```
 
-The model results are held in a `dgirtfit` object. Methods from RStan like
-`extract` are available if needed because `dgirtfit` is a subclass of `stanfit`.
-But dgo provides its own methods for typical post-estimation tasks.
+`dgirt()` returns a `dgirt_fit` object that inherits from the `stanfit` class.
 
 ### Work with `dgirt` results
 
-For a high-level summary of the result, use `summary`.
+Use `summary()` for a high-level summary of model results. 
 
 ```{r}
 summary(dgirt_out)
@@ -146,27 +136,42 @@ summarize(dgirt_out, pars = "xi", funs = "var")
 ```
 
 To access posterior samples in tabular form use `as.data.frame`. By default,
-this method returns post-warmup samples for the `theta_bar` parameters, but like
-other methods takes a `pars` argument.
+this returns post-warmup samples for the `theta_bar` parameters.  Use a `pars`
+argument to access other parameters.
 
 ```{r}
 head(as.data.frame(dgirt_out))
 ```
 
-To poststratify the results use `poststratify`. The following example uses the
-group population proportions bundled as `state_year_targets` to reweight and
-aggregate estimates to strata defined by state-years. Read
-`help("poststratify")` for more details.
+To poststratify the results use `poststratify`.
+
+The following example uses the group population proportions bundled as `targets`
+to reweight and aggregate estimates to strata defined by state-years.
 
 ```{r}
-poststratify(dgirt_out, state_year_targets, strata_names = c("state", "year"),
-             aggregated_names = "race")
+head(targets)
 ```
 
-To plot the results use `dgirt_plot`. This method plots summaries of posterior
-samples by time period. By default, it shows a 95% credible interval around
-posterior medians for the `theta_bar` parameters, for each local geographic
-area. For this (unconverged) toy example we omit the CIs.
+The `prop` variable in `targets` gives row-year population proportions. For
+poststratification of `dgirt()` group estimates (i.e., theta-bars), we require
+the yearly population proportion for each group. We can calculate these
+proportions by summing over the row proportions in `targets` by group-year.
+
+```{r}
+targets <- aggregate(prop ~ year + state + race3, targets, sum)
+# proportions should sum to one within years 
+all(round(aggregate(prop ~ year, targets, sum)$prop, 1) == 1)
+head(targets)
+```
+
+```{r}
+poststratify(dgirt_out, targets, strata_names = c("state", "year"),
+             aggregated_names = "race3")
+```
+
+To plot the results use `dgirt_plot`. This plots summaries of posterior samples
+by time period. By default, it shows a 95% credible interval around posterior
+medians for the `theta_bar` parameters, for each local geographic area.
 
 ```{r}
 dgirt_plot(dgirt_out, y_min = NULL, y_max = NULL)
@@ -175,21 +180,18 @@ dgirt_plot(dgirt_out, y_min = NULL, y_max = NULL)
 Output from `dgirt_plot` can be customized to some extent using objects from the
 ggplot2 package.
 
-```{r}
-dgirt_plot(dgirt_out, y_min = NULL, y_max = NULL) + theme_classic()
-```
+`dgirt_plot` can also plot the `data.frame` output from `poststratify`, but this
+requires that we identify the relevant variables in the `data.frame`.
 
-`dgirt_plot` can also plot the `data.frame` output from `poststratify`. This
-requires arguments that identify the relevant variables in the `data.frame`.
-Below, `poststratify` aggregates over the demographic grouping variable `race`,
+Below, `poststratify` aggregates over the demographic grouping variable `race3`,
 resulting in a `data.frame` of estimates by state-year. So, in the subsequent
-call to `dgirt_plot`, we pass the names of the state and year variables. The
-`group_names` argument is `NULL` because there are no grouping variables left
-after aggregating over `race`.
+call to `dgirt_plot`, we pass the names of the `state` and `year` variables. The
+`group_names` argument is given as `NULL`, because no other grouping variables
+remain.
 
 ```{r}
-ps <- poststratify(dgirt_out, state_year_targets,
-                   strata_names = c("state", "year"), aggregated_names = "race")
+ps <- poststratify(dgirt_out, targets, strata_names = c("state", "year"),
+  aggregated_names = "race3")
 head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
@@ -207,14 +209,14 @@ environment variable checked at session startup. As described in `?tempdir`,
 
 > The environment variables ‘TMPDIR’, ‘TMP’ and ‘TEMP’ are checked in turn and
 > the first found which points to a writable directory is used: if none succeeds
-> ‘/tmp’ is used. The path should not contain spaces.  
+> ‘/tmp’ is used. The path should not contain spaces.
 
 For help setting environment variables, see the Stack Overflow question
 [here](https://stackoverflow.com/questions/17107206/change-temporary-directory).
 Confirm the new path before starting your model run by restarting R and checking
 the output from `tempdir()`.
 
-``` r
+```{r, eval = FALSE}
 # Problematic temporary directories on OS X look like this
 tempdir()   
 #> [1] "/var/folders/2p/_d3c95qd6ljg28j1f5l2jqxm0000gn/T//Rtmp38a10A"
@@ -227,5 +229,5 @@ dgo is under development and we welcome
 
 The package citation is 
 
-> Dunham, James, Devin Caughey, and Christopher Warshaw. 2016. dgo: Dynamic
+> Dunham, James, Devin Caughey, and Christopher Warshaw. 2017. dgo: Dynamic
 > Estimation of Group-level Opinion. R package. https://jamesdunham.github.io/dgo/.
