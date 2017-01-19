@@ -4,6 +4,7 @@ output:
     variant: markdown_github
 ---
 [![Build Status](https://travis-ci.org/jamesdunham/dgo.svg?branch=master)](https://travis-ci.org/jamesdunham/dgo)
+[![Build status](https://ci.appveyor.com/api/projects/status/1ta36kmoqen98k87?svg=true)](https://ci.appveyor.com/project/jamesdunham/dgo)
 
 dgo is an R package for the dynamic estimation of group-level opinion. The
 package can be used to estimate subpopulation groups' average latent

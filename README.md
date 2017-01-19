@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jamesdunham/dgo.svg?branch=master)](https://travis-ci.org/jamesdunham/dgo)
+[![Build Status](https://travis-ci.org/jamesdunham/dgo.svg?branch=master)](https://travis-ci.org/jamesdunham/dgo) [![Build status](https://ci.appveyor.com/api/projects/status/1ta36kmoqen98k87?svg=true)](https://ci.appveyor.com/project/jamesdunham/dgo)
 
 dgo is an R package for the dynamic estimation of group-level opinion. The package can be used to estimate subpopulation groups' average latent conservatism (or other latent trait) from individuals' responses to dichotomous questions using a Bayesian group-level IRT approach developed by [Caughey and Warshaw 2015](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html) that models latent traits at the level of demographic and/or geographic groups rather than individuals. This approach uses a hierarchical model to borrow strength cross-sectionally and dynamic linear models to do so across time. The group-level estimates can be weighted to generate estimates for geographic units, such as states.
 
@@ -141,7 +141,7 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgirt_out_abortion)
 #> dgirt samples from 4 chains of 1500 iterations, 750 warmup, thinned every 1 
-#>   Drawn Wed Jan 18 23:59:42 2017 
+#>   Drawn Thu Jan 19 15:36:28 2017 
 #>   Package version 0.2.8 
 #>   Model version 2017_01_04_singleissue 
 #>   117 parameters; 60 theta_bars (year, state and race3)
@@ -157,23 +157,30 @@ summary(dgirt_out_abortion)
 #> 
 #> Elapsed time
 #>    chain warmup sample total
-#> 1:     1     9S    12S   21S
-#> 2:     2    12S    16S   28S
-#> 3:     3     8S    13S   21S
-#> 4:     4    10S    17S   27S
+#> 1:     1    11S    12S   23S
+#> 2:     2    13S    18S   31S
+#> 3:     3     9S    13S   22S
+#> 4:     4    11S    18S   29S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
 
 ``` r
 head(summarize(dgirt_out_abortion))
-#>        param state race3 year      mean         sd    median     q_025     q_975
-#> 1: theta_bar    CA black 2006 0.7169682 0.07805130 0.7173998 0.5654617 0.8678976
-#> 2: theta_bar    CA black 2007 0.7475491 0.10839806 0.7415758 0.5537648 0.9692746
-#> 3: theta_bar    CA black 2008 0.4831040 0.07608744 0.4819045 0.3354228 0.6322093
-#> 4: theta_bar    CA black 2009 0.4090061 0.07179438 0.4068443 0.2715811 0.5521007
-#> 5: theta_bar    CA black 2010 0.5311185 0.07702568 0.5339432 0.3757688 0.6778760
-#> 6: theta_bar    CA other 2006 0.5631683 0.07651700 0.5604350 0.4174244 0.7134687
+#>        param state race3 year      mean         sd    median     q_025
+#> 1: theta_bar    CA black 2006 0.7169682 0.07805130 0.7173998 0.5654617
+#> 2: theta_bar    CA black 2007 0.7475491 0.10839806 0.7415758 0.5537648
+#> 3: theta_bar    CA black 2008 0.4831040 0.07608744 0.4819045 0.3354228
+#> 4: theta_bar    CA black 2009 0.4090061 0.07179438 0.4068443 0.2715811
+#> 5: theta_bar    CA black 2010 0.5311185 0.07702568 0.5339432 0.3757688
+#> 6: theta_bar    CA other 2006 0.5631683 0.07651700 0.5604350 0.4174244
+#>        q_975
+#> 1: 0.8678976
+#> 2: 0.9692746
+#> 3: 0.6322093
+#> 4: 0.5521007
+#> 5: 0.6778760
+#> 6: 0.7134687
 ```
 
 Alternatively, `summarize` can apply arbitrary functions to posterior samples for whatever parameter is given by its `pars` argument. Enclose function names with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th posterior quantiles.
@@ -288,8 +295,8 @@ The reshaped and subsetted data can be summarized in a few ways before model fit
 ``` r
 summary(dgirt_in_liberalism)
 #> Items:
-#> [1] "abortion"              "affirmative_action"    "gaymarriage_amendment" "partialbirth_abortion"
-#> [5] "stemcell_research"    
+#> [1] "abortion"              "affirmative_action"    "gaymarriage_amendment"
+#> [4] "partialbirth_abortion" "stemcell_research"    
 #> Respondents:
 #>    23,632 in `item_data`
 #> Grouping variables:
@@ -311,12 +318,18 @@ Response counts by item-year:
 
 ``` r
 get_item_n(dgirt_in_liberalism, by = "year")
-#>    year abortion affirmative_action stemcell_research gaymarriage_amendment partialbirth_abortion
-#> 1: 2006     5275               4750              2483                  2642                  5064
-#> 2: 2007     1690               1557              1705                  1163                  1684
-#> 3: 2008     4697               4704              4002                  4265                     0
-#> 4: 2009     2141               2147                 0                     0                     0
-#> 5: 2010     9204               9241              9146                  9226                     0
+#>    year abortion affirmative_action stemcell_research
+#> 1: 2006     5275               4750              2483
+#> 2: 2007     1690               1557              1705
+#> 3: 2008     4697               4704              4002
+#> 4: 2009     2141               2147                 0
+#> 5: 2010     9204               9241              9146
+#>    gaymarriage_amendment partialbirth_abortion
+#> 1:                  2642                  5064
+#> 2:                  1163                  1684
+#> 3:                  4265                     0
+#> 4:                     0                     0
+#> 5:                  9226                     0
 ```
 
 ### Fit a model with `dgirt`
@@ -339,7 +352,7 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgirt_out_liberalism)
 #> dgirt samples from 4 chains of 3000 iterations, 1500 warmup, thinned every 1 
-#>   Drawn Thu Jan 19 00:04:31 2017 
+#>   Drawn Thu Jan 19 15:41:52 2017 
 #>   Package version 0.2.8 
 #>   Model version 2017_01_04 
 #>   137 parameters; 60 theta_bars (year, state and race3)
@@ -355,23 +368,30 @@ summary(dgirt_out_liberalism)
 #> 
 #> Elapsed time
 #>    chain warmup sample  total
-#> 1:     1 1M 48S 1M 18S 2M 66S
-#> 2:     2 1M 41S 1M 47S 2M 88S
-#> 3:     3 1M 57S 2M 42S 3M 99S
-#> 4:     4 1M 46S  2M 5S 3M 51S
+#> 1:     1 1M 56S 1M 20S 2M 76S
+#> 2:     2 1M 47S 1M 48S 2M 95S
+#> 3:     3  2M 4S 2M 51S 4M 55S
+#> 4:     4 1M 53S  2M 4S 3M 57S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
 
 ``` r
 head(summarize(dgirt_out_liberalism))
-#>        param state race3 year      mean         sd    median        q_025     q_975
-#> 1: theta_bar    CA black 2006 0.5424676 0.07682737 0.5292402  0.408601887 0.7148904
-#> 2: theta_bar    CA black 2007 0.5762770 0.09779929 0.5565021  0.419725395 0.8080642
-#> 3: theta_bar    CA black 2008 0.5508289 0.10531420 0.5275569  0.392452411 0.8044522
-#> 4: theta_bar    CA black 2009 0.4836891 0.09271300 0.4762236  0.341245135 0.7057762
-#> 5: theta_bar    CA black 2010 0.4442502 0.07279811 0.4404217  0.317057094 0.6042427
-#> 6: theta_bar    CA other 2006 0.1457190 0.07393103 0.1547438 -0.008340705 0.2720437
+#>        param state race3 year      mean         sd    median        q_025
+#> 1: theta_bar    CA black 2006 0.5424676 0.07682737 0.5292402  0.408601887
+#> 2: theta_bar    CA black 2007 0.5762770 0.09779929 0.5565021  0.419725395
+#> 3: theta_bar    CA black 2008 0.5508289 0.10531420 0.5275569  0.392452411
+#> 4: theta_bar    CA black 2009 0.4836891 0.09271300 0.4762236  0.341245135
+#> 5: theta_bar    CA black 2010 0.4442502 0.07279811 0.4404217  0.317057094
+#> 6: theta_bar    CA other 2006 0.1457190 0.07393103 0.1547438 -0.008340705
+#>        q_975
+#> 1: 0.7148904
+#> 2: 0.8080642
+#> 3: 0.8044522
+#> 4: 0.7057762
+#> 5: 0.6042427
+#> 6: 0.2720437
 ```
 
 Alternatively, `summarize` can apply arbitrary functions to posterior samples for whatever parameter is given by its `pars` argument. Enclose function names with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th posterior quantiles.
