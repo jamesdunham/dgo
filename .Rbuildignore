@@ -14,3 +14,4 @@
 ^.*tar.gz$
 ^\.Rproj\.user$
 ^codecov\.yml$
+^appveyor\.yml$
