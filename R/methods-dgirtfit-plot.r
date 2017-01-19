@@ -45,9 +45,8 @@ setMethod("dgirt_plot", signature(x = "dgo_fit"),
 #' @rdname plot-method
 #' @export
 #' @examples
-#' data(state_year_targets)
-#' ps <- poststratify(toy_dgirtfit, state_year_targets, strata_names =
-#'                    c("state", "year"), aggregated_names = "race")
+#' ps <- poststratify(toy_dgirtfit, annual_state_race_targets, strata_names =
+#'                    c("state", "year"), aggregated_names = "race3")
 #' dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 setMethod("dgirt_plot", signature(x = "data.frame"),
   function(x, group_names, time_name, geo_name, y_fun = "median", y_min =
@@ -130,7 +129,7 @@ setGeneric("plot_rhats", signature = "x", function(x, ...)
 #' @export
 #' @examples
 #' plot_rhats(toy_dgirtfit)
-#' plot_rhats(toy_dgirtfit, facet_vars = c("race", "state")) +
+#' plot_rhats(toy_dgirtfit, facet_vars = c("race3", "state")) +
 #'   scale_x_continuous(breaks = seq.int(2006, 2008))
 setMethod("plot_rhats", signature(x = "dgo_fit"),
           function(x, pars = "theta_bar", facet_vars = NULL, shape_var = NULL,

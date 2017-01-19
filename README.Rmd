@@ -39,8 +39,7 @@ knitr::opts_chunk$set(
   cache = FALSE)
 ```
 
-Prerequisites
--------------
+# Prerequisites
 
 Installation requires [RStan](http://mc-stan.org/interfaces/rstan.html) and its
 prerequisites, in particular a C++ toolchain. If you don't have RStan, follow
@@ -48,8 +47,7 @@ its "[Getting
 Started](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)" guide
 before continuing.
 
-Installation
-------------
+# Installation
 
 dgo can be installed from [GitHub](https://github.com/jamesdunham/dgo) using
 [devtools](https://github.com/hadley/devtools/):
@@ -58,8 +56,7 @@ dgo can be installed from [GitHub](https://github.com/jamesdunham/dgo) using
 devtools::install_github("jamesdunham/dgo", dependencies = TRUE)
 ```
 
-Getting started
----------------
+# Getting started
 
 ```{r}
 library(dgo)
@@ -101,7 +98,7 @@ dgirt_in_abortion <- shape(opinion,
                   item_names = "abortion",
                   time_name = "year",
                   geo_name = "state",
-                  group_names = "race",
+                  group_names = "race3",
                   geo_filter = c("CA", "GA", "LA", "MA"),
                   survey_name = "source",
                   weight_name = "weight")
@@ -140,9 +137,9 @@ be passed to RStan's `stan` via the `...` argument of `dgirt` and `dgmrp`. This
 will almost always be desirable, at a minimum to specify the number of sampler
 iterations, chains, and cores.
 
-```{r, warning = FALSE, cache = FALSE}
+```{r, warning = FALSE}
 dgirt_out_abortion <- dgmrp(dgirt_in_abortion, iter = 1500, chains = 4, cores =
-  4, seed = 42, refresh = 500)
+  4, seed = 42)
 ```
 
 The model results are held in a `dgirtfit` object. Methods from RStan like
@@ -184,14 +181,14 @@ head(as.data.frame(dgirt_out_abortion))
 ```
 
 To poststratify the results use `poststratify`. The following example uses the
-group population proportions bundled as `state_year_targets` to reweight and
-aggregate estimates to strata defined by state-years. You can convert the probit
-scale to the response scale using the "single_issue" parameter.  Read
-`help("poststratify")` for more details.
+group population proportions bundled as `annual_state_race_targets` to reweight
+and aggregate estimates to strata defined by state-years.
+
+Read `help("poststratify")` for more details.
 
 ```{r}
-poststratify(dgirt_out_abortion, state_year_targets, strata_names = c("state",
-    "year"), aggregated_names = "race3")
+poststratify(dgirt_out_abortion, annual_state_race_targets, strata_names =
+  c("state", "year"), aggregated_names = "race3")
 ```
 
 To plot the results use `dgirt_plot`. This method plots summaries of posterior
@@ -212,14 +209,14 @@ dgirt_plot(dgirt_out_abortion, y_min = NULL, y_max = NULL) + theme_classic()
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This
 requires arguments that identify the relevant variables in the `data.frame`.
-Below, `poststratify` aggregates over the demographic grouping variable `race`,
+Below, `poststratify` aggregates over the demographic grouping variable `race3`,
 resulting in a `data.frame` of estimates by state-year. So, in the subsequent
 call to `dgirt_plot`, we pass the names of the state and year variables. The
 `group_names` argument is `NULL` because there are no grouping variables left
-after aggregating over `race`.
+after aggregating over `race3`.
 
 ```{r}
-ps <- poststratify(dgirt_out_abortion, state_year_targets, strata_names =
+ps <- poststratify(dgirt_out_abortion, annual_state_race_targets, strata_names =
   c("state", "year"), aggregated_names = "race3")
 head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
@@ -233,7 +230,7 @@ dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 dgirt_in_liberalism <- shape(opinion, item_names = c("abortion",
     "affirmative_action","stemcell_research" , "gaymarriage_amendment",
     "partialbirth_abortion") , time_name = "year", geo_name = "state",
-  group_names = "race", geo_filter = c("CA", "GA", "LA", "MA"), survey_name =
+  group_names = "race3", geo_filter = c("CA", "GA", "LA", "MA"), survey_name =
     "source", weight_name = "weight")
 ```
 
@@ -263,9 +260,9 @@ be passed to RStan's `stan` via the `...` argument of `dgirt` and `dgmrp`. This
 will almost always be desirable, at a minimum to specify the number of sampler
 iterations, chains, and cores.
 
-```{r}
-dgirt_out_liberalism <- dgirt(dgirt_in_liberalism, iter = 1500, chains = 4,
-  cores = 4, seed = 42, refresh = 500)
+```{r, warning = FALSE}
+dgirt_out_liberalism <- dgirt(dgirt_in_liberalism, iter = 3000, chains = 4,
+  cores = 4, seed = 42)
 ```
 
 The model results are held in a `dgirtfit` object. Methods from RStan like
@@ -307,12 +304,12 @@ head(as.data.frame(dgirt_out_liberalism))
 ```
 
 To poststratify the results use `poststratify`. The following example uses the
-group population proportions bundled as `state_year_targets` to reweight and
-aggregate estimates to strata defined by state-years. Read
-`help("poststratify")` for more details.
+group population proportions bundled as `annual_state_race_targets` to reweight and aggregate
+estimates to strata defined by state-years. Read `help("poststratify")` for more
+details.
 
 ```{r}
-poststratify(dgirt_out_liberalism, state_year_targets, strata_names = c("state",
+poststratify(dgirt_out_liberalism, annual_state_race_targets, strata_names = c("state",
     "year"), aggregated_names = "race3")
 ```
 
@@ -327,15 +324,15 @@ dgirt_plot(dgirt_out_liberalism, y_min = NULL, y_max = NULL)
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This
 requires arguments that identify the relevant variables in the `data.frame`.
-Below, `poststratify` aggregates over the demographic grouping variable `race`,
+Below, `poststratify` aggregates over the demographic grouping variable `race3`,
 resulting in a `data.frame` of estimates by state-year. So, in the subsequent
 call to `dgirt_plot`, we pass the names of the state and year variables. The
 `group_names` argument is `NULL` because there are no grouping variables left
-after aggregating over `race`.
+after aggregating over `race3`.
 
 ```{r}
-ps <- poststratify(dgirt_out_liberalism, state_year_targets,
-                   strata_names = c("state", "year"), aggregated_names = "race")
+ps <- poststratify(dgirt_out_liberalism, annual_state_race_targets, strata_names = c("state",
+    "year"), aggregated_names = "race3")
 head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```

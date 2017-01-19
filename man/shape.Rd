@@ -145,7 +145,7 @@ shaped_responses <- shape(opinion,
                           item_names = "abortion",
                           time_name = "year",
                           geo_name = "state",
-                          group_names = "race",
+                          group_names = "race3",
                           weight_name = "weight",
                           survey_name = "source",
                           id_vars = 'respondent')

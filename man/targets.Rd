@@ -4,15 +4,14 @@
 \name{targets}
 \alias{targets}
 \title{\code{dgirt} example data: U.S. population targets}
-\format{A \code{data.frame} with 18,360 observations of 6 variables.}
+\format{A \code{data.frame} with ~1.6M observations of 10 variables.}
 \usage{
 targets
 }
 \description{
 A table giving U.S. population proportions by year for combinations of
-demographic variables. Data are from the U.S. Census.
-When using this table to adjust survey weights via the \code{target_data}
-arguments of \code{\link{shape}}, note that its proportions sum to to 1
+demographic variables. For use with the \code{target_data} argument of
+\code{\link{shape}}. Data are from the U.S. Census. Proportions sum to to 1
 within years.
 }
 \examples{

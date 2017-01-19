@@ -1,31 +1,38 @@
 [![Build Status](https://travis-ci.org/jamesdunham/dgo.svg?branch=master)](https://travis-ci.org/jamesdunham/dgo)
 
-dgo is an R package for the dynamic estimation of group-level opinion. The package can be used to estimate subpopulation groups' average latent conservatism (or other latent trait) from individuals' responses to dichotomous questions using a Bayesian group-level IRT approach developed by [Caughey and Warshaw 2015](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html) that models latent traits at the level of demographic and/or geographic groups rather than individuals. This approach uses a hierarchical model to borrow strength cross-sectionally and dynamic linear models to do so across time. The group-level estimates can be weighted to generate estimates for geographic units, such as states. 
+dgo is an R package for the dynamic estimation of group-level opinion. The package can be used to estimate subpopulation groups' average latent conservatism (or other latent trait) from individuals' responses to dichotomous questions using a Bayesian group-level IRT approach developed by [Caughey and Warshaw 2015](http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html) that models latent traits at the level of demographic and/or geographic groups rather than individuals. This approach uses a hierarchical model to borrow strength cross-sectionally and dynamic linear models to do so across time. The group-level estimates can be weighted to generate estimates for geographic units, such as states.
 
-dgo can also be used to estimate smoothed estimates of subpopulation groups' average responses on individual survey questions using a dynamic multi-level regression and poststratification (MRP) model ([Park, Gelman, and Bafumi  2004](http://stat.columbia.edu/~gelman/research/published/StateOpinionsNationalPolls.050712.dkp.pdf)). For instance, it could be used to estimate public opinion in each state on same-sex marriage or the Affordable Care Act.
+dgo can also be used to estimate smoothed estimates of subpopulation groups' average responses on individual survey questions using a dynamic multi-level regression and poststratification (MRP) model ([Park, Gelman, and Bafumi 2004](http://stat.columbia.edu/~gelman/research/published/StateOpinionsNationalPolls.050712.dkp.pdf)). For instance, it could be used to estimate public opinion in each state on same-sex marriage or the Affordable Care Act.
 
 This model opens up new areas of research on historical public opinion in the United States at the subnational level. It also enables scholars of comparative politics to estimate dynamic models of public opinion opinion at the country or subnational level.
 
-[This document](https://github.com/jamesdunham/dgo/blob/master/inst/dgirt_details.pdf) describes the model in detail. 
-
 Prerequisites
--------------
+=============
 
 Installation requires [RStan](http://mc-stan.org/interfaces/rstan.html) and its prerequisites, in particular a C++ toolchain. If you don't have RStan, follow its "[Getting Started](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)" guide before continuing.
 
 Installation
-------------
+============
 
 dgo can be installed from [GitHub](https://github.com/jamesdunham/dgo) using [devtools](https://github.com/hadley/devtools/):
 
-    devtools::install_github("jamesdunham/dgo", dependencies = TRUE)
+``` r
+devtools::install_github("jamesdunham/dgo", dependencies = TRUE)
+```
 
 Getting started
----------------
+===============
 
 ``` r
 library(dgo)
 #> Loading required package: Rcpp
+#> Loading required package: rstan
+#> Loading required package: ggplot2
+#> Loading required package: StanHeaders
+#> rstan (Version 2.14.1, packaged: 2016-12-28 14:55:41 UTC, GitRev: 5fa1e80eb817)
+#> For execution on a local, multicore CPU with excess RAM we recommend calling
+#> rstan_options(auto_write = TRUE)
+#> options(mc.cores = parallel::detectCores())
 ```
 
 The minimal workflow from raw data to estimation is:
@@ -42,9 +49,8 @@ rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 ```
 
-We show two illustrative applications. First, we show an application for estimating public opinion on abortion in four states from 2006-2010. Second, we show an application for estimating latent policy liberalism in these states.  
-
-## Abortion Attitudes
+Abortion Attitudes
+------------------
 
 ### Prepare input data with `shape`
 
@@ -57,7 +63,7 @@ dgirt_in_abortion <- shape(opinion,
                   item_names = "abortion",
                   time_name = "year",
                   geo_name = "state",
-                  group_names = "race",
+                  group_names = "race3",
                   geo_filter = c("CA", "GA", "LA", "MA"),
                   survey_name = "source",
                   weight_name = "weight")
@@ -77,19 +83,19 @@ summary(dgirt_in_abortion)
 #> Respondents:
 #>    23,007 in `item_data`
 #> Grouping variables:
-#> [1] "year"  "state" "race" 
+#> [1] "year"  "state" "race3"
 #> Time periods:
 #> [1] 2006 2007 2008 2009 2010
 #> Local geographic areas:
 #> [1] "CA" "GA" "LA" "MA"
 #> Hierarchical parameters:
-#> [1] "GA"        "LA"        "MA"        "raceother" "racewhite"
+#> [1] "GA"         "LA"         "MA"         "race3other" "race3white"
 #> Modifiers of hierarchical parameters:
 #> character(0)
 #> Constants:
 #>  Q  T  P  N  G  H  D 
-#>  1  5  5 60 12  1  1 
- ```
+#>  1  5  5 60 12  1  1
+```
 
 Response counts by survey-year:
 
@@ -113,7 +119,6 @@ get_item_n(dgirt_in_abortion, by = "year")
 #> 3: 2008     4697
 #> 4: 2009     2141
 #> 5: 2010     9204
-
 ```
 
 ### Fit a model with `dgirt` or `dgmrp`
@@ -123,8 +128,8 @@ get_item_n(dgirt_in_abortion, by = "year")
 Under the hood, these functions use RStan for MCMC sampling, and arguments can be passed to RStan's `stan` via the `...` argument of `dgirt` and `dgmrp`. This will almost always be desirable, at a minimum to specify the number of sampler iterations, chains, and cores.
 
 ``` r
-dgirt_out_abortion <- dgmrp(dgirt_in_abortion, iter = 1500, chains = 4, cores = 4, seed = 42,
-                   refresh = 500)
+dgirt_out_abortion <- dgmrp(dgirt_in_abortion, iter = 1500, chains = 4, cores =
+  4, seed = 42)
 ```
 
 The model results are held in a `dgirtfit` object. Methods from RStan like `extract` are available if needed because `dgirtfit` is a subclass of `stanfit`. But dgo provides its own methods for typical post-estimation tasks.
@@ -136,189 +141,193 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgirt_out_abortion)
 #> dgirt samples from 4 chains of 1500 iterations, 750 warmup, thinned every 1 
-#>   Drawn Fri Jan  6 23:35:42 2017 
-#>   Package version 0.2.7 
+#>   Drawn Wed Jan 18 23:59:42 2017 
+#>   Package version 0.2.8 
 #>   Model version 2017_01_04_singleissue 
-#>   117 parameters; 60 theta_bars (year, state and race)
+#>   117 parameters; 60 theta_bars (year, state and race3)
 #>   5 periods 2006 to 2010 
-
+#> 
 #> n_eff
-#>     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-#>    9.279  317.400 1038.000 1284.000 2111.000 3000.000 
-
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>   53.52  364.00  752.80 1011.00 1392.00 3000.00
+#> 
 #> Rhat
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>  0.9992  1.0010  1.0030  1.0140  1.0150  1.6230 
-
+#>  0.9994  1.0020  1.0040  1.0070  1.0090  1.0850
+#> 
 #> Elapsed time
 #>    chain warmup sample total
-#> 1:     1    16S    10S   26S
-#> 2:     2    18S    20S   38S
-#> 3:     3    18S    19S   37S
-#> 4:     4    15S    20S   35S
+#> 1:     1     9S    12S   21S
+#> 2:     2    12S    16S   28S
+#> 3:     3     8S    13S   21S
+#> 4:     4    10S    17S   27S
 ```
-
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
 
 ``` r
 head(summarize(dgirt_out_abortion))
-#>        param state  race year      mean         sd    median     q_025     q_975
-#> 1: theta_bar    CA black 2006 0.7173553 0.07662729 0.7174894 0.5662267 0.8702876
-#> 2: theta_bar    CA black 2007 0.7508767 0.10914309 0.7418550 0.5545848 0.9806262
-#> 3: theta_bar    CA black 2008 0.4787463 0.07473553 0.4773249 0.3360598 0.6365967
-#> 4: theta_bar    CA black 2009 0.3994269 0.07008417 0.3993055 0.2611861 0.5383515
-#> 5: theta_bar    CA black 2010 0.5222371 0.07595806 0.5241843 0.3691531 0.6693409
-#> 6: theta_bar    CA other 2006 0.5642023 0.07408100 0.5652054 0.4232060 0.7116074
+#>        param state race3 year      mean         sd    median     q_025     q_975
+#> 1: theta_bar    CA black 2006 0.7169682 0.07805130 0.7173998 0.5654617 0.8678976
+#> 2: theta_bar    CA black 2007 0.7475491 0.10839806 0.7415758 0.5537648 0.9692746
+#> 3: theta_bar    CA black 2008 0.4831040 0.07608744 0.4819045 0.3354228 0.6322093
+#> 4: theta_bar    CA black 2009 0.4090061 0.07179438 0.4068443 0.2715811 0.5521007
+#> 5: theta_bar    CA black 2010 0.5311185 0.07702568 0.5339432 0.3757688 0.6778760
+#> 6: theta_bar    CA other 2006 0.5631683 0.07651700 0.5604350 0.4174244 0.7134687
 ```
 
 Alternatively, `summarize` can apply arbitrary functions to posterior samples for whatever parameter is given by its `pars` argument. Enclose function names with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th posterior quantiles.
 
 ``` r
 summarize(dgirt_out_abortion, pars = "xi", funs = "var")
-#>   param year        var
-#> 1:    xi 2006 0.02247365
-#> 2:    xi 2007 0.03122596
-#> 3:    xi 2008 0.02850483
-#> 4:    xi 2009 0.02429801
-#> 5:    xi 2010 0.02585458
+#>    param year        var
+#> 1:    xi 2006 0.02077508
+#> 2:    xi 2007 0.03237822
+#> 3:    xi 2008 0.03029146
+#> 4:    xi 2009 0.02565337
+#> 5:    xi 2010 0.02735791
 ```
 
 To access posterior samples in tabular form use `as.data.frame`. By default, this method returns post-warmup samples for the `theta_bar` parameters, but like other methods takes a `pars` argument.
 
 ``` r
 head(as.data.frame(dgirt_out_abortion))
-#>        param state  race year iteration     value
-#> 1: theta_bar    CA black 2006         1 0.7486239
-#> 2: theta_bar    CA black 2006         2 0.6086190
-#> 3: theta_bar    CA black 2006         3 0.5896640
-#> 4: theta_bar    CA black 2006         4 0.7733479
-#> 5: theta_bar    CA black 2006         5 0.7697022
-#> 6: theta_bar    CA black 2006         6 0.7419776
+#>        param state race3 year iteration     value
+#> 1: theta_bar    CA black 2006         1 0.7891505
+#> 2: theta_bar    CA black 2006         2 0.7297598
+#> 3: theta_bar    CA black 2006         3 0.7416201
+#> 4: theta_bar    CA black 2006         4 0.5768916
+#> 5: theta_bar    CA black 2006         5 0.8729594
+#> 6: theta_bar    CA black 2006         6 0.8582627
 ```
 
-To poststratify the results use `poststratify`. The following example uses the group population proportions bundled as `state_year_targets` to reweight and aggregate estimates to strata defined by state-years. You can convert the probit scale to the response scale using the "single_issue" parameter.  Read `help("poststratify")` for more details.
+To poststratify the results use `poststratify`. The following example uses the group population proportions bundled as `annual_state_race_targets` to reweight and aggregate estimates to strata defined by state-years.
+
+Read `help("poststratify")` for more details.
 
 ``` r
-poststratify(dgirt_out_abortion, state_year_targets, strata_names = c("state", "year"),
-             aggregated_names = "race", single_issue="T")
+poststratify(dgirt_out_abortion, annual_state_race_targets, strata_names =
+  c("state", "year"), aggregated_names = "race3")
 #>     state year       value
-#> 1:    CA 2006  0.55943278
-#> 2:    CA 2007  0.58452441
-#> 3:    CA 2008  0.36074873
-#> 4:    GA 2006  0.31574732
-#> 5:    GA 2007  0.19140911
-#> 6:    GA 2008  0.03079019
-#> 7:    LA 2006 -0.04283603
-#> 8:    LA 2007 -0.22322708
-#> 9:    LA 2008 -0.22612453
-#> 10:    MA 2006  0.70998185
-#> 11:    MA 2007  0.92555553
-#> 12:    MA 2008  0.52063614
+#>  1:    CA 2006  0.55743394
+#>  2:    CA 2007  0.58833579
+#>  3:    CA 2008  0.36830483
+#>  4:    CA 2009  0.33078589
+#>  5:    CA 2010  0.47437626
+#>  6:    GA 2006  0.32171046
+#>  7:    GA 2007  0.19477981
+#>  8:    GA 2008  0.03076044
+#>  9:    GA 2009  0.01994895
+#> 10:    GA 2010  0.09501160
+#> 11:    LA 2006 -0.04148402
+#> 12:    LA 2007 -0.21515928
+#> 13:    LA 2008 -0.22757974
+#> 14:    LA 2009 -0.18104924
+#> 15:    LA 2010 -0.14084000
+#> 16:    MA 2006  0.70717604
+#> 17:    MA 2007  0.91978031
+#> 18:    MA 2008  0.52434478
+#> 19:    MA 2009  0.42477870
+#> 20:    MA 2010  0.53311650
 ```
 
 To plot the results use `dgirt_plot`. This method plots summaries of posterior samples by time period. By default, it shows a 95% credible interval around posterior medians for the `theta_bar` parameters, for each local geographic area. For this (unconverged) toy example we omit the CIs.
 
 ``` r
-dgirt_plot(dgirt_out_abortion, y_min = NULL, y_max = NULL, single_issue="T")
+dgirt_plot(dgirt_out_abortion, y_min = NULL, y_max = NULL)
 ```
 
-![](README-unnamed-chunk-13-2.png)
+![](README-unnamed-chunk-14-1.png)
 
 Output from `dgirt_plot` can be customized to some extent using objects from the ggplot2 package.
 
 ``` r
-dgirt_plot(dgirt_out_abortion, y_min = NULL, y_max = NULL, single_issue="T") + theme_classic()
+dgirt_plot(dgirt_out_abortion, y_min = NULL, y_max = NULL) + theme_classic()
 ```
 
-![](README-unnamed-chunk-14-2.png)
+![](README-unnamed-chunk-15-1.png)
 
-`dgirt_plot` can also plot the `data.frame` output from `poststratify`. This requires arguments that identify the relevant variables in the `data.frame`. Below, `poststratify` aggregates over the demographic grouping variable `race`, resulting in a `data.frame` of estimates by state-year. So, in the subsequent call to `dgirt_plot`, we pass the names of the state and year variables. The `group_names` argument is `NULL` because there are no grouping variables left after aggregating over `race`.
+`dgirt_plot` can also plot the `data.frame` output from `poststratify`. This requires arguments that identify the relevant variables in the `data.frame`. Below, `poststratify` aggregates over the demographic grouping variable `race3`, resulting in a `data.frame` of estimates by state-year. So, in the subsequent call to `dgirt_plot`, we pass the names of the state and year variables. The `group_names` argument is `NULL` because there are no grouping variables left after aggregating over `race3`.
 
 ``` r
-ps <- poststratify(dgirt_out_abortion, state_year_targets,
-                   strata_names = c("state", "year"), aggregated_names = "race", single_issue="T")
+ps <- poststratify(dgirt_out_abortion, annual_state_race_targets, strata_names =
+  c("state", "year"), aggregated_names = "race3")
 head(ps)
-#>    state year      value
-#> 1:    CA 2006 0.7116304
-#> 2:    CA 2007 0.7197962
-#> 3:    CA 2008 0.6405804
-#> 4:    GA 2006 0.6206845
-#> 5:    GA 2007 0.5738724
-#> 6:    GA 2008 0.5120130
-
+#>    state year     value
+#> 1:    CA 2006 0.5574339
+#> 2:    CA 2007 0.5883358
+#> 3:    CA 2008 0.3683048
+#> 4:    CA 2009 0.3307859
+#> 5:    CA 2010 0.4743763
+#> 6:    GA 2006 0.3217105
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
-![](README-unnamed-chunk-15-2.png)
+![](README-unnamed-chunk-16-1.png)
 
-
-## Policy Liberalism
+Policy Liberalism
+-----------------
 
 ### Prepare input data with `shape`
 
 ``` r
-dgirt_in_liberalism <- shape(opinion,
-                  item_names = c("abortion", "affirmative_action","stemcell_research" , "gaymarriage_amendment",
-                  "partialbirth_abortion") ,
-                  time_name = "year",
-                  geo_name = "state",
-                  group_names = "race",
-                  geo_filter = c("CA", "GA", "LA", "MA"),
-                  survey_name = "source",
-                  weight_name = "weight")
+dgirt_in_liberalism <- shape(opinion, item_names = c("abortion",
+    "affirmative_action","stemcell_research" , "gaymarriage_amendment",
+    "partialbirth_abortion") , time_name = "year", geo_name = "state",
+  group_names = "race3", geo_filter = c("CA", "GA", "LA", "MA"), survey_name =
+    "source", weight_name = "weight")
 #> Applying restrictions, pass 1...
-#> 	Dropped 5 rows for missingness in covariates
-#> 	Dropped 8 rows for lacking item responses
+#>  Dropped 5 rows for missingness in covariates
+#>  Dropped 8 rows for lacking item responses
 #> Applying restrictions, pass 2...
-#> 	No changes
+#>  No changes
 ```
 
 The reshaped and subsetted data can be summarized in a few ways before model fitting.
 
 ``` r
 summary(dgirt_in_liberalism)
-#> 	Items:
-#> 	[1] "abortion"              "affirmative_action"    "gaymarriage_amendment" #> 	"partialbirth_abortion" "stemcell_research"    
-#> 	Respondents:
-#> 	   23,632 in `item_data`
-#> 	Grouping variables:
-#> 	[1] "year"  "state" "race" 
-#> 	Time periods:
-#> 	[1] 2006 2007 2008 2009 2010
-#> 	Local geographic areas:
-#> 	[1] "CA" "GA" "LA" "MA"
-#> 	Hierarchical parameters:
-#> 	[1] "GA"        "LA"        "MA"        "raceother" "racewhite"
-#> 	Modifiers of hierarchical parameters:
-#> 	character(0)
-#> 	Constants:
-#> 	  Q   T   P   N   G   H   D 
-#> 	  5   5   5 300  12   1   1  ```
+#> Items:
+#> [1] "abortion"              "affirmative_action"    "gaymarriage_amendment" "partialbirth_abortion"
+#> [5] "stemcell_research"    
+#> Respondents:
+#>    23,632 in `item_data`
+#> Grouping variables:
+#> [1] "year"  "state" "race3"
+#> Time periods:
+#> [1] 2006 2007 2008 2009 2010
+#> Local geographic areas:
+#> [1] "CA" "GA" "LA" "MA"
+#> Hierarchical parameters:
+#> [1] "GA"         "LA"         "MA"         "race3other" "race3white"
+#> Modifiers of hierarchical parameters:
+#> character(0)
+#> Constants:
+#>   Q   T   P   N   G   H   D 
+#>   5   5   5 300  12   1   1
+```
 
 Response counts by item-year:
 
 ``` r
-#> 	> get_item_n(dgirt_in_liberalism, by = "year")
-#> 	   year abortion affirmative_action stemcell_research gaymarriage_amendment 	partialbirth_abortion
-#> 	1: 2006     5275               4750              2483                  2642                   	5064
-#> 	2: 2007     1690               1557              1705                  1163                   	1684
-#> 	3: 2008     4697               4704              4002                  4265                      	0
-#> 	4: 2009     2141               2147                 0                     0                      	0
-#> 	5: 2010     9204               9241              9146                  9226                      	0
-
-
+get_item_n(dgirt_in_liberalism, by = "year")
+#>    year abortion affirmative_action stemcell_research gaymarriage_amendment partialbirth_abortion
+#> 1: 2006     5275               4750              2483                  2642                  5064
+#> 2: 2007     1690               1557              1705                  1163                  1684
+#> 3: 2008     4697               4704              4002                  4265                     0
+#> 4: 2009     2141               2147                 0                     0                     0
+#> 5: 2010     9204               9241              9146                  9226                     0
 ```
 
 ### Fit a model with `dgirt`
 
-`dgirt` and `dgmrp` fit estimation models to data from `shape`. `dgirt` can be used to estimate a latent variable based on responses to multiple survey questions (e.g., latent policy conservatism), while `dgmrp` can be used to estimate public opinion on an individual survey question using a dynamic multi-level regression and post-stratification (MRP) model.  
+`dgirt` and `dgmrp` fit estimation models to data from `shape`. `dgirt` can be used to estimate a latent variable based on responses to multiple survey questions (e.g., latent policy conservatism), while `dgmrp` can be used to estimate public opinion on an individual survey question using a dynamic multi-level regression and post-stratification (MRP) model.
 
 Under the hood, these functions use RStan for MCMC sampling, and arguments can be passed to RStan's `stan` via the `...` argument of `dgirt` and `dgmrp`. This will almost always be desirable, at a minimum to specify the number of sampler iterations, chains, and cores.
 
 ``` r
-dgirt_out_liberalism <- dgirt(dgirt_in_liberalism, iter = 1500, chains = 4, cores = 4, seed = 42,
-                   refresh = 500)
+dgirt_out_liberalism <- dgirt(dgirt_in_liberalism, iter = 3000, chains = 4,
+  cores = 4, seed = 42)
 ```
 
 The model results are held in a `dgirtfit` object. Methods from RStan like `extract` are available if needed because `dgirtfit` is a subclass of `stanfit`. But dgo provides its own methods for typical post-estimation tasks.
@@ -329,87 +338,93 @@ For a high-level summary of the result, use `summary`.
 
 ``` r
 summary(dgirt_out_liberalism)
-#> > summary(dgirt_out_liberalism)
-#> dgirt samples from 4 chains of 1500 iterations, 750 warmup, thinned every 1 
-#>   Drawn Mon Jan  9 06:58:24 2017 
-#>   Package version 0.2.7 
+#> dgirt samples from 4 chains of 3000 iterations, 1500 warmup, thinned every 1 
+#>   Drawn Thu Jan 19 00:04:31 2017 
+#>   Package version 0.2.8 
 #>   Model version 2017_01_04 
-#>   137 parameters; 60 theta_bars (year, state and race)
+#>   137 parameters; 60 theta_bars (year, state and race3)
 #>   5 periods 2006 to 2010 
-
+#> 
 #> n_eff
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>   53.53  134.30  237.40  358.90  373.30 1999.00 
-
+#>   24.25  126.40  288.40  724.70  717.60 6000.00
+#> 
 #> Rhat
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>   1.000   1.007   1.013   1.017   1.022   1.064 
-
+#>   1.000   1.007   1.016   1.024   1.034   1.146
+#> 
 #> Elapsed time
 #>    chain warmup sample  total
-#> 1:     1 1M 29S 2M 41S 3M 70S
-#> 2:     2 1M 41S 2M 33S 3M 74S
-#> 3:     3  1M 6S 2M 34S 3M 40S
-#> 4:     4 1M 55S 2M 30S 3M 85S
+#> 1:     1 1M 48S 1M 18S 2M 66S
+#> 2:     2 1M 41S 1M 47S 2M 88S
+#> 3:     3 1M 57S 2M 42S 3M 99S
+#> 4:     4 1M 46S  2M 5S 3M 51S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
 
 ``` r
 head(summarize(dgirt_out_liberalism))
-#>        param state  race year      mean         sd    median     q_025     q_975
-#> 1: theta_bar    CA black 2006 0.5495122 0.08408488 0.5417941  0.40123321 0.7383885
-#> 2: theta_bar    CA black 2007 0.5836415 0.10280742 0.5729066  0.41597341 0.8161483
-#> 3: theta_bar    CA black 2008 0.5591099 0.10671551 0.5459816  0.38828767 0.8002534
-#> 4: theta_bar    CA black 2009 0.4900812 0.09874492 0.4727758  0.34593141 0.7411483
-#> 5: theta_bar    CA black 2010 0.4515506 0.07719338 0.4440954  0.32062133 0.6175475
-#> 6: theta_bar    CA other 2006 0.1539503 0.06932572 0.1610716 -0.01282908 0.2726472
+#>        param state race3 year      mean         sd    median        q_025     q_975
+#> 1: theta_bar    CA black 2006 0.5424676 0.07682737 0.5292402  0.408601887 0.7148904
+#> 2: theta_bar    CA black 2007 0.5762770 0.09779929 0.5565021  0.419725395 0.8080642
+#> 3: theta_bar    CA black 2008 0.5508289 0.10531420 0.5275569  0.392452411 0.8044522
+#> 4: theta_bar    CA black 2009 0.4836891 0.09271300 0.4762236  0.341245135 0.7057762
+#> 5: theta_bar    CA black 2010 0.4442502 0.07279811 0.4404217  0.317057094 0.6042427
+#> 6: theta_bar    CA other 2006 0.1457190 0.07393103 0.1547438 -0.008340705 0.2720437
 ```
 
 Alternatively, `summarize` can apply arbitrary functions to posterior samples for whatever parameter is given by its `pars` argument. Enclose function names with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th posterior quantiles.
 
 ``` r
 summarize(dgirt_out_liberalism, pars = "xi", funs = "var")
-#>   param year        var
-#> 1:    xi 2006 0.021263542
-#> 2:    xi 2007 0.008842126
-#> 3:    xi 2008 0.008028949
-#> 4:    xi 2009 0.007556206
-#> 5:    xi 2010 0.007754970
+#>    param year         var
+#> 1:    xi 2006 0.024308280
+#> 2:    xi 2007 0.006663670
+#> 3:    xi 2008 0.005518855
+#> 4:    xi 2009 0.004884106
+#> 5:    xi 2010 0.005319226
 ```
 
 To access posterior samples in tabular form use `as.data.frame`. By default, this method returns post-warmup samples for the `theta_bar` parameters, but like other methods takes a `pars` argument.
 
 ``` r
 head(as.data.frame(dgirt_out_liberalism))
-#>        param state  race year iteration     value
-#> 1: theta_bar    CA black 2006         1 0.5022184
-#> 2: theta_bar    CA black 2006         2 0.4988011
-#> 3: theta_bar    CA black 2006         3 0.3952569
-#> 4: theta_bar    CA black 2006         4 0.4325513
-#> 5: theta_bar    CA black 2006         5 0.5027754
-#> 6: theta_bar    CA black 2006         6 0.5107315
+#>        param state race3 year iteration     value
+#> 1: theta_bar    CA black 2006         1 0.5239194
+#> 2: theta_bar    CA black 2006         2 0.5239194
+#> 3: theta_bar    CA black 2006         3 0.5250696
+#> 4: theta_bar    CA black 2006         4 0.5250696
+#> 5: theta_bar    CA black 2006         5 0.5220594
+#> 6: theta_bar    CA black 2006         6 0.5220594
 ```
 
-To poststratify the results use `poststratify`. The following example uses the group population proportions bundled as `state_year_targets` to reweight and aggregate estimates to strata defined by state-years. Read `help("poststratify")` for more details.
+To poststratify the results use `poststratify`. The following example uses the group population proportions bundled as `annual_state_race_targets` to reweight and aggregate estimates to strata defined by state-years. Read `help("poststratify")` for more details.
 
 ``` r
-poststratify(dgirt_out_liberalism, state_year_targets, strata_names = c("state", "year"),
-             aggregated_names = "race")
+poststratify(dgirt_out_liberalism, annual_state_race_targets, strata_names = c("state",
+    "year"), aggregated_names = "race3")
 #>     state year       value
- 1:    CA 2006  0.156577644
- 2:    CA 2007  0.169483043
- 3:    CA 2008  0.133370493
- 4:    GA 2006  0.078822376
- 5:    GA 2007  0.006179967
- 6:    GA 2008 -0.041920152
- 7:    LA 2006 -0.028274537
- 8:    LA 2007 -0.088095393
- 9:    LA 2008 -0.118881988
-10:    MA 2006  0.152667148
-11:    MA 2007  0.230784237
-12:    MA 2008  0.160877693
-
+#>  1:    CA 2006  0.14940318
+#>  2:    CA 2007  0.16922644
+#>  3:    CA 2008  0.12923345
+#>  4:    CA 2009  0.07641825
+#>  5:    CA 2010  0.09201670
+#>  6:    GA 2006  0.08266459
+#>  7:    GA 2007  0.01069197
+#>  8:    GA 2008 -0.03448823
+#>  9:    GA 2009 -0.04094036
+#> 10:    GA 2010 -0.01809976
+#> 11:    LA 2006 -0.02563313
+#> 12:    LA 2007 -0.08929469
+#> 13:    LA 2008 -0.12163790
+#> 14:    LA 2009 -0.11676727
+#> 15:    LA 2010 -0.07733996
+#> 16:    MA 2006  0.15940731
+#> 17:    MA 2007  0.23502962
+#> 18:    MA 2008  0.16406417
+#> 19:    MA 2009  0.09824927
+#> 20:    MA 2010  0.10487641
 ```
 
 To plot the results use `dgirt_plot`. This method plots summaries of posterior samples by time period. By default, it shows a 95% credible interval around posterior medians for the `theta_bar` parameters, for each local geographic area. For this (unconverged) toy example we omit the CIs.
@@ -418,26 +433,25 @@ To plot the results use `dgirt_plot`. This method plots summaries of posterior s
 dgirt_plot(dgirt_out_liberalism, y_min = NULL, y_max = NULL)
 ```
 
-![](README-unnamed-chunk-13-3.png)
+![](README-unnamed-chunk-26-1.png)
 
-`dgirt_plot` can also plot the `data.frame` output from `poststratify`. This requires arguments that identify the relevant variables in the `data.frame`. Below, `poststratify` aggregates over the demographic grouping variable `race`, resulting in a `data.frame` of estimates by state-year. So, in the subsequent call to `dgirt_plot`, we pass the names of the state and year variables. The `group_names` argument is `NULL` because there are no grouping variables left after aggregating over `race`.
+`dgirt_plot` can also plot the `data.frame` output from `poststratify`. This requires arguments that identify the relevant variables in the `data.frame`. Below, `poststratify` aggregates over the demographic grouping variable `race3`, resulting in a `data.frame` of estimates by state-year. So, in the subsequent call to `dgirt_plot`, we pass the names of the state and year variables. The `group_names` argument is `NULL` because there are no grouping variables left after aggregating over `race3`.
 
 ``` r
-ps <- poststratify(dgirt_out_liberalism, state_year_targets,
-                   strata_names = c("state", "year"), aggregated_names = "race")
+ps <- poststratify(dgirt_out_liberalism, annual_state_race_targets, strata_names = c("state",
+    "year"), aggregated_names = "race3")
 head(ps)
 #>    state year      value
-#> 1:    CA 2006 0.7116304
-#> 2:    CA 2007 0.7197962
-#> 3:    CA 2008 0.6405804
-#> 4:    GA 2006 0.6206845
-#> 5:    GA 2007 0.5738724
-#> 6:    GA 2008 0.5120130
-
+#> 1:    CA 2006 0.14940318
+#> 2:    CA 2007 0.16922644
+#> 3:    CA 2008 0.12923345
+#> 4:    CA 2009 0.07641825
+#> 5:    CA 2010 0.09201670
+#> 6:    GA 2006 0.08266459
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
-![](README-unnamed-chunk-15-3.png)
+![](README-unnamed-chunk-27-1.png)
 
 Troubleshooting
 ---------------
@@ -463,4 +477,4 @@ dgo is under development and we welcome [suggestions](https://github.com/jamesdu
 
 The package citation is
 
-> Dunham, James, Devin Caughey, and Christopher Warshaw. 2016. dgo: Dynamic Estimation of Group-level Opinion. R package. <https://jamesdunham.github.io/dgo/>.
+> Dunham, James, Devin Caughey, and Christopher Warshaw. 2017. dgo: Dynamic Estimation of Group-level Opinion. R package. <https://jamesdunham.github.io/dgo/>.
