@@ -1,71 +1,73 @@
 source("setup.r")
-require(data.table)
+
 suppressMessages({
 
   context("raking")
 
   test_that("basic syntax works", {
-  expect_silent(suppressMessages(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = ~ state)))
-  expect_silent(suppressMessages(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = list(~ state, ~ year))))
-  expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = ~ state + year))))
-  expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = list(~ state + year, ~ race)))))
-  expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = list(~ race)))))
-  expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = ~ race))))
-  expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = list(~ education, ~ race)))))
+    data.table::setDT(annual_state_race_targets)
+    annual_state_race_targets = annual_state_race_targets[year %in% 2006:2010]
+    expect_silent(suppressMessages(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = ~ state)))
+    expect_silent(suppressMessages(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = list(~ state, ~ year))))
+    expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = ~ state + year))))
+    expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = list(~ state + year, ~ race3)))))
+    expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = list(~ race3)))))
+    expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = ~ race3))))
+    expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = list(~ education, ~ race3)))))
   })
 
   test_that("raking variables must exist", {
   # raking gives a single formula 
-  expect_error(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = ~ source),
-               "\"source\" is a raking formula term but isn't a variable name in \"target_data\"")
-  expect_error(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = ~ proportion),
-               "\"proportion\" is a raking formula term but isn't a variable name in \"item_data\"")
+    expect_error(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = ~ source),
+                 "\"source\" is a raking formula term but isn't a variable name in \"target_data\"")
+    expect_error(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = ~ proportion),
+                 "\"proportion\" is a raking formula term but isn't a variable name in \"item_data\"")
 
-  # raking gives a list of formulas
-  expect_error(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = list(~ source, ~ weight)),
-               "\"source\" is a raking formula term but isn't a variable name in \"target_data\"")
-  expect_error(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = list(~ proportion, ~ weight)),
-               "\"weight\" is a raking formula term but isn't a variable name in \"target_data\"")
-  expect_error(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = list(~ proportion, ~ proportion)),
-               "\"proportion\" is a raking formula term but isn't a variable name in \"item_data\"")
-  expect_error(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = list(~ state, ~ proportion)),
-               "\"proportion\" is a raking formula term but isn't a variable name in \"item_data\"")
+    # raking gives a list of formulas
+    expect_error(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = list(~ source, ~ weight)),
+                 "\"source\" is a raking formula term but isn't a variable name in \"target_data\"")
+    expect_error(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = list(~ proportion, ~ weight)),
+                 "\"weight\" is a raking formula term but isn't a variable name in \"target_data\"")
+    expect_error(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = list(~ proportion, ~ proportion)),
+                 "\"proportion\" is a raking formula term but isn't a variable name in \"item_data\"")
+    expect_error(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = list(~ state, ~ proportion)),
+                 "\"proportion\" is a raking formula term but isn't a variable name in \"item_data\"")
 
-  # raking gives formulas with operators
-  expect_error(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = list(~ state + weight)),
-               "\"weight\" is a raking formula term but isn't a variable name in \"target_data\"")
-  expect_error(min_item_call(target_data = targets,
-                              target_proportion_name = "proportion",
-                              raking = list(~ state + proportion)),
-               "\"proportion\" is a raking formula term but isn't a variable name in \"item_data\"")
+    # raking gives formulas with operators
+    expect_error(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = list(~ state + weight)),
+                 "\"weight\" is a raking formula term but isn't a variable name in \"target_data\"")
+    expect_error(min_item_call(target_data = annual_state_race_targets,
+                                target_proportion_name = "proportion",
+                                raking = list(~ state + proportion)),
+                 "\"proportion\" is a raking formula term but isn't a variable name in \"item_data\"")
   })
 
   set_up_sample = function(w) {

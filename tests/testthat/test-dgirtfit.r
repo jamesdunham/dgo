@@ -34,15 +34,15 @@ suppressMessages({
 
     # including warmup
     tab <- as.data.frame(toy_dgirtfit, discard = FALSE)
-    setDT(tab)
-    setorderv(tab, c("race", "state", "year", "iteration"))
+    data.table::setDT(tab)
+    data.table::setorderv(tab, c("race3", "state", "year", "iteration"))
 
     expect_equal(tab$value, unname(unlist(sf)))
 
     # excluding warmup
     tab <- as.data.frame(toy_dgirtfit)
-    setDT(tab)
-    setorderv(tab, c("race", "state", "year", "iteration"))
+    data.table::setDT(tab)
+    data.table::setorderv(tab, c("race3", "state", "year", "iteration"))
 
     expect_equal(tab$value, unname(unlist(sf)))
   })

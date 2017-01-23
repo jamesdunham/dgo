@@ -46,7 +46,7 @@ suppressMessages({
     d_agg <- shape(aggregate_data = aggregates,
                    item_data = dgo::opinion,
                    item_names = "abortion",
-                   modifier_data = dgo::states,
+                   modifier_data = states[states$year %in% 2006:2010, ],
                    modifier_names = "prop_evangelicals",
                    t1_modifier_names = "income_percapita",
                    time_name = "year",

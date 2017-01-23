@@ -18,7 +18,6 @@ test_that("plot calls dgirt_plot", {
 
 test_that("plot_rhats handles parameters", {
   expect_error(plot_rhats(toy_dgirtfit, pars = NULL))
-  expect_error(plot_rhats(toy_dgirtfit, pars = "xi",
-                          facet_vars = "state"),
+  expect_error(plot_rhats(toy_dgirtfit, pars = "xi", facet_vars = "state"),
                "'xi' is not indexed by 'state'")
 })

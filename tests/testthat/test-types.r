@@ -38,7 +38,6 @@ suppressMessages({
                  "values of \"speed\" in cars should be positive integers")
   })
 
-
   test_that("factor values for geo_name in item_data produce a warning", {
     opinion$state <- as.factor(opinion$state)
     expect_warning(min_item_call(item_data = opinion), "Coercing factor")
@@ -84,7 +83,7 @@ suppressMessages({
   test_that("character values for item_names produce an error", {
     opinion$abortion <- as.character(opinion$abortion)
     expect_error(min_item_call(item_data = opinion),
-                 "should be integer or numeric")
+                 "should be integer, numeric or factor")
   })
 
   test_that("unordered factor values of item_names produce an error", {

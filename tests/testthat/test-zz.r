@@ -2,14 +2,16 @@ source("setup.r")
 suppressMessages({
 
   d_min <- min_item_call()
-  d_mod <- min_modifier_call()
+  d_mod <- min_modifier_call(standardize = FALSE)
+  data(states)
+  data.table::setDT(states)
+  states = states[year %in% 2006:2010]
 
   context("hierarchical parameter names")
 
   hier_names <- c(sort(unique(states$state))[-1], "femalemale")
 
   test_that('hier_name and ZZ dimnames match', {
-    data(states)
     expect_identical(hier_names, d_mod$hier_names)
     expect_identical(hier_names, dimnames(d_mod$ZZ)[[2]])
     expect_identical(dimnames(d_mod$ZZ)[[3]], "prop_evangelicals")
@@ -33,9 +35,6 @@ suppressMessages({
   })
 
   test_that('modifier values appear in the correct rows of ZZ', {
-    data(states)
-    data.table::setDT(states)
-    data.table::setkeyv(states, c("state", "year"))
     zz <- reshape2::acast(states[, .(year, state, prop_evangelicals)],
                           year ~ state ~ "prop_evangelicals",
                           value.var = 'prop_evangelicals', drop = FALSE)
@@ -46,7 +45,7 @@ suppressMessages({
 
   test_that('elements in ZZ corresponding to the grouping variable are zeroed', {
     expect_identical(d_mod$ZZ[, length(hier_names), 1L],
-                     setNames(rep(0, 3), unique(states$year)))
+                     setNames(rep(0, length(unique(states$year))), unique(states$year)))
   })
 
   context("hierarchical modifier is character")
@@ -63,13 +62,12 @@ suppressMessages({
 
   test_that('elements in ZZ corresponding to the grouping variable are zeroed', {
     expect_identical(d_mod$ZZ[, length(hier_names), 1L],
-                     setNames(rep(0, 3), unique(states$year)))
+                     setNames(rep(0, length(unique(states$year))), unique(states$year)))
   })
 
   context("hierarchical modifier variable is factor")
 
   test_that('factor values of modifier are dummied', {
-    data(states)
     states$region <- as.factor(states$region)
     expect_error(min_modifier_call(modifier_names = "region",
                               t1_modifier_names = "region"),
@@ -93,7 +91,7 @@ suppressMessages({
     expect_identical(dimnames(d_t1_only$ZZ)[[3]], "")
   })
 
-  test_that('ZZ_prior is zeroed appropriately when only modifier_names is given', {
+  test_that('ZZ_prior defaults to ZZ', {
 
     d_tprime_only <- shape(item_data = dgo::opinion,
                        item_names = "abortion",
@@ -104,10 +102,9 @@ suppressMessages({
                        weight_name = "weight",
                        modifier_data = dgo::states,
                        modifier_names = "prop_evangelicals")
-    expect_true(all(d_tprime_only$ZZ_prior == 0))
+    expect_identical(d_tprime_only$ZZ_prior, d_tprime_only$ZZ)
     expect_identical(hier_names, d_tprime_only$hier_names)
     expect_identical(hier_names, dimnames(d_tprime_only$ZZ_prior)[[2]])
-    expect_identical(dimnames(d_tprime_only$ZZ_prior)[[3]], "")
   })
 
 })

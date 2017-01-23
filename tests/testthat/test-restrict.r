@@ -50,15 +50,12 @@ suppressMessages({
     expect_equivalent(mean(std_res$modifier_data$prop_evangelicals), 0)
     expect_equivalent(sd(std_res$modifier_data$prop_evangelicals), 1)
 
-    nonstd_res <- min_modifier_call()
+    nonstd_res <- min_modifier_call(standardize = FALSE)
     expect_false(nonstd_res$control@standardize)
     expect_equivalent(mean(nonstd_res$modifier_data$prop_evangelicals),
-                      mean(states$prop_evangelicals))
+                      mean(states$prop_evangelicals[states$year %in% 2006:2010]))
     expect_equivalent(sd(nonstd_res$modifier_data$prop_evangelicals),
-                      sd(states$prop_evangelicals))
-
-    expect_false(min_item_call()$control@standardize)
-
+                      sd(states$prop_evangelicals[states$year %in% 2006:2010]))
   })
 
   context("keeping id_vars in item_data")
