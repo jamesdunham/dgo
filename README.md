@@ -134,7 +134,7 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgirt_out_abortion)
 #> dgirt samples from 4 chains of 1500 iterations, 750 warmup, thinned every 1 
-#>   Drawn Mon Jan 23 11:26:31 2017 
+#>   Drawn Mon Jan 23 13:51:45 2017 
 #>   Package version 0.2.8 
 #>   Model version 2017_01_04_singleissue 
 #>   117 parameters; 60 theta_bars (year, state and race3)
@@ -150,10 +150,10 @@ summary(dgirt_out_abortion)
 #> 
 #> Elapsed time
 #>    chain warmup sample total
-#> 1:     1    13S    13S   26S
-#> 2:     2    14S    19S   33S
+#> 1:     1    13S    12S   25S
+#> 2:     2    15S    19S   34S
 #> 3:     3    11S    13S   24S
-#> 4:     4    12S    19S   31S
+#> 4:     4    12S    20S   32S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
@@ -237,7 +237,7 @@ To plot the results use `dgirt_plot`. This method plots summaries of posterior s
 dgirt_plot(dgirt_out_abortion, y_min = NULL, y_max = NULL)
 ```
 
-![](README-unnamed-chunk-14-1.png)
+![](README/unnamed-chunk-14-1.png)
 
 Output from `dgirt_plot` can be customized to some extent using objects from the ggplot2 package.
 
@@ -245,7 +245,7 @@ Output from `dgirt_plot` can be customized to some extent using objects from the
 dgirt_plot(dgirt_out_abortion, y_min = NULL, y_max = NULL) + theme_classic()
 ```
 
-![](README-unnamed-chunk-15-1.png)
+![](README/unnamed-chunk-15-1.png)
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This requires arguments that identify the relevant variables in the `data.frame`. Below, `poststratify` aggregates over the demographic grouping variable `race3`, resulting in a `data.frame` of estimates by state-year. So, in the subsequent call to `dgirt_plot`, we pass the names of the state and year variables. The `group_names` argument is `NULL` because there are no grouping variables left after aggregating over `race3`.
 
@@ -263,7 +263,7 @@ head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
-![](README-unnamed-chunk-16-1.png)
+![](README/unnamed-chunk-16-1.png)
 
 Policy Liberalism
 -----------------
@@ -345,7 +345,7 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgirt_out_liberalism)
 #> dgirt samples from 4 chains of 3000 iterations, 1500 warmup, thinned every 1 
-#>   Drawn Mon Jan 23 11:32:27 2017 
+#>   Drawn Mon Jan 23 13:57:25 2017 
 #>   Package version 0.2.8 
 #>   Model version 2017_01_04 
 #>   137 parameters; 60 theta_bars (year, state and race3)
@@ -360,11 +360,11 @@ summary(dgirt_out_liberalism)
 #>   1.000   1.007   1.016   1.024   1.034   1.146
 #> 
 #> Elapsed time
-#>    chain warmup sample  total
-#> 1:     1  2M 3S 1M 27S 3M 30S
-#> 2:     2 1M 53S  2M 2S 3M 55S
-#> 3:     3 2M 11S 3M 13S 5M 24S
-#> 4:     4 1M 59S 2M 14S 3M 73S
+#>    chain warmup sample   total
+#> 1:     1  2M 0S 1M 24S  3M 24S
+#> 2:     2 1M 51S 1M 57S 2M 108S
+#> 3:     3  2M 8S 3M 10S  5M 18S
+#> 4:     4 1M 57S 2M 19S  3M 76S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
@@ -446,7 +446,7 @@ To plot the results use `dgirt_plot`. This method plots summaries of posterior s
 dgirt_plot(dgirt_out_liberalism, y_min = NULL, y_max = NULL)
 ```
 
-![](README-unnamed-chunk-26-1.png)
+![](README/unnamed-chunk-26-1.png)
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This requires arguments that identify the relevant variables in the `data.frame`. Below, `poststratify` aggregates over the demographic grouping variable `race3`, resulting in a `data.frame` of estimates by state-year. So, in the subsequent call to `dgirt_plot`, we pass the names of the state and year variables. The `group_names` argument is `NULL` because there are no grouping variables left after aggregating over `race3`.
 
@@ -464,7 +464,7 @@ head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
-![](README-unnamed-chunk-27-1.png)
+![](README/unnamed-chunk-27-1.png)
 
 Troubleshooting
 ---------------

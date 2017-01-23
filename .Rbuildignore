@@ -3,6 +3,7 @@
 ^.*\.png$
 ^README.Rmd$
 ^README_cache$
+^README/$
 ^\.DS_Store$
 ^\.travis\.yml$
 ^packrat/
