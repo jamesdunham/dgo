@@ -35,6 +35,11 @@ rake_weights <- function(item_data, target_data, control) {
                                control = list(epsilon = 1e-09))
   raked_weights <- 1 / raked_design$prob
   assertthat::assert_that(is.numeric(raked_weights))
-  assertthat::assert_that(all(raked_weights > 0))
+  if (any(is.na(raked_weights))) {
+    warning("NA values in raked weights")
+  } 
+  if (any(raked_weights < 0)) {
+    warning("Negative values in raked weights")
+  }
   return(raked_weights)
 }
