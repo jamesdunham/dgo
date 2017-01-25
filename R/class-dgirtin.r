@@ -30,12 +30,15 @@ dgirtIn <- R6::R6Class("dgirtIn",
       self$unmod_par_names <- ctrl@group_names
     },
     as_list = function(separate_t, delta_tbar_prior_mean, delta_tbar_prior_sd,
-      innov_sd_delta_scale, innov_sd_theta_scale) {
+      innov_sd_delta_scale, innov_sd_theta_scale, hierarchical_model) {
       d_in_list <- Map(function(x) self[[x]], private$model_objects)
       if (!length(separate_t) == 1L && is.logical(separate_t))
         stop("\"separate_t\" should be a single logical value")
       else d_in_list$separate_t <- separate_t
-      if (!length(delta_tbar_prior_mean) == 1L &&
+       if (!length(hierarchical_model) == 1L && is.logical(hierarchical_model))
+        stop("\"hierarchical_model\" should be a single logical value")
+      else d_in_list$hierarchical_model <- hierarchical_model
+	   if (!length(delta_tbar_prior_mean) == 1L &&
           is.numeric(delta_tbar_prior_mean))
         stop("\"delta_tbar_prior_mean\" should be a single real value")
       else d_in_list$delta_tbar_prior_mean <- delta_tbar_prior_mean

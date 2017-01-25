@@ -8,6 +8,10 @@ shape_objects <- c("gt_items", "group_grid", "group_grid_t", "group_counts",
                   "call", "mod_par_names", "unmod_par_names", "pkg_version")
 
 dgirt_pars <- c("separate_t", "delta_tbar_prior_mean", "delta_tbar_prior_sd",
+                "innov_sd_delta_scale", "innov_sd_theta_scale", "version",
+                 "hierarchical_model")
+
+dgmrp_pars <- c("separate_t", "delta_tbar_prior_mean", "delta_tbar_prior_sd",
                 "innov_sd_delta_scale", "innov_sd_theta_scale", "version")
 
 default_pars <- c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",

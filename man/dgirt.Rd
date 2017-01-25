@@ -6,7 +6,8 @@
 \usage{
 dgirt(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
   delta_tbar_prior_sd = 0.25, innov_sd_delta_scale = 2.5,
-  innov_sd_theta_scale = 2.5, version = "2017_01_04")
+  innov_sd_theta_scale = 2.5, version = "2017_01_04",
+  hierarchical_model = TRUE)
 }
 \arguments{
 \item{shaped_data}{Output from \code{\link{shape}}.}
@@ -32,6 +33,10 @@ innovation standard deviation of \code{gamma}, \code{xi}, and if
 \code{2.5}.}
 
 \item{version}{The version of the DGIRT model to use.}
+
+\item{hierarchical_model}{Whether a hierarchical model should be used to smooth the 
+group IRT estimates. If set to FALSE, the model will return raw group-IRT model 
+estimates for each group. Default \code{TRUE}.}
 }
 \value{
 A \code{\link{dgirtfit-class}} object that extends
