@@ -1,3 +1,13 @@
+# 0.2.8
+
+* Improve Stan models for shorter run times
+* Add `dgmrp()` for fitting single-issue MRP models with hierarchical covariates
+* Add class `dgmrp_fit` for models fitted with `dgmrp()`, inheriting from a new
+  virtual class `dgo_fit` 
+* `dgirt()` now returns a `dgirt_fit`-class object that also inherits from
+  `dgo_fit` class
+* Bugfixes
+
 # 0.2.7
 
 * Package renamed dgo: Dynamic Estimation of Group-level Opinion
