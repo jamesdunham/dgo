@@ -34,9 +34,9 @@ innovation standard deviation of \code{gamma}, \code{xi}, and if
 
 \item{version}{The version of the DGIRT model to use.}
 
-\item{hierarchical_model}{Whether a hierarchical model should be used to smooth the 
-group IRT estimates. If set to FALSE, the model will return raw group-IRT model 
-estimates for each group. Default \code{TRUE}.}
+\item{hierarchical_model}{Whether a hierarchical model should be used to
+smooth the group IRT estimates. If set to FALSE, the model will return raw
+group-IRT model estimates for each group. Default \code{TRUE}.}
 }
 \value{
 A \code{\link{dgirtfit-class}} object that extends
@@ -48,10 +48,10 @@ data for a DGIRT model.
 }
 \details{
 The user will typically pass further arguments to \code{\link[rstan]{stan}}
-via the \code{...} argument, at a minimum \code{iters} and \code{cores}.
+via the \code{...} argument, at a minimum \code{iter} and \code{cores}.
 
-By default \code{dgirt} overrides the \code{\link[rstan]{stan}} default for its
-\code{pars} argument to specify typical DGIRT parameters of interest.
+By default \code{dgirt} overrides the \code{\link[rstan]{stan}} default for
+its \code{pars} argument to specify typical DGIRT parameters of interest.
 \code{dgirt} also sets \code{iter_r} to \code{1L}.
 }
 \seealso{

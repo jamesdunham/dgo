@@ -45,8 +45,8 @@ data for a dgmrp model.
 The user will typically pass further arguments to \code{\link[rstan]{stan}}
 via the \code{...} argument, at a minimum \code{iter} and \code{cores}.
 
-By default \code{dgmrp} overrides the \code{\link[rstan]{stan}} default for its
-\code{pars} argument to specify typical DGIRT parameters of interest.
+By default \code{dgmrp} overrides the \code{\link[rstan]{stan}} default for
+its \code{pars} argument to specify typical DGIRT parameters of interest.
 \code{dgmrp} also sets \code{iter_r} to \code{1L}.
 }
 \seealso{

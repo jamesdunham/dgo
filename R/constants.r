@@ -11,8 +11,7 @@ dgirt_pars <- c("separate_t", "delta_tbar_prior_mean", "delta_tbar_prior_sd",
                 "innov_sd_delta_scale", "innov_sd_theta_scale", "version",
                  "hierarchical_model")
 
-dgmrp_pars <- c("separate_t", "delta_tbar_prior_mean", "delta_tbar_prior_sd",
-                "innov_sd_delta_scale", "innov_sd_theta_scale", "version")
+dgmrp_pars <- setdiff(dgirt_pars, "hierarchical_model")
 
 default_pars <- c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
                   "nu_geo", "nu_geo_prior", "kappa", "sd_item", "sd_theta",
