@@ -74,7 +74,7 @@ check_item <- function(item_data, ctrl) {
     are_names("id_vars")
   }
   has_type(c("time_name", "geo_name", "group_names", "survey_name",
-             "item_names", "weight_name"), item_data, ctrl)
+      "weight_name"), item_data, ctrl)
   check_time(item_data, ctrl@time_name) 
   if (is.list(ctrl@raking)) {
     raking = unlist(lapply(ctrl@raking, all.vars))

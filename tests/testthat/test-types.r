@@ -63,7 +63,7 @@ suppressMessages({
     expect_error(min_item_call(item_data = opinion), "should be character or factor")
   })
 
-  test_that("factor values for group_names in item-data produce a warning", {
+  test_that("factor values for group_names in item_data produce a warning", {
     opinion$female <- as.factor(opinion$female)
     expect_warning(min_item_call(item_data = opinion), "Coercing factor")
   })
@@ -80,21 +80,15 @@ suppressMessages({
                    "Coercing factor")
   })
 
-  test_that("character values for item_names produce an error", {
-    opinion$abortion <- as.character(opinion$abortion)
-    expect_error(min_item_call(item_data = opinion),
-                 "should be integer, numeric or factor")
-  })
-
-  test_that("unordered factor values of item_names produce an error", {
-    opinion$abortion <- as.factor(opinion$abortion)
-    expect_error(min_item_call(item_data = opinion),
-                 "should be integer or numeric")
-  })
-
-  test_that("ordered factor values of item_names produce an error", {
-    opinion$abortion <- as.ordered(opinion$abortion)
-    expect_error(min_item_call(item_data = opinion), "should be integer or numeric")
+  test_that("item variables can be any type", {
+    items <- c("abortion", "affirmative_action", "stemcell_research",
+      "gaymarriage_amendment")
+    opinion[[items[1]]] <- as.character(opinion[[items[1]]])
+    opinion[[items[2]]] <- as.ordered(opinion[[items[2]]])
+    opinion[[items[3]]] <- as.logical(opinion[[items[3]]])
+    opinion[[items[4]]] <- as.factor(opinion[[items[4]]])
+    expect_silent(suppressMessages(min_item_call(item_data = opinion,
+          item_names = items)))
   })
 
   test_that("factor values of survey_name produce a warning", {
