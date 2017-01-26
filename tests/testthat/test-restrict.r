@@ -86,7 +86,7 @@ suppressMessages({
   agg_disjoint <- data.table::data.table(
     race = "white", female = "male", year = 0, item = "abortion",
     state = "foo", n_grp = 1, s_grp = 1)
-  agg_disjoint <- data.table::rbindlist(list(dgo:::aggregates, agg_disjoint))
+  agg_disjoint <- data.table::rbindlist(list(aggregates, agg_disjoint))
   agg_disjoint = agg_disjoint[n_grp > 0]
   d_disjoint_agg <- min_agg_call(aggregate_data = agg_disjoint,
                                  aggregate_item_names = unique(agg_disjoint$item))
@@ -136,7 +136,7 @@ suppressMessages({
     disjoint_groups <- data.table::data.table(
       race = "white", female = "other", year = 2006, item = "abortion",
       state = "AK", n_grp = 1, s_grp = 1)
-    aggregates <- data.table::rbindlist(list(dgo:::aggregates, disjoint_groups))
+    aggregates <- data.table::rbindlist(list(aggregates, disjoint_groups))
     d_disjoint_groups <- min_agg_call(aggregate_data = aggregates,
                                       aggregate_item_names = unique(aggregates$item))
     expect_equal(sort(unique(d_disjoint_groups$group_counts[["female"]])),

@@ -73,7 +73,7 @@ test_that("missing variables produce stop", {
 })
 
 test_that("poststratify works for gamma, gamma_raw, and theta_bar", {
-  params <- dgo:::index_names[c("gamma", "gamma_raw", "theta_bar")]
+  params <- index_names[c("gamma", "gamma_raw", "theta_bar")]
   data(toy_dgirtfit)
   data(annual_state_race_targets)
   for (i in seq_along(params)) {

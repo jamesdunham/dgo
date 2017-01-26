@@ -50,7 +50,7 @@ population proportions for the interaction of the variables given in
 \code{strata_names} and \code{aggregated_names}.
 }
 \examples{
-
+\dontrun{
 data(toy_dgirtfit)
 
 # the stratifying variables should uniquely identify proportions in the
@@ -61,5 +61,6 @@ targets <- aggregate(proportion ~ state + year + race3, targets, sum)
 # data, the names of variables that define population strata, and the  names
 # of variables to be aggregated over
 post <- poststratify(toy_dgirtfit, targets, c("state", "year"), "race3")
+}
 }
 

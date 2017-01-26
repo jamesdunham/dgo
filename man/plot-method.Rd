@@ -77,7 +77,7 @@ dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 
 plot(toy_dgirtfit)
 plot_rhats(toy_dgirtfit)
-plot_rhats(toy_dgirtfit, facet_vars = c("race3", "state")) +
+plot_rhats(toy_dgirtfit, facet_vars = "race3") +
   scale_x_continuous(breaks = seq.int(2006, 2008))
 }
 

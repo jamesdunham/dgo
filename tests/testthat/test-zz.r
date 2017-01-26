@@ -76,14 +76,14 @@ suppressMessages({
 
   test_that('ZZ is zeroed appropriately when only t1_modifier_names is given', {
 
-    d_t1_only <- shape(item_data = dgo::opinion,
+    d_t1_only <- shape(item_data = opinion,
                        item_names = "abortion",
                        time_name = "year",
                        geo_name = "state",
                        group_names = "female",
                        survey_name = "source",
                        weight_name = "weight",
-                       modifier_data = dgo::states,
+                       modifier_data = states,
                        t1_modifier_names = "prop_evangelicals")
     expect_true(all(d_t1_only$ZZ == 0))
     expect_identical(hier_names, d_t1_only$hier_names)
@@ -93,14 +93,14 @@ suppressMessages({
 
   test_that('ZZ_prior defaults to ZZ', {
 
-    d_tprime_only <- shape(item_data = dgo::opinion,
+    d_tprime_only <- shape(item_data = opinion,
                        item_names = "abortion",
                        time_name = "year",
                        geo_name = "state",
                        group_names = "female",
                        survey_name = "source",
                        weight_name = "weight",
-                       modifier_data = dgo::states,
+                       modifier_data = states,
                        modifier_names = "prop_evangelicals")
     expect_identical(d_tprime_only$ZZ_prior, d_tprime_only$ZZ)
     expect_identical(hier_names, d_tprime_only$hier_names)

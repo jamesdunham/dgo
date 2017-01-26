@@ -1,5 +1,5 @@
 Package: dgo
-Title: Dynamic Estimation of Group-level Opinion
+Title: Dynamic Estimation of Group-Level Opinion
 Version: 0.2.8
 Date: 2017-01-18
 Description: Fit dynamic group-level IRT models from individual or aggregated
@@ -8,7 +8,7 @@ Description: Fit dynamic group-level IRT models from individual or aggregated
     alternative models. Under active development.
 Maintainer: James Dunham <james@jdunham.io>
 Authors@R: c(
-    person("James", "Dunham", email = "james@jamesdunham.io", role = c("aut", "cre")),
+    person("James", "Dunham", email = "james@jdunham.io", role = c("aut", "cre")),
     person("Devin", "Caughey", email = "caughey@mit.edu", role = c("aut")),
     person("Christopher", "Warshaw", email = "cwarshaw@mit.edu", role = c("aut"))
     )
@@ -16,6 +16,7 @@ License: GPL-3
 URL: https://github.com/jamesdunham/dgo
 BugReports: https://github.com/jamesdunham/dgo/issues
 Depends:
+    dgodata,
     R (>= 3.2.2),
     Rcpp (>= 0.11.0),
     rstan (>= 2.8.1)
@@ -49,15 +50,7 @@ Collate:
     'constants.r'
     'class-dgirtin.r'
     'class-dgmrp_fit.r'
-    'data-annual_state_race_targets.r'
-    'data-opinion.r'
-    'data-states.r'
-    'data-targets.r'
-    'require_namespace.r'
-    'shape.r'
-    'data-toy_dgirt_in.r'
     'dgirt.r'
-    'data-toy_dgirtfit.r'
     'dgmrp.r'
     'dichotomize_item_responses.r'
     'expand_rownames.r'
@@ -65,13 +58,17 @@ Collate:
     'methods-dgirtfit-plot.r'
     'methods-dgirtfit-poststratify.r'
     'methods-dgirtfit.r'
+    'require_namespace.r'
     'methods-dgirtin.r'
     'name_helpers.r'
     'package.R'
     'rake_partial.r'
     'restrict_input_data.r'
     'reweight_item_responses.r'
+    'shape.r'
     'stanmodels.R'
+    'toy_dgirt_in.r'
+    'toy_dgirtfit.r'
     'validate_dgirtIn.r'
     'validate_input_data.r'
     'zzz.R'

@@ -9,6 +9,7 @@
 #' @name dgo
 #' @import Rcpp
 #' @import data.table
+#' @import dgodata
 #' @import ggplot2
 #' @import methods
 #' @importFrom concatenate cc cc_and cc_or cn cn_and

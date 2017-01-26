@@ -17,7 +17,13 @@ test_that("plot calls dgirt_plot", {
 })
 
 test_that("plot_rhats handles parameters", {
-  expect_error(plot_rhats(toy_dgirtfit, pars = NULL))
   expect_error(plot_rhats(toy_dgirtfit, pars = "xi", facet_vars = "state"),
-               "'xi' is not indexed by 'state'")
+               "not indexed by")
+  expect_silent(plot_rhats(toy_dgirtfit, pars = "xi", color_var = "year"))
+})
+
+test_that("pars must be a length-one character", {
+  expect_error(plot_rhats(toy_dgirtfit, pars = NULL), "not a string")
+  expect_error(plot_rhats(toy_dgirtfit, pars = c("xi", "sd_item")),
+               "not a string")
 })

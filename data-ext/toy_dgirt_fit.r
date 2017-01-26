@@ -1,0 +1,5 @@
+library(dgo)
+data(opinion)
+data(toy_dgirt_in)
+toy_dgirtfit <- dgirt(toy_dgirt_in, iter = 400, chains = 4, cores = 4)
+devtools::use_data(toy_dgirtfit, overwrite = TRUE)

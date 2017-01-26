@@ -21,7 +21,6 @@
 #'
 #' @return \code{x} with additional columns (see details).
 #' @seealso \code{\link{dgirtfit-class}}
-#' @include data-toy_dgirtfit.r
 #' @export
 expand_rownames <- function(x, time_name, geo_name, group_names) {
   if (is.matrix(x)) x <- as.data.frame(x, stringsAsFactors = FALSE,
