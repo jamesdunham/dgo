@@ -129,14 +129,13 @@ setGeneric("plot_rhats", signature = "x", function(x, ...)
 #' @export
 #' @examples
 #' plot_rhats(toy_dgirtfit)
-#' plot_rhats(toy_dgirtfit, facet_vars = c("race3", "state")) +
+#' plot_rhats(toy_dgirtfit, facet_vars = "race3") +
 #'   scale_x_continuous(breaks = seq.int(2006, 2008))
 setMethod("plot_rhats", signature(x = "dgo_fit"),
           function(x, pars = "theta_bar", facet_vars = NULL, shape_var = NULL,
                    color_var = NULL, x_var = NULL) {
 
-  if (length(pars)) assert(all(is.character(pars)))
-  if (length(facet_vars)) assert(all(is.character(facet_vars)))
+  assert(assertthat::is.string(pars))
   if (length(shape_var)) assert(assertthat::is.string(shape_var))
   if (length(color_var)) assert(assertthat::is.string(color_var))
   if (length(x_var)) assert(assertthat::is.string(x_var))
@@ -145,6 +144,10 @@ setMethod("plot_rhats", signature(x = "dgo_fit"),
   time_var = x@dgirt_in$control@time_name
   free_vars = setdiff(names(rhats), c(time_var, "Rhat", "param", facet_vars,
                                       shape_var, color_var, x_var))
+
+  check_plot_vars(c(facet_vars, shape_var, color_var, x_var), pars,
+                  x@dgirt_in$control)
+
   if (!length(x_var)) {
     if (time_var %in% names(rhats)) {
       x_var = time_var
@@ -175,3 +178,18 @@ setMethod("plot_rhats", signature(x = "dgo_fit"),
   }
   p
 })
+
+check_plot_vars <- function(varnames, pars, ctrl) {
+  # Require that variables given as e.g. facet_vars index pars
+
+  # get the indices of pars, e.g. c('time_name', 'group_name') for "theta_bar"
+  indices <- unlist(index_names[pars])
+  # get the corresponding variable names 
+  index_varnames <- sapply(indices, slot, object = ctrl)
+  for (varname in varnames) {
+    if (!varname %in% index_varnames) {
+      stop(paste(pars), " is not indexed by '", varname, "'")
+    }
+  }
+}
+
