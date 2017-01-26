@@ -23,7 +23,7 @@ setGeneric("poststratify", signature = "x",
 #' @export
 #' @rdname poststratify 
 #' @examples
-#' 
+#' \dontrun{
 #' data(toy_dgirtfit)
 #'
 #' # the stratifying variables should uniquely identify proportions in the
@@ -34,6 +34,7 @@ setGeneric("poststratify", signature = "x",
 #' # data, the names of variables that define population strata, and the  names
 #' # of variables to be aggregated over
 #' post <- poststratify(toy_dgirtfit, targets, c("state", "year"), "race3")
+#' }
 #' @export
 setMethod("poststratify", c("dgo_fit"),
   function(x, target_data, strata_names, aggregated_names,
