@@ -40,6 +40,12 @@ suppressMessages({
                  "There are NA values in the \"year\" variable of the modifier data.")
   })
 
+  context("restrict modifier data")
+
+  test_that("groups unobserved in item_data are dropped from modifier_data", {
+    # TODO
+  })
+
   context("standardizing modifier data")
 
   test_that("standardize argument for modifier_data works", {

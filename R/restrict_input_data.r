@@ -42,50 +42,31 @@ restrict_items <- function(item_data, ctrl) {
   invisible(item_data)
 }
 
-restrict_modifier <- function(item_data, modifier_data, ctrl) {
+restrict_modifier <- function(modifier_data, group_grid, ctrl) {
   if (length(modifier_data)) {
     data.table::setDT(modifier_data)
 
+    # apply as.character() to factors
     coerce_factors(modifier_data, c(ctrl@modifier_names,
                                     ctrl@t1_modifier_names,
                                     ctrl@geo_name,
                                     ctrl@time_name))
 
-    extra_colnames <- setdiff(names(modifier_data),
-                              c(ctrl@geo_name, ctrl@time_name,
-                                ctrl@modifier_names, ctrl@t1_modifier_names))
-    if (length(extra_colnames)) {
-      modifier_data[, c(extra_colnames) := NULL]
-    }
+    modifier_data <- drop_extra_columns(modifier_data, ctrl)
+    data.table::setkeyv(modifier_data, c(ctrl@geo_name, ctrl@time_name))
 
-    all_combos <- setNames(expand.grid(ctrl@geo_filter, ctrl@time_filter,
-                                       stringsAsFactors = FALSE),
-                           list(ctrl@geo_name, ctrl@time_name))
-    setDT(all_combos, key = c(ctrl@geo_name, ctrl@time_name))
-    missing_combos <- all_combos[!modifier_data, on = names(all_combos)]
-    if (nrow(missing_combos)) {
-      missing_t_range <- unique(c(min(missing_combos[[ctrl@time_name]]),
-                                  max(missing_combos[[ctrl@time_name]])))
+    # subset data to modeled geo and time
+    geo_time_grid <- unique(group_grid[, c(ctrl@geo_name, ctrl@time_name),
+      with = FALSE, ])
+    data.table::setkeyv(geo_time_grid, data.table::key(modifier_data))
+    modifier_data <- modifier_data[geo_time_grid, nomatch = 0]
+
+    # confirm that modifier data covers all modeled geo and time
+    missing_geo_time <- modifier_data[!geo_time_grid]
+    if (nrow(missing_geo_time)) {
       stop("Not all pairs of time periods and geographic areas are in ",
-           "modifier_data. ", nrow(missing_combos), 
-           ngettext(nrow(missing_combos),
-                    " observation is ",
-                    " observations are "),
-           "missing, ", ngettext(length(missing_t_range), 
-                                paste("in", cc(missing_t_range)),
-                                paste("between", cc_and(missing_t_range))),
-           ".")
+           "modifier_data. ", nrow(missing_geo_time), " missing.")
     }
-
-    modifier_data <- modifier_data[modifier_data[[ctrl@geo_name]] %chin%
-                                   ctrl@geo_filter]
-    if (!nrow(modifier_data))
-      stop("no rows in modifier data remaining after applying geo_filter")
-
-    modifier_data <- modifier_data[modifier_data[[ctrl@time_name]] %in%
-                                   ctrl@time_filter]
-    if (!nrow(modifier_data))
-      stop("no rows in modifier data remaining after applying time_filter")
 
     n <- nrow(unique(modifier_data[, c(ctrl@geo_name, ctrl@time_name),
                      with = FALSE]))
@@ -100,6 +81,16 @@ restrict_modifier <- function(item_data, modifier_data, ctrl) {
     }
   }
   invisible(modifier_data)
+}
+
+drop_extra_columns <- function(modifier_data, ctrl) {
+  extra_colnames <- setdiff(names(modifier_data),
+                            c(ctrl@geo_name, ctrl@time_name,
+                              ctrl@modifier_names, ctrl@t1_modifier_names))
+  if (length(extra_colnames)) {
+    modifier_data[, c(extra_colnames) := NULL]
+  }
+  return(modifier_data)
 }
 
 restrict_aggregates <- function(aggregate_data, ctrl) {

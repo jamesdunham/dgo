@@ -167,7 +167,6 @@ shape <- function(item_data,
   # restrict data #
   item_data <- restrict_items(item_data, ctrl)
   ctrl@item_names <- intersect(ctrl@item_names, names(item_data))
-  modifier_data <- restrict_modifier(item_data, modifier_data, ctrl)
   aggregate_data <- restrict_aggregates(aggregate_data, ctrl)
   ctrl@aggregate_item_names <-
     ctrl@aggregate_item_names[ctrl@aggregate_item_names %chin%
@@ -190,6 +189,9 @@ shape <- function(item_data,
   d_in$group_grid_t <- make_group_grid_t(d_in$group_grid, ctrl)
   d_in$group_counts <- make_group_counts(item_data, aggregate_data, ctrl)
   d_in$gt_items <- unique(d_in$group_counts$item)
+
+  # restrict modifier data given final item_data #
+  modifier_data <- restrict_modifier(modifier_data, d_in$group_grid, ctrl)
 
   # make objects used by dgirt.stan #
   d_in$observed <- which(d_in$group_counts[["n_grp"]] > 0)
