@@ -20,8 +20,7 @@ default_pars_mrp <- c("theta_bar", "xi", "gamma", "delta_gamma", "delta_tbar",
                   "nu_geo", "nu_geo_prior", "sd_theta_bar", "sd_gamma_geo", "sd_gamma_demo",
                   "sd_innov_gamma", "sd_innov_delta", "sd_innov_logsd")
 
-var_types <- list(item_names = c("integer", "numeric", "factor"),
-                  group_names = c("character", "factor"),
+var_types <- list(group_names = c("character", "factor"),
                   geo_name = c("character", "factor"),
                   time_name = c("integer", "numeric"),
                   survey_name = c("character", "factor"),
