@@ -27,7 +27,7 @@ suppressMessages({
                                 raking = ~ race3))))
     expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
-                                raking = list(~ education, ~ race3)))))
+                                raking = list(~ year, ~ race3)))))
   })
 
   test_that("raking variables must exist", {
