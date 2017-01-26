@@ -106,7 +106,7 @@ transformed parameters {
       ##mu_theta_bar[t] = theta_bar[t - 1] * delta_tbar[t] + XX * gamma[t];
     }
     ## Matt trick for group means
-    theta_bar[t] = mu_theta_bar[t] + sd_theta_bar[t] * theta_bar_raw[t]; #!#
+	theta_bar[t] = mu_theta_bar[t] + sd_theta_bar[t] * theta_bar_raw[t]; #!#
     ## Weighted average of group means (weights must sum to 1)
     for (q in 1:Q) { ## loop over questions
       ## Group-level IRT model

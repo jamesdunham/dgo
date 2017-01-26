@@ -13,6 +13,9 @@
 #' @param shaped_data Output from \code{\link{shape}}.
 #' @param separate_t Whether smoothing of estimates over time should be
 #' disabled. Default \code{FALSE}.
+#' @param hierarchical_model Whether a hierarchical model should be used to smooth the 
+#' group IRT estimates. If set to FALSE, the model will return raw group-IRT model 
+#' estimates for each group. Default \code{TRUE}.
 #' @param delta_tbar_prior_mean Prior mean for \code{delta_tbar}, the normal
 #' weight on \code{theta_bar} in the previous period.  Default \code{0.65}.
 #' @param delta_tbar_prior_sd Prior standard deviation for \code{delta_bar}.
@@ -39,11 +42,13 @@
 #' @include constants.r
 dgirt <- function(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
                   delta_tbar_prior_sd = 0.25, innov_sd_delta_scale = 2.5,
-                  innov_sd_theta_scale = 2.5, version = "2017_01_04") {
+                  innov_sd_theta_scale = 2.5, version = "2017_01_04", 
+                  hierarchical_model=TRUE) {
 
   dots <- list(...,
                object = stanmodels[[version]],
                data = shaped_data$as_list(separate_t = separate_t,
+                             			 hierarchical_model = hierarchical_model,
                                           delta_tbar_prior_mean =
                                             delta_tbar_prior_mean,
                                           delta_tbar_prior_sd =

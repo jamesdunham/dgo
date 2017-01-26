@@ -12,6 +12,7 @@ data {
   int<lower=1> D; ## number of difficulty parameters per question
   int<lower=0,upper=1> constant_item; ## indicator for constant item parameters
   int<lower=0,upper=1> separate_t; ## indicator for no over-time smoothing
+  int<lower=0,upper=1> hierarchical_model; ## Flag for whether to run hierarchical model, 1=T
   real delta_tbar_prior_mean;
   real<lower=0> delta_tbar_prior_sd;
   real<lower=0> innov_sd_delta_scale;
@@ -126,7 +127,13 @@ transformed parameters {
       ##mu_theta_bar[t] = theta_bar[t - 1] * delta_tbar[t] + XX * gamma[t];
     }
     ## Matt trick for group means
-    theta_bar[t] = mu_theta_bar[t] + sd_theta_bar[t] * theta_bar_raw[t]; #!#
+    if (hierarchical_model==1){
+   		 theta_bar[t] = mu_theta_bar[t] + sd_theta_bar[t] * theta_bar_raw[t]; #!#
+    }
+    if (hierarchical_model==0){
+   	 	theta_bar[t] =  sd_theta_bar[t] * theta_bar_raw[t]; #!#
+    }
+#  theta_bar[t] = mu_theta_bar[t] + sd_theta_bar[t] * theta_bar_raw[t]; #!#
     for (q in 1:Q) { ## loop over questions
       real sd_tq;
       sd_tq = sqrt(var_theta[t] + var_item[q]);
