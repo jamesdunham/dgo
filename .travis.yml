@@ -8,7 +8,7 @@ notifications:
 
 r_github_packages:
   - jimhester/covr
-  - jamesdunahm/dgodata
+  - jamesdunham/dgodata
 
 after_success:
   - Rscript -e 'library(covr); codecov(line_exclusions = list("src/include/models.hpp"))'
