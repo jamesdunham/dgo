@@ -64,4 +64,18 @@ suppressMessages({
     }), "female doesn't vary in item_data")
   })
 
+  test_that("NAs in unused subsets of modifier_data are fine", {
+    states[states$year < 2010, "income_percapita"] <- NA
+    expect_silent(suppressMessages(shape(opinion,
+      item_names = "abortion",
+      time_name = "year",
+      geo_name = "state",
+      group_names = "female",
+      modifier_data = states,
+      modifier_names = "income_percapita",
+      time_filter = seq(2011, max(states$year)),
+      survey_name = "source",
+      weight_name = "weight")))
+  })
+
 })
