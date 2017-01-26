@@ -25,7 +25,20 @@ Getting started
 
 ``` r
 library(dgo)
+#> Loading required package: dgodata
 #> Loading required package: Rcpp
+#> Loading required package: rstan
+#> Loading required package: ggplot2
+#> Loading required package: StanHeaders
+#> rstan (Version 2.14.1, packaged: 2016-12-28 14:55:41 UTC, GitRev: 5fa1e80eb817)
+#> For execution on a local, multicore CPU with excess RAM we recommend calling
+#> rstan_options(auto_write = TRUE)
+#> options(mc.cores = parallel::detectCores())
+#> 
+#> Attaching package: 'dgo'
+#> The following objects are masked from 'package:dgodata':
+#> 
+#>     toy_dgirtfit, toy_dgirt_in
 ```
 
 The minimal workflow from raw data to estimation is:
@@ -134,7 +147,7 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgirt_out_abortion)
 #> dgirt samples from 4 chains of 1500 iterations, 750 warmup, thinned every 1 
-#>   Drawn Mon Jan 23 13:51:45 2017 
+#>   Drawn Thu Jan 26 08:59:57 2017 
 #>   Package version 0.2.8 
 #>   Model version 2017_01_04_singleissue 
 #>   117 parameters; 60 theta_bars (year, state and race3)
@@ -150,10 +163,10 @@ summary(dgirt_out_abortion)
 #> 
 #> Elapsed time
 #>    chain warmup sample total
-#> 1:     1    13S    12S   25S
-#> 2:     2    15S    19S   34S
-#> 3:     3    11S    13S   24S
-#> 4:     4    12S    20S   32S
+#> 1:     1     9S    10S   19S
+#> 2:     2    11S    15S   26S
+#> 3:     3     8S    11S   19S
+#> 4:     4     9S    15S   24S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
@@ -345,7 +358,7 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgirt_out_liberalism)
 #> dgirt samples from 4 chains of 3000 iterations, 1500 warmup, thinned every 1 
-#>   Drawn Mon Jan 23 13:57:25 2017 
+#>   Drawn Thu Jan 26 09:04:36 2017 
 #>   Package version 0.2.8 
 #>   Model version 2017_01_04 
 #>   137 parameters; 60 theta_bars (year, state and race3)
@@ -361,10 +374,10 @@ summary(dgirt_out_liberalism)
 #> 
 #> Elapsed time
 #>    chain warmup sample   total
-#> 1:     1  2M 0S 1M 24S  3M 24S
-#> 2:     2 1M 51S 1M 57S 2M 108S
-#> 3:     3  2M 8S 3M 10S  5M 18S
-#> 4:     4 1M 57S 2M 19S  3M 76S
+#> 1:     1 1M 45S 1M 16S  2M 61S
+#> 2:     2 1M 37S 1M 37S  2M 74S
+#> 3:     3 1M 53S 2M 34S  3M 87S
+#> 4:     4 1M 43S 1M 58S 2M 101S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
