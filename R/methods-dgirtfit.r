@@ -143,16 +143,30 @@ as.data.frame.dgo_fit <- function(x, ..., pars = "theta_bar",
                                    keep.rownames = FALSE) {
   ctrl <- x@dgirt_in$control
   estimates <- as.data.frame.matrix(t(as.matrix(x, pars = pars)))
-  if (inherits(x, "dgmrp_fit")) {
-    estimates <- data.frame(lapply(estimates, pnorm))
-  }
   estimates <- data.table::setDT(estimates, keep.rownames = TRUE)
 
+  # return dgmrp estimates of theta_bar on the response scale
+  if (inherits(x, "dgmrp_fit") && "theta_bar" %in% pars) {
+    iter_cols <- setdiff(names(estimates), "rn")
+    estimates[grepl("^theta_bar", rn), (iter_cols) := lapply(.SD, pnorm),
+      .SDcols = iter_cols]
+  }
+
+  # join group factors (e.g. state, race3) by looking up parameters indices
+  # (e.g.  theta_bar[1,2])
   ftab <- flatnames(x)
   ftab <- merge(estimates[, .(rn)], ftab, all = FALSE, by.x = "rn", by.y = "fname")
+
+  # an iteration can return NA estimates for all parameters; drop these
   all_na <- sapply(ftab, function(x) all(is.na(x)))
   if (any(all_na))
     ftab[, names(all_na)[all_na] := NULL]
+  if (!nrow(ftab) & ncol(ftab)) {
+    stop("No estimates remain for parameter '", substitute(pars), "' after ",
+      "discarding all-NA iterations. This can be explored further using ",
+      "`summarize()` with argument `verbose = TRUE`.")
+  }
+
   estimates <- merge(estimates, ftab, all.x = TRUE, by = "rn")
   if (!isTRUE(keep.rownames)) {
     estimates[, c("rn") := NULL]

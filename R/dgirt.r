@@ -61,11 +61,12 @@ dgirt <- function(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean =
 
   stanfit <- do.call(rstan::sampling, dots)
 
-  tryCatch(new("dgirtfit", stanfit, dgirt_in = shaped_data, call = match.call()),
-           error = function(e) {
-             warning("Error constructing dgirtfit; returning stanfit object instead")
-             stanfit
-           })
+  tryCatch(new("dgirt_fit", stanfit, dgirt_in = shaped_data, call =
+      match.call()),
+    error = function(e) {
+      warning("Error constructing dgirt_fit; returning stanfit object instead")
+      stanfit
+    })
 }
 
 models <- function() {

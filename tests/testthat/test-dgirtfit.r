@@ -8,9 +8,23 @@ suppressMessages({
     sink()
   })
 
-  test_that("dgirt returns class dgirtfit", {
-    expect_s4_class(res, "dgirtfit")
+  test_that("dgirt returns class dgirt_fit", {
+    expect_s4_class(res, "dgirt_fit")
+    expect_s4_class(res, "dgo_fit")
     expect_true(inherits(res, "stanfit"))
+  })
+
+  test_that("dgmrp returns class dgmrp_fit/dgo_fit/stanfit", {
+    suppressMessages({
+      dgmrp_in <- shape(opinion, item_names = "abortion", time_name = "year",
+        geo_name = "state", group_names = "race3", geo_filter = c("CA", "GA"))
+    })
+    sink("/dev/null", type = "output")
+    dgmrp_result <- dgmrp(dgmrp_in, iter = 5, chains = 1, seed = 42)
+    sink()
+    expect_s4_class(dgmrp_result, "dgmrp_fit")
+    expect_s4_class(dgmrp_result, "dgo_fit")
+    expect_true(inherits(dgmrp_result, "stanfit"))
   })
 
   test_that("dgirt methods work", {
