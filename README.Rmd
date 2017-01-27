@@ -101,8 +101,7 @@ dgirt_in_abortion <- shape(opinion,
                   geo_name = "state",
                   group_names = "race3",
                   geo_filter = c("CA", "GA", "LA", "MA"),
-                  survey_name = "source",
-                  weight_name = "weight")
+                  id_vars = "source")
 ```
 
 The reshaped and subsetted data can be summarized in a few ways before model
@@ -112,10 +111,10 @@ fitting.
 summary(dgirt_in_abortion)
 ```
 
-Response counts by survey-year:
+Response counts by state:
 
 ```{r}
-get_n(dgirt_in_abortion, by = c("year", "source"))
+get_n(dgirt_in_abortion, by = c("state"))
 ```
 
 Response counts by item-year:
@@ -231,8 +230,7 @@ dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 dgirt_in_liberalism <- shape(opinion, item_names = c("abortion",
     "affirmative_action","stemcell_research" , "gaymarriage_amendment",
     "partialbirth_abortion") , time_name = "year", geo_name = "state",
-  group_names = "race3", geo_filter = c("CA", "GA", "LA", "MA"), survey_name =
-    "source", weight_name = "weight")
+  group_names = "race3", geo_filter = c("CA", "GA", "LA", "MA"))
 ```
 
 The reshaped and subsetted data can be summarized in a few ways before model
