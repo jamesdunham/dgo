@@ -81,8 +81,6 @@ suppressMessages({
                        time_name = "year",
                        geo_name = "state",
                        group_names = "female",
-                       survey_name = "source",
-                       weight_name = "weight",
                        modifier_data = states,
                        t1_modifier_names = "prop_evangelicals")
     expect_true(all(d_t1_only$ZZ == 0))
@@ -98,8 +96,6 @@ suppressMessages({
                        time_name = "year",
                        geo_name = "state",
                        group_names = "female",
-                       survey_name = "source",
-                       weight_name = "weight",
                        modifier_data = states,
                        modifier_names = "prop_evangelicals")
     expect_identical(d_tprime_only$ZZ_prior, d_tprime_only$ZZ)

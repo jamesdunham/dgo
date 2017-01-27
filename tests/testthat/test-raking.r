@@ -9,24 +9,31 @@ suppressMessages({
     annual_state_race_targets = annual_state_race_targets[year %in% 2006:2010]
     expect_silent(suppressMessages(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight",
                                 raking = ~ state)))
     expect_silent(suppressMessages(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight",
                                 raking = list(~ state, ~ year))))
     expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight",
                                 raking = ~ state + year))))
     expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight",
                                 raking = list(~ state + year, ~ race3)))))
     expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight",
                                 raking = list(~ race3)))))
     expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight",
                                 raking = ~ race3))))
     expect_silent(suppressWarnings(suppressMessages(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight",
                                 raking = list(~ year, ~ race3)))))
   })
 
@@ -34,38 +41,46 @@ suppressMessages({
   # raking gives a single formula 
     expect_error(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight",
                                 raking = ~ source),
                  "\"source\" is a raking formula term but isn't a variable name in \"target_data\"")
     expect_error(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight",
                                 raking = ~ proportion),
                  "\"proportion\" is a raking formula term but isn't a variable name in \"item_data\"")
 
     # raking gives a list of formulas
     expect_error(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight", survey_name = "source",
                                 raking = list(~ source, ~ weight)),
                  "\"source\" is a raking formula term but isn't a variable name in \"target_data\"")
     expect_error(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight", survey_name = "source",
                                 raking = list(~ proportion, ~ weight)),
                  "\"weight\" is a raking formula term but isn't a variable name in \"target_data\"")
     expect_error(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight", survey_name = "source",
                                 raking = list(~ proportion, ~ proportion)),
                  "\"proportion\" is a raking formula term but isn't a variable name in \"item_data\"")
     expect_error(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight", survey_name = "source",
                                 raking = list(~ state, ~ proportion)),
                  "\"proportion\" is a raking formula term but isn't a variable name in \"item_data\"")
 
     # raking gives formulas with operators
     expect_error(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight", survey_name = "source",
                                 raking = list(~ state + weight)),
                  "\"weight\" is a raking formula term but isn't a variable name in \"target_data\"")
     expect_error(min_item_call(target_data = annual_state_race_targets,
                                 target_proportion_name = "proportion",
+                                weight_name = "weight", survey_name = "source",
                                 raking = list(~ state + proportion)),
                  "\"proportion\" is a raking formula term but isn't a variable name in \"item_data\"")
   })
@@ -105,9 +120,9 @@ suppressMessages({
     tapply(tab$raked_weight, tab[[index]], sum)
   }
 
-  setClass("Ctrl", slots = c("time_name", "weight_name", "target_proportion_name", "raking"),
-           prototype = list(time_name = "t", weight_name = "weight",
-                            "target_proportion_name" = "proportion"))
+  setClass("Ctrl", slots = c("time_name", "weight_name",
+      "target_proportion_name", "raking"), prototype = list(time_name = "t",
+      weight_name = "weight", "target_proportion_name" = "proportion"))
 
   test_that("raking has no effect if weights reflect population margins", {
     toy_data = set_up_sample(w = 1)

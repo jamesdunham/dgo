@@ -5,9 +5,9 @@
 \title{\code{shape}: prepare data for modeling with \code{dgirt}}
 \usage{
 shape(item_data, item_names, time_name, geo_name, group_names = NULL,
-  weight_name, raking = NULL, survey_name, modifier_data = NULL,
-  target_data = NULL, aggregate_data = NULL, aggregate_item_names = NULL,
-  id_vars = NULL, ...)
+  weight_name = NULL, raking = NULL, survey_name = NULL,
+  modifier_data = NULL, target_data = NULL, aggregate_data = NULL,
+  aggregate_item_names = NULL, id_vars = NULL, ...)
 }
 \arguments{
 \item{item_data}{A table in which items appear in columns and each row

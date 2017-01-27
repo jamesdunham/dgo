@@ -74,9 +74,7 @@ suppressMessages({
                          item_names = "abortion",
                          time_name = "year",
                          geo_name = "state",
-                         group_names = c("female", "race"),
-                         survey_name = "source",
-                         weight_name = "weight"),
+                         group_names = c("female", "race")),
                    "Coercing factor")
   })
 
@@ -93,12 +91,14 @@ suppressMessages({
 
   test_that("factor values of survey_name produce a warning", {
     opinion$source <- as.factor(opinion$source)
-    expect_warning(min_item_call(item_data = opinion), "Coercing factor")
+    expect_warning(min_item_call(item_data = opinion, survey_name = "source"),
+                   "Coercing factor")
   })
 
   test_that("numeric values of survey_name produce an error", {
     opinion$source <- suppressWarnings(as.numeric(opinion$source))
-    expect_error(min_item_call(item_data = opinion), "should be character or factor")
+    expect_error(min_item_call(item_data = opinion, survey_name = "source"),
+                 "should be character or factor")
   })
 
   test_that("non-integer values of time_name in item_data produce an error", {
@@ -133,12 +133,14 @@ suppressMessages({
 
   test_that("character values of weight_name in item_data produce an error", {
     opinion$weight <- suppressWarnings(as.character(opinion$weight))
-    expect_error(suppressWarnings(min_item_call(item_data = opinion)), "should be numeric")
+    expect_error(suppressWarnings(min_item_call(item_data = opinion,
+          weight_name = "weight")), "should be numeric")
   })
 
   test_that("factor values of weight_name in item_data produce an error", {
     opinion$weight <- suppressWarnings(as.factor(opinion$weight))
-    expect_error(min_item_call(item_data = opinion), "should be numeric")
+    expect_error(min_item_call(item_data = opinion, weight_name = "weight"),
+      "should be numeric")
   })
 
 })

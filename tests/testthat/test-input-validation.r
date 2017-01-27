@@ -93,4 +93,29 @@ suppressMessages({
     "NA values")
   })
 
+  test_that("omitting weight variable is allowed", {
+    expect_silent(suppressMessages(shape(opinion,
+        item_names = "abortion",
+        time_name = "year",
+        geo_name = "state",
+        group_names = "female",
+        modifier_data = states,
+        modifier_names = "income_percapita",
+        time_filter = 2008:2009,
+        survey_name = "source")))
+  })
+
+  test_that("omitting survey variable is allowed", {
+    expect_silent(suppressMessages(shape(opinion,
+        item_names = "abortion",
+        time_name = "year",
+        geo_name = "state",
+        group_names = "female",
+        modifier_data = states,
+        modifier_names = "income_percapita",
+        time_filter = 2008:2009,
+        weight_name = "weight")))
+  })
+
+
 })

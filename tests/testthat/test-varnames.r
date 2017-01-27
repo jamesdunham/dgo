@@ -72,26 +72,20 @@ suppressMessages({
                         item_names = "abortion",
                         time_name = "year",
                         geo_name = "state",
-                        group_names = "female",
-                        survey_name = "source",
-                        weight_name = "weight")))
+                        group_names = "female")))
     expect_silent(suppressMessages(shape(opinion,
                         modifier_data = states,
                         modifier_names = "prop_evangelicals",
                         item_names = "abortion",
                         time_name = "year",
                         geo_name = "state",
-                        group_names = "female",
-                        survey_name = "source",
-                        weight_name = "weight")))
+                        group_names = "female")))
     expect_error(suppressMessages(shape(opinion,
                         modifier_data = states,
                         item_names = "abortion",
                         time_name = "year",
                         geo_name = "state",
-                        group_names = "female",
-                        survey_name = "source",
-                        weight_name = "weight")),
+                        group_names = "female")),
                  "Either \"modifier_names\" or \"t1_modifier_names\" is required ",
                  "when using modifier data")
   })
@@ -108,7 +102,7 @@ suppressMessages({
                        group_names = "female",
                        survey_name = "source",
                        weight_name = "weight"),
-                 "\"target_proportion_name\" is required when using \"target_data\"")
+                 ".*target_proportion_name.*required when using.*target_data")
     expect_error(shape(opinion,
                        target_data = targets,
                        target_proportion_name = "proportion",
@@ -118,7 +112,7 @@ suppressMessages({
                        group_names = "female",
                        survey_name = "source",
                        weight_name = "weight"),
-                 "\"raking\" is required when using \"target_data\"")
+                 "raking.*required when using.*target_data")
   })
 
 })

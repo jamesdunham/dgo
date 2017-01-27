@@ -1,7 +1,9 @@
 check_targets <- function(target_data, ctrl) {
   if (length(target_data)) {
-    if (!length(ctrl@raking)) {
-      stop("\"raking\" is required when using \"target_data\"")
+    for (varname in c("raking", "weight_name")) {
+      if (!length(slot(ctrl, varname))) {
+        stop("'", substitute(varname), "' is required when using 'target_data'")
+      }
     }
     is_name <- valid_names(target_data, ctrl, 1L)
     is_name(c("time_name", "geo_name", "target_proportion_name"))
@@ -10,10 +12,11 @@ check_targets <- function(target_data, ctrl) {
     } else {
       raking = all.vars(ctrl@raking)
     }
-    are_names <- valid_names(target_data, len = 1, stub = "is a raking formula term but isn't")
+    are_names <- valid_names(target_data, len = 1, stub =
+      "is a raking formula term but isn't")
     are_names(raking)
-    has_type(c("time_name", "geo_name", "target_proportion_name"),
-             target_data, ctrl)
+    has_type(c("time_name", "geo_name", "target_proportion_name"), target_data,
+      ctrl)
     check_time(target_data, ctrl@time_name) 
   }
 }
@@ -60,14 +63,19 @@ check_modifiers <- function(modifier_data, ctrl) {
 
 check_item <- function(item_data, ctrl) {
   is_name <- valid_names(item_data, ctrl, 1L)
-  is_name(c("time_name", "geo_name", "survey_name", "weight_name"))
+  is_name(c("time_name", "geo_name"))
   are_names <- valid_names(item_data, ctrl)
   are_names("item_names")
   if (length(ctrl@id_vars)) {
     are_names("id_vars")
   }
-  has_type(c("time_name", "geo_name", "group_names", "survey_name",
-      "weight_name"), item_data, ctrl)
+  for (varname in c("weight_name", "survey_name")) {
+    if (length(slot(ctrl, varname))) {
+      is_name(varname)
+      has_type(varname, item_data, ctrl)
+    }
+  }
+  has_type(c("time_name", "geo_name", "group_names"), item_data, ctrl)
   check_time(item_data, ctrl@time_name) 
   if (is.list(ctrl@raking)) {
     raking = unlist(lapply(ctrl@raking, all.vars))

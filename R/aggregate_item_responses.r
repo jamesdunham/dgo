@@ -26,6 +26,10 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   gt_names <- attr(item_data, "gt_items")
   item_data[, c("n_responses") := list(rowSums(!is.na(.SD))),
             .SDcols = gt_names]
+  if (!length(ctrl@weight_name)) {
+    item_data[, weight := 1L]
+    ctrl@weight_name <- "weight"
+  }
   item_data[, c("def") := lapply(.SD, calc_design_effects),
             .SDcols = ctrl@weight_name,
             by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]

@@ -5,13 +5,12 @@ suppressMessages({
   
   test_that("filters aren't accepted if too restrictive", { 
 
-    expect_error(new("Control", geo_filter = "AK", time_name = "time", geo_name =
-                     "state", survey_name = "survey", weight_name = "weight",
-                   group_names = "foo", time_filter = 2006:2007),
-                 "if specified \"geo_filter\" should give at least two local geographic areas")
+    expect_error(new("Control", geo_filter = "AK", time_name = "time", geo_name
+        = "state", group_names = "foo", time_filter = 2006:2007),
+      "if specified \"geo_filter\" should give at least two local geographic areas")
 
     expect_error(suppressMessages(min_modifier_call(geo_filter = "AK")),
-                           "if specified \"geo_filter\" should give at least two local geographic areas")
+      "if specified \"geo_filter\" should give at least two local geographic areas")
 
   })
 

@@ -9,7 +9,7 @@ suppressMessages({
     expect_silent(suppressMessages(min_groupless_call()))
   })
 
-  d_min <- min_item_call()
+  d_min <- min_item_call(survey_name = "source", weight_name = "weight")
   d_mod <- min_modifier_call()
   d_nogroups <- min_groupless_call()
 

@@ -30,7 +30,9 @@ restrict_items <- function(item_data, ctrl) {
     initial_dim <- dim(item_data)
     drop_responseless_items(item_data, ctrl)
     drop_items_rare_in_time(item_data, ctrl)
-    drop_items_rare_in_polls(item_data, ctrl)
+    if (length(ctrl@survey_name)) {
+      drop_items_rare_in_polls(item_data, ctrl)
+    }
     item_data <- drop_itemless_respondents(item_data, ctrl)
     final_dim <- dim(item_data)
     iter <- iter + 1L
@@ -168,8 +170,10 @@ rename_numerics <- function(tbl, vars) {
 drop_rows_missing_covariates <- function(item_data, ctrl) {
   n <- nrow(item_data)
   is_missing <- rowSums(is.na(item_data[, c(ctrl@geo_name, ctrl@time_name,
-                                            ctrl@group_names, ctrl@survey_name,
-                                            ctrl@rake_names), with = FALSE])) > 0
+        ctrl@group_names, ctrl@rake_names), with = FALSE])) > 0
+  if (length(ctrl@survey_name)) {
+    is_missing <- (is_missing + is.na(item_data[[ctrl@survey_name]])) > 0
+  }
   item_data <- subset(item_data, !is_missing)
   if (!identical(n, nrow(item_data))) {
     message("\tDropped ", format(n - nrow(item_data), big.mark = ","),
