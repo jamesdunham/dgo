@@ -15,32 +15,7 @@ suppressMessages({
 
   })
 
-  test_that("NA aren't allowed in modifier variables", {
-    data(states)
-    states$prop_evangelicals[1] <- NA
-    expect_error(min_modifier_call(modifier_data = states),
-                 "There are NA values in the \"prop_evangelicals\" variable of the modifier data.")
-  })
-  test_that("NA aren't allowed in modifier variables", {
-    data(states)
-    states$income_percapita[1] <- NA
-    expect_error(min_modifier_call(modifier_data = states, t1_modifier_names = "income_percapita"),
-                 "There are NA values in the \"income_percapita\" variable of the modifier data.")
-  })
-  test_that("NA aren't allowed in modifier variables", {
-    data(states)
-    states$state[1] <- NA
-    expect_error(min_modifier_call(modifier_data = states),
-                 "There are NA values in the \"state\" variable of the modifier data.")
-  })
-  test_that("NA aren't allowed in modifier variables", {
-    data(states)
-    states$year[1] <- NA
-    expect_error(min_modifier_call(modifier_data = states),
-                 "There are NA values in the \"year\" variable of the modifier data.")
-  })
-
-  context("restrict modifier data")
+  context("restricting modifier data")
 
   test_that("groups unobserved in item_data are dropped from modifier_data", {
     # TODO
@@ -141,6 +116,13 @@ suppressMessages({
                                       aggregate_item_names = unique(aggregates$item))
     expect_equal(sort(unique(d_disjoint_groups$group_counts[["female"]])),
                  c("female", "male", "other"))
+  })
+
+  test_that("stop_if_any_na works", {
+    d <- data.frame(a = NA, b = 1, stringsAsFactors = FALSE)
+    expect_error(stop_if_any_na(d, "a"), "NA values")
+    expect_error(stop_if_any_na(d, c("a", "b")), "NA values")
+    expect_silent(stop_if_any_na(d, "b"))
   })
 
 })

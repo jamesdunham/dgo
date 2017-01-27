@@ -46,11 +46,10 @@ restrict_modifier <- function(modifier_data, group_grid, ctrl) {
   if (length(modifier_data)) {
     data.table::setDT(modifier_data)
 
-    # apply as.character() to factors
-    coerce_factors(modifier_data, c(ctrl@modifier_names,
-                                    ctrl@t1_modifier_names,
-                                    ctrl@geo_name,
-                                    ctrl@time_name))
+    # apply as.character() to any factors
+    varnames <- c(ctrl@modifier_names, ctrl@t1_modifier_names, ctrl@geo_name,
+      ctrl@time_name)
+    coerce_factors(modifier_data, varnames)
 
     modifier_data <- drop_extra_columns(modifier_data, ctrl)
     data.table::setkeyv(modifier_data, c(ctrl@geo_name, ctrl@time_name))
@@ -68,13 +67,18 @@ restrict_modifier <- function(modifier_data, group_grid, ctrl) {
            "modifier_data. ", nrow(missing_geo_time), " missing.")
     }
 
+    # confirm that no geo-time observation is duplicated
     n <- nrow(unique(modifier_data[, c(ctrl@geo_name, ctrl@time_name),
                      with = FALSE]))
     if (!identical(nrow(modifier_data), n))
       stop("time and geo identifiers don't uniquely identify modifier data ",
            "observations")
 
+    # modifiers cannot have NA values
+    stop_if_any_na(modifier_data, varnames)
+
     if (isTRUE(ctrl@standardize)) {
+      # make modifiers zero-mean and unit-SD 
       std_vars <- unique(c(ctrl@modifier_names, ctrl@t1_modifier_names))
       modifier_data[, c(std_vars) := lapply(.SD, function(x) (x - mean(x)) /
                                             sd(x)), .SDcols = std_vars]
@@ -283,6 +287,19 @@ drop_items_rare_in_polls <- function(item_data, ctrl) {
 
 get_observed <- function(item_data, aggregate_data, varname) {
   obs <- Map(unique.data.frame, list(item_data[, varname, with = FALSE],
-                                     aggregate_data[, varname, with = FALSE]))
+      aggregate_data[, varname, with = FALSE]))
   sort.default(unique.default(unname(unlist(obs))))
 }
+
+stop_if_any_na <- function(where, varnames) {
+  # If there are NA values in any variable named in 'varnames', in the dataframe
+  # given by 'where', stop
+  stopifnot(is.data.frame(where))
+  for (name in unique(varnames)) {
+    if (any(is.na(where[[name]]))) {
+      stop("There are NA values in the '", substitute(name), "' variable of ",
+        "'", substitute(where), "'.")
+    }
+  }
+}
+

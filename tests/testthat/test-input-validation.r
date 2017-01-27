@@ -65,7 +65,7 @@ suppressMessages({
   })
 
   test_that("NAs in unused subsets of modifier_data are fine", {
-    states[states$year < 2010, "income_percapita"] <- NA
+    states[states$year == 2008, "income_percapita"] <- NA
     expect_silent(suppressMessages(shape(opinion,
       item_names = "abortion",
       time_name = "year",
@@ -73,9 +73,24 @@ suppressMessages({
       group_names = "female",
       modifier_data = states,
       modifier_names = "income_percapita",
-      time_filter = seq(2011, max(states$year)),
+      time_filter = 2009:2010,
       survey_name = "source",
       weight_name = "weight")))
+  })
+
+  test_that("NAs in restricted modifier_data produce an error", {
+    states[states$year == 2008, "income_percapita"] <- NA
+    expect_error(suppressMessages(shape(opinion,
+      item_names = "abortion",
+      time_name = "year",
+      geo_name = "state",
+      group_names = "female",
+      modifier_data = states,
+      modifier_names = "income_percapita",
+      time_filter = 2008:2009,
+      survey_name = "source",
+      weight_name = "weight")),
+    "NA values")
   })
 
 })
