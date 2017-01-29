@@ -24,7 +24,6 @@ suppressMessages({
     expect_silent(suppressMessages({
       d_in = shape(opinion[source == "CCES_2006"],
              target_data = targets,
-             target_proportion_name = "proportion",
              raking = ~ state,
              item_names = "abortion",
              time_name = "year",

@@ -2,20 +2,23 @@
 % Please edit documentation in R/shape.r
 \name{shape}
 \alias{shape}
-\title{\code{shape}: prepare data for modeling with \code{dgirt}}
+\title{\code{shape}: prepare data for modeling with \code{dgirt} or \code{dgmrp}}
 \usage{
 shape(item_data, item_names, time_name, geo_name, group_names = NULL,
-  weight_name = NULL, raking = NULL, survey_name = NULL,
-  modifier_data = NULL, target_data = NULL, aggregate_data = NULL,
-  aggregate_item_names = NULL, id_vars = NULL, ...)
+  id_vars = NULL, time_filter = NULL, geo_filter = NULL,
+  min_t_filter = 1L, min_survey_filter = 1L, survey_name = NULL,
+  modifier_data = NULL, modifier_names = NULL, t1_modifier_names = NULL,
+  standardize = TRUE, target_data = NULL, raking = NULL,
+  weight_name = NULL, proportion_name = "proportion",
+  aggregate_data = NULL, aggregate_item_names = NULL,
+  constant_item = TRUE, ...)
 }
 \arguments{
 \item{item_data}{A table in which items appear in columns and each row
 represents an individual's responses in some time period and local geographic
 area.}
 
-\item{item_names}{Individual item responses. These variables should be
-integers or ordered factors in the data.}
+\item{item_names}{Item response variables.}
 
 \item{time_name}{A time variable with numeric values.}
 
@@ -24,18 +27,48 @@ integers or ordered factors in the data.}
 \item{group_names}{Discrete grouping variables, usually demographic. Using
 numeric variables is allowed but not recommended.}
 
-\item{weight_name}{A variable giving survey weights.}
+\item{id_vars}{Additional variables that should be included in the result,
+other than those specified elsewhere.}
 
-\item{raking}{A formula or list of formulas specifying the variables on which
-to rake survey weights.}
+\item{time_filter}{A numeric vector giving possible values of the time
+variable. Observed and unobserved time periods can be given. Defaults to
+observed values.}
+
+\item{geo_filter}{A character vector giving values of the geographic
+variable. Defaults to observed values.}
+
+\item{min_t_filter}{An integer minimum of time period appearances for
+included items.}
+
+\item{min_survey_filter}{An integer minimum of survey appearances for
+included items.}
 
 \item{survey_name}{A survey identifier.}
 
 \item{modifier_data}{Table giving characteristics of local geographic areas
 in time periods. See details below.}
 
+\item{modifier_names}{Variables giving modifiers of geographic hierarchical
+parameters in \code{modifier_data}.}
+
+\item{t1_modifier_names}{Variables to be used instead of those in
+\code{modifier_names}, only in the first period.}
+
+\item{standardize}{Whether to standardize the variables given by
+\code{modifier_names} and \code{t1_modifier_names} to be zero-mean and
+unit-variance for performance gains. (For discussion see the Stan Language
+Reference section "Standardizing Predictors and Outputs.")}
+
 \item{target_data}{A table giving population proportions for groups by local
 geographic area and time period. See details below.}
+
+\item{raking}{A formula or list of formulas specifying the variables on which
+to rake survey weights.}
+
+\item{weight_name}{A variable giving survey weights.}
+
+\item{proportion_name}{The variable giving population proportions
+for strata in \code{target_data}.}
 
 \item{aggregate_data}{A table of trial and success counts by group and item.
 See details below.}
@@ -43,14 +76,14 @@ See details below.}
 \item{aggregate_item_names}{A subset of values of the \code{item} variable in
 \code{aggregate_data}, for restricting the aggregate data.}
 
-\item{id_vars}{Additional variables that should be included in the result,
-other than those specified elsewhere.}
+\item{constant_item}{Whether item difficulty parameters should be constant
+over time.}
 
-\item{...}{Further arguments for more complex models, input data, and
-preprocessing.}
+\item{...}{Further arguments.}
 }
 \value{
-An object of class \code{dgirtIn} expected by \code{\link{dgirt}}.
+An object of class \code{dgirtIn} expected by \code{\link{dgirt}} and
+\code{\link{dgmrp}}.
 }
 \description{
 This function shapes various kinds of data for use in a dgirt model. Most
@@ -58,97 +91,72 @@ arguments give the name or names of key variables in the data; they end in
 \code{_name} or \code{_names} and should be character vectors. Some others
 implement preprocessing and modeling choices.
 }
+\section{Item Response Data}{
+
+Individual-level data giving item responses is expected as argument
+\code{item_data}. Required arguments \code{time_name} and \code{geo_name}
+give the names of variables in \code{item_data} that indicate time period and
+local geographic area. Optional argument \code{group_names} gives other
+respondent characteristics to be modeled. \code{item_data} is optional if
+argument \code{aggregate_data} is used.
+}
+
 \section{Modifier Data}{
 
-Geographic hierarchical parameters can be modeled with \code{modifier_data}.
-These arguments are also required:
-\describe{
-  \item{\code{modifier_names}:}{Modifiers of geographic hierarchical
-  parameters, e.g. median household income in each local-area and
-  time-period combination.}
-  \item{\code{t1_modifier_names}:}{Modifiers to be used instead of those in
-  \code{modifier_names}, only in the first period.}
-  \item{\code{standardize}:}{Whether to standardize hierarchical modifier
-  data to be zero-mean and unit-variance for performance gains. For
-  discussion see the Stan Language Reference section "Standardizing
-  Predictors and Outputs."}
-}
+Data for modeling geographic hierarchical parameters can be given with
+argument \code{modifier_data}, in which case argument \code{modifier_names}
+is required and arguments \code{t1_modifier_names} and \code{standardize} are
+optional.
 }
 
-\section{Aggregate Data}{
+\section{Aggregate Item Response Data}{
 
-Specifying \code{aggregate_data} requires no additional arguments; instead,
-we make many assumptions about the data. This implementation is likely to
-change in the future.
+\code{shape()} aggregates the individual-level item response data given as
+\code{item_data} for modeling. Data already aggregated to the group level can
+be provided with argument \code{aggregate_data}.
 
-\code{aggregate_data} is expected to be a long table of trial and success
-counts by group and item. Some variable names given for \code{item_data} are
-expected in the table of aggregates: \code{group_names}, \code{geo_name}, and
-\code{time_name}. Three fixed variable names are also expected in
-\code{aggregate_data}: \code{item} giving item identifiers, \code{n_grp}
-giving adjusted counts of item-response trials, and \code{s_grp} giving
-adjusted counts of item-response successes. The counts should be adjusted
-consistently with the transformations applied to the individual
-\code{item_data}.
+The data given by \code{aggregate_data} must be in a long table of trial and
+success counts indexed by item, group, and time period. The variable names
+given by arguments \code{group_names}, \code{geo_name}, and\code{time_name}
+should exist in \code{aggregate_data}.  Three fixed variable names must also
+appear in \code{aggregate_data}: \code{item} giving item identifiers,
+\code{n_grp} giving counts of item-response trials, and \code{s_grp} giving
+counts of item-response successes. These counts should be adjusted
+consistently with the transformations applied during the aggregation by
+\code{shape()} of the individual \code{item_data}.
 }
 
-\section{Preprocessing}{
+\section{Reweighting}{
 
-If \code{target_data} is specified \code{shape} will adjust the weighting of
-groups toward population targets via raking. This relies on an adaptation of
-\code{\link[survey]{rake}}. The additional required arguments are
-\code{target_proportion_name} and \code{raking}.
-
-\code{shape} can restrict data row-wise in \code{item_data},
-\code{modifier_data}, and \code{aggregate_data} to that within specified time
-periods (\code{time_filter}) and local geographic areas (\code{geo_filter}).
-Data can also be filtered for sparsity, to keep items that appear in a
-minimum of time periods or surveys. This is a column-wise operation. If both
-row-wise and column-wise restrictions are specified, \code{shape} iterates
-over them until they leave the data unchanged.
+Use argument \code{target_data} to adjust the weighting of groups toward
+population targets via raking, using an adaptation of
+\code{\link[survey]{rake}}. To adjust individual survey weights in
+\code{item_data}, provide argument \code{weight_name}. Otherwise,
+observations in \code{item_data} will be assigned equal starting weights.
+Argument \code{raking} defines strata. Argument \code{proportion_name}
+is optional.
 }
 
-\section{Target Data}{
+\section{Restrictions}{
 
-\describe{
-  \item{target_proportion_name}{The variable giving population proportions
-  for strata.}
-  \item{raking}{A formula or list of formulas specifying the variables on
-  which to rake.}
-  \item{geo_filter}{A character vector giving values of the geographic
-  variable. Defaults to observed values.}
-  \item{time_filter}{A numeric vector giving possible values of the time
-  variable. Observed and unobserved time periods can be given. Defaults to
-  observed values.}
-  \item{min_survey_filter}{An integer minimum of survey appearances for
-  included items. Defaults to 1.}
-  \item{min_t_filter}{An integer minimum of time period appearances for
-  included items. Defaults to 1.}
-}
-}
+For convenience, data in \code{item_data}, \code{modifier_data},
+\code{aggregate_data}, and \code{target_data} can be restricted (subsetted)
+row-wise to the time periods given by argument \code{time_filter} and the
+local geographic areas given by argument \code{geo_filter}.
 
-\section{Modeling Choices}{
+Data can also be filtered column-wise to retain item variables that appear in
+a minimum of time periods, using argument \code{min_t_filter}, or a minimum
+of surveys, with argument \code{min_survey_filter}. Argument
+\code{survey_name} is required when filtering by survey.
 
-Optional. Most arguments like this one are now in the \code{dgirt} signature,
-but \code{constant_item} affects the shape of the data. It may move to
-\code{dgirt} in the future.
-\describe{
-  \item{constant_item}{Whether item difficulty parameters should be constant
-  over time. Default \code{TRUE}.}
-}
+If both row-wise and column-wise restrictions are specified, \code{shape}
+iterates over them until they leave the data unchanged.
 }
 \examples{
 # model individual item responses
-data(opinion)
-opinion$respondent = 1:nrow(opinion)
-shaped_responses <- shape(opinion,
-                          item_names = "abortion",
-                          time_name = "year",
-                          geo_name = "state",
-                          group_names = "race3",
-                          weight_name = "weight",
-                          survey_name = "source",
-                          id_vars = 'respondent')
+shaped_responses <- shape(opinion, item_names = "abortion", time_name =
+  "year", geo_name = "state", group_names = "race3")
+
 # summarize result)
 summary(shaped_responses)
 

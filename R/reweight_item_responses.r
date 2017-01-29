@@ -26,7 +26,7 @@ rake_weights <- function(item_data, target_data, control) {
   item_design <- survey::svydesign(ids = ~1, data = item_data,
                           weights = formula(paste0("~", control@weight_name)))
   target_design <- survey::svydesign(ids = ~1, data = target_data,
-    weights = formula(paste0("~", control@target_proportion_name)))
+    weights = formula(paste0("~", control@proportion_name)))
   target_tables <- lapply(formulas, survey::svytable,
                           design = target_design)
   raked_design <- rake_partial(design = item_design,

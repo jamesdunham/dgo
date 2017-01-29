@@ -8,13 +8,13 @@
 \title{\code{poststratify}: reweight and aggregate estimates}
 \usage{
 poststratify(x, target_data, strata_names, aggregated_names,
-  prop_name = "proportion", ...)
+  proportion_name = "proportion", ...)
 
 \S4method{poststratify}{dgo_fit}(x, target_data, strata_names, aggregated_names,
-  prop_name = "proportion", pars = "theta_bar")
+  proportion_name = "proportion", pars = "theta_bar")
 
 \S4method{poststratify}{data.frame}(x, target_data, strata_names,
-  aggregated_names, prop_name = "proportion", pars = "theta_bar")
+  aggregated_names, proportion_name = "proportion", pars = "theta_bar")
 }
 \arguments{
 \item{x}{A \code{data.frame} or \code{dgo_fit} object.}
@@ -28,7 +28,7 @@ population strata.}
 \item{aggregated_names}{Names of variables to be aggregated over in
 poststratification.}
 
-\item{prop_name}{Name of the column in \code{target_data} that gives
+\item{proportion_name}{Name of the column in \code{target_data} that gives
 strata proportions.}
 
 \item{...}{Additional arguments to methods.}

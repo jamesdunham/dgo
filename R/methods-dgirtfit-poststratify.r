@@ -16,7 +16,7 @@ utils::globalVariables(c("value", "scaled_prop"))
 #' @param ... Additional arguments to methods.
 setGeneric("poststratify", signature = "x",
            function(x, target_data, strata_names, aggregated_names,
-                    prop_name = "proportion", ...)
+                    proportion_name = "proportion", ...)
              standardGeneric("poststratify"))
 
 #' @param pars Selected parameter names.
@@ -38,9 +38,9 @@ setGeneric("poststratify", signature = "x",
 #' @export
 setMethod("poststratify", c("dgo_fit"),
   function(x, target_data, strata_names, aggregated_names,
-           prop_name = "proportion", pars = "theta_bar") {
+           proportion_name = "proportion", pars = "theta_bar") {
     x <- as.data.frame(x, pars = pars)
-    callGeneric(x, target_data, strata_names, aggregated_names, prop_name)
+    callGeneric(x, target_data, strata_names, aggregated_names, proportion_name)
 })
 
 #' @param x A \code{data.frame} or \code{dgo_fit} object.
@@ -50,7 +50,7 @@ setMethod("poststratify", c("dgo_fit"),
 #' population strata.
 #' @param aggregated_names Names of variables to be aggregated over in
 #' poststratification. 
-#' @param prop_name Name of the column in \code{target_data} that gives
+#' @param proportion_name Name of the column in \code{target_data} that gives
 #' strata proportions.
 #' @return A table of poststratified estimates.
 #' @rdname poststratify
@@ -58,11 +58,11 @@ setMethod("poststratify", c("dgo_fit"),
 #' @export
 setMethod("poststratify", "data.frame",
           function(x, target_data, strata_names, aggregated_names,
-                   prop_name = "proportion", pars = "theta_bar") {
+                   proportion_name = "proportion", pars = "theta_bar") {
   assert(is.data.frame(target_data))
   assert(all_strings(strata_names))
   assert(all_strings(strata_names))
-  assert(assertthat::is.string(prop_name))
+  assert(assertthat::is.string(proportion_name))
   assert(all_strings(pars))
 
   x <- data.table::setDT(data.table::copy(x))
@@ -103,7 +103,7 @@ setMethod("poststratify", "data.frame",
     }
 
   extra_cols <- setdiff(names(targets), c(strata_names, aggregated_names,
-                                          prop_name))
+                                          proportion_name))
   if (length(extra_cols)) {
     targets[, c(extra_cols) := NULL]
   }
@@ -118,7 +118,7 @@ setMethod("poststratify", "data.frame",
             "and this may indicate a larger problem.")
   }
 
-  props <- scale_props(props, prop_name, strata_names)
+  props <- scale_props(props, proportion_name, strata_names)
 
   check_proportions(props, strata_names)
   res <- props[, list(value = sum(value * scaled_prop)), by = strata_names] 
@@ -130,11 +130,11 @@ check_estimates <- function(estimates, strata_names) {
   estimates
 }
 
-scale_props <- function(props, prop_name, strata_names) {
-  strata_sums <- props[, list(strata_sum = sum(get(prop_name))),
+scale_props <- function(props, proportion_name, strata_names) {
+  strata_sums <- props[, list(strata_sum = sum(get(proportion_name))),
                        by = strata_names]
   props <- merge(props, strata_sums, all = FALSE, by = strata_names)
-  props[, c("scaled_prop") := get(prop_name) / get("strata_sum")]
+  props[, c("scaled_prop") := get(proportion_name) / get("strata_sum")]
   return(props)
 }
 

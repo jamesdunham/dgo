@@ -37,12 +37,12 @@ test_that("poststratify and weighted.mean results are equivalent", {
 
   tapply_res <- tapply(x$value, x$wool, mean)
   res <- poststratify(x, target_data = target_data, aggregated_names = "tension",
-                      strata_names = "wool", prop_name = "prop")
+                      strata_names = "wool", proportion_name = "prop")
   expect_equivalent(res[["value"]], as.vector(tapply_res))
 
   target_data$prop[c(1,2,4,5)] <- c(1/3, 0, 1/3, 0)
   res <- poststratify(x, target_data = target_data, aggregated_names = "tension",
-                      strata_names = "wool", prop_name = "prop")
+                      strata_names = "wool", proportion_name = "prop")
   expect_equivalent(weighted.mean(x$value[1:3], c(2, 0, 1)), res$value[1])
   expect_equivalent(weighted.mean(x$value[4:6], c(2, 0, 1)), res$value[2])
 })

@@ -92,20 +92,9 @@ suppressMessages({
 
   context("required arguments for target_data")
 
-  test_that("omitted arguments produce error", {
     expect_error(shape(opinion,
                        target_data = targets,
-                       raking = ~ state,
-                       item_names = "abortion",
-                       time_name = "year",
-                       geo_name = "state",
-                       group_names = "female",
-                       survey_name = "source",
-                       weight_name = "weight"),
-                 ".*target_proportion_name.*required when using.*target_data")
-    expect_error(shape(opinion,
-                       target_data = targets,
-                       target_proportion_name = "proportion",
+                       proportion_name = "proportion",
                        item_names = "abortion",
                        time_name = "year",
                        geo_name = "state",
@@ -113,6 +102,4 @@ suppressMessages({
                        survey_name = "source",
                        weight_name = "weight"),
                  "raking.*required when using.*target_data")
-  })
-
 })
