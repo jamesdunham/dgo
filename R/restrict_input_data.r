@@ -156,7 +156,8 @@ coerce_factors <- function(tbl, vars) {
 }
 
 rename_numerics <- function(tbl, vars) {
-  numeric_vars <- vars[vapply(tbl[, vars], is.numeric, logical(1))]
+  numeric_vars <- vars[vapply(tbl[, vars, with = FALSE], is.numeric,
+                              logical(1))]
   if (length(numeric_vars)) {
     for (v in numeric_vars) {
       warning("coercing numeric `", v, "` in ", substitute(tbl),
