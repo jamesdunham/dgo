@@ -152,6 +152,7 @@ of surveys, with argument \code{min_survey_filter}. Argument
 If both row-wise and column-wise restrictions are specified, \code{shape}
 iterates over them until they leave the data unchanged.
 }
+
 \examples{
 # model individual item responses
 shaped_responses <- shape(opinion, item_names = "abortion", time_name =
@@ -167,4 +168,3 @@ get_item_n(shaped_responses, by = "year")
 \seealso{
 \code{\link{dgirtin-class}} \code{\link{dgirtfit-class}}
 }
-

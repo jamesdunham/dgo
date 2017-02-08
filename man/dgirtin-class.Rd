@@ -2,24 +2,27 @@
 % Please edit documentation in R/class-dgirtin.r, R/methods-dgirtin.r
 \docType{methods}
 \name{dgirtin-class}
-\alias{dgirtIn-method,}
 \alias{dgirtin-class}
 \alias{dgirtin-class,}
-\alias{get_item_n}
 \alias{get_item_n,}
-\alias{get_item_n,dgirtIn-method}
-\alias{get_item_names}
 \alias{get_item_names,}
-\alias{get_item_names,dgirtIn-method}
-\alias{get_n}
 \alias{get_n,}
-\alias{get_n,dgirtIn-method}
-\alias{print}
-\alias{print,dgirtIn-method}
+\alias{dgirtIn-method,}
 \alias{print.dgirtIn,}
-\alias{show,dgirtIn-method}
 \alias{summary}
 \alias{summary,dgirtIn-method}
+\alias{print}
+\alias{print,dgirtIn-method}
+\alias{get_item_names}
+\alias{get_item_names,dgirtIn-method}
+\alias{get_item_names}
+\alias{get_n}
+\alias{get_n,dgirtIn-method}
+\alias{get_n}
+\alias{get_item_n}
+\alias{get_item_n,dgirtIn-method}
+\alias{get_item_n}
+\alias{show,dgirtIn-method}
 \title{Class \code{dgirtIn}: data prepared for modeling with \code{dgirt}}
 \usage{
 summary(object, ...)
@@ -100,4 +103,3 @@ get_item_n(toy_dgirt_in, by = "year")
 \seealso{
 `\link{get_item_n}, \link{get_item_names}`
 }
-

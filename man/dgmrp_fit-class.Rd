@@ -2,8 +2,8 @@
 % Please edit documentation in R/class-dgmrp_fit.r
 \docType{class}
 \name{dgmrp_fit-class}
-\alias{dgmrp_fit}
 \alias{dgmrp_fit-class}
+\alias{dgmrp_fit}
 \title{Class \code{dgmrp_fit}: a class for fitted models}
 \description{
 \code{\link{dgmrp}} returns a fitted model object of class \code{dgmrp_fit},
@@ -14,7 +14,7 @@ which inherits from \code{\link{dgo_fit}}.
 \describe{
 \item{\code{dgirt_in}}{\code{\link{dgirtin-class}} data used to fit the model.}
 }}
+
 \seealso{
 \code{\link{dgirt_fit}} \code{\link{dgo_fit}}
 }
-

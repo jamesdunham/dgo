@@ -2,17 +2,17 @@
 % Please edit documentation in R/methods-dgirtfit.r
 \docType{methods}
 \name{show,dgo_fit-method}
-\alias{as.data.frame.dgo_fit}
-\alias{get_elapsed_time,dgo_fit-method}
-\alias{get_posterior_mean,dgo_fit-method}
+\alias{show,dgo_fit-method}
 \alias{print,dgo_fit-method}
 \alias{print.dgo_fit}
-\alias{rhats}
-\alias{rhats,dgo_fit-method}
-\alias{show,dgo_fit-method}
+\alias{get_elapsed_time,dgo_fit-method}
+\alias{summary,dgo_fit-method}
+\alias{get_posterior_mean,dgo_fit-method}
 \alias{summarize}
 \alias{summarize,dgo_fit-method}
-\alias{summary,dgo_fit-method}
+\alias{as.data.frame.dgo_fit}
+\alias{rhats}
+\alias{rhats,dgo_fit-method}
 \title{\code{print} method for \code{dgo_fit-class} objects}
 \usage{
 \S4method{show}{dgo_fit}(object)
@@ -79,4 +79,3 @@ summarize(toy_dgirtfit)
 as.data.frame(toy_dgirtfit, pars = 'theta_bar')
 rhats(toy_dgirtfit)
 }
-

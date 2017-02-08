@@ -16,4 +16,3 @@ a minimal \code{\link[dgo]{dgirtin-class}} object for use in examples.
 \examples{
 toy_dgirt_in
 }
-
