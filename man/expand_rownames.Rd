@@ -34,4 +34,3 @@ format will appear in another column called \code{rn}.
 \seealso{
 \code{\link{dgirtfit-class}}
 }
-

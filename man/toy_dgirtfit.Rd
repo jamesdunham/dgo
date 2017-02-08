@@ -16,4 +16,3 @@ minimal \code{\link[dgo]{dgirtfit}} object for use in examples.
 \examples{
 toy_dgirtfit
 }
-

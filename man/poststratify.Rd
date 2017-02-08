@@ -3,8 +3,8 @@
 \docType{methods}
 \name{poststratify}
 \alias{poststratify}
-\alias{poststratify,data.frame-method}
 \alias{poststratify,dgo_fit-method}
+\alias{poststratify,data.frame-method}
 \title{\code{poststratify}: reweight and aggregate estimates}
 \usage{
 poststratify(x, target_data, strata_names, aggregated_names,
@@ -63,4 +63,3 @@ targets <- aggregate(proportion ~ state + year + race3, targets, sum)
 post <- poststratify(toy_dgirtfit, targets, c("state", "year"), "race3")
 }
 }
-

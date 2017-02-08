@@ -55,4 +55,3 @@ its \code{pars} argument to specify typical DGIRT parameters of interest.
   \code{\link{dgirtfit-class}}.
 \code{\link{dgirtfit-class}} \code{\link{shape}}
 }
-

@@ -29,18 +29,11 @@ library(dgo)
 #> Loading required package: Rcpp
 #> Loading required package: rstan
 #> Loading required package: ggplot2
-#> Stackoverflow is a great place to get help:
-#> http://stackoverflow.com/tags/ggplot2.
 #> Loading required package: StanHeaders
 #> rstan (Version 2.14.1, packaged: 2016-12-28 14:55:41 UTC, GitRev: 5fa1e80eb817)
 #> For execution on a local, multicore CPU with excess RAM we recommend calling
 #> rstan_options(auto_write = TRUE)
 #> options(mc.cores = parallel::detectCores())
-#> 
-#> Attaching package: 'dgo'
-#> The following objects are masked from 'package:dgodata':
-#> 
-#>     toy_dgirtfit, toy_dgirt_in
 ```
 
 The minimal workflow from raw data to estimation is:
@@ -98,7 +91,7 @@ summary(dgirt_in_abortion)
 #> Hierarchical parameters:
 #> [1] "GA"         "LA"         "MA"         "race3other" "race3white"
 #> Modifiers of hierarchical parameters:
-#> character(0)
+#> NULL
 #> Constants:
 #>  Q  T  P  N  G  H  D 
 #>  1  5  5 60 12  1  1
@@ -147,7 +140,7 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgirt_out_abortion)
 #> dgirt samples from 4 chains of 1500 iterations, 750 warmup, thinned every 1 
-#>   Drawn Fri Jan 27 15:29:23 2017 
+#>   Drawn Wed Feb  8 12:24:24 2017 
 #>   Package version 0.2.8 
 #>   Model version 2017_01_04_singleissue 
 #>   117 parameters; 60 theta_bars (year, state and race3)
@@ -163,10 +156,10 @@ summary(dgirt_out_abortion)
 #> 
 #> Elapsed time
 #>    chain warmup sample total
-#> 1:     1    11S    19S   30S
-#> 2:     2    12S    24S   36S
-#> 3:     3    12S    20S   32S
-#> 4:     4    15S    23S   38S
+#> 1:     1    10S    20S   30S
+#> 2:     2    10S    22S   32S
+#> 3:     3    10S    19S   29S
+#> 4:     4    13S    20S   33S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
@@ -174,19 +167,19 @@ To summarize posterior samples, use `summarize`. The default output gives summar
 ``` r
 head(summarize(dgirt_out_abortion))
 #>        param state race3 year      mean         sd    median     q_025
-#> 1: theta_bar    CA black 2006 0.7589070 0.07197208 0.7589930 0.6177013
-#> 2: theta_bar    CA black 2007 0.8428500 0.11277034 0.8313313 0.6565793
-#> 3: theta_bar    CA black 2008 0.5920294 0.07277908 0.5895297 0.4547283
-#> 4: theta_bar    CA black 2009 0.4817884 0.06275055 0.4809380 0.3572041
-#> 5: theta_bar    CA black 2010 0.6423101 0.04880717 0.6431888 0.5472412
-#> 6: theta_bar    CA other 2006 0.6202682 0.07065043 0.6196238 0.4897496
+#> 1: theta_bar    CA black 2006 0.7754603 0.02155152 0.7760716 0.7316139
+#> 2: theta_bar    CA black 2007 0.7988475 0.03076377 0.7971067 0.7442743
+#> 3: theta_bar    CA black 2008 0.7225603 0.02428735 0.7222470 0.6753476
+#> 4: theta_bar    CA black 2009 0.6846860 0.02226090 0.6847197 0.6395305
+#> 5: theta_bar    CA black 2010 0.7394164 0.01584579 0.7399492 0.7078935
+#> 6: theta_bar    CA other 2006 0.7319499 0.02315218 0.7322472 0.6878444
 #>        q_975
-#> 1: 0.8915466
-#> 2: 1.1271536
-#> 3: 0.7360888
-#> 4: 0.6041669
-#> 5: 0.7339871
-#> 6: 0.7638440
+#> 1: 0.8136820
+#> 2: 0.8701612
+#> 3: 0.7691617
+#> 4: 0.7271336
+#> 5: 0.7685217
+#> 6: 0.7775199
 ```
 
 Alternatively, `summarize` can apply arbitrary functions to posterior samples for whatever parameter is given by its `pars` argument. Enclose function names with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th posterior quantiles.
@@ -206,12 +199,12 @@ To access posterior samples in tabular form use `as.data.frame`. By default, thi
 ``` r
 head(as.data.frame(dgirt_out_abortion))
 #>        param state race3 year iteration     value
-#> 1: theta_bar    CA black 2006         1 0.7110367
-#> 2: theta_bar    CA black 2006         2 0.6761136
-#> 3: theta_bar    CA black 2006         3 0.8117531
-#> 4: theta_bar    CA black 2006         4 0.7528276
-#> 5: theta_bar    CA black 2006         5 0.7649505
-#> 6: theta_bar    CA black 2006         6 0.6610892
+#> 1: theta_bar    CA black 2006         1 0.7614693
+#> 2: theta_bar    CA black 2006         2 0.7505157
+#> 3: theta_bar    CA black 2006         3 0.7915333
+#> 4: theta_bar    CA black 2006         4 0.7742232
+#> 5: theta_bar    CA black 2006         5 0.7778495
+#> 6: theta_bar    CA black 2006         6 0.7457225
 ```
 
 To poststratify the results use `poststratify`. The following example uses the group population proportions bundled as `annual_state_race_targets` to reweight and aggregate estimates to strata defined by state-years.
@@ -221,27 +214,27 @@ Read `help("poststratify")` for more details.
 ``` r
 poststratify(dgirt_out_abortion, annual_state_race_targets, strata_names =
   c("state", "year"), aggregated_names = "race3")
-#>     state year       value
-#>  1:    CA 2006  0.58070938
-#>  2:    CA 2007  0.66760350
-#>  3:    CA 2008  0.40460772
-#>  4:    CA 2009  0.32401519
-#>  5:    CA 2010  0.45691132
-#>  6:    GA 2006  0.35072232
-#>  7:    GA 2007  0.31909209
-#>  8:    GA 2008  0.06248834
-#>  9:    GA 2009  0.02700250
-#> 10:    GA 2010  0.17943975
-#> 11:    LA 2006  0.06730273
-#> 12:    LA 2007 -0.05769747
-#> 13:    LA 2008 -0.21643468
-#> 14:    LA 2009 -0.24944193
-#> 15:    LA 2010 -0.19162850
-#> 16:    MA 2006  0.71862015
-#> 17:    MA 2007  0.88320336
-#> 18:    MA 2008  0.54223115
-#> 19:    MA 2009  0.41404093
-#> 20:    MA 2010  0.54978420
+#>     state year     value
+#>  1:    CA 2006 0.7188081
+#>  2:    CA 2007 0.7470397
+#>  3:    CA 2008 0.6566884
+#>  4:    CA 2009 0.6267420
+#>  5:    CA 2010 0.6756431
+#>  6:    GA 2006 0.6333206
+#>  7:    GA 2007 0.6223014
+#>  8:    GA 2008 0.5243312
+#>  9:    GA 2009 0.5105648
+#> 10:    GA 2010 0.5704081
+#> 11:    LA 2006 0.5258743
+#> 12:    LA 2007 0.4770990
+#> 13:    LA 2008 0.4151797
+#> 14:    LA 2009 0.4024384
+#> 15:    LA 2010 0.4246879
+#> 16:    MA 2006 0.7629225
+#> 17:    MA 2007 0.8101844
+#> 18:    MA 2008 0.7056092
+#> 19:    MA 2009 0.6600767
+#> 20:    MA 2010 0.7082504
 ```
 
 To plot the results use `dgirt_plot`. This method plots summaries of posterior samples by time period. By default, it shows a 95% credible interval around posterior medians for the `theta_bar` parameters, for each local geographic area. For this (unconverged) toy example we omit the CIs.
@@ -267,12 +260,12 @@ ps <- poststratify(dgirt_out_abortion, annual_state_race_targets, strata_names =
   c("state", "year"), aggregated_names = "race3")
 head(ps)
 #>    state year     value
-#> 1:    CA 2006 0.5807094
-#> 2:    CA 2007 0.6676035
-#> 3:    CA 2008 0.4046077
-#> 4:    CA 2009 0.3240152
-#> 5:    CA 2010 0.4569113
-#> 6:    GA 2006 0.3507223
+#> 1:    CA 2006 0.7188081
+#> 2:    CA 2007 0.7470397
+#> 3:    CA 2008 0.6566884
+#> 4:    CA 2009 0.6267420
+#> 5:    CA 2010 0.6756431
+#> 6:    GA 2006 0.6333206
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
@@ -313,7 +306,7 @@ summary(dgirt_in_liberalism)
 #> Hierarchical parameters:
 #> [1] "GA"         "LA"         "MA"         "race3other" "race3white"
 #> Modifiers of hierarchical parameters:
-#> character(0)
+#> NULL
 #> Constants:
 #>   Q   T   P   N   G   H   D 
 #>   5   5   5 300  12   1   1
@@ -323,18 +316,18 @@ Response counts by item-year:
 
 ``` r
 get_item_n(dgirt_in_liberalism, by = "year")
-#>    year abortion affirmative_action stemcell_research gaymarriage_amendment
-#> 1: 2006     5275               4750              2483                  2642
-#> 2: 2007     1690               1557              1705                  1163
-#> 3: 2008     4697               4704              4002                  4265
-#> 4: 2009     2141               2147                 0                     0
-#> 5: 2010     9204               9241              9146                  9226
-#>    partialbirth_abortion
-#> 1:                  5064
-#> 2:                  1684
-#> 3:                     0
-#> 4:                     0
-#> 5:                     0
+#>    year abortion affirmative_action stemcell_research
+#> 1: 2006     5275               4750              2483
+#> 2: 2007     1690               1557              1705
+#> 3: 2008     4697               4704              4002
+#> 4: 2009     2141               2147                 0
+#> 5: 2010     9204               9241              9146
+#>    gaymarriage_amendment partialbirth_abortion
+#> 1:                  2642                  5064
+#> 2:                  1163                  1684
+#> 3:                  4265                     0
+#> 4:                     0                     0
+#> 5:                  9226                     0
 ```
 
 ### Fit a model with `dgirt`
@@ -357,7 +350,7 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgirt_out_liberalism)
 #> dgirt samples from 4 chains of 3000 iterations, 1500 warmup, thinned every 1 
-#>   Drawn Fri Jan 27 15:35:24 2017 
+#>   Drawn Wed Feb  8 12:29:09 2017 
 #>   Package version 0.2.8 
 #>   Model version 2017_01_04 
 #>   137 parameters; 60 theta_bars (year, state and race3)
@@ -372,11 +365,11 @@ summary(dgirt_out_liberalism)
 #>  0.9997  1.0000  1.0010  1.0020  1.0020  1.0150
 #> 
 #> Elapsed time
-#>    chain warmup sample  total
-#> 1:     1 1M 55S  2M 0S 3M 55S
-#> 2:     2 1M 53S 3M 24S 4M 77S
-#> 3:     3  2M 5S  2M 0S  4M 5S
-#> 4:     4 1M 60S  2M 1S 3M 61S
+#>    chain warmup sample   total
+#> 1:     1 1M 44S 1M 50S  2M 94S
+#> 2:     2 1M 42S 2M 54S  3M 96S
+#> 3:     3 1M 54S 1M 48S 2M 102S
+#> 4:     4 1M 47S 1M 50S  2M 97S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
