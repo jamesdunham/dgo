@@ -2,8 +2,8 @@
 % Please edit documentation in R/class-dgo_fit.r
 \docType{class}
 \name{dgo_fit-class}
-\alias{dgo_fit}
 \alias{dgo_fit-class}
+\alias{dgo_fit}
 \title{Class \code{dgo_fit}: a class for fitted models}
 \description{
 \code{dgo_fit} is a superclass for \code{\link{dgirt_fit}} and
@@ -17,7 +17,7 @@
 
 \item{\code{call}}{The function call that returned the \code{dgo_fit} object.}
 }}
+
 \seealso{
 \code{\link{dgmrp_fit}} \code{\link{dgo_fit}}
 }
-

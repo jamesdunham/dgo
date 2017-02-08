@@ -2,11 +2,10 @@
 % Please edit documentation in R/class-dgirt_fit.r
 \docType{class}
 \name{dgirtfit-class}
-\alias{dgirtfit}
 \alias{dgirtfit-class}
+\alias{dgirtfit}
 \title{Class \code{dgirtfit}: a class for fitted models}
 \description{
 dgo 0.2.8 deprecated the \code{dgirtfit} class and replaced it with the
 \code{\link{dgirt_fit}} class.
 }
-

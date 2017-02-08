@@ -2,8 +2,8 @@
 % Please edit documentation in R/class-dgirt_fit.r
 \docType{class}
 \name{dgirt_fit-class}
-\alias{dgirt_fit}
 \alias{dgirt_fit-class}
+\alias{dgirt_fit}
 \title{Class \code{dgirt_fit}: a class for fitted models}
 \description{
 \code{\link{dgirt}} returns a fitted model object of class \code{dgirt_fit},
@@ -18,6 +18,7 @@ dgo 0.2.8 deprecated the \code{dgirtfit} class and replaced it with the
 \describe{
 \item{\code{dgirt_in}}{\code{\link{dgirtin-class}} data used to fit the model.}
 }}
+
 \examples{
 data(toy_dgirtfit)
 # summarize the fitted results
@@ -39,4 +40,3 @@ extract(toy_dgirtfit, pars = 'theta_bar')
 \seealso{
 \code{\link{dgmrp_fit}} \code{\link{dgo_fit}}
 }
-

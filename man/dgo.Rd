@@ -11,4 +11,3 @@ response data. This package handles common preprocessing tasks and extends
 functions for inspecting results, poststratification, and quick iteration
 over alternative models.
 }
-

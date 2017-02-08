@@ -3,8 +3,8 @@
 \docType{methods}
 \name{dgirt_plot}
 \alias{dgirt_plot}
-\alias{dgirt_plot,data.frame-method}
 \alias{dgirt_plot,dgo_fit-method}
+\alias{dgirt_plot,data.frame-method}
 \alias{plot,dgo_fit,missing-method}
 \alias{plot_rhats}
 \alias{plot_rhats,dgo_fit-method}
@@ -80,4 +80,3 @@ plot_rhats(toy_dgirtfit)
 plot_rhats(toy_dgirtfit, facet_vars = "race3") +
   scale_x_continuous(breaks = seq.int(2006, 2008))
 }
-
