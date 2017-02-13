@@ -1,5 +1,8 @@
-# .travis.yml for R projects from https://github.com/craigcitro/r-travis
 language: r
+r:
+  - oldrel
+  - release
+  - devel
 cache: packages
 
 notifications:
