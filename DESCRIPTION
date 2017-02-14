@@ -23,7 +23,6 @@ Depends:
 LazyData: true
 Imports:
     assertthat,
-    concatenate,
     data.table,
     ggplot2,
     lubridate,
@@ -55,7 +54,6 @@ Collate:
     'methods-dgirtfit-plot.r'
     'methods-dgirtfit-poststratify.r'
     'methods-dgirtfit.r'
-    'require_namespace.r'
     'methods-dgirtin.r'
     'name_helpers.r'
     'package.R'

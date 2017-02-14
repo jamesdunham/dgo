@@ -138,9 +138,6 @@
 #' # check sparseness of data to be modeled
 #' get_item_n(shaped_responses, by = "year")
 #'
-#' @import data.table
-#' @seealso \code{\link{dgirtin-class}} \code{\link{dgirtfit-class}}
-#' @include require_namespace.r
 #' @export
 shape <- function(item_data,
                   item_names,

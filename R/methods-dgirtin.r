@@ -9,7 +9,6 @@ setGeneric("summary")
 #'
 #' @rdname dgirtin-class
 #' @include class-dgirtin.r
-#' @include require_namespace.r
 #' @export
 setMethod("summary", c(object = "dgirtIn"),
   function(object, ...) {
@@ -88,7 +87,6 @@ setGeneric("get_n", signature = c("x", "by", "aggregate_name"),
 #'
 #' @seealso `\link{get_item_n}, \link{get_item_names}`
 #' @include class-dgirtin.r
-#' @include require_namespace.r
 #' @aliases get_n
 #' @rdname dgirtin-class
 #' @export
@@ -120,7 +118,6 @@ setGeneric("get_item_n", signature = c("x", "by", "aggregate_data"),
 #' Count Respondents for Items in DGIRT Data
 #'
 #' @include class-dgirtin.r
-#' @include require_namespace.r
 #' @rdname dgirtin-class
 #' @examples
 #' get_item_n(toy_dgirt_in)
@@ -150,7 +147,6 @@ setMethod("get_item_n", c("x" = "dgirtIn"),
 
 #' Show Summary of DGIRT Data
 #' @include class-dgirtin.r
-#' @include require_namespace.r
 #' @rdname dgirtin-class
 #' @export
 setMethod("show", c("dgirtIn"), function(object) summary(object))
