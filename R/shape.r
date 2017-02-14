@@ -226,8 +226,6 @@ shape <- function(item_data,
 init_dgirt_in <- function(item_data, aggregate_data, modifier_data, target_data,
   ctrl) {
   d_in <- dgirtIn$new(ctrl)
-  d_in$time_observed <- get_observed(item_data, aggregate_data, ctrl@time_name)
-  d_in$geo_observed <- get_observed(item_data, aggregate_data, ctrl@geo_name)
 
   # aggregate individual item response data to group level #
   item_data <- dichotomize(item_data, ctrl)

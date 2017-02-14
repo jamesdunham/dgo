@@ -25,7 +25,8 @@ suppressMessages({
   })
 
   test_that('S is the count of geographic units - 1', {
-    expect_identical(d_min$S, length(d_min$geo_observed) - 1)
+    geo_observed <- length(unique(d_min$group_grid_t$state))
+    expect_identical(d_min$S, geo_observed - 1)
   })
 
   context("hierarchical modifier is numeric")
