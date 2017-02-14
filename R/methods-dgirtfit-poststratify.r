@@ -88,7 +88,6 @@ setMethod("poststratify", "data.frame",
   targets_n <- nrow(unique(targets[, c(strata_names, aggregated_names), with =
                            FALSE]))
 
-  # TODO: check more carefully than nrow()
   if (!identical(nrow(targets), targets_n)) {
       stop("Variables in aggregated_names should partition the strata ",
            "defined by the interaction of the variables in strata_names ",

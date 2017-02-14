@@ -107,7 +107,6 @@ setMethod("get_n", c("x" = "dgirtIn"),
         f <- as.formula(paste(by, aggregate_name, sep = "~"))
         n <- data.table::dcast(n, f, fun.aggregate = sum, value.var = "n")
       }
-      # TODO: make sure that aggregate_data is restricted
       n[, (setdiff(names(n), by)) := lapply(.SD, function(k) replace(k, is.na(k), 0L)),
              .SDcols = setdiff(names(n), by)]
     }

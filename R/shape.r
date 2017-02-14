@@ -297,8 +297,6 @@ make_design_matrix <- function(d_in, ctrl) {
                                  colnames(design_matrix))
 
   design_matrix <- subset(design_matrix, select = -1)
-
-  # TODO: move to S4 validate
   invalid_values <- setdiff(as.vector(design_matrix), c(0, 1))
   if (length(invalid_values)) {
     stop("design matrix values should be in (0, 1); found ",
