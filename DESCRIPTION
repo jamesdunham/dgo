@@ -2,10 +2,10 @@ Package: dgo
 Title: Dynamic Estimation of Group-Level Opinion
 Version: 0.2.8
 Date: 2017-01-31
-Description: Fit dynamic group-level IRT models from individual or aggregated
-    item response data. This package handles common preprocessing tasks and extends
-    functions for inspecting results, poststratification, and quick iteration over
-    alternative models. Under active development.
+Description: Fit dynamic group-level IRT and MRP models from individual or
+    aggregated item response data. This package handles common preprocessing
+    tasks and extends functions for inspecting results, poststratification, and
+    quick iteration over alternative models.
 Maintainer: James Dunham <james@jdunham.io>
 Authors@R: c(
     person("James", "Dunham", email = "james@jdunham.io", role = c("aut", "cre")),

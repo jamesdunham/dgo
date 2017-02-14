@@ -6,7 +6,7 @@
 \alias{dgo-package}
 \title{dgo: Dynamic Estimation of Group-level Opinion}
 \description{
-Fit dynamic group-level IRT models from individual or aggregated item
+Fit dynamic group-level IRT and MRP models from individual or aggregated item
 response data. This package handles common preprocessing tasks and extends
 functions for inspecting results, poststratification, and quick iteration
 over alternative models.
