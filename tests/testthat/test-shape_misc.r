@@ -4,14 +4,25 @@ suppressMessages({
   context("shape calls")
 
   test_that("minimal calls are successful", {
-    expect_silent(suppressMessages(min_item_call()))
-    expect_silent(suppressMessages(min_modifier_call()))
-    expect_silent(suppressMessages(min_groupless_call()))
+    expect_silent(suppressMessages(shape(item_data = opinion, item_names =
+          "abortion", time_name = "year", geo_name = "state", group_names =
+          "female")))
+    expect_silent(suppressMessages(shape(item_data = opinion, item_names =
+          "abortion", time_name = "year", geo_name = "state", group_names =
+          "female", modifier_data = states, modifier_names =
+          "prop_evangelicals", t1_modifier_names = "prop_evangelicals")))
+    expect_silent(suppressMessages(shape(item_data = opinion, item_names =
+          "abortion", time_name = "year", geo_name = "state")))
   })
 
-  d_min <- min_item_call(survey_name = "source", weight_name = "weight")
-  d_mod <- min_modifier_call()
-  d_nogroups <- min_groupless_call()
+  d_min <- shape(item_data = opinion, item_names = "abortion", time_name =
+    "year", geo_name = "state", group_names = "female", survey_name = "source",
+  weight_name = "weight")
+  d_mod <- shape(item_data = opinion, item_names = "abortion", time_name =
+    "year", geo_name = "state", group_names = "female", modifier_data = states,
+    modifier_names = "prop_evangelicals", t1_modifier_names = "prop_evangelicals")
+  d_nogroups <- shape(item_data = opinion, item_names = "abortion", time_name =
+    "year", geo_name = "state")
 
   context("shape return values are valid")
 
@@ -29,6 +40,8 @@ suppressMessages({
     expect_identical(d_min$control@group_names, "female")
     expect_identical(d_min$control@survey_name, "source")
     expect_identical(d_min$control@weight_name, "weight")
+    expect_identical(d_mod$control@modifier_names, "prop_evangelicals")
+    expect_identical(d_nogroups$control@group_names, NULL)
   })
 
 })

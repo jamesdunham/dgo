@@ -3,17 +3,11 @@ suppressMessages({
 
   context("input types")
 
-  data(opinion)
-  data(states)
-  
-  d_min <- min_item_call()
-  d_mod <- min_modifier_call()
-
-  test_that("minimal shape calls are successful", {
-    expect_silent(suppressMessages(min_item_call()))
-    expect_silent(suppressMessages(min_modifier_call()))
-    expect_silent(suppressMessages(min_groupless_call()))
-  })
+  d_min <- shape(item_data = opinion, item_names = "abortion", time_name =
+    "year", geo_name = "state", group_names = "female")
+  d_mod <- shape(item_data = opinion, item_names = "abortion", time_name =
+    "year", geo_name = "state", group_names = "female", modifier_data = states,
+    modifier_names = "prop_evangelicals", t1_modifier_names = "prop_evangelicals")
 
   test_that("stop_if_empty works", {
     x <- data.frame()

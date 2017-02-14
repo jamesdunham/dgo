@@ -1,4 +1,3 @@
-source("setup.r")
 suppressMessages({
 
   context("n/s vectors")
