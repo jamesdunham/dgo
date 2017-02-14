@@ -4,14 +4,21 @@ r:
   - release
   - devel
 cache: packages
-
+matrix:
+  include:
+    - os: linux
+      dist: precise
+    - os: linux
+      dist: trusty
+    - os: osx
+      osx_image: xcode8
+    - os: osx
+      osx_image: beta-xcode6.2
 notifications:
   email:
     - jdunham@mit.edu
-
 r_github_packages:
   - jimhester/covr
   - jamesdunham/dgodata
-
 after_success:
   - Rscript -e 'library(covr); codecov(line_exclusions = list("src/include/models.hpp"))'
