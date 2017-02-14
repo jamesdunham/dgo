@@ -8,7 +8,6 @@ matrix:
   include:
     - os: linux
       dist: precise
-      sudo: false
     - os: linux
       dist: trusty
       sudo: required
