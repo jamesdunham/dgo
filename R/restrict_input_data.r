@@ -76,15 +76,15 @@ restrict_modifier <- function(modifier_data, group_grid, ctrl) {
       stop("time and geo identifiers don't uniquely identify modifier data ",
            "observations")
 
-    # modifiers cannot have NA values
-    stop_if_any_na(modifier_data, varnames)
-
     if (isTRUE(ctrl@standardize)) {
       # make modifiers zero-mean and unit-SD 
       std_vars <- unique(c(ctrl@modifier_names, ctrl@t1_modifier_names))
       modifier_data[, c(std_vars) := lapply(.SD, function(x) (x - mean(x)) /
                                             sd(x)), .SDcols = std_vars]
     }
+
+    # modifiers cannot have NA values
+    stop_if_any_na(modifier_data, varnames)
   }
   invisible(modifier_data)
 }

@@ -18,7 +18,13 @@ suppressMessages({
   context("restricting modifier data")
 
   test_that("groups unobserved in item_data are dropped from modifier_data", {
-    # TODO
+    ctrl <- new("Control", geo_name = "state", time_name = "year", standardize =
+      TRUE, constant_item = TRUE, min_survey_filter = 1, min_t_filter = 1,
+    modifier_names = "prop_urban")
+    group_grid <- data.table(year = 1930:1931, state = "AK")
+    restricted <- restrict_modifier(states, group_grid, ctrl)
+    expect_equivalent(group_grid[, c("year", "state")],
+      restricted[, c("year", "state")])
   })
 
   context("standardizing modifier data")
