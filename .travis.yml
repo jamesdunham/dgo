@@ -8,10 +8,8 @@ matrix:
   include:
     - os: linux
       dist: precise
-      sudo: false
     - os: linux
       dist: trusty
-      sudo: false
     - os: osx
       osx_image: xcode8
       latex: false
