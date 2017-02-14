@@ -27,18 +27,14 @@ dgmrp <- function(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean =
                 innov_sd_theta_scale = 2.5, version = "2017_01_04_singleissue")
 {
 
-  dots <- list(...,
-               object = stanmodels[[version]],
-               data = shaped_data$as_list(separate_t = separate_t,
-	                                  delta_tbar_prior_mean =
-                                            delta_tbar_prior_mean,
-                                          delta_tbar_prior_sd =
-                                            delta_tbar_prior_sd,
-                                          innov_sd_delta_scale =
-                                            innov_sd_delta_scale,
-                                          innov_sd_theta_scale =
-                                            innov_sd_theta_scale,
-                                            hierarchical_model=TRUE))
+  module_name <- paste0("stan_fit4", version, "_mod")
+  withCallingHandlers(Rcpp::loadModule(module_name, TRUE), warning = function(w)
+    stop(version, " is not a valid value for 'version'"))
+  dots <- list(..., object = stanmodels[[version]], data =
+    shaped_data$as_list(separate_t = separate_t, delta_tbar_prior_mean =
+      delta_tbar_prior_mean, delta_tbar_prior_sd = delta_tbar_prior_sd,
+    innov_sd_delta_scale = innov_sd_delta_scale, innov_sd_theta_scale =
+      innov_sd_theta_scale, hierarchical_model=TRUE))
 
   if (length(shaped_data$gt_items) > 1) {
   	  stop("Multiple items in item data. Single-issue MRP models can only ",
@@ -63,6 +59,3 @@ dgmrp <- function(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean =
     })
 }
 
-models <- function() {
-  names(stanmodels)
-}
