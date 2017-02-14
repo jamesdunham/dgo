@@ -2,12 +2,18 @@
 % Please edit documentation in R/dgirt.r
 \name{dgirt}
 \alias{dgirt}
-\title{\code{dgirt}: fit a DGIRT model}
+\alias{dgmrp}
+\alias{dgmrp}
+\title{\code{dgirt} and \code{dgmrp}: fit a DGIRT or single-issue MRP model}
 \usage{
 dgirt(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
   delta_tbar_prior_sd = 0.25, innov_sd_delta_scale = 2.5,
   innov_sd_theta_scale = 2.5, version = "2017_01_04",
   hierarchical_model = TRUE)
+
+dgmrp(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
+  delta_tbar_prior_sd = 0.25, innov_sd_delta_scale = 2.5,
+  innov_sd_theta_scale = 2.5, version = "2017_01_04_singleissue")
 }
 \arguments{
 \item{shaped_data}{Output from \code{\link{shape}}.}
@@ -39,24 +45,18 @@ smooth the group IRT estimates. If set to FALSE, the model will return raw
 group-IRT model estimates for each group. Default \code{TRUE}.}
 }
 \value{
-A \code{\link{dgirtfit-class}} object that extends
+A \code{\link{dgo_fit-class}} object that extends
 \code{\link[rstan]{stanfit-class}}.
 }
 \description{
-\code{dgirt} makes a call to \code{\link[rstan]{stan}} with the Stan code and
-data for a DGIRT model.
+\code{dgirt} and \code{dgmrp} make calls to \code{\link[rstan]{stan}} with
+the Stan code and data for their respective models.
 }
 \details{
 The user will typically pass further arguments to \code{\link[rstan]{stan}}
 via the \code{...} argument, at a minimum \code{iter} and \code{cores}.
 
-By default \code{dgirt} overrides the \code{\link[rstan]{stan}} default for
-its \code{pars} argument to specify typical DGIRT parameters of interest.
-\code{dgirt} also sets \code{iter_r} to \code{1L}.
-}
-\seealso{
-\code{dgirt} expects \code{shaped_data} created by
-  \code{\link{shape}} and returns an object of class
-  \code{\link{dgirtfit-class}}.
-\code{\link{dgirtfit-class}} \code{\link{shape}}
+By default \code{dgirt} and \code{dgmrp} override the
+\code{\link[rstan]{stan}} default for its \code{pars} argument to specify
+typical parameters of interest. They also set \code{iter_r} to \code{1L}.
 }
