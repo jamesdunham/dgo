@@ -191,8 +191,6 @@ shape <- function(item_data,
                        constant_item = constant_item,
                        ...)
 
-  d_in <- dgirtIn$new(ctrl)
-
   # validate inputs #
   check_targets(target_data, ctrl)
   check_modifiers(modifier_data, ctrl)
@@ -203,11 +201,8 @@ shape <- function(item_data,
   item_data <- restrict_items(item_data, ctrl)
   ctrl@item_names <- intersect(ctrl@item_names, names(item_data))
   aggregate_data <- restrict_aggregates(aggregate_data, ctrl)
-  ctrl@aggregate_item_names <-
-    ctrl@aggregate_item_names[ctrl@aggregate_item_names %chin%
-                              aggregate_data$item]
-  d_in$time_observed <- get_observed(item_data, aggregate_data, ctrl@time_name)
-  d_in$geo_observed <- get_observed(item_data, aggregate_data, ctrl@geo_name)
+  ctrl@aggregate_item_names <- intersect(ctrl@aggregate_item_names,
+    aggregate_data$item)
 
   # rake survey weights #
   if (length(target_data)) {
@@ -215,11 +210,27 @@ shape <- function(item_data,
     ctrl@weight_name <- "raked_weight"
   }
 
+  d_in <- init_dgirt_in(item_data, aggregate_data, modifier_data, target_data,
+    ctrl)
+  d_in$call <- match.call()
+  d_in$pkg_version <- packageVersion("dgo")
+
+  # validate input to model #
+  check_dimensions(d_in)
+  check_values(d_in)
+  check_names(d_in)
+
+  d_in
+}
+
+init_dgirt_in <- function(item_data, aggregate_data, modifier_data, target_data,
+  ctrl) {
+  d_in <- dgirtIn$new(ctrl)
+  d_in$time_observed <- get_observed(item_data, aggregate_data, ctrl@time_name)
+  d_in$geo_observed <- get_observed(item_data, aggregate_data, ctrl@geo_name)
+
   # aggregate individual item response data to group level #
   item_data <- dichotomize(item_data, ctrl)
-  # this assignment should be redundant, but without it some variables created
-  # in dichotomize() weren't appearing in item_data
-
   d_in$group_grid <- make_group_grid(item_data, aggregate_data, ctrl)
   d_in$group_grid_t <- make_group_grid_t(d_in$group_grid, ctrl)
   d_in$group_counts <- make_group_counts(item_data, aggregate_data, ctrl)
@@ -235,23 +246,23 @@ shape <- function(item_data,
   d_in$s_vec <- setNames(d_in$group_counts$s_grp, d_in$group_counts$name)
 
   d_in$G <- nrow(unique(d_in$group_counts[, c(ctrl@geo_name, ctrl@group_names),
-                        with = FALSE]))
+      with = FALSE]))
   d_in$G_hier <- ifelse(!length(modifier_data), nlevels(gl(1L, d_in$G)),
-                        max(unlist(length(ctrl@modifier_names)), 1L))
+    max(unlist(length(ctrl@modifier_names)), 1L))
   d_in$T <- length(ctrl@time_filter)
   d_in$Q <- length(d_in$gt_items)
 
+  # not yet implemented
   d_in$WT <- array(1, dim = c(d_in$T, d_in$G_hier, d_in$G))
-
   d_in$l2_only <- matrix(0L, nrow = length(ctrl@time_filter), ncol = d_in$Q)
   d_in$NNl2 <- array(0L, dim = c(d_in$T, d_in$Q, d_in$G_hier))
   d_in$SSl2 <- d_in$NNl2
 
   d_in$XX <- make_design_matrix(d_in, ctrl)
   d_in$ZZ <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl,
-                                     t1 = FALSE)
+    t1 = FALSE)
   d_in$ZZ_prior <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl,
-                                           t1 = TRUE)
+    t1 = TRUE)
   d_in$hier_names <- dimnames(d_in$ZZ)[[2]]
 
   d_in$D <- ifelse(ctrl@constant_item, 1L, d_in$T)
@@ -261,23 +272,16 @@ shape <- function(item_data,
   d_in$H <- dim(d_in$ZZ)[[3]]
   d_in$Hprior <- dim(d_in$ZZ_prior)[[3]]
 
-
   # include subset data and other objects that may be useful later #
   d_in$item_data <- item_data
   d_in$modifier_data <- modifier_data
   d_in$aggregate_data <- aggregate_data
   d_in$target_data <- target_data
   d_in$control <- ctrl
-  d_in$call <- match.call()
-  d_in$pkg_version <- packageVersion("dgo")
-
-  # validate input to model #
-  check_dimensions(d_in)
-  check_values(d_in)
-  check_names(d_in)
-
-  d_in
+  return(d_in)
 }
+
+
 
 shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
 
