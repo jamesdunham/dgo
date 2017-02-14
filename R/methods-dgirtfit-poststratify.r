@@ -64,6 +64,10 @@ setMethod("poststratify", "data.frame",
   assert(all_strings(strata_names))
   assert(assertthat::is.string(proportion_name))
   assert(all_strings(pars))
+  if (anyDuplicated(c(strata_names, aggregated_names))) {
+    stop("Variable names cannot be used more than once across ",
+      "'strata_names' and 'aggregated_names'")
+  }
 
   x <- data.table::setDT(data.table::copy(x))
 
