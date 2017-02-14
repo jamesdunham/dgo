@@ -1,16 +1,16 @@
 language: r
 r:
-  - oldrel
   - release
   - devel
+  - oldrel
 cache: packages
+sudo: false
 matrix:
   include:
     - os: linux
       dist: precise
     - os: linux
       dist: trusty
-      sudo: required
     - os: osx
       osx_image: xcode8
     - os: osx
