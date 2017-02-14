@@ -13,6 +13,3 @@ toy_dgirt_in
 used with \code{\link[dgo]{dgirt}} for DGIRT modeling. \code{toy_dgirt_in} is
 a minimal \code{\link[dgo]{dgirtin-class}} object for use in examples.
 }
-\examples{
-toy_dgirt_in
-}

@@ -13,6 +13,3 @@ toy_dgirtfit
 that extends \code{\link[rstan]{stanfit-class}}. \code{toy_dgirtfit} is a
 minimal \code{\link[dgo]{dgirtfit}} object for use in examples.
 }
-\examples{
-toy_dgirtfit
-}
