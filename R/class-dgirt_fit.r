@@ -26,9 +26,7 @@
 #' apply(as.array(toy_dgirtfit, pars = 'xi'), 3, mean)
 #'
 #' # access the posterior samples
-#' as.array(toy_dgirtfit, pars = 'theta_bar')
-#' as.data.frame(toy_dgirtfit, pars = 'theta_bar')
-#' extract(toy_dgirtfit, pars = 'theta_bar')
+#' head(as.data.frame(toy_dgirtfit, pars = 'theta_bar'))
 dgirt_fit <- setClass("dgirt_fit", contains = c("dgo_fit"))
 
 #' Class \code{dgirtfit}: a class for fitted models
