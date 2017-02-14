@@ -33,13 +33,21 @@ suppressMessages({
       race = "white", female = "male", year = 0, item = "abortion",
       state = "foo", n_grp = 10, s_grp = 10)
     disjoint_geo_time <- data.table::rbindlist(list(aggregates, disjoint_geo_time))
-    d_disjoint_agg <- min_agg_call(aggregate_data = disjoint_geo_time)
+
+    d_disjoint_agg <- shape(aggregate_data = disjoint_geo_time,
+      item_data = opinion,
+      item_names = "abortion",
+      time_name = "year",
+      geo_name = "state",
+      group_names = "female") 
     expect_equal(sort(unique(c(opinion$year, 0))), d_disjoint_agg$control@time_filter)
     expect_equal(sort(unique(c(opinion$state, "foo"))), d_disjoint_agg$control@geo_filter)
   })
 
   test_that('constant_item defaults to TRUE', {
-    expect_true(min_item_call()$control@constant_item)
+    min_item_call <- shape(item_data = opinion, item_names = "abortion",
+      time_name = "year", geo_name = "state", group_names = "female")
+    expect_true(min_item_call$control@constant_item)
   })
 
   test_that('aggregate_item_names defaults to unique items in aggregate_data', {

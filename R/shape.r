@@ -257,10 +257,10 @@ init_dgirt_in <- function(item_data, aggregate_data, modifier_data, target_data,
   d_in$SSl2 <- d_in$NNl2
 
   d_in$XX <- make_design_matrix(d_in, ctrl)
-  d_in$ZZ <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl,
-    t1 = FALSE)
-  d_in$ZZ_prior <- shape_hierarchical_data(item_data, modifier_data, d_in, ctrl,
-    t1 = TRUE)
+  d_in$ZZ <- shape_hierarchical_data(modifier_data, ctrl@modifier_names,
+    d_in$group_grid_t, d_in$XX, ctrl)
+  d_in$ZZ_prior <- shape_hierarchical_data(modifier_data,
+    ctrl@t1_modifier_names, d_in$group_grid_t, d_in$XX, ctrl)
   d_in$hier_names <- dimnames(d_in$ZZ)[[2]]
 
   d_in$D <- ifelse(ctrl@constant_item, 1L, d_in$T)
@@ -277,78 +277,6 @@ init_dgirt_in <- function(item_data, aggregate_data, modifier_data, target_data,
   d_in$target_data <- target_data
   d_in$control <- ctrl
   return(d_in)
-}
-
-
-
-shape_hierarchical_data <- function(item_data, modifier_data, d_in, ctrl, t1) {
-
-  if (isTRUE(t1)) {
-    modifier_names <- ctrl@t1_modifier_names
-  } else {
-    modifier_names <- ctrl@modifier_names
-  }	
-  if (!length(modifier_names)) {
-    modifier_names <- NA
-  }
-
-  if (!length(modifier_data) | any(is.na(modifier_names))) {
-      zz.names <- list(ctrl@time_filter, dimnames(d_in$XX)[[2]], "")
-      zz <- array(data = 0, dim = lapply(zz.names, length), dimnames = zz.names)
-    } else {
-    # the array of hierarchical data ZZ should be T x P x H, where T is the
-    # number of time periods, P is the number of hierarchical parameters
-    # (including the geographic), and H is the number of predictors for
-    # geographic unit effects
-
-    hier_frame <- data.table::copy(modifier_data)
-
-    extra_colnames <- setdiff(names(hier_frame),
-                             c(ctrl@geo_name, ctrl@time_name, modifier_names))
-    if (length(extra_colnames)) {
-      hier_frame[, c(extra_colnames) := NULL]
-    }
-
-    # NOTE: We create param by renaming geo_name. Thus the requirement to model
-    # geographic predictors.
-    hier_frame[, c("param", ctrl@geo_name) := list(hier_frame[[ctrl@geo_name]],
-                                                   NULL)]
-    data.table::setkeyv(hier_frame, c("param", ctrl@time_name))
-    all(ctrl@time_filter %in% hier_frame$D_year)
-
-    # "param" is just the unique values of the geo var at the moment
-    modeled_param_names <- unique(hier_frame[, get("param")])
-
-    # unmodeled param levels will be those of groups
-    unmodeled_param_levels = unlist(lapply(d_in$unmod_par_names, function(x) {
-                                             paste0(x, unique(d_in$group_grid_t[[x]]))[-1]
-        }))
-    param_levels <- c(modeled_param_names, unmodeled_param_levels)
-
-    # make a zeroed table for unmodeled parameters by time period
-    unmodeled_frame <- expand.grid(c(list(unmodeled_param_levels,
-                                          ctrl@time_filter), rep(list(0L),
-                                          length(modifier_names))))
-    unmodeled_frame <- setNames(unmodeled_frame, c("param", ctrl@time_name,
-                                                   modifier_names))
-    data.table::setDT(unmodeled_frame, key = c("param", ctrl@time_name))
-
-    hier_frame <- rbind(hier_frame, unmodeled_frame)
-
-    zz <- sapply(modifier_names, function(x) {
-                   matrix(hier_frame[[x]],
-                          # We have T rows, so filling by column is correct SO
-                          # LONG AS time varies fastest then param in
-                          # hier_frame
-                          nrow = length(unique(hier_frame[[ctrl@time_name]])),
-                          ncol = length(unique(hier_frame$param)),
-                          dimnames = list(unique(hier_frame[[ctrl@time_name]]),
-                                          unique(hier_frame$param)))
-                        }, simplify = 'array')
-    # omit first geo parameter
-    zz <- zz[, -1, , drop = FALSE]
-  }
-  zz
 }
 
 make_design_matrix <- function(d_in, ctrl) {
