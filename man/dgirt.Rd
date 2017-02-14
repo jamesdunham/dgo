@@ -18,7 +18,7 @@ dgmrp(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
 \arguments{
 \item{shaped_data}{Output from \code{\link{shape}}.}
 
-\item{...}{Further arguments passed to \code{\link[rstan]{stan}}.}
+\item{...}{Further arguments, passed to \code{\link[rstan]{stan}}.}
 
 \item{separate_t}{Whether smoothing of estimates over time should be
 disabled. Default \code{FALSE}.}
@@ -38,7 +38,8 @@ innovation standard deviation of \code{gamma}, \code{xi}, and if
 \code{constant_item} is \code{FALSE} the item difficulty \code{diff}. Default
 \code{2.5}.}
 
-\item{version}{The version of the DGIRT model to use.}
+\item{version}{The model version to use, as the name of a \code{.stan} file
+installed with the package from the \code{exec} directory of the source.}
 
 \item{hierarchical_model}{Whether a hierarchical model should be used to
 smooth the group IRT estimates. If set to FALSE, the model will return raw
