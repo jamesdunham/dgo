@@ -4,17 +4,21 @@ r:
   - devel
   - oldrel
 cache: packages
-sudo: false
 matrix:
   include:
     - os: linux
       dist: precise
+      sudo: false
     - os: linux
       dist: trusty
+      sudo: false
     - os: osx
       osx_image: xcode8
+      latex: false
     - os: osx
       osx_image: beta-xcode6.2
+      disable_homebrew: true
+      latex: false
 notifications:
   email:
     - jdunham@mit.edu
