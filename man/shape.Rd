@@ -165,6 +165,3 @@ summary(shaped_responses)
 get_item_n(shaped_responses, by = "year")
 
 }
-\seealso{
-\code{\link{dgirtin-class}} \code{\link{dgirtfit-class}}
-}
