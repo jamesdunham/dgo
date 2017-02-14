@@ -34,7 +34,6 @@ environment:
     CRAN: http://cran.rstudio.com
 
 build_script:
-  - travis-tool.sh install_github jamesdunham/dgodata
   - travis-tool.sh install_deps
 
 test_script:
