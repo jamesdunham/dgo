@@ -27,7 +27,6 @@ suppressMessages({
     is_name <- valid_names(toy_table, ctrl, 1)
     expect_silent(is_name("valid_name"))
     expect_error(is_name("valid_names"), ".*should be length 1, not 2.*")
-    expect_error(is_name("valid_names"), ".*should be length 1, not 2.*")
     expect_error(is_name("invalid_name"), ".*should give a variable name in.*")
     expect_error(is_name("invalid_names"), ".*should be length 1, not 2.*")
     expect_error(is_name("partial"), ".*should be length 1, not 2.*")
@@ -86,8 +85,8 @@ suppressMessages({
                         time_name = "year",
                         geo_name = "state",
                         group_names = "female")),
-                 "Either \"modifier_names\" or \"t1_modifier_names\" is required ",
-                 "when using modifier data")
+                 paste("Either \"modifier_names\" or \"t1_modifier_names\" is required",
+                 "when using modifier data"))
   })
 
   context("required arguments for target_data")
