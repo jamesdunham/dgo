@@ -2,33 +2,56 @@ language: r
 cache: packages
 matrix:
   include:
+
     - os: linux
       dist: precise
-      r:
-        - release
-        - devel
-        - oldrel
+      r: release
+    - os: linux
+      dist: precise
+      r: devel
+    - os: linux
+      dist: precise
+      r: oldrel
+
     - os: linux
       dist: trusty
-      r:
-        - release
-        - devel
-        - oldrel
+      r: release
+    - os: linux
+      dist: trusty
+      r: devel
+    - os: linux
+      dist: trusty
+      r: oldrel
+
     - os: osx
       osx_image: xcode8
       latex: false
-      r:
-        - release
-        - devel
-        - oldrel
+      r: release
+    - os: osx
+      osx_image: xcode8
+      latex: false
+      r: devel
+    - os: osx
+      osx_image: xcode8
+      latex: false
+      r: oldrel
+
     - os: osx
       osx_image: beta-xcode6.2
       disable_homebrew: true
       latex: false
-      r:
-        - release
-        - devel
-        - oldrel
+      r: release
+    - os: osx
+      osx_image: beta-xcode6.2
+      disable_homebrew: true
+      latex: false
+      r: devel
+    - os: osx
+      osx_image: beta-xcode6.2
+      disable_homebrew: true
+      latex: false
+      r: oldrel
+
 notifications:
   email:
     - jdunham@mit.edu
