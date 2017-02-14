@@ -45,6 +45,10 @@ dgirt <- function(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean =
                   innov_sd_theta_scale = 2.5, version = "2017_01_04",
                   hierarchical_model = TRUE) {
 
+  module_name <- paste0("stan_fit4", version, "_mod")
+  withCallingHandlers(Rcpp::loadModule(module_name, TRUE), warning = function(w)
+    stop(version, " is not a valid value for 'version'"))
+
   dots <- list(..., object = stanmodels[[version]], data =
     shaped_data$as_list(separate_t = separate_t, hierarchical_model =
       hierarchical_model, delta_tbar_prior_mean = delta_tbar_prior_mean,
@@ -69,6 +73,3 @@ dgirt <- function(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean =
     })
 }
 
-models <- function() {
-  names(stanmodels)
-}
