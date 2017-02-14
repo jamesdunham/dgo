@@ -86,10 +86,10 @@ An object of class \code{dgirtIn} expected by \code{\link{dgirt}} and
 \code{\link{dgmrp}}.
 }
 \description{
-This function shapes various kinds of data for use in a dgirt model. Most
-arguments give the name or names of key variables in the data; they end in
-\code{_name} or \code{_names} and should be character vectors. Some others
-implement preprocessing and modeling choices.
+This function shapes data for use in a dgirt or dgmrp model. Most
+arguments give the name or names of key variables in the data. These
+arguments end in \code{_name} or \code{_names} and should be character
+vectors.
 }
 \section{Item Response Data}{
 
@@ -118,7 +118,7 @@ be provided with argument \code{aggregate_data}.
 The data given by \code{aggregate_data} must be in a long table of trial and
 success counts indexed by item, group, and time period. The variable names
 given by arguments \code{group_names}, \code{geo_name}, and\code{time_name}
-should exist in \code{aggregate_data}.  Three fixed variable names must also
+should exist in \code{aggregate_data}. Three fixed variable names must also
 appear in \code{aggregate_data}: \code{item} giving item identifiers,
 \code{n_grp} giving counts of item-response trials, and \code{s_grp} giving
 counts of item-response successes. These counts should be adjusted

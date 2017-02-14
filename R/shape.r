@@ -1,9 +1,9 @@
 #' \code{shape}: prepare data for modeling with \code{dgirt} or \code{dgmrp}
 #'
-#' This function shapes various kinds of data for use in a dgirt model. Most
-#' arguments give the name or names of key variables in the data; they end in
-#' \code{_name} or \code{_names} and should be character vectors. Some others
-#' implement preprocessing and modeling choices.
+#' This function shapes data for use in a dgirt or dgmrp model. Most
+#' arguments give the name or names of key variables in the data. These
+#' arguments end in \code{_name} or \code{_names} and should be character
+#' vectors.
 #'
 #' @section Item Response Data:
 #' Individual-level data giving item responses is expected as argument
@@ -27,7 +27,7 @@
 #' The data given by \code{aggregate_data} must be in a long table of trial and
 #' success counts indexed by item, group, and time period. The variable names
 #' given by arguments \code{group_names}, \code{geo_name}, and\code{time_name}
-#' should exist in \code{aggregate_data}.  Three fixed variable names must also
+#' should exist in \code{aggregate_data}. Three fixed variable names must also
 #' appear in \code{aggregate_data}: \code{item} giving item identifiers,
 #' \code{n_grp} giving counts of item-response trials, and \code{s_grp} giving
 #' counts of item-response successes. These counts should be adjusted
@@ -259,7 +259,6 @@ shape <- function(item_data,
   d_in$P <- ncol(d_in$ZZ)
   d_in$S <- length(unique(d_in$group_grid[[ctrl@geo_name]])) - 1
   d_in$H <- dim(d_in$ZZ)[[3]]
-  #d_in$Hprior <- d_in$H
   d_in$Hprior <- dim(d_in$ZZ_prior)[[3]]
 
 
