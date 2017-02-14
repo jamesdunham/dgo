@@ -23,6 +23,7 @@ Depends:
 LazyData: true
 Imports:
     assertthat,
+    concatenate,
     data.table,
     ggplot2,
     lubridate,
