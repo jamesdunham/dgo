@@ -3,9 +3,7 @@ suppressMessages({
   context("dgirtfit class")
 
   suppressWarnings({
-    sink("/dev/null", type = "output")
     res <- dgirt(toy_dgirt_in, iter = 5, chains = 1, seed = 42)
-    sink()
   })
 
   test_that("dgirt returns class dgirt_fit", {
