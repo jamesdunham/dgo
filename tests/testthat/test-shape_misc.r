@@ -44,4 +44,16 @@ suppressMessages({
     expect_identical(d_nogroups$control@group_names, NULL)
   })
 
+  test_that("setDT_data works as expected", {
+    data(opinion)
+    expect_is(opinion, "data.frame")
+    expect_true(!inherits(opinion, "data.table"))
+    item_data <- set_copy_dt(opinion)
+    expect_is(item_data, "data.table")
+    item_data <- NULL
+    expect_true(!is.null(opinion))
+    item_data <- set_copy_dt(item_data)
+    expect_true(is.null(item_data))
+  })
+
 })

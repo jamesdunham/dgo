@@ -188,6 +188,12 @@ shape <- function(item_data,
                        constant_item = constant_item,
                        ...)
 
+  # setDT copies of *_data 
+  item_data <- set_copy_dt(item_data)
+  aggregate_data <- set_copy_dt(aggregate_data)
+  modifier_data <- set_copy_dt(modifier_data)
+  target_data <- set_copy_dt(target_data)
+
   # validate inputs #
   check_targets(target_data, ctrl)
   check_modifiers(modifier_data, ctrl)
@@ -218,6 +224,14 @@ shape <- function(item_data,
   check_names(d_in)
 
   d_in
+}
+
+set_copy_dt <- function(input_data) {
+  if (length(input_data)) {
+    return(data.table::setDT(data.table::copy(input_data)))
+  } else {
+    return(NULL)
+  }
 }
 
 init_dgirt_in <- function(item_data, aggregate_data, modifier_data, target_data,

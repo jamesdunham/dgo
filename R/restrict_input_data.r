@@ -1,5 +1,4 @@
 restrict_items <- function(item_data, ctrl) {
-  data.table::setDT(item_data)
   extra_colnames <- setdiff(names(item_data),
                             c(ctrl@item_names,
                               ctrl@survey_name,
@@ -46,7 +45,6 @@ restrict_items <- function(item_data, ctrl) {
 
 restrict_modifier <- function(modifier_data, group_grid, ctrl) {
   if (length(modifier_data)) {
-    data.table::setDT(modifier_data)
 
     # apply as.character() to any factors
     varnames <- c(ctrl@modifier_names, ctrl@t1_modifier_names, ctrl@geo_name,
@@ -101,7 +99,6 @@ drop_extra_columns <- function(modifier_data, ctrl) {
 
 restrict_aggregates <- function(aggregate_data, ctrl) {
   if (length(aggregate_data)) {
-    data.table::setDT(aggregate_data)
 
     coerce_factors(aggregate_data, c(ctrl@group_names, ctrl@geo_name,
                                      ctrl@time_name))
