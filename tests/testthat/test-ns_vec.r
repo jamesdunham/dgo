@@ -15,16 +15,16 @@ suppressMessages({
   })
 
   test_that("counts for call with aggregates haven't changed", {
-  d_agg <- shape(aggregate_data = aggregates,
-                 item_data = opinion,
-                 item_names = "abortion",
-                 time_name = "year",
-                 geo_name = "state",
-                 group_names = "female",
-                 survey_name = "source",
-                 weight_name = "weight",
-                 time_filter = c(2006:2010),
-                 aggregate_item_names = "hlthcare_binary")
+    d_agg <- shape(aggregate_data = aggregates,
+      item_data = opinion,
+      item_names = "abortion",
+      time_name = "year",
+      geo_name = "state",
+      group_names = c("female", "race3"),
+      survey_name = "source",
+      weight_name = "weight",
+      time_filter = c(2006:2010),
+      aggregate_item_names = "hlthcare_binary")
   expect_equal_to_reference(d_agg$n_vec, "d_agg_n_vec.Rds")
   expect_equal_to_reference(d_agg$s_vec, "d_agg_s_vec.Rds")
   })
@@ -42,6 +42,10 @@ suppressMessages({
   })
 
   test_that("n_vec and s_vec have expected order", {
+    data(aggregates)
+    data.table::setDT(aggregates)
+    aggregates <- aggregates[, .(n_grp = sum(n_grp), s_grp = sum(s_grp)), by =
+      c("year", "state", "female", "item")]
     d_agg <- shape(aggregate_data = aggregates,
                    item_data = opinion,
                    item_names = "abortion",
@@ -50,7 +54,7 @@ suppressMessages({
                    t1_modifier_names = "income_percapita",
                    time_name = "year",
                    geo_name = "state",
-                   group_names = "female",
+                   group_names = c("female"),
                    survey_name = "source",
                    weight_name = "weight",
                    time_filter = c(2006:2008),

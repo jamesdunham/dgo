@@ -65,12 +65,16 @@ suppressMessages({
   context("disjoint item and modifier groups")
 
   agg_disjoint <- data.table::data.table(
-    race = "white", female = "male", year = 0, item = "abortion",
-    state = "foo", n_grp = 1, s_grp = 1)
+    year = 0 ,state = "foo", race3 = "white", female = "male",  item =
+      "abortion", n_grp = 1, s_grp = 1)
   agg_disjoint <- data.table::rbindlist(list(aggregates, agg_disjoint))
   agg_disjoint = agg_disjoint[n_grp > 0]
-  d_disjoint_agg <- min_agg_call(aggregate_data = agg_disjoint,
-                                 aggregate_item_names = unique(agg_disjoint$item))
+  d_disjoint_agg <- shape(aggregate_data = agg_disjoint,
+    item_data = opinion,
+    item_names = "abortion",
+    time_name = "year",
+    geo_name = "state",
+    group_names = c("female", "race3"))
 
   test_that("all items in `aggregate_data` are used", {
     expect_equal(d_disjoint_agg$control@item_names,
@@ -97,29 +101,40 @@ suppressMessages({
 
   test_that("periods in `aggregate_data` can be restricted by time_filter", {
     years = 2006:2008
-    d_filtered <- min_agg_call(aggregate_data = agg_disjoint,
-                               aggregate_item_names = unique(agg_disjoint$item),
-                               time_filter = years)
+    d_filtered <- shape(aggregate_data = agg_disjoint,
+      item_data = opinion,
+      item_names = "abortion",
+      time_name = "year",
+      geo_name = "state",
+      time_filter = years,
+      group_names = c("female", "race3"))
     expect_equal(d_filtered$control@time_filter, years)
     expect_equal(sort(unique(d_filtered$group_counts[["year"]])), years)
   })
 
   test_that("geo in `aggregate_data` can be restricted by geo_filter", {
     geos  = c("AK", "WI")
-    d_filtered <- min_agg_call(aggregate_data = agg_disjoint,
-                               aggregate_item_names = unique(agg_disjoint$item),
-                               geo_filter = geos)
+    d_filtered <- shape(aggregate_data = agg_disjoint,
+      item_data = opinion,
+      item_names = "abortion",
+      time_name = "year",
+      geo_name = "state",
+      geo_filter = geos,
+      group_names = c("female", "race3"))
     expect_equal(d_filtered$control@geo_filter, geos)
     expect_equal(sort(unique(d_filtered$group_counts[["state"]])), geos)
   })
 
   test_that("all groups in `aggregate_data` are used", {
-    disjoint_groups <- data.table::data.table(
-      race = "white", female = "other", year = 2006, item = "abortion",
-      state = "AK", n_grp = 1, s_grp = 1)
+    disjoint_groups <- data.table::data.table(year = 2006, state = "AK", race3 =
+      "white", female = "other",  item = "abortion", n_grp = 1, s_grp = 1)
     aggregates <- data.table::rbindlist(list(aggregates, disjoint_groups))
-    d_disjoint_groups <- min_agg_call(aggregate_data = aggregates,
-                                      aggregate_item_names = unique(aggregates$item))
+    d_disjoint_groups <- shape(aggregate_data = aggregates,
+      item_data = opinion,
+      item_names = "abortion",
+      time_name = "year",
+      geo_name = "state",
+      group_names = c("female", "race3"))
     expect_equal(sort(unique(d_disjoint_groups$group_counts[["female"]])),
                  c("female", "male", "other"))
   })

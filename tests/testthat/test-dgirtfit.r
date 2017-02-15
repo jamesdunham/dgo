@@ -17,20 +17,14 @@ suppressMessages({
       dgmrp_in <- shape(opinion, item_names = "abortion", time_name = "year",
         geo_name = "state", group_names = "race3", geo_filter = c("CA", "GA"))
     })
-    sink("/dev/null", type = "output")
     dgmrp_result <- dgmrp(dgmrp_in, iter = 5, chains = 1, seed = 42)
-    sink()
     expect_s4_class(dgmrp_result, "dgmrp_fit")
     expect_s4_class(dgmrp_result, "dgo_fit")
     expect_true(inherits(dgmrp_result, "stanfit"))
   })
 
   test_that("dgirt methods work", {
-    suppressWarnings({
-      sink("/dev/null", type = "output")
-      res <- dgirt(toy_dgirt_in, iter = 5, chains = 1, seed = 42)
-      sink()
-    })
+    res <- dgirt(toy_dgirt_in, iter = 5, chains = 1, seed = 42)
     expect_output(print(res), "dgirt samples from")
     expect_output(summary(res), "dgirt samples from")
     expect_is(summary(res, verbose = TRUE), "list")
