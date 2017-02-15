@@ -9,6 +9,7 @@
 #' @include constants.r
 #' @import R6
 #' @examples
+#' data(toy_dgirt_in)
 #' get_item_names(toy_dgirt_in)
 #' get_n(toy_dgirt_in)
 #' get_n(toy_dgirt_in, by = "year")

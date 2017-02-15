@@ -52,6 +52,7 @@ setGeneric("get_item_names", signature = "x",
 #'
 #' @return A list of item names.
 #' @examples
+#' data(toy_dgirt_in)
 #' get_item_names(toy_dgirt_in)
 #' @include class-dgirtin.r
 #' @rdname dgirtin-class
@@ -77,6 +78,7 @@ setGeneric("get_n", signature = c("x", "by", "aggregate_name"),
 #'
 #' @examples
 #' # respondent count
+#' data(toy_dgirt_in)
 #' get_n(toy_dgirt_in)
 #'
 #' # respondent count by year
@@ -120,6 +122,7 @@ setGeneric("get_item_n", signature = c("x", "by", "aggregate_data"),
 #' @include class-dgirtin.r
 #' @rdname dgirtin-class
 #' @examples
+#' data(toy_dgirt_in)
 #' get_item_n(toy_dgirt_in)
 #' get_item_n(toy_dgirt_in, by = "year")
 #' @aliases get_item_n

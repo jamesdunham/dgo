@@ -3,6 +3,7 @@ suppressMessages({
   context("dgirtfit class")
 
   suppressWarnings({
+    data(toy_dgirt_in)
     res <- dgirt(toy_dgirt_in, iter = 5, chains = 1, seed = 42)
   })
 
@@ -24,6 +25,7 @@ suppressMessages({
   })
 
   test_that("dgirt methods work", {
+    data(toy_dgirt_in)
     res <- dgirt(toy_dgirt_in, iter = 5, chains = 1, seed = 42)
     expect_output(print(res), "dgirt samples from")
     expect_output(summary(res), "dgirt samples from")

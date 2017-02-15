@@ -16,6 +16,7 @@ setGeneric("dgirt_plot", signature = "x", function(x, ...)
 #' @rdname plot-method
 #' @export
 #' @examples
+#' data(toy_dgirtfit)
 #' dgirt_plot(toy_dgirtfit)
 #' dgirt_plot(toy_dgirtfit, y_min = NULL, y_max = NULL)
 #' p <- dgirt_plot(toy_dgirtfit)
@@ -45,6 +46,7 @@ setMethod("dgirt_plot", signature(x = "dgo_fit"),
 #' @rdname plot-method
 #' @export
 #' @examples
+#' data(toy_dgirtfit)
 #' ps <- poststratify(toy_dgirtfit, annual_state_race_targets, strata_names =
 #'                    c("state", "year"), aggregated_names = "race3")
 #' dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
@@ -105,7 +107,7 @@ plot_internal <- function(samples, group_names, time_name, geo_name, y_fun,
 #' @rdname plot-method
 #' @export
 #' @examples
-#'
+#' data(toy_dgirtfit)
 #' plot(toy_dgirtfit)
 setMethod("plot", signature(x = "dgo_fit", y = "missing"),
           function(x, ...) {
@@ -128,6 +130,7 @@ setGeneric("plot_rhats", signature = "x", function(x, ...)
 #' @rdname plot-method
 #' @export
 #' @examples
+#' data(toy_dgirtfit)
 #' plot_rhats(toy_dgirtfit)
 #' plot_rhats(toy_dgirtfit, facet_vars = "race3") +
 #'   scale_x_continuous(breaks = seq.int(2006, 2008))
