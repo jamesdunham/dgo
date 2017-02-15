@@ -37,4 +37,8 @@ stanmodels <- sapply(stan_files, function(f) {
 )
 names(stanmodels) <- sub("\\.stan$", "", basename(names(stanmodels)))
 rm(MODELS_HOME)
+
+Rcpp::loadModule("stan_fit42017_01_04_singleissue_mod", what = TRUE)
+Rcpp::loadModule("stan_fit42017_01_04_mod", what = TRUE)
 # nocov end
+
