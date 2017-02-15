@@ -16,12 +16,13 @@ suppressMessages({
   })
 
   test_that("time and geo defaults include values in aggregate_data", {
-  d_agg <- shape(aggregate_data = aggregates,
-      item_data = opinion,
-      item_names = "abortion",
-      time_name = "year",
-      geo_name = "state",
-      group_names = c("female", "race3"))
+    data(aggregates)
+    d_agg <- shape(aggregate_data = aggregates,
+        item_data = opinion,
+        item_names = "abortion",
+        time_name = "year",
+        geo_name = "state",
+        group_names = c("female", "race3"))
     expect_equal(sort(unique(c(opinion$year, aggregates$year))),
                      d_agg$control@time_filter)
     expect_equal(sort(unique(c(opinion$state, aggregates$state))),
@@ -52,6 +53,8 @@ suppressMessages({
   })
 
   test_that('aggregate_item_names defaults to unique items in aggregate_data', {
+    data(aggregates)
+    data.table::setDT(aggregates)
     d_agg <- shape(aggregate_data = aggregates,
       item_data = opinion,
       item_names = "abortion",

@@ -63,7 +63,7 @@ suppressMessages({
   })
 
   context("disjoint item and modifier groups")
-
+  data(aggregates)
   agg_disjoint <- data.table::data.table(
     year = 0 ,state = "foo", race3 = "white", female = "male",  item =
       "abortion", n_grp = 1, s_grp = 1)
@@ -126,6 +126,7 @@ suppressMessages({
   })
 
   test_that("all groups in `aggregate_data` are used", {
+    data(aggregates)
     disjoint_groups <- data.table::data.table(year = 2006, state = "AK", race3 =
       "white", female = "other",  item = "abortion", n_grp = 1, s_grp = 1)
     aggregates <- data.table::rbindlist(list(aggregates, disjoint_groups))

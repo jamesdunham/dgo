@@ -4,6 +4,8 @@ suppressMessages({
   context("variation in inputs")
 
   test_that("no variation in time (a single period) is OK", {
+    data(opinion)
+    data.table::setDT(opinion)
     expect_silent(suppressMessages({
       d_in = shape(opinion[year == 2006],
              item_names = "abortion",
@@ -21,6 +23,9 @@ suppressMessages({
   })
 
   test_that("no variation in survey identifier is OK", {
+    data(opinion)
+    data.table::setDT(opinion)
+    data(targets)
     expect_silent(suppressMessages({
       d_in = shape(opinion[source == "CCES_2006"],
              target_data = targets,
@@ -40,6 +45,8 @@ suppressMessages({
   })
 
   test_that("no variation in geography produces an error", {
+    data(opinion)
+    data.table::setDT(opinion)
     expect_error(suppressMessages({
       d_in = shape(opinion[state == "MA"],
              item_names = "abortion",
@@ -52,6 +59,8 @@ suppressMessages({
   })
 
   test_that("no variation in grouping produces an error", {
+    data(opinion)
+    data.table::setDT(opinion)
     expect_error(suppressMessages({
       d_in = shape(opinion[female == "female"],
              item_names = "abortion",
@@ -64,6 +73,8 @@ suppressMessages({
   })
 
   test_that("NAs in unused subsets of modifier_data are fine", {
+    data(opinion)
+    data(states)
     states[states$year == 2008, "income_percapita"] <- NA
     expect_silent(suppressMessages(shape(opinion,
       item_names = "abortion",
@@ -78,6 +89,8 @@ suppressMessages({
   })
 
   test_that("NAs in restricted modifier_data produce an error", {
+    data(opinion)
+    data(states)
     states[states$year == 2008, "income_percapita"] <- NA
     expect_error(suppressMessages(shape(opinion,
       item_names = "abortion",
@@ -93,6 +106,8 @@ suppressMessages({
   })
 
   test_that("omitting weight variable is allowed", {
+    data(opinion)
+    data(states)
     expect_silent(suppressMessages(shape(opinion,
         item_names = "abortion",
         time_name = "year",
@@ -105,6 +120,8 @@ suppressMessages({
   })
 
   test_that("omitting survey variable is allowed", {
+    data(opinion)
+    data(states)
     expect_silent(suppressMessages(shape(opinion,
         item_names = "abortion",
         time_name = "year",
