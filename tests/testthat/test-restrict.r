@@ -21,6 +21,8 @@ suppressMessages({
     ctrl <- new("Control", geo_name = "state", time_name = "year", standardize =
       TRUE, constant_item = TRUE, min_survey_filter = 1, min_t_filter = 1,
     modifier_names = "prop_urban")
+    data(states)
+    data.table::setDT(states)
     group_grid <- data.table(year = 1930:1931, state = "AK")
     restricted <- restrict_modifier(states, group_grid, ctrl)
     expect_equivalent(group_grid[, c("year", "state")],
