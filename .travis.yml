@@ -1,14 +1,43 @@
-# .travis.yml for R projects from https://github.com/craigcitro/r-travis
 language: r
 cache: packages
+matrix:
+  include:
+
+    - os: linux
+      dist: precise
+      r: release
+    - os: linux
+      dist: precise
+      r: devel
+    - os: linux
+      dist: precise
+      r: oldrel
+
+    - os: linux
+      dist: trusty
+      r: release
+      sudo: required
+    - os: linux
+      dist: trusty
+      r: devel
+      sudo: required
+    - os: linux
+      dist: trusty
+      r: oldrel
+      sudo: required
+
+    - os: osx
+      osx_image: xcode8
+      latex: false
+    - os: osx
+      osx_image: beta-xcode6.2
+      disable_homebrew: true
+      latex: false
 
 notifications:
   email:
     - jdunham@mit.edu
-
 r_github_packages:
   - jimhester/covr
-  - jamesdunham/dgodata
-
 after_success:
   - Rscript -e 'library(covr); codecov(line_exclusions = list("src/include/models.hpp"))'
