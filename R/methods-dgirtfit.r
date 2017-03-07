@@ -43,8 +43,8 @@ print.dgo_fit <- function(x, ...) {
   cat("  Model version", x@model_name, "\n")
   cat(" ", nrow(ss), "parameters; ")
   cat(sum(grepl("^theta_bar", rownames(ss))), "theta_bars ")
-  cat("(", concatenate::cc_and(ctrl@time_name, ctrl@geo_name,
-        ctrl@group_names), ")", "\n", sep = "")
+  cat("(", paste(ctrl@time_name, ctrl@geo_name,
+        ctrl@group_names, collapse = ", "), ")", "\n", sep = "")
   cat(" ", x@dgirt_in$T, "periods", min(ctrl@time_filter), "to",
       max(ctrl@time_filter), "\n")
 

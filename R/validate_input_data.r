@@ -104,7 +104,7 @@ has_type <- function(slots, where, ctrl, valid_types = var_types) {
       v_class <- class(where[[v]])
       if (!any(v_valid_types %in% v_class)) {
         stop(slot_name, " \"", v, "\"", " is ", v_class, " in ", tab_name,
-             " but should be ", cc_or(v_valid_types))
+             " but should be one of: ", paste(v_valid_types, collapse = ", "))
                                 
       }
     }

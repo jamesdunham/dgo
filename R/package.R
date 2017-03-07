@@ -12,7 +12,6 @@
 #' @import dgodata
 #' @import ggplot2
 #' @import methods
-#' @importFrom concatenate cc_and cc_or cn cn_and
 #' @importFrom lubridate seconds_to_period
 #' @importFrom stats as.formula formula model.frame model.matrix na.fail na.omit
 #'   quantile sd setNames weighted.mean weights

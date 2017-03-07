@@ -145,11 +145,10 @@ check_proportions <- function(tabular, strata_names) {
   prop_sums <- tabular[, lapply(.SD, sum), .SDcols = "scaled_prop",
                        by = strata_names]
   if (!isTRUE(all.equal(rep(1L, nrow(prop_sums)), prop_sums$scaled_prop))) {
-    stop("Not all proportions sum to 1 within stratifying variables ", 
-         cc_and(strata_names), " even though they should have been ",
-         "rescaled. (The mean sum is ", round(mean(prop_sums$scaled_prop), 2L),
-         "). This could indicate a problem in joining the estimates and ",
-         "targets or be a bug.")
+    stop("Not all proportions sum to 1 within stratifying variables even ",
+      " though they should have been rescaled. (The mean sum is ",
+      round(mean(prop_sums$scaled_prop), 2L), "). This could indicate a ",
+      "problem in joining the estimates and targets or be a bug.")
   } else TRUE
 }
 
