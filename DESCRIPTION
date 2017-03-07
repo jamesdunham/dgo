@@ -67,4 +67,4 @@ Collate:
     'toy_dgirtfit.r'
     'validate_dgirtIn.r'
     'validate_input_data.r'
-RoxygenNote: 6.0.1
+RoxygenNote: 6.0.1.9000

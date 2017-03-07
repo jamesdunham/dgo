@@ -81,14 +81,17 @@ Count Respondents for Items in DGIRT Data
 Show Summary of DGIRT Data
 }
 \examples{
+data(toy_dgirt_in)
 get_item_names(toy_dgirt_in)
 get_n(toy_dgirt_in)
 get_n(toy_dgirt_in, by = "year")
 get_n(toy_dgirt_in, by = "source")
 get_item_n(toy_dgirt_in)
 get_item_n(toy_dgirt_in, by = "year")
+data(toy_dgirt_in)
 get_item_names(toy_dgirt_in)
 # respondent count
+data(toy_dgirt_in)
 get_n(toy_dgirt_in)
 
 # respondent count by year
@@ -97,6 +100,7 @@ get_n(toy_dgirt_in, by = "year")
 # respondent count by survey identifier
 get_n(toy_dgirt_in, by = "source")
 
+data(toy_dgirt_in)
 get_item_n(toy_dgirt_in)
 get_item_n(toy_dgirt_in, by = "year")
 }

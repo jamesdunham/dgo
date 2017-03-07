@@ -74,8 +74,11 @@ objects
 \code{rhats}: extract split R-hats from \code{dgo_fit}-class objects
 }
 \examples{
+data(toy_dgirtfit)
 summarize(toy_dgirtfit)
+data(toy_dgirtfit)
 # access posterior samples
 as.data.frame(toy_dgirtfit, pars = 'theta_bar')
+data(toy_dgirtfit)
 rhats(toy_dgirtfit)
 }
