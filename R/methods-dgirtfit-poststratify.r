@@ -64,6 +64,7 @@ setMethod("poststratify", "data.frame",
   assert(all_strings(strata_names))
   assert(assertthat::is.string(proportion_name))
   assert(all_strings(pars))
+
   if (anyDuplicated(c(strata_names, aggregated_names))) {
     stop("Variable names cannot be used more than once across ",
       "'strata_names' and 'aggregated_names'")
@@ -75,18 +76,18 @@ setMethod("poststratify", "data.frame",
   targets <- data.table::setDT(data.table::copy(target_data))
 
   missing_cols <- setdiff(strata_names, names(x))
-  missing_msgs <- paste("%c", c("is", "are"), "in strata_names but",
-               c("isn't a name in", "aren't names in"),
-               c(rep(c("the table of estimates to be poststratified.",
-                       "target_data"), each = 2L)))
-  if (length(missing_cols)) 
-    stop(cn(missing_cols, missing_msgs[1], missing_msgs[2]))
+  if (length(missing_cols))  {
+    stop(paste(missing_cols, collapse = ", "), " in strata_names but ",
+      "not the table of estimates to be poststratified.")
+  }
   missing_cols <- setdiff(strata_names, names(target_data))
-  if (length(missing_cols))
-    stop(cn(missing_cols, missing_msgs[3], missing_msgs[4]))
+  if (length(missing_cols)) {
+    stop(paste(missing_cols, collapse = ", "), " in strata_names but ",
+      "not target_data.")
+  }
 
   targets_n <- nrow(unique(targets[, c(strata_names, aggregated_names), with =
-                           FALSE]))
+      FALSE]))
 
   if (!identical(nrow(targets), targets_n)) {
       stop("Variables in aggregated_names should partition the strata ",
@@ -160,7 +161,7 @@ check_target_levels <- function(variable, x, targets) {
   } else if (!all(x[[variable]] %in% targets[[variable]])) {
     x_levels <- setdiff(x[[variable]], targets[[variable]])
     stop("Not all levels of '", variable, "' in estimates are levels of '",
-         variable, "' in targets. ", cn_and(x_levels , "%c is ","%c are "),
+         variable, "' in targets. Missing: ", paste(x_levels , collapse = ", "),
          "missing. The target data should give the population proportion of each
          ", "group represented in the estimates.")
   } else TRUE
