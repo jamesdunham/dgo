@@ -10,24 +10,24 @@ d_mod <- shape(item_data = opinion, item_names = "abortion", time_name =
 
 test_that("stop_if_empty works", {
   x <- data.frame()
-  expect_error(stop_if_empty(x), "all dimensions of x should be positive")
+  expect_error(dgo:::stop_if_empty(x), "all dimensions of x should be positive")
 })
 
 test_that("check_count works", {
-  expect_silent(check_count(cars, "speed"))
+  expect_silent(dgo:::check_count(cars, "speed"))
 })
 
 test_that("check_count catches non-integers", {
   data(cars)
   cars$speed <- cars$speed + 0.5
-  expect_error(check_count(cars, "speed"),
+  expect_error(dgo:::check_count(cars, "speed"),
                "values of \"speed\" in cars should be positive integers")
 })
 
 test_that("check_count catches negative numbers", {
   data(cars)
   cars$speed <- cars$speed * -1
-  expect_error(check_count(cars, "speed"),
+  expect_error(dgo:::check_count(cars, "speed"),
                "values of \"speed\" in cars should be positive integers")
 })
 
@@ -38,7 +38,7 @@ test_that("factor values for geo_name in item_data produce a warning", {
 
 test_that("numeric values for geo_name produce an error", {
   opinion$state <- suppressWarnings(as.numeric(opinion$state))
-  expect_error(min_item_call(item_data = opinion), "should be character or factor")
+  expect_error(min_item_call(item_data = opinion), "should be one of: character, factor")
 })
 
 test_that("factor values for geo_name in modifier_data produce a warning", {
@@ -48,12 +48,12 @@ test_that("factor values for geo_name in modifier_data produce a warning", {
 
 test_that("numeric values for geo_name in modifier data produce an error", {
   states$state = suppressWarnings(as.numeric(states$state))
-  expect_error(min_modifier_call(modifier_data = states), "should be character or factor")
+  expect_error(min_modifier_call(modifier_data = states), "should be one of: character, factor")
 })
 
 test_that("numeric values for group_names in item_data produce an error", {
   opinion$female <- suppressWarnings(as.numeric(opinion$female))
-  expect_error(min_item_call(item_data = opinion), "should be character or factor")
+  expect_error(min_item_call(item_data = opinion), "should be one of: character, factor")
 })
 
 test_that("factor values for group_names in item_data produce a warning", {
@@ -91,7 +91,7 @@ test_that("factor values of survey_name produce a warning", {
 test_that("numeric values of survey_name produce an error", {
   opinion$source <- suppressWarnings(as.numeric(opinion$source))
   expect_error(min_item_call(item_data = opinion, survey_name = "source"),
-               "should be character or factor")
+               "should be one of: character, factor")
 })
 
 test_that("non-integer values of time_name in item_data produce an error", {
@@ -101,12 +101,12 @@ test_that("non-integer values of time_name in item_data produce an error", {
 
 test_that("factor values of time_name in item_data produce an error", {
   opinion$year <- as.factor(opinion$year)
-  expect_error(min_item_call(item_data = opinion), "should be integer")
+  expect_error(min_item_call(item_data = opinion), "should be one of: integer, numeric")
 })
 
 test_that("character values of time_name in item_data produce an error", {
   opinion$year <- as.character(opinion$year)
-  expect_error(min_item_call(item_data = opinion), "should be integer")
+  expect_error(min_item_call(item_data = opinion), "should be one of: integer, numeric")
 })
 
 test_that("non-integer values of time_name in modifier_data work", {
@@ -116,23 +116,23 @@ test_that("non-integer values of time_name in modifier_data work", {
 
 test_that("factor values of time_name in modifier_data produce a warning", {
   states$year <- as.factor(states$year)
-  expect_error(min_modifier_call(modifier_data = states), "should be integer or numeric")
+  expect_error(min_modifier_call(modifier_data = states), "should be one of: integer, numeric")
 })
 
 test_that("character values of time_name in modifier_data produce an error", {
   states$year <- as.character(states$year)
-  expect_error(min_modifier_call(modifier_data = states), "should be integer or numeric")
+  expect_error(min_modifier_call(modifier_data = states), "should be one of: integer, numeric")
 })
 
 test_that("character values of weight_name in item_data produce an error", {
   opinion$weight <- suppressWarnings(as.character(opinion$weight))
   expect_error(suppressWarnings(min_item_call(item_data = opinion,
-        weight_name = "weight")), "should be numeric")
+        weight_name = "weight")), "should be one of: numeric")
 })
 
 test_that("factor values of weight_name in item_data produce an error", {
   opinion$weight <- suppressWarnings(as.factor(opinion$weight))
   expect_error(min_item_call(item_data = opinion, weight_name = "weight"),
-    "should be numeric")
+    "should be one of: numeric")
 })
 
