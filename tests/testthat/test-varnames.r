@@ -23,7 +23,7 @@ ctrl <- new("Ctrl",
             null_name = character(0))
 
 test_that("valid_names works with an S4 and length requirement", {
-  is_name <- valid_names(toy_table, ctrl, 1)
+  is_name <- dgo:::valid_names(toy_table, ctrl, 1)
   expect_silent(is_name("valid_name"))
   expect_error(is_name("valid_names"), ".*should be length 1, not 2.*")
   expect_error(is_name("invalid_name"), ".*should give a variable name in.*")
@@ -35,7 +35,7 @@ test_that("valid_names works with an S4 and length requirement", {
 })
 
 test_that("valid_names works with an S4 and no length requirement", {
-  are_names <- valid_names(toy_table, ctrl)
+  are_names <- dgo:::valid_names(toy_table, ctrl)
   expect_silent(are_names("valid_name"))
   expect_silent(are_names("valid_names"))
   expect_error(are_names("invalid_name"), ".*should give variable names in.*")
@@ -48,7 +48,7 @@ test_that("valid_names works with an S4 and no length requirement", {
 
 test_that("valid_names works with plain character names and a length requirement", {
   toy_table = data.frame(a = 1, b = 2)
-  is_name <- valid_names(toy_table, NULL, 1)
+  is_name <- dgo:::valid_names(toy_table, NULL, 1)
   expect_silent(is_name("a"))
   expect_silent(is_name(c("a", "b")))
   expect_error(is_name("z"), ".*should give a variable name in.*")
@@ -56,7 +56,7 @@ test_that("valid_names works with plain character names and a length requirement
 })
 
 test_that("valid_names works with plain character names and no length requirement", {
-  are_names <- valid_names(toy_table, NULL, 0)
+  are_names <- dgo:::valid_names(toy_table, NULL, 0)
   expect_silent(are_names(c("a", "b")))
   expect_error(are_names(c("a", "z")), ".*should give variable names in.*")
 })

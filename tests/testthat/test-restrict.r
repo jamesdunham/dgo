@@ -22,8 +22,8 @@ test_that("groups unobserved in item_data are dropped from modifier_data", {
   modifier_names = "prop_urban")
   data(states)
   data.table::setDT(states)
-  group_grid <- data.table(year = 1930:1931, state = "AK")
-  restricted <- restrict_modifier(states, group_grid, ctrl)
+  group_grid <- data.table::data.table(year = 1930:1931, state = "AK")
+  restricted <- dgo:::restrict_modifier(states, group_grid, ctrl)
   expect_equivalent(group_grid[, c("year", "state")],
     restricted[, c("year", "state")])
 })
@@ -143,8 +143,8 @@ test_that("all groups in `aggregate_data` are used", {
 
 test_that("stop_if_any_na works", {
   d <- data.frame(a = NA, b = 1, stringsAsFactors = FALSE)
-  expect_error(stop_if_any_na(d, "a"), "NA values")
-  expect_error(stop_if_any_na(d, c("a", "b")), "NA values")
-  expect_silent(stop_if_any_na(d, "b"))
+  expect_error(dgo:::stop_if_any_na(d, "a"), "NA values")
+  expect_error(dgo:::stop_if_any_na(d, c("a", "b")), "NA values")
+  expect_silent(dgo:::stop_if_any_na(d, "b"))
 })
 
