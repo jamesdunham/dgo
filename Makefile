@@ -20,6 +20,9 @@ clean:
 
 build: 
 	$(R) $(R_ARGS) CMD build .  
+
+build-cran:
+	$(R) CMD build . --no-resave-data --no-manual
 	
 check: 
 	$(R) CMD check $(PKG)_$(VERSION).tar.gz
@@ -44,4 +47,7 @@ install-quick:
 
 readme: $(PKG)_$(VERSION).tar.gz
 	$(R) --vanilla --slave -e "rmarkdown::render('README.Rmd')"
+
+docs:
+	$(R) --vanilla --slave -e "devtools::document()"
 
