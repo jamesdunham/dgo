@@ -1,0 +1,36 @@
+library(dgo)
+library(rstan)
+
+shaped_data = toy_dgirt_in
+ret = dgirt(shaped_data, iter = 20)
+debug(dgirt)
+, stan_model = ret@stan_model)
+inherits(ret@stan_model, "stanmodel")
+
+
+
+  separate_t = FALSE
+  delta_tbar_prior_mean = 0.65
+  delta_tbar_prior_sd = 0.25
+  innov_sd_delta_scale = 2.5
+  innov_sd_theta_scale = 2.5
+  version = "2017_01_04"
+  hierarchical_model = TRUE
+  stan_data = shaped_data$as_list(separate_t = separate_t,
+        hierarchical_model = hierarchical_model,
+        delta_tbar_prior_mean = delta_tbar_prior_mean,
+        delta_tbar_prior_sd = delta_tbar_prior_sd,
+        innov_sd_delta_scale = innov_sd_delta_scale,
+        innov_sd_theta_scale = innov_sd_theta_scale)
+  model_file <- system.file(paste0("exec/", version, ".stan"), package = "dgo")
+  model_code = paste(readLines(model_file), collapse = "\n")
+  # dots$model_code = model_code
+  # model = stanc(model_code = model_code, model_name = version)
+  # undebug(rstan::sampling)
+  # undebug(rstan::stan_model)
+
+  pars = dgo:::dgirt_pars
+  pars = 
+  stan(file=model_file, data=stan_data)
+  stan(model_code=model_code, data = stan_data)
+

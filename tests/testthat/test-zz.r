@@ -57,7 +57,7 @@ test_that('character values of modifier are dummied', {
   # out any factors in 'level2_modifiers' or 'level2_period1_modif iers'.
   expect_error(min_modifier_call(modifier_names = "region",
                             t1_modifier_names = "region"),
-               "should be integer or numeric")
+               "should be one of: integer, numeric")
 })
 
 test_that('elements in ZZ corresponding to the grouping variable are zeroed', {
@@ -71,7 +71,7 @@ test_that('factor values of modifier are dummied', {
   states$region <- as.factor(states$region)
   expect_error(min_modifier_call(modifier_names = "region",
                             t1_modifier_names = "region"),
-               "should be integer or numeric")
+               "should be one of: integer, numeric")
 })
 
 test_that('ZZ is zeroed appropriately when only t1_modifier_names is given', {

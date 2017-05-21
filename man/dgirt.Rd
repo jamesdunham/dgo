@@ -9,11 +9,12 @@
 dgirt(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
   delta_tbar_prior_sd = 0.25, innov_sd_delta_scale = 2.5,
   innov_sd_theta_scale = 2.5, version = "2017_01_04",
-  hierarchical_model = TRUE)
+  hierarchical_model = TRUE, model = NULL)
 
 dgmrp(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
   delta_tbar_prior_sd = 0.25, innov_sd_delta_scale = 2.5,
-  innov_sd_theta_scale = 2.5, version = "2017_01_04_singleissue")
+  innov_sd_theta_scale = 2.5, version = "2017_01_04_singleissue",
+  model = NULL)
 }
 \arguments{
 \item{shaped_data}{Output from \code{\link{shape}}.}
@@ -38,12 +39,19 @@ innovation standard deviation of \code{gamma}, \code{xi}, and if
 \code{constant_item} is \code{FALSE} the item difficulty \code{diff}. Default
 \code{2.5}.}
 
-\item{version}{The model version to use, as the name of a \code{.stan} file
-installed with the package from the \code{exec} directory of the source.}
+\item{version}{The name of the dgo model to estimate, or the path to a
+\code{.stan} file.  Valid names for dgo models are "2017_01_04",
+"2017_01_04_singleissue". Ignored if argument \code{model} is used.}
 
 \item{hierarchical_model}{Whether a hierarchical model should be used to
 smooth the group IRT estimates. If set to FALSE, the model will return raw
 group-IRT model estimates for each group. Default \code{TRUE}.}
+
+\item{model}{A Stan model object of class `stanmodel` to be used in
+estimation. Specifying this argument avoids repeated model compilation. Note
+that the Stan model object for a model fitted with \code{dgirt()} or
+\code{dgmrp()} can be found in the the \code{stanmodel} slot of the resulting
+\code{dgirt_fit} or \code{dgmrp_fit} object.}
 }
 \value{
 A \code{\link{dgo_fit-class}} object that extends
