@@ -9,12 +9,7 @@
 
 There were no ERRORs or WARNINGs. 
 
-There were a few NOTEs:
-
-* "installed size is 5.8Mb / sub-directories of 1Mb or more: libs 3.8Mb": The
-  file in the 'libs' directory provides Stan models compiled during package
-  installation. This follows the practice of existing CRAN package 'rstanarm'.
-  It avoids expensive recompilation of the models in every R session.
+There was one NOTE:
 
 * "New submission": This is the first submission with this maintainer email.
 
