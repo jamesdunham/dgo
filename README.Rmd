@@ -362,6 +362,13 @@ tempdir()
 #> [1] "/var/folders/2p/_d3c95qd6ljg28j1f5l2jqxm0000gn/T//Rtmp38a10A"
 ```
 
+Models fitted before October 2016 (specifically <
+[#8e6a2cf](https://github.com/jamesdunham/dgo/commit/8e6a2cfbe00b2cd4a908b3067241e06124d143cd))
+using dgirtfit are not fully compatible with dgo. Their contents can be
+extracted without using dgo, however, with the `$` indexing operator. For
+example: `as.data.frame(dgirtfit_object$stan.cmb)`.
+
+
 ## Contributing and citing
 
 dgo is under development and we welcome
