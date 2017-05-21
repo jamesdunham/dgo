@@ -1,7 +1,7 @@
 Package: dgo
 Title: Dynamic Estimation of Group-Level Opinion
-Version: 0.2.8
-Date: 2017-04-08
+Version: 0.2.9
+Date: 2017-05-21
 Description: Fit dynamic group-level IRT and MRP models from individual or
     aggregated item response data. This package handles common preprocessing
     tasks and extends functions for inspecting results, poststratification, and
@@ -18,7 +18,7 @@ BugReports: https://github.com/jamesdunham/dgo/issues
 Depends:
     dgodata,
     R (>= 3.2.2),
-    rstan (>= 2.8.1)
+    rstan (>= 2.15.1)
 LazyData: true
 Imports:
     assertthat,
@@ -27,14 +27,14 @@ Imports:
     lubridate,
     methods,
     R6,
-    Rcpp (>= 0.11.0),
+    Rcpp (>= 0.12.10),
     survey
 Suggests:
     knitr,
     rmarkdown,
     testthat
-LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>=
-    0.11.0), RcppEigen
+LinkingTo: StanHeaders (>= 2.15.0-1), rstan (>= 2.15.1), BH (>= 1.58.0), Rcpp (>=
+    0.12.10), RcppEigen
 NeedsCompilation: yes
 Collate: 
     'RcppExports.R'
@@ -67,4 +67,4 @@ Collate:
     'toy_dgirtfit.r'
     'validate_dgirtIn.r'
     'validate_input_data.r'
-RoxygenNote: 6.0.1.9000
+RoxygenNote: 6.0.1
