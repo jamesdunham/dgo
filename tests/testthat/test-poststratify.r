@@ -56,15 +56,15 @@ test_that("missing variables produce stop", {
   data(targets)
   expect_error(poststratify(toy_dgirtfit, target_data = targets,
                                strata_names = "foo", aggregate = "bar"),
-               "foo .* isn't a name in the table of estimates")
+               "foo in strata_names but not the table of estimates")
   expect_error(poststratify(toy_dgirtfit, target_data =
                             annual_state_race_targets[, -1],
                           strata_names = "state", aggregate = "race3"),
-               "state .* isn't a name in target_data")
+               "state in strata_names but not target_data")
 })
 
 test_that("poststratify works for gamma, gamma_raw, and theta_bar", {
-  params <- index_names[c("gamma", "gamma_raw", "theta_bar")]
+  params <- dgo:::index_names[c("gamma", "gamma_raw", "theta_bar")]
   data(toy_dgirtfit)
   data(annual_state_race_targets)
   for (i in seq_along(params)) {
