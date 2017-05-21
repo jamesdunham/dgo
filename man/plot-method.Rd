@@ -67,19 +67,27 @@ respectively.}
 This function plots R-hats from a dgirt model.
 }
 \examples{
+\dontrun{
 data(toy_dgirtfit)
 dgirt_plot(toy_dgirtfit)
 dgirt_plot(toy_dgirtfit, y_min = NULL, y_max = NULL)
 p <- dgirt_plot(toy_dgirtfit)
 p \%+\% ylab("posterior median")
+}
+\dontrun{
 data(toy_dgirtfit)
 ps <- poststratify(toy_dgirtfit, annual_state_race_targets, strata_names =
                    c("state", "year"), aggregated_names = "race3")
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
+}
+\dontrun{
 data(toy_dgirtfit)
 plot(toy_dgirtfit)
+}
+\dontrun{
 data(toy_dgirtfit)
 plot_rhats(toy_dgirtfit)
 plot_rhats(toy_dgirtfit, facet_vars = "race3") +
   scale_x_continuous(breaks = seq.int(2006, 2008))
+}
 }
