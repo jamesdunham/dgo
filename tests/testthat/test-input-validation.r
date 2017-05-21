@@ -13,12 +13,6 @@ test_that("no variation in time (a single period) is OK", {
            group_names = "female",
            survey_name = "source",
            weight_name = "weight")}))
-  expect_silent({
-    sink("/dev/null", type = "output")
-    d_out = dgirt(d_in, iter = 30, chains = 1)
-    as.data.frame(d_out)
-    sink()
-  })
 })
 
 test_that("no variation in survey identifier is OK", {
@@ -35,12 +29,6 @@ test_that("no variation in survey identifier is OK", {
            group_names = "female",
            survey_name = "source",
            weight_name = "weight")}))
-  expect_silent({
-    sink("/dev/null", type = "output")
-    d_out = dgirt(d_in, iter = 30, chains = 1)
-    as.data.frame(d_out)
-    sink()
-  })
 })
 
 test_that("no variation in geography produces an error", {
