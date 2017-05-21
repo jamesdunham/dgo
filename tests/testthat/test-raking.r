@@ -3,6 +3,7 @@ source("setup.r")
 context("raking")
 
 test_that("basic syntax works", {
+  data(annual_state_race_targets)
   data.table::setDT(annual_state_race_targets)
   annual_state_race_targets = annual_state_race_targets[year %in% 2006:2010]
   expect_silent(suppressMessages(min_item_call(target_data = annual_state_race_targets,
@@ -29,7 +30,8 @@ test_that("basic syntax works", {
 })
 
 test_that("raking variables must exist", {
-# raking gives a single formula 
+  data(annual_state_race_targets)
+  # raking gives a single formula 
   expect_error(min_item_call(target_data = annual_state_race_targets,
                               weight_name = "weight",
                               raking = ~ source),
@@ -82,7 +84,7 @@ set_up_sample = function(w) {
   # 6:    B       H 1      1
   data(warpbreaks)
   toy_data = warpbreaks
-  setDT(toy_data)[, `:=`(t = 1), by = c("wool", "tension")]
+  data.table::setDT(toy_data)[, `:=`(t = 1), by = c("wool", "tension")]
   toy_data = unique(toy_data, by = c("wool", "tension"))
   toy_data[, weight := w]
   toy_data[, breaks := NULL]
@@ -93,7 +95,7 @@ set_up_pop = function(props) {
   # Set up population margins for the warpbreaks data from which the
   # combinations of wool and tension are sampled with equal probability.
   data(warpbreaks)
-  toy_targets = unique(setDT(warpbreaks)[, .(wool, tension)])
+  toy_targets = unique(data.table::setDT(warpbreaks)[, .(wool, tension)])
   toy_targets[, t := 1]
   toy_targets[, proportion := 1 / .N]
   toy_targets[]
@@ -115,20 +117,20 @@ test_that("raking has no effect if weights reflect population margins", {
   # weighted equally, regardless of the raking specification
 
   ctrl = new("Ctrl", raking = ~ wool)
-  rake_result = weight(copy(toy_data), toy_targets, ctrl)
+  rake_result = dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl)
   # weight is the original weight; raked_weight is the raked weight
   expect_equal(rake_result$weight, rake_result$raked_weight)
 
   ctrl = new("Ctrl", raking = ~ wool + tension)
-  rake_result = weight(copy(toy_data), toy_targets, ctrl)
+  rake_result = dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl)
   expect_equal(rake_result$weight, rake_result$raked_weight)
 
   ctrl = new("Ctrl", raking = ~ tension)
-  rake_result = weight(copy(toy_data), toy_targets, ctrl)
+  rake_result = dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl)
   expect_equal(rake_result$weight, rake_result$raked_weight)
 
   ctrl = new("Ctrl", raking = list(~ wool, ~ tension))
-  rake_result = weight(copy(toy_data), toy_targets, ctrl)
+  rake_result = dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl)
   expect_equal(rake_result$weight, rake_result$raked_weight)
 })
 
@@ -142,14 +144,14 @@ test_that("raking equalizes weights when they should be equal", {
   toy_data
 
   # When raking on wool, we should recover equal weights
-  rake_result = weight(copy(toy_data), toy_targets, ctrl)
+  rake_result = dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl)
   expect_equal(rake_result$raked_weight, rep(1, 6))
 
   ctrl = new("Ctrl", raking = ~ tension)
   # When raking on tension, the weights appear correct; the sum of weights
   # within each combination of wool and tension is equal. In the raked weights
   # the 2:1 downweighting of wool A to B should persist.
-  rake_result = weight(copy(toy_data), toy_targets, ctrl)
+  rake_result = dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl)
   sums = sum_by(rake_result, "wool")
   expect_equal(unname(sums["A"]/sums["B"]), 0.5)
 
@@ -162,13 +164,13 @@ test_that("raking equalizes weights when they should be equal", {
   # When raking on wool-tension, there's no observation we can upweight to
   # balance the sample.
   ctrl = new("Ctrl", raking = ~ wool + tension)
-  rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+  rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
   expect_equal(unique(rake_result$raked_weight), 1)
 
   # When raking on wool, the sum of raked weights within wool A and wool B
   # should be equal.
   ctrl = new("Ctrl", raking = ~ wool)
-  rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+  rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
   sums = rake_result[, .(sums = sum(raked_weight)), by = "wool"][["sums"]]
   expect_length(unique(sums), 1)
 
@@ -176,7 +178,7 @@ test_that("raking equalizes weights when they should be equal", {
   # upweighted 2:1 against the others. Equivalently, the sum of weights in
   # tensions L, M, and H should be the same.
   ctrl = new("Ctrl", raking = list(~ tension))
-  rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+  rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
   sums = rake_result[, .(sums = sum(raked_weight)), by = "tension"][["sums"]]
   expect_length(unique(sums), 1)
 
@@ -186,7 +188,7 @@ test_that("raking equalizes weights when they should be equal", {
   # When raking on wool, then tension, wool A remains underweighted 2:3 and
   # tension weights are made equal.
   ctrl = new("Ctrl", raking = list(~ wool, ~ tension))
-  rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+  rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
   wool_sums = sum_by(rake_result, "wool")
   tension_sums = sum_by(rake_result, "tension")
   expect_length(unique(tension_sums), 1)
@@ -195,7 +197,7 @@ test_that("raking equalizes weights when they should be equal", {
   # When raking on tension, then wool, wool weights are made equal; tension L
   # is still underweighted, but 2:3 instead of 1:2.
   ctrl = new("Ctrl", raking = list(~ tension, ~ wool))
-  rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+  rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
   wool_sums = sum_by(rake_result, "wool")
   tension_sums = sum_by(rake_result, "tension")
   expect_length(unique(tension_sums), 2)
@@ -207,13 +209,13 @@ test_that("raking equalizes weights when they should be equal", {
   # # When raking on wool-tension, there's no observation we can upweight to
   # # balance the sample.
   ctrl = new("Ctrl", raking = ~ wool + tension)
-  rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+  rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
   expect_equal(length(unique(rake_result$raked_weight)), 2)
   
   # When raking on wool, the sum of raked weights within wool A and wool B
   # should be equal.
   ctrl = new("Ctrl", raking = ~ wool)
-  rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+  rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
   sums = rake_result[, .(sums = sum(raked_weight)), by = "wool"][["sums"]]
   expect_length(unique(sums), 1)
 
@@ -221,13 +223,13 @@ test_that("raking equalizes weights when they should be equal", {
   # upweighted 2:1 against the others. Equivalently, the sum of weights in
   # tensions L, M, and H should be the same.
   ctrl = new("Ctrl", raking = list(~ tension))
-  rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+  rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
   sums = rake_result[, .(sums = sum(raked_weight)), by = "tension"][["sums"]]
   expect_length(unique(sums), 1)
 
   # When raking on wool, then tension, weights are made equal
   ctrl = new("Ctrl", raking = list(~ wool, ~ tension))
-  rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+  rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
   wool_sums = sum_by(rake_result, "wool")
   tension_sums = sum_by(rake_result, "tension")
   Reduce(expect_equal, wool_sums)
@@ -235,7 +237,7 @@ test_that("raking equalizes weights when they should be equal", {
 
   # When raking on tension, then wool, weights are made equal
   ctrl = new("Ctrl", raking = list(~ tension, ~ wool))
-  rake_result = suppressWarnings(weight(copy(toy_data), toy_targets, ctrl))
+  rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
   wool_sums = sum_by(rake_result, "wool")
   tension_sums = sum_by(rake_result, "tension")
   Reduce(expect_equal, wool_sums)
