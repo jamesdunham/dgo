@@ -118,21 +118,6 @@ Under the hood, these functions use RStan for MCMC sampling, and arguments can b
 ``` r
 dgmrp_out_abortion <- dgmrp(dgirt_in_abortion, iter = 1500, chains = 4, cores =
   4, seed = 42)
-#> Compiling model...
-#> In file included from /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/config.hpp:39:0,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/math/tools/config.hpp:13,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/core/var.hpp:7,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/core/gevv_vvv_vari.hpp:5,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/core.hpp:12,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/mat.hpp:4,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math.hpp:4,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/src/stan/model/model_header.hpp:4,
-#>                  from file46f945f3597c.cpp:8:
-#> /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/config/compiler/gcc.hpp:186:0: warning: "BOOST_NO_CXX11_RVALUE_REFERENCES" redefined
-#>  #  define BOOST_NO_CXX11_RVALUE_REFERENCES
-#>  ^
-#> <command-line>:0:0: note: this is the location of the previous definition
-#> Done.
 ```
 
 The model results are held in a `dgirtfit` object. Methods from RStan like `extract` are available if needed because `dgirtfit` is a subclass of `stanfit`. But dgo provides its own methods for typical post-estimation tasks.
@@ -343,21 +328,6 @@ Under the hood, these functions use RStan for MCMC sampling, and arguments can b
 ``` r
 dgirt_out_liberalism <- dgirt(dgirt_in_liberalism, iter = 3000, chains = 4,
   cores = 4, seed = 42)
-#> Compiling model...
-#> In file included from /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/config.hpp:39:0,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/math/tools/config.hpp:13,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/core/var.hpp:7,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/core/gevv_vvv_vari.hpp:5,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/core.hpp:12,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/mat.hpp:4,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math.hpp:4,
-#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/src/stan/model/model_header.hpp:4,
-#>                  from file46f96a735ec0.cpp:8:
-#> /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/config/compiler/gcc.hpp:186:0: warning: "BOOST_NO_CXX11_RVALUE_REFERENCES" redefined
-#>  #  define BOOST_NO_CXX11_RVALUE_REFERENCES
-#>  ^
-#> <command-line>:0:0: note: this is the location of the previous definition
-#> Done.
 ```
 
 The model results are held in a `dgirtfit` object. Methods from RStan like `extract` are available if needed because `dgirtfit` is a subclass of `stanfit`. But dgo provides its own methods for typical post-estimation tasks.

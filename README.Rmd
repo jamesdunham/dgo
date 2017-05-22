@@ -136,7 +136,7 @@ be passed to RStan's `stan` via the `...` argument of `dgirt` and `dgmrp`. This
 will almost always be desirable, at a minimum to specify the number of sampler
 iterations, chains, and cores.
 
-```{r, warning = FALSE}
+```{r, warning = FALSE, message = FALSE, results = 'hide'}
 dgmrp_out_abortion <- dgmrp(dgirt_in_abortion, iter = 1500, chains = 4, cores =
   4, seed = 42)
 ```
@@ -264,7 +264,7 @@ be passed to RStan's `stan` via the `...` argument of `dgirt` and `dgmrp`. This
 will almost always be desirable, at a minimum to specify the number of sampler
 iterations, chains, and cores.
 
-```{r, warning = FALSE}
+```{r, warning = FALSE, message = FALSE, results = 'hide'}
 dgirt_out_liberalism <- dgirt(dgirt_in_liberalism, iter = 3000, chains = 4,
   cores = 4, seed = 42)
 ```
