@@ -109,7 +109,7 @@ fit_dgo_model <- function(model_output, shaped_data, ..., separate_t,
 
   if (!length(model)) {
     # No precompiled stanmodel object was given
-    model_file <- system.file(paste0("exec/", version, ".stan"), package = "dgo")
+    model_file <- system.file(paste0("models/", version, ".stan"), package = "dgo")
     if (model_file == "") {
       # dgo model not found
       if (file.exists(version)) {
