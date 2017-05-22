@@ -3,6 +3,7 @@
 ^.*tar.gz$
 ^Makefile$
 ^README.Rmd$
+^README/
 ^\.DS_Store$
 ^\.Rproj\.user$
 ^\.travis\.yml$

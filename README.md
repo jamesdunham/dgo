@@ -116,7 +116,7 @@ get_item_n(dgirt_in_abortion, by = "year")
 Under the hood, these functions use RStan for MCMC sampling, and arguments can be passed to RStan's `stan` via the `...` argument of `dgirt` and `dgmrp`. This will almost always be desirable, at a minimum to specify the number of sampler iterations, chains, and cores.
 
 ``` r
-dgirt_out_abortion <- dgmrp(dgirt_in_abortion, iter = 1500, chains = 4, cores =
+dgmrp_out_abortion <- dgmrp(dgirt_in_abortion, iter = 1500, chains = 4, cores =
   4, seed = 42)
 #> Compiling model...
 #> In file included from /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/config.hpp:39:0,
@@ -127,7 +127,7 @@ dgirt_out_abortion <- dgmrp(dgirt_in_abortion, iter = 1500, chains = 4, cores =
 #>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/mat.hpp:4,
 #>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math.hpp:4,
 #>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/src/stan/model/model_header.hpp:4,
-#>                  from file18ae4f9d2f73.cpp:8:
+#>                  from file46f945f3597c.cpp:8:
 #> /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/config/compiler/gcc.hpp:186:0: warning: "BOOST_NO_CXX11_RVALUE_REFERENCES" redefined
 #>  #  define BOOST_NO_CXX11_RVALUE_REFERENCES
 #>  ^
@@ -142,9 +142,9 @@ The model results are held in a `dgirtfit` object. Methods from RStan like `extr
 For a high-level summary of the result, use `summary`.
 
 ``` r
-summary(dgirt_out_abortion)
+summary(dgmrp_out_abortion)
 #> dgirt samples from 4 chains of 1500 iterations, 750 warmup, thinned every 1 
-#>   Drawn Sun May 21 19:58:29 2017 
+#>   Drawn Mon May 22 10:57:03 2017 
 #>   Package version 0.2.9 
 #>   Model version 2017_01_04_singleissue 
 #>   117 parameters; 60 theta_bars (year state race3)
@@ -160,16 +160,16 @@ summary(dgirt_out_abortion)
 #> 
 #> Elapsed time
 #>    chain warmup sample total
-#> 1:     1    12S    17S   29S
-#> 2:     2    12S    12S   24S
-#> 3:     3    12S    18S   30S
-#> 4:     4    15S    11S   26S
+#> 1:     1    15S    17S   32S
+#> 2:     2    15S    12S   27S
+#> 3:     3    14S    20S   34S
+#> 4:     4    16S    12S   28S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
 
 ``` r
-head(summarize(dgirt_out_abortion))
+head(summarize(dgmrp_out_abortion))
 #>        param state race3 year      mean         sd    median     q_025
 #> 1: theta_bar    CA black 2006 0.7739283 0.02098019 0.7749083 0.7307567
 #> 2: theta_bar    CA black 2007 0.7980027 0.02771553 0.7979378 0.7439328
@@ -189,7 +189,7 @@ head(summarize(dgirt_out_abortion))
 Alternatively, `summarize` can apply arbitrary functions to posterior samples for whatever parameter is given by its `pars` argument. Enclose function names with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th posterior quantiles.
 
 ``` r
-summarize(dgirt_out_abortion, pars = "xi", funs = "var")
+summarize(dgmrp_out_abortion, pars = "xi", funs = "var")
 #>    param year        var
 #> 1:    xi 2006 0.01814362
 #> 2:    xi 2007 0.05026942
@@ -201,7 +201,7 @@ summarize(dgirt_out_abortion, pars = "xi", funs = "var")
 To access posterior samples in tabular form use `as.data.frame`. By default, this method returns post-warmup samples for the `theta_bar` parameters, but like other methods takes a `pars` argument.
 
 ``` r
-head(as.data.frame(dgirt_out_abortion))
+head(as.data.frame(dgmrp_out_abortion))
 #>        param state race3 year iteration     value
 #> 1: theta_bar    CA black 2006         1 0.7661626
 #> 2: theta_bar    CA black 2006         2 0.7690362
@@ -216,7 +216,7 @@ To poststratify the results use `poststratify`. The following example uses the g
 Read `help("poststratify")` for more details.
 
 ``` r
-poststratify(dgirt_out_abortion, annual_state_race_targets, strata_names =
+poststratify(dgmrp_out_abortion, annual_state_race_targets, strata_names =
   c("state", "year"), aggregated_names = "race3")
 #>     state year     value
 #>  1:    CA 2006 0.7187353
@@ -244,23 +244,23 @@ poststratify(dgirt_out_abortion, annual_state_race_targets, strata_names =
 To plot the results use `dgirt_plot`. This method plots summaries of posterior samples by time period. By default, it shows a 95% credible interval around posterior medians for the `theta_bar` parameters, for each local geographic area. For this (unconverged) toy example we omit the CIs.
 
 ``` r
-dgirt_plot(dgirt_out_abortion, y_min = NULL, y_max = NULL)
+dgirt_plot(dgmrp_out_abortion, y_min = NULL, y_max = NULL)
 ```
 
-![](README_files/unnamed-chunk-14-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgmrp_plot-1.png)
 
 Output from `dgirt_plot` can be customized to some extent using objects from the ggplot2 package.
 
 ``` r
-dgirt_plot(dgirt_out_abortion, y_min = NULL, y_max = NULL) + theme_classic()
+dgirt_plot(dgmrp_out_abortion, y_min = NULL, y_max = NULL) + theme_classic()
 ```
 
-![](README_files/unnamed-chunk-15-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgmrp_plot_plus-1.png)
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This requires arguments that identify the relevant variables in the `data.frame`. Below, `poststratify` aggregates over the demographic grouping variable `race3`, resulting in a `data.frame` of estimates by state-year. So, in the subsequent call to `dgirt_plot`, we pass the names of the state and year variables. The `group_names` argument is `NULL` because there are no grouping variables left after aggregating over `race3`.
 
 ``` r
-ps <- poststratify(dgirt_out_abortion, annual_state_race_targets, strata_names =
+ps <- poststratify(dgmrp_out_abortion, annual_state_race_targets, strata_names =
   c("state", "year"), aggregated_names = "race3")
 head(ps)
 #>    state year     value
@@ -273,7 +273,7 @@ head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
-![](README_files/unnamed-chunk-16-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgmrp_plot_ps-1.png)
 
 Policy Liberalism
 -----------------
@@ -352,7 +352,7 @@ dgirt_out_liberalism <- dgirt(dgirt_in_liberalism, iter = 3000, chains = 4,
 #>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/mat.hpp:4,
 #>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math.hpp:4,
 #>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/src/stan/model/model_header.hpp:4,
-#>                  from file18ae6c1de99.cpp:8:
+#>                  from file46f96a735ec0.cpp:8:
 #> /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/config/compiler/gcc.hpp:186:0: warning: "BOOST_NO_CXX11_RVALUE_REFERENCES" redefined
 #>  #  define BOOST_NO_CXX11_RVALUE_REFERENCES
 #>  ^
@@ -369,7 +369,7 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgirt_out_liberalism)
 #> dgirt samples from 4 chains of 3000 iterations, 1500 warmup, thinned every 1 
-#>   Drawn Sun May 21 20:05:43 2017 
+#>   Drawn Mon May 22 11:08:37 2017 
 #>   Package version 0.2.9 
 #>   Model version 2017_01_04 
 #>   137 parameters; 60 theta_bars (year state race3)
@@ -385,10 +385,10 @@ summary(dgirt_out_liberalism)
 #> 
 #> Elapsed time
 #>    chain warmup sample  total
-#> 1:     1  2M 7S  2M 0S  4M 7S
-#> 2:     2 1M 56S 3M 25S 4M 81S
-#> 3:     3 2M 22S 3M 13S 5M 35S
-#> 4:     4 2M 21S 3M 23S 5M 44S
+#> 1:     1 2M 14S  2M 2S 4M 16S
+#> 2:     2  2M 3S 4M 11S 6M 14S
+#> 3:     3 2M 29S  4M 7S 6M 36S
+#> 4:     4 2M 27S 4M 15S 6M 42S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
@@ -470,7 +470,7 @@ To plot the results use `dgirt_plot`. This method plots summaries of posterior s
 dgirt_plot(dgirt_out_liberalism, y_min = NULL, y_max = NULL)
 ```
 
-![](README_files/unnamed-chunk-26-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgirt_plot-1.png)
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This requires arguments that identify the relevant variables in the `data.frame`. Below, `poststratify` aggregates over the demographic grouping variable `race3`, resulting in a `data.frame` of estimates by state-year. So, in the subsequent call to `dgirt_plot`, we pass the names of the state and year variables. The `group_names` argument is `NULL` because there are no grouping variables left after aggregating over `race3`.
 
@@ -488,7 +488,7 @@ head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
-![](README_files/unnamed-chunk-27-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgirt_plot_ps-1.png)
 
 Troubleshooting
 ---------------
