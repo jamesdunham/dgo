@@ -1,7 +1,6 @@
 .Rproj.user
-README_cache/
+dgo.Rcheck/
+*.tar.gz
+readme-cache
 src/*.o
 src/*.so
-src/include/models.hpp.bak
-dgo.Rcheck/
-dgo_0.2.9.tar.gz
