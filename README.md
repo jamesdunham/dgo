@@ -6,18 +6,16 @@ dgo can also be used to estimate smoothed estimates of subpopulation groups' ave
 
 This model opens up new areas of research on historical public opinion in the United States at the subnational level. It also enables scholars of comparative politics to estimate dynamic models of public opinion opinion at the country or subnational level.
 
-Prerequisites
-=============
-
-Installation requires [RStan](http://mc-stan.org/interfaces/rstan.html) and its prerequisites, in particular a C++ toolchain. If you don't have RStan, follow its "[Getting Started](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)" guide before continuing.
-
 Installation
 ============
+
+dgo requires a working installation of [RStan](http://mc-stan.org/interfaces/rstan.html). If you don't have already have RStan, follow its "[Getting Started](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)" guide before continuing.
 
 dgo can be installed from [GitHub](https://github.com/jamesdunham/dgo) using [devtools](https://github.com/hadley/devtools/):
 
 ``` r
-devtools::install_github("jamesdunham/dgo", dependencies = TRUE)
+if (!require(devtools, quietly = TRUE)) install.packages("devtools")
+devtools::install_github("jamesdunham/dgo")
 ```
 
 Getting started
@@ -25,15 +23,6 @@ Getting started
 
 ``` r
 library(dgo)
-#> Loading required package: dgodata
-#> Loading required package: Rcpp
-#> Loading required package: rstan
-#> Loading required package: ggplot2
-#> Loading required package: StanHeaders
-#> rstan (Version 2.14.1, packaged: 2016-12-28 14:55:41 UTC, GitRev: 5fa1e80eb817)
-#> For execution on a local, multicore CPU with excess RAM we recommend calling
-#> rstan_options(auto_write = TRUE)
-#> options(mc.cores = parallel::detectCores())
 ```
 
 The minimal workflow from raw data to estimation is:
@@ -129,6 +118,21 @@ Under the hood, these functions use RStan for MCMC sampling, and arguments can b
 ``` r
 dgirt_out_abortion <- dgmrp(dgirt_in_abortion, iter = 1500, chains = 4, cores =
   4, seed = 42)
+#> Compiling model...
+#> In file included from /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/config.hpp:39:0,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/math/tools/config.hpp:13,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/core/var.hpp:7,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/core/gevv_vvv_vari.hpp:5,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/core.hpp:12,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/mat.hpp:4,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math.hpp:4,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/src/stan/model/model_header.hpp:4,
+#>                  from file18ae4f9d2f73.cpp:8:
+#> /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/config/compiler/gcc.hpp:186:0: warning: "BOOST_NO_CXX11_RVALUE_REFERENCES" redefined
+#>  #  define BOOST_NO_CXX11_RVALUE_REFERENCES
+#>  ^
+#> <command-line>:0:0: note: this is the location of the previous definition
+#> Done.
 ```
 
 The model results are held in a `dgirtfit` object. Methods from RStan like `extract` are available if needed because `dgirtfit` is a subclass of `stanfit`. But dgo provides its own methods for typical post-estimation tasks.
@@ -140,26 +144,26 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgirt_out_abortion)
 #> dgirt samples from 4 chains of 1500 iterations, 750 warmup, thinned every 1 
-#>   Drawn Wed Feb  8 12:24:24 2017 
-#>   Package version 0.2.8 
+#>   Drawn Sun May 21 19:58:29 2017 
+#>   Package version 0.2.9 
 #>   Model version 2017_01_04_singleissue 
-#>   117 parameters; 60 theta_bars (year, state and race3)
+#>   117 parameters; 60 theta_bars (year state race3)
 #>   5 periods 2006 to 2010 
 #> 
 #> n_eff
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>   15.80   89.68  264.50  483.90  597.70 3000.00
+#>   95.68  242.50  451.87  685.85  927.30 3000.00
 #> 
 #> Rhat
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>  0.9992  1.0050  1.0150  1.0250  1.0430  1.1090
+#>  0.9993  1.0028  1.0068  1.0081  1.0126  1.0406
 #> 
 #> Elapsed time
 #>    chain warmup sample total
-#> 1:     1    10S    20S   30S
-#> 2:     2    10S    22S   32S
-#> 3:     3    10S    19S   29S
-#> 4:     4    13S    20S   33S
+#> 1:     1    12S    17S   29S
+#> 2:     2    12S    12S   24S
+#> 3:     3    12S    18S   30S
+#> 4:     4    15S    11S   26S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
@@ -167,19 +171,19 @@ To summarize posterior samples, use `summarize`. The default output gives summar
 ``` r
 head(summarize(dgirt_out_abortion))
 #>        param state race3 year      mean         sd    median     q_025
-#> 1: theta_bar    CA black 2006 0.7754603 0.02155152 0.7760716 0.7316139
-#> 2: theta_bar    CA black 2007 0.7988475 0.03076377 0.7971067 0.7442743
-#> 3: theta_bar    CA black 2008 0.7225603 0.02428735 0.7222470 0.6753476
-#> 4: theta_bar    CA black 2009 0.6846860 0.02226090 0.6847197 0.6395305
-#> 5: theta_bar    CA black 2010 0.7394164 0.01584579 0.7399492 0.7078935
-#> 6: theta_bar    CA other 2006 0.7319499 0.02315218 0.7322472 0.6878444
+#> 1: theta_bar    CA black 2006 0.7739283 0.02098019 0.7749083 0.7307567
+#> 2: theta_bar    CA black 2007 0.7980027 0.02771553 0.7979378 0.7439328
+#> 3: theta_bar    CA black 2008 0.7232980 0.02362116 0.7231930 0.6786121
+#> 4: theta_bar    CA black 2009 0.6863666 0.02128237 0.6863458 0.6463628
+#> 5: theta_bar    CA black 2010 0.7407779 0.01682742 0.7414667 0.7058706
+#> 6: theta_bar    CA other 2006 0.7347199 0.02322850 0.7354365 0.6872140
 #>        q_975
-#> 1: 0.8136820
-#> 2: 0.8701612
-#> 3: 0.7691617
-#> 4: 0.7271336
-#> 5: 0.7685217
-#> 6: 0.7775199
+#> 1: 0.8144084
+#> 2: 0.8517811
+#> 3: 0.7693334
+#> 4: 0.7279652
+#> 5: 0.7717651
+#> 6: 0.7790182
 ```
 
 Alternatively, `summarize` can apply arbitrary functions to posterior samples for whatever parameter is given by its `pars` argument. Enclose function names with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th posterior quantiles.
@@ -187,11 +191,11 @@ Alternatively, `summarize` can apply arbitrary functions to posterior samples fo
 ``` r
 summarize(dgirt_out_abortion, pars = "xi", funs = "var")
 #>    param year        var
-#> 1:    xi 2006 0.01946319
-#> 2:    xi 2007 0.03932934
-#> 3:    xi 2008 0.04135631
-#> 4:    xi 2009 0.03546163
-#> 5:    xi 2010 0.03086187
+#> 1:    xi 2006 0.01814362
+#> 2:    xi 2007 0.05026942
+#> 3:    xi 2008 0.05606188
+#> 4:    xi 2009 0.04857038
+#> 5:    xi 2010 0.04149793
 ```
 
 To access posterior samples in tabular form use `as.data.frame`. By default, this method returns post-warmup samples for the `theta_bar` parameters, but like other methods takes a `pars` argument.
@@ -199,12 +203,12 @@ To access posterior samples in tabular form use `as.data.frame`. By default, thi
 ``` r
 head(as.data.frame(dgirt_out_abortion))
 #>        param state race3 year iteration     value
-#> 1: theta_bar    CA black 2006         1 0.7614693
-#> 2: theta_bar    CA black 2006         2 0.7505157
-#> 3: theta_bar    CA black 2006         3 0.7915333
-#> 4: theta_bar    CA black 2006         4 0.7742232
-#> 5: theta_bar    CA black 2006         5 0.7778495
-#> 6: theta_bar    CA black 2006         6 0.7457225
+#> 1: theta_bar    CA black 2006         1 0.7661626
+#> 2: theta_bar    CA black 2006         2 0.7690362
+#> 3: theta_bar    CA black 2006         3 0.7656257
+#> 4: theta_bar    CA black 2006         4 0.7935372
+#> 5: theta_bar    CA black 2006         5 0.7544080
+#> 6: theta_bar    CA black 2006         6 0.7819740
 ```
 
 To poststratify the results use `poststratify`. The following example uses the group population proportions bundled as `annual_state_race_targets` to reweight and aggregate estimates to strata defined by state-years.
@@ -215,26 +219,26 @@ Read `help("poststratify")` for more details.
 poststratify(dgirt_out_abortion, annual_state_race_targets, strata_names =
   c("state", "year"), aggregated_names = "race3")
 #>     state year     value
-#>  1:    CA 2006 0.7188081
-#>  2:    CA 2007 0.7470397
-#>  3:    CA 2008 0.6566884
-#>  4:    CA 2009 0.6267420
-#>  5:    CA 2010 0.6756431
-#>  6:    GA 2006 0.6333206
-#>  7:    GA 2007 0.6223014
-#>  8:    GA 2008 0.5243312
-#>  9:    GA 2009 0.5105648
-#> 10:    GA 2010 0.5704081
-#> 11:    LA 2006 0.5258743
-#> 12:    LA 2007 0.4770990
-#> 13:    LA 2008 0.4151797
-#> 14:    LA 2009 0.4024384
-#> 15:    LA 2010 0.4246879
-#> 16:    MA 2006 0.7629225
-#> 17:    MA 2007 0.8101844
-#> 18:    MA 2008 0.7056092
-#> 19:    MA 2009 0.6600767
-#> 20:    MA 2010 0.7082504
+#>  1:    CA 2006 0.7187353
+#>  2:    CA 2007 0.7469064
+#>  3:    CA 2008 0.6562966
+#>  4:    CA 2009 0.6272075
+#>  5:    CA 2010 0.6754691
+#>  6:    GA 2006 0.6339750
+#>  7:    GA 2007 0.6225482
+#>  8:    GA 2008 0.5232615
+#>  9:    GA 2009 0.5095145
+#> 10:    GA 2010 0.5705449
+#> 11:    LA 2006 0.5266416
+#> 12:    LA 2007 0.4769044
+#> 13:    LA 2008 0.4142786
+#> 14:    LA 2009 0.3985367
+#> 15:    LA 2010 0.4229707
+#> 16:    MA 2006 0.7629194
+#> 17:    MA 2007 0.8099707
+#> 18:    MA 2008 0.7058450
+#> 19:    MA 2009 0.6624888
+#> 20:    MA 2010 0.7078342
 ```
 
 To plot the results use `dgirt_plot`. This method plots summaries of posterior samples by time period. By default, it shows a 95% credible interval around posterior medians for the `theta_bar` parameters, for each local geographic area. For this (unconverged) toy example we omit the CIs.
@@ -243,7 +247,7 @@ To plot the results use `dgirt_plot`. This method plots summaries of posterior s
 dgirt_plot(dgirt_out_abortion, y_min = NULL, y_max = NULL)
 ```
 
-![](README/unnamed-chunk-14-1.png)
+![](README_files/unnamed-chunk-14-1.png)
 
 Output from `dgirt_plot` can be customized to some extent using objects from the ggplot2 package.
 
@@ -251,7 +255,7 @@ Output from `dgirt_plot` can be customized to some extent using objects from the
 dgirt_plot(dgirt_out_abortion, y_min = NULL, y_max = NULL) + theme_classic()
 ```
 
-![](README/unnamed-chunk-15-1.png)
+![](README_files/unnamed-chunk-15-1.png)
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This requires arguments that identify the relevant variables in the `data.frame`. Below, `poststratify` aggregates over the demographic grouping variable `race3`, resulting in a `data.frame` of estimates by state-year. So, in the subsequent call to `dgirt_plot`, we pass the names of the state and year variables. The `group_names` argument is `NULL` because there are no grouping variables left after aggregating over `race3`.
 
@@ -260,16 +264,16 @@ ps <- poststratify(dgirt_out_abortion, annual_state_race_targets, strata_names =
   c("state", "year"), aggregated_names = "race3")
 head(ps)
 #>    state year     value
-#> 1:    CA 2006 0.7188081
-#> 2:    CA 2007 0.7470397
-#> 3:    CA 2008 0.6566884
-#> 4:    CA 2009 0.6267420
-#> 5:    CA 2010 0.6756431
-#> 6:    GA 2006 0.6333206
+#> 1:    CA 2006 0.7187353
+#> 2:    CA 2007 0.7469064
+#> 3:    CA 2008 0.6562966
+#> 4:    CA 2009 0.6272075
+#> 5:    CA 2010 0.6754691
+#> 6:    GA 2006 0.6339750
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
-![](README/unnamed-chunk-16-1.png)
+![](README_files/unnamed-chunk-16-1.png)
 
 Policy Liberalism
 -----------------
@@ -339,6 +343,21 @@ Under the hood, these functions use RStan for MCMC sampling, and arguments can b
 ``` r
 dgirt_out_liberalism <- dgirt(dgirt_in_liberalism, iter = 3000, chains = 4,
   cores = 4, seed = 42)
+#> Compiling model...
+#> In file included from /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/config.hpp:39:0,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/math/tools/config.hpp:13,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/core/var.hpp:7,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/core/gevv_vvv_vari.hpp:5,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/core.hpp:12,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math/rev/mat.hpp:4,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/stan/math.hpp:4,
+#>                  from /home/james/R/x86_64-pc-linux-gnu-library/3.4/StanHeaders/include/src/stan/model/model_header.hpp:4,
+#>                  from file18ae6c1de99.cpp:8:
+#> /home/james/R/x86_64-pc-linux-gnu-library/3.4/BH/include/boost/config/compiler/gcc.hpp:186:0: warning: "BOOST_NO_CXX11_RVALUE_REFERENCES" redefined
+#>  #  define BOOST_NO_CXX11_RVALUE_REFERENCES
+#>  ^
+#> <command-line>:0:0: note: this is the location of the previous definition
+#> Done.
 ```
 
 The model results are held in a `dgirtfit` object. Methods from RStan like `extract` are available if needed because `dgirtfit` is a subclass of `stanfit`. But dgo provides its own methods for typical post-estimation tasks.
@@ -350,26 +369,26 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgirt_out_liberalism)
 #> dgirt samples from 4 chains of 3000 iterations, 1500 warmup, thinned every 1 
-#>   Drawn Wed Feb  8 12:29:09 2017 
-#>   Package version 0.2.8 
+#>   Drawn Sun May 21 20:05:43 2017 
+#>   Package version 0.2.9 
 #>   Model version 2017_01_04 
-#>   137 parameters; 60 theta_bars (year, state and race3)
+#>   137 parameters; 60 theta_bars (year state race3)
 #>   5 periods 2006 to 2010 
 #> 
 #> n_eff
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>   229.7   686.5  1026.0  1540.0  1563.0  6000.0
+#>   65.07  388.19  585.84 1083.11 1245.79 6000.00
 #> 
 #> Rhat
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>  0.9997  1.0000  1.0010  1.0020  1.0020  1.0150
+#>  0.9997  1.0020  1.0059  1.0084  1.0119  1.0553
 #> 
 #> Elapsed time
-#>    chain warmup sample   total
-#> 1:     1 1M 44S 1M 50S  2M 94S
-#> 2:     2 1M 42S 2M 54S  3M 96S
-#> 3:     3 1M 54S 1M 48S 2M 102S
-#> 4:     4 1M 47S 1M 50S  2M 97S
+#>    chain warmup sample  total
+#> 1:     1  2M 7S  2M 0S  4M 7S
+#> 2:     2 1M 56S 3M 25S 4M 81S
+#> 3:     3 2M 22S 3M 13S 5M 35S
+#> 4:     4 2M 21S 3M 23S 5M 44S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
@@ -377,19 +396,19 @@ To summarize posterior samples, use `summarize`. The default output gives summar
 ``` r
 head(summarize(dgirt_out_liberalism))
 #>        param state race3 year      mean         sd    median      q_025
-#> 1: theta_bar    CA black 2006 0.5181310 0.06903540 0.5155607 0.38979007
-#> 2: theta_bar    CA black 2007 0.6132564 0.09604204 0.6052594 0.44996480
-#> 3: theta_bar    CA black 2008 0.6091027 0.10859095 0.5952582 0.43748868
-#> 4: theta_bar    CA black 2009 0.5204638 0.08900999 0.5085677 0.38176128
-#> 5: theta_bar    CA black 2010 0.4992275 0.06126724 0.4930813 0.39782512
-#> 6: theta_bar    CA other 2006 0.1508179 0.06059458 0.1573339 0.01016673
+#> 1: theta_bar    CA black 2006 0.5247367 0.06827003 0.5194593 0.40423566
+#> 2: theta_bar    CA black 2007 0.5944296 0.08813494 0.5853362 0.44776239
+#> 3: theta_bar    CA black 2008 0.5823158 0.10139495 0.5667726 0.43013247
+#> 4: theta_bar    CA black 2009 0.5132426 0.08060875 0.5021405 0.38781331
+#> 5: theta_bar    CA black 2010 0.4977903 0.05987256 0.4922105 0.39645056
+#> 6: theta_bar    CA other 2006 0.1593904 0.05938098 0.1664194 0.02339847
 #>        q_975
-#> 1: 0.6657002
-#> 2: 0.8279937
-#> 3: 0.8639421
-#> 4: 0.7290341
-#> 5: 0.6363504
-#> 6: 0.2529650
+#> 1: 0.6754660
+#> 2: 0.7932721
+#> 3: 0.8190219
+#> 4: 0.7062299
+#> 5: 0.6332728
+#> 6: 0.2583196
 ```
 
 Alternatively, `summarize` can apply arbitrary functions to posterior samples for whatever parameter is given by its `pars` argument. Enclose function names with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th posterior quantiles.
@@ -397,11 +416,11 @@ Alternatively, `summarize` can apply arbitrary functions to posterior samples fo
 ``` r
 summarize(dgirt_out_liberalism, pars = "xi", funs = "var")
 #>    param year         var
-#> 1:    xi 2006 0.011302809
-#> 2:    xi 2007 0.007723304
-#> 3:    xi 2008 0.006361194
-#> 4:    xi 2009 0.005262130
-#> 5:    xi 2010 0.005754282
+#> 1:    xi 2006 0.013076032
+#> 2:    xi 2007 0.008053516
+#> 3:    xi 2008 0.006789127
+#> 4:    xi 2009 0.006144990
+#> 5:    xi 2010 0.005945176
 ```
 
 To access posterior samples in tabular form use `as.data.frame`. By default, this method returns post-warmup samples for the `theta_bar` parameters, but like other methods takes a `pars` argument.
@@ -409,12 +428,12 @@ To access posterior samples in tabular form use `as.data.frame`. By default, thi
 ``` r
 head(as.data.frame(dgirt_out_liberalism))
 #>        param state race3 year iteration     value
-#> 1: theta_bar    CA black 2006         1 0.5326097
-#> 2: theta_bar    CA black 2006         2 0.5249095
-#> 3: theta_bar    CA black 2006         3 0.4810473
-#> 4: theta_bar    CA black 2006         4 0.5842495
-#> 5: theta_bar    CA black 2006         5 0.6794800
-#> 6: theta_bar    CA black 2006         6 0.5321501
+#> 1: theta_bar    CA black 2006         1 0.6107959
+#> 2: theta_bar    CA black 2006         2 0.4745799
+#> 3: theta_bar    CA black 2006         3 0.4980549
+#> 4: theta_bar    CA black 2006         4 0.4898826
+#> 5: theta_bar    CA black 2006         5 0.4939210
+#> 6: theta_bar    CA black 2006         6 0.4746524
 ```
 
 To poststratify the results use `poststratify`. The following example uses the group population proportions bundled as `annual_state_race_targets` to reweight and aggregate estimates to strata defined by state-years. Read `help("poststratify")` for more details.
@@ -422,27 +441,27 @@ To poststratify the results use `poststratify`. The following example uses the g
 ``` r
 poststratify(dgirt_out_liberalism, annual_state_race_targets, strata_names = c("state",
     "year"), aggregated_names = "race3")
-#>     state year         value
-#>  1:    CA 2006  0.1355272858
-#>  2:    CA 2007  0.1848865835
-#>  3:    CA 2008  0.1043107399
-#>  4:    CA 2009  0.0459467646
-#>  5:    CA 2010  0.0839898062
-#>  6:    GA 2006  0.0964239685
-#>  7:    GA 2007  0.0744225784
-#>  8:    GA 2008 -0.0300159778
-#>  9:    GA 2009 -0.0309101191
-#> 10:    GA 2010  0.0003758105
-#> 11:    LA 2006  0.0138033941
-#> 12:    LA 2007 -0.0171435561
-#> 13:    LA 2008 -0.1198432366
-#> 14:    LA 2009 -0.1459680343
-#> 15:    LA 2010 -0.1016888955
-#> 16:    MA 2006  0.1398600252
-#> 17:    MA 2007  0.2725613449
-#> 18:    MA 2008  0.1556987370
-#> 19:    MA 2009  0.0713680458
-#> 20:    MA 2010  0.1154100785
+#>     state year        value
+#>  1:    CA 2006  0.143321712
+#>  2:    CA 2007  0.188969603
+#>  3:    CA 2008  0.112907172
+#>  4:    CA 2009  0.058219329
+#>  5:    CA 2010  0.092557709
+#>  6:    GA 2006  0.103355439
+#>  7:    GA 2007  0.084458691
+#>  8:    GA 2008 -0.011351441
+#>  9:    GA 2009 -0.015584764
+#> 10:    GA 2010  0.010578655
+#> 11:    LA 2006  0.021248643
+#> 12:    LA 2007 -0.003170117
+#> 13:    LA 2008 -0.095756506
+#> 14:    LA 2009 -0.124279123
+#> 15:    LA 2010 -0.088613763
+#> 16:    MA 2006  0.147235550
+#> 17:    MA 2007  0.269984992
+#> 18:    MA 2008  0.159194876
+#> 19:    MA 2009  0.082495757
+#> 20:    MA 2010  0.122864118
 ```
 
 To plot the results use `dgirt_plot`. This method plots summaries of posterior samples by time period. By default, it shows a 95% credible interval around posterior medians for the `theta_bar` parameters, for each local geographic area. For this (unconverged) toy example we omit the CIs.
@@ -451,7 +470,7 @@ To plot the results use `dgirt_plot`. This method plots summaries of posterior s
 dgirt_plot(dgirt_out_liberalism, y_min = NULL, y_max = NULL)
 ```
 
-![](README/unnamed-chunk-26-1.png)
+![](README_files/unnamed-chunk-26-1.png)
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This requires arguments that identify the relevant variables in the `data.frame`. Below, `poststratify` aggregates over the demographic grouping variable `race3`, resulting in a `data.frame` of estimates by state-year. So, in the subsequent call to `dgirt_plot`, we pass the names of the state and year variables. The `group_names` argument is `NULL` because there are no grouping variables left after aggregating over `race3`.
 
@@ -460,16 +479,16 @@ ps <- poststratify(dgirt_out_liberalism, annual_state_race_targets, strata_names
     "year"), aggregated_names = "race3")
 head(ps)
 #>    state year      value
-#> 1:    CA 2006 0.13552729
-#> 2:    CA 2007 0.18488658
-#> 3:    CA 2008 0.10431074
-#> 4:    CA 2009 0.04594676
-#> 5:    CA 2010 0.08398981
-#> 6:    GA 2006 0.09642397
+#> 1:    CA 2006 0.14332171
+#> 2:    CA 2007 0.18896960
+#> 3:    CA 2008 0.11290717
+#> 4:    CA 2009 0.05821933
+#> 5:    CA 2010 0.09255771
+#> 6:    GA 2006 0.10335544
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
-![](README/unnamed-chunk-27-1.png)
+![](README_files/unnamed-chunk-27-1.png)
 
 Troubleshooting
 ---------------
@@ -487,6 +506,8 @@ For help setting environment variables, see the Stack Overflow question [here](h
 tempdir()   
 #> [1] "/var/folders/2p/_d3c95qd6ljg28j1f5l2jqxm0000gn/T//Rtmp38a10A"
 ```
+
+Models fitted before October 2016 (specifically &lt; [\#8e6a2cf](https://github.com/jamesdunham/dgo/commit/8e6a2cfbe00b2cd4a908b3067241e06124d143cd)) using dgirtfit are not fully compatible with dgo. Their contents can be extracted without using dgo, however, with the `$` indexing operator. For example: `as.data.frame(dgirtfit_object$stan.cmb)`.
 
 Contributing and citing
 -----------------------

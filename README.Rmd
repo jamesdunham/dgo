@@ -36,25 +36,24 @@ knitr::opts_chunk$set(
   echo = TRUE,
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README/",
-  cache = FALSE)
+  cache = TRUE,
+  cache.path = 'readme-cache/',
+  fig.path = "README_files/")
 ```
 
-# Prerequisites
-
-Installation requires [RStan](http://mc-stan.org/interfaces/rstan.html) and its
-prerequisites, in particular a C++ toolchain. If you don't have RStan, follow
-its "[Getting
-Started](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)" guide
-before continuing.
-
 # Installation
+
+dgo requires a working installation of [RStan](http://mc-stan.org/interfaces/rstan.html).
+If you don't have already have RStan, follow its
+"[Getting Started](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)"
+guide before continuing.
 
 dgo can be installed from [GitHub](https://github.com/jamesdunham/dgo) using
 [devtools](https://github.com/hadley/devtools/):
 
 ```{r, eval = FALSE}
-devtools::install_github("jamesdunham/dgo", dependencies = TRUE)
+if (!require(devtools, quietly = TRUE)) install.packages("devtools")
+devtools::install_github("jamesdunham/dgo")
 ```
 
 # Getting started
