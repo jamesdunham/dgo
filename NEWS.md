@@ -2,10 +2,10 @@
 
 * Switch from compiling Stan models at install time to compiling them at
   runtime, avoiding an Rcpp module issue.
-* Add 'model' argument to `dgirt()` and `dgmrp()` taking for reuse a previously
+* Add `model` argument to `dgirt()` and `dgmrp()` taking for reuse a previously
   compiled Stan model, as found in the `@stanmodel` slot of a `dgirt_fit`- or
   `dgmrp_fit`-class object.
-* The 'version' argument to `dgirt()` and `dgmrp()` can be used to specify
+* The `version` argument to `dgirt()` and `dgmrp()` can be used to specify
   arbitrary `.stan` files on the disk in addition to those included with the
   package.
 * Argument `by` to `get_n()` and `get_item_n()` methods properly accepts a
