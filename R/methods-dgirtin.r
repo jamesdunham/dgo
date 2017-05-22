@@ -84,8 +84,8 @@ setGeneric("get_n", signature = c("x", "by", "aggregate_name"),
 #' # respondent count by year
 #' get_n(toy_dgirt_in, by = "year")
 #'
-#' # respondent count by survey identifier
-#' get_n(toy_dgirt_in, by = "source")
+#' # respondent count by year and survey identifier
+#' get_n(toy_dgirt_in, by = c("year", "source"))
 #'
 #' @seealso `\link{get_item_n}, \link{get_item_names}`
 #' @include class-dgirtin.r
@@ -97,21 +97,21 @@ setMethod("get_n", c("x" = "dgirtIn"),
     if (!length(aggregate_name)) {
         n <- x$item_data[, list(n = .N), keyby = by]
     } else {
-      if (!length(x$aggregate_data))
-        stop("Found no aggregate data")
+      stop_if_no_aggregates(x)
       if (!aggregate_name %chin% names(x$aggregate_data))
-        stop(aggregate_name, "is not a name in aggregate data")
+        stop(aggregate_name, " is not a name in aggregate data")
       n <- x$aggregate_data[, list(n = sum(get("n_grp"), na.rm = TRUE)),
                             keyby = c(aggregate_name, by)]
-      if (length(by)) {
-        f <- as.formula(paste(by, aggregate_name, sep = "~"))
-        n <- data.table::dcast(n, f, fun.aggregate = sum, value.var = "n")
-      }
-      n[, (setdiff(names(n), by)) := lapply(.SD, function(k) replace(k, is.na(k), 0L)),
-             .SDcols = setdiff(names(n), by)]
+      n <- cast_if_by(n, by)
     }
-    data.table::copy(n)
+    return(n)
   })
+
+stop_if_no_aggregates <- function(x) {
+  if (!length(x$aggregate_data)) {
+    stop("Found no aggregate data")
+  }
+}
 
 #' @rdname dgirtin-class
 setGeneric("get_item_n", signature = c("x", "by", "aggregate_data"),
@@ -126,27 +126,36 @@ setGeneric("get_item_n", signature = c("x", "by", "aggregate_data"),
 #' get_item_n(toy_dgirt_in)
 #' get_item_n(toy_dgirt_in, by = "year")
 #' @aliases get_item_n
-#' @param aggregate_data If specified `get_n` will operate on the table passed
+#' @param aggregate_data If specified `get_item_n` will operate on the table passed
 #' to `shape` as `aggregate_data` instead of on the individual data.
 #' @export
 setMethod("get_item_n", c("x" = "dgirtIn"),
   function(x, by = NULL, aggregate_data = FALSE) {
     if (!isTRUE(aggregate_data)) {
       n <- x$item_data[, lapply(.SD, function(z) sum(!is.na(z))),
-                       .SDcols = x$control@item_names, keyby = by]
+        .SDcols = x$control@item_names, keyby = by]
     } else {
-    if (!length(x$aggregate_data))
-      stop("Found no aggregate data")
-    n <- x$aggregate_data[, list(n = sum(get("n_grp"))), keyby = c("item", by)]
-    if (length(by)) {
-      f <- as.formula(paste(by, "item", sep = "~"))
-      n <- data.table::dcast(n, f, fun.aggregate = sum, value.var = "n")
-    }
-    n[, (setdiff(names(n), by)) := lapply(.SD, function(k) replace(k, is.na(k), 0L)),
-      .SDcols = setdiff(names(n), by)]
+      stop_if_no_aggregates(x)
+      n <- x$aggregate_data[, list(n = sum(get("n_grp"))), keyby = c("item", by)]
+      n <- cast_if_by(n, by)
+      n <- zero_nas(n, by)
   }
-  data.table::copy(n)
+  return(n)
 })
+
+cast_if_by <- function(n, by) {
+  if (length(by)) {
+    lhs <- paste(by, collapse = "+")
+    f <- as.formula(paste(lhs, "item", sep = "~"))
+    n <- data.table::dcast(n, f, fun.aggregate = sum, value.var = "n")
+  }
+  return(n)
+}
+
+zero_nas <- function(n, by) {
+  n[, (setdiff(names(n), by)) := lapply(.SD, function(k) replace(k, is.na(k), 0L)),
+    .SDcols = setdiff(names(n), by)]
+}
 
 #' Show Summary of DGIRT Data
 #' @include class-dgirtin.r
