@@ -23,16 +23,32 @@ test_that("dgmrp returns class dgmrp_fit/dgo_fit/stanfit", {
   expect_true(inherits(dgmrp_ret, "stanfit"))
 })
 
+test_that("dgirt accepts a user model", {
+  dgirt_fit <- dgirt(toy_dgirt_in, iter = test_iter, chains = test_chains,
+    version = "user-version.stan")
+  expect_equal(dgirt_fit@stanmodel@model_name, "user-version")
+  expect_error(dgirt(toy_dgirt_in, iter = test_iter, chains = test_chains,
+    version = "nonexistent_file.stan"), "should give the name of a model")
+})
+
+test_that("dgmrp accepts a user model", {
+  dgmrp_fit <- dgmrp(dgmrp_in, iter = test_iter, chains = test_chains, 
+    version = "user-version.stan")
+  expect_equal(dgmrp_fit@stanmodel@model_name, "user-version")
+  expect_error(dgmrp(dgmrp_in, iter = test_iter, chains = test_chains, 
+      version = "nonexistent_file.stan"), "should give the name of a model")
+})
+
 for (ret in c(dgirt_ret, dgmrp_ret)) {
 
   test_that("further arguments pass to rstan via ...", {
     expect_equal(length(ret@stan_args), test_chains)
-    expect_true(all(sapply(toy_dgirtfit@stan_args, function(x) x$iter) ==
+    expect_true(all(sapply(ret@stan_args, function(x) x$iter) ==
         test_iter))
   })
 
   test_that("defaults pass to rstan", {
-    expect_true(all(sapply(toy_dgirtfit@stan_args, function(x) x$init_r) ==
+    expect_true(all(sapply(ret@stan_args, function(x) x$init_r) ==
         1L))
   })
 
