@@ -232,7 +232,7 @@ To plot the results use `dgirt_plot`. This method plots summaries of posterior s
 dgirt_plot(dgmrp_out_abortion, y_min = NULL, y_max = NULL)
 ```
 
-![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgmrp_plot-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgmrp_plot-1.png)
 
 Output from `dgirt_plot` can be customized to some extent using objects from the ggplot2 package.
 
@@ -240,7 +240,7 @@ Output from `dgirt_plot` can be customized to some extent using objects from the
 dgirt_plot(dgmrp_out_abortion, y_min = NULL, y_max = NULL) + theme_classic()
 ```
 
-![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgmrp_plot_plus-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgmrp_plot_plus-1.png)
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This requires arguments that identify the relevant variables in the `data.frame`. Below, `poststratify` aggregates over the demographic grouping variable `race3`, resulting in a `data.frame` of estimates by state-year. So, in the subsequent call to `dgirt_plot`, we pass the names of the state and year variables. The `group_names` argument is `NULL` because there are no grouping variables left after aggregating over `race3`.
 
@@ -258,7 +258,7 @@ head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
-![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgmrp_plot_ps-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgmrp_plot_ps-1.png)
 
 Policy Liberalism
 -----------------
@@ -440,7 +440,7 @@ To plot the results use `dgirt_plot`. This method plots summaries of posterior s
 dgirt_plot(dgirt_out_liberalism, y_min = NULL, y_max = NULL)
 ```
 
-![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgirt_plot-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgirt_plot-1.png)
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This requires arguments that identify the relevant variables in the `data.frame`. Below, `poststratify` aggregates over the demographic grouping variable `race3`, resulting in a `data.frame` of estimates by state-year. So, in the subsequent call to `dgirt_plot`, we pass the names of the state and year variables. The `group_names` argument is `NULL` because there are no grouping variables left after aggregating over `race3`.
 
@@ -458,7 +458,7 @@ head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
-![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgirt_plot_ps-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgirt_plot_ps-1.png)
 
 Troubleshooting
 ---------------

@@ -200,7 +200,7 @@ area. For this (unconverged) toy example we omit the CIs.
 dgirt_plot(dgmrp_out_abortion, y_min = NULL, y_max = NULL)
 ```
 
-![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgmrp_plot-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgmrp_plot-1.png)
 
 Output from `dgirt_plot` can be customized to some extent using objects from the
 ggplot2 package.
@@ -209,7 +209,7 @@ ggplot2 package.
 dgirt_plot(dgmrp_out_abortion, y_min = NULL, y_max = NULL) + theme_classic()
 ```
 
-![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgmrp_plot_plus-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgmrp_plot_plus-1.png)
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This
 requires arguments that identify the relevant variables in the `data.frame`.
@@ -226,7 +226,7 @@ head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
-![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgmrp_plot_ps-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgmrp_plot_ps-1.png)
 
 ## Policy Liberalism
 
@@ -327,7 +327,7 @@ area. For this (unconverged) toy example we omit the CIs.
 dgirt_plot(dgirt_out_liberalism, y_min = NULL, y_max = NULL)
 ```
 
-![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgirt_plot-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgirt_plot-1.png)
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This
 requires arguments that identify the relevant variables in the `data.frame`.
@@ -344,7 +344,7 @@ head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
 
-![](https://raw.githubusercontent.com/jamesdunham/dgo/0.2.9/README/dgirt_plot_ps-1.png)
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgirt_plot_ps-1.png)
 
 ## Troubleshooting
 
