@@ -8,6 +8,4 @@
 #' @name toy_dgirt_in
 #' @usage toy_dgirt_in
 #' @format A \code{\link[dgo]{dgirtin-class}} object.
-#' @examples
-#' toy_dgirt_in
 NULL

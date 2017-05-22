@@ -3,11 +3,7 @@ context("poststratification")
 test_that("dispatch seems to work", {
   suppressMessages(library(data.table))
   data(toy_dgirtfit)
-  data(targets)
-  setDT(targets)
-  targets <- targets[year %in% 2006:2008,
-                     list("proportion" = sum(proportion)),
-                     by = c("year", "state", "race3")]
+  data(annual_state_race_targets)
   expect_silent(poststratify(toy_dgirtfit,
                              target_data = annual_state_race_targets,
                              pars = 'theta_bar',
@@ -15,11 +11,6 @@ test_that("dispatch seems to work", {
                              aggregated_names = 'race3'))
 
   estimates <- as.data.frame(toy_dgirtfit)
-  data(targets)
-  setDT(targets)
-  targets <- targets[year %in% 2006:2008,
-                     list("proportion" = sum(proportion)),
-                     by = c("year", "state", "race3")]
   expect_silent(poststratify(estimates,
                              annual_state_race_targets,
                              strata_names = c("year", "state"),
@@ -64,16 +55,16 @@ test_that("omitted arguments produce errors", {
 test_that("missing variables produce stop", {
   data(targets)
   expect_error(poststratify(toy_dgirtfit, target_data = targets,
-                               strata_names = "foo", aggregate = "foo"),
-               "foo .* isn't a name in the table of estimates")
+                               strata_names = "foo", aggregate = "bar"),
+               "foo in strata_names but not the table of estimates")
   expect_error(poststratify(toy_dgirtfit, target_data =
                             annual_state_race_targets[, -1],
                           strata_names = "state", aggregate = "race3"),
-               "state .* isn't a name in target_data")
+               "state in strata_names but not target_data")
 })
 
 test_that("poststratify works for gamma, gamma_raw, and theta_bar", {
-  params <- index_names[c("gamma", "gamma_raw", "theta_bar")]
+  params <- dgo:::index_names[c("gamma", "gamma_raw", "theta_bar")]
   data(toy_dgirtfit)
   data(annual_state_race_targets)
   for (i in seq_along(params)) {
@@ -98,7 +89,15 @@ test_that("poststratify works for gamma, gamma_raw, and theta_bar", {
   }
 })
 
-test_that("variables duplicated between strata_ and group_names produce a stop", {
-  # expect_error(poststratify(toy_dgirtfit, target_data = targets,
-  #                              strata_names = "race3"))
+test_that("variables duplicated across arguments is an error", {
+  # dgirfit method
+  expect_error(poststratify(toy_dgirtfit, target_data =
+      annual_state_race_targets, strata_names = c("state", "year", "race3"),
+    aggregated_names = "race3"), "more than once")
+
+  # dataframe method
+  est_table <- as.data.frame(toy_dgirtfit)
+  expect_error(poststratify(est_table, target_data =
+    annual_state_race_targets, strata_names = c("state", "year", "race3"),
+  aggregated_names = "race3"), "more than once")
 })

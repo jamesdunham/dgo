@@ -22,5 +22,5 @@ test_that("dichotomizing item responses works", {
   expect_equal(dichotomize_cpp(ordered(c("a", "b"),levels = c("b", "a"))),
                data.frame(X_gt1 = c(1, 0)))
 
-  expect_error(dichotomize_cpp("a"), "not compatible")
+  expect_error(dichotomize_cpp("a"), "not compatible", ignore.case = TRUE)
 })

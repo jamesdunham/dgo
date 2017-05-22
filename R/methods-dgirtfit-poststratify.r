@@ -65,26 +65,30 @@ setMethod("poststratify", "data.frame",
   assert(assertthat::is.string(proportion_name))
   assert(all_strings(pars))
 
+  if (anyDuplicated(c(strata_names, aggregated_names))) {
+    stop("Variable names cannot be used more than once across ",
+      "'strata_names' and 'aggregated_names'")
+  }
+
   x <- data.table::setDT(data.table::copy(x))
 
   if (!length(target_data)) stop("target_data is missing")
   targets <- data.table::setDT(data.table::copy(target_data))
 
   missing_cols <- setdiff(strata_names, names(x))
-  missing_msgs <- paste("%c", c("is", "are"), "in strata_names but",
-               c("isn't a name in", "aren't names in"),
-               c(rep(c("the table of estimates to be poststratified.",
-                       "target_data"), each = 2L)))
-  if (length(missing_cols)) 
-    stop(cn(missing_cols, missing_msgs[1], missing_msgs[2]))
+  if (length(missing_cols))  {
+    stop(paste(missing_cols, collapse = ", "), " in strata_names but ",
+      "not the table of estimates to be poststratified.")
+  }
   missing_cols <- setdiff(strata_names, names(target_data))
-  if (length(missing_cols))
-    stop(cn(missing_cols, missing_msgs[3], missing_msgs[4]))
+  if (length(missing_cols)) {
+    stop(paste(missing_cols, collapse = ", "), " in strata_names but ",
+      "not target_data.")
+  }
 
   targets_n <- nrow(unique(targets[, c(strata_names, aggregated_names), with =
-                           FALSE]))
+      FALSE]))
 
-  # TODO: check more carefully than nrow()
   if (!identical(nrow(targets), targets_n)) {
       stop("Variables in aggregated_names should partition the strata ",
            "defined by the interaction of the variables in strata_names ",
@@ -142,11 +146,10 @@ check_proportions <- function(tabular, strata_names) {
   prop_sums <- tabular[, lapply(.SD, sum), .SDcols = "scaled_prop",
                        by = strata_names]
   if (!isTRUE(all.equal(rep(1L, nrow(prop_sums)), prop_sums$scaled_prop))) {
-    stop("Not all proportions sum to 1 within stratifying variables ", 
-         cc_and(strata_names), " even though they should have been ",
-         "rescaled. (The mean sum is ", round(mean(prop_sums$scaled_prop), 2L),
-         "). This could indicate a problem in joining the estimates and ",
-         "targets or be a bug.")
+    stop("Not all proportions sum to 1 within stratifying variables even ",
+      " though they should have been rescaled. (The mean sum is ",
+      round(mean(prop_sums$scaled_prop), 2L), "). This could indicate a ",
+      "problem in joining the estimates and targets or be a bug.")
   } else TRUE
 }
 
@@ -158,7 +161,7 @@ check_target_levels <- function(variable, x, targets) {
   } else if (!all(x[[variable]] %in% targets[[variable]])) {
     x_levels <- setdiff(x[[variable]], targets[[variable]])
     stop("Not all levels of '", variable, "' in estimates are levels of '",
-         variable, "' in targets. ", cn_and(x_levels , "%c is ","%c are "),
+         variable, "' in targets. Missing: ", paste(x_levels , collapse = ", "),
          "missing. The target data should give the population proportion of each
          ", "group represented in the estimates.")
   } else TRUE

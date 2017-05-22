@@ -43,8 +43,8 @@ print.dgo_fit <- function(x, ...) {
   cat("  Model version", x@model_name, "\n")
   cat(" ", nrow(ss), "parameters; ")
   cat(sum(grepl("^theta_bar", rownames(ss))), "theta_bars ")
-  cat("(", concatenate::cc_and(ctrl@time_name, ctrl@geo_name,
-        ctrl@group_names), ")", "\n", sep = "")
+  cat("(", paste(ctrl@time_name, ctrl@geo_name,
+        ctrl@group_names, collapse = ", "), ")", "\n", sep = "")
   cat(" ", x@dgirt_in$T, "periods", min(ctrl@time_filter), "to",
       max(ctrl@time_filter), "\n")
 
@@ -112,6 +112,7 @@ setGeneric("summarize", signature = "x",
 #' @rdname dgo_fit-methods
 #' @export
 #' @examples
+#' data(toy_dgirtfit)
 #' summarize(toy_dgirtfit)
 setMethod("summarize", "dgo_fit",
   function(x, pars = "theta_bar",
@@ -137,6 +138,7 @@ do_funs <- function(value, funs) lapply(funs, function(f) do.call(f, value))
 #' @export
 #'
 #' @examples
+#' data(toy_dgirtfit)
 #' # access posterior samples
 #' as.data.frame(toy_dgirtfit, pars = 'theta_bar')
 as.data.frame.dgo_fit <- function(x, ..., pars = "theta_bar",
@@ -192,6 +194,7 @@ setGeneric("rhats", signature = "x", function(x, ...)
 #' @export
 #' @rdname dgo_fit-methods
 #' @examples
+#' data(toy_dgirtfit)
 #' rhats(toy_dgirtfit)
 setMethod("rhats", signature(x = "dgo_fit"),
           function(x, pars = "theta_bar") {

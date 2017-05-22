@@ -1,7 +1,6 @@
 context("item coercion")
 
 test_that("item coercion works", {
-  # TODO roll this up into loops
   Ctrl <- setClass("Ctrl", slots = c("item_names"))
   ctrl <- new("Ctrl", item_names = "item")
 

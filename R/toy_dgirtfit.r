@@ -8,6 +8,4 @@
 #' @name toy_dgirtfit
 #' @usage toy_dgirtfit
 #' @format A \code{\link[dgo]{dgirtfit-class}} object.
-#' @examples
-#' toy_dgirtfit
 NULL

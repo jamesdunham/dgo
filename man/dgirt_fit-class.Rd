@@ -33,9 +33,7 @@ get_posterior_mean(toy_dgirtfit, pars = 'theta_bar')
 apply(as.array(toy_dgirtfit, pars = 'xi'), 3, mean)
 
 # access the posterior samples
-as.array(toy_dgirtfit, pars = 'theta_bar')
-as.data.frame(toy_dgirtfit, pars = 'theta_bar')
-extract(toy_dgirtfit, pars = 'theta_bar')
+head(as.data.frame(toy_dgirtfit, pars = 'theta_bar'))
 }
 \seealso{
 \code{\link{dgmrp_fit}} \code{\link{dgo_fit}}

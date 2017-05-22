@@ -5,6 +5,7 @@ output:
 ---
 [![Build Status](https://travis-ci.org/jamesdunham/dgo.svg?branch=master)](https://travis-ci.org/jamesdunham/dgo)
 [![Build status](https://ci.appveyor.com/api/projects/status/1ta36kmoqen98k87?svg=true)](https://ci.appveyor.com/project/jamesdunham/dgo)
+[![codecov](https://codecov.io/gh/jamesdunham/dgo/branch/master/graph/badge.svg)](https://codecov.io/gh/jamesdunham/dgo)
 
 dgo is an R package for the dynamic estimation of group-level opinion. The
 package can be used to estimate subpopulation groups' average latent
@@ -36,25 +37,24 @@ knitr::opts_chunk$set(
   echo = TRUE,
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README/",
-  cache = FALSE)
+  cache = TRUE,
+  cache.path = 'readme-cache/',
+  fig.path = "README/")
 ```
 
-# Prerequisites
-
-Installation requires [RStan](http://mc-stan.org/interfaces/rstan.html) and its
-prerequisites, in particular a C++ toolchain. If you don't have RStan, follow
-its "[Getting
-Started](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)" guide
-before continuing.
-
 # Installation
+
+dgo requires a working installation of [RStan](http://mc-stan.org/interfaces/rstan.html).
+If you don't have already have RStan, follow its
+"[Getting Started](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started)"
+guide before continuing.
 
 dgo can be installed from [GitHub](https://github.com/jamesdunham/dgo) using
 [devtools](https://github.com/hadley/devtools/):
 
 ```{r, eval = FALSE}
-devtools::install_github("jamesdunham/dgo", dependencies = TRUE)
+if (!require(devtools, quietly = TRUE)) install.packages("devtools")
+devtools::install_github("jamesdunham/dgo")
 ```
 
 # Getting started
@@ -137,8 +137,8 @@ be passed to RStan's `stan` via the `...` argument of `dgirt` and `dgmrp`. This
 will almost always be desirable, at a minimum to specify the number of sampler
 iterations, chains, and cores.
 
-```{r, warning = FALSE}
-dgirt_out_abortion <- dgmrp(dgirt_in_abortion, iter = 1500, chains = 4, cores =
+```{r, warning = FALSE, message = FALSE, results = 'hide'}
+dgmrp_out_abortion <- dgmrp(dgirt_in_abortion, iter = 1500, chains = 4, cores =
   4, seed = 42)
 ```
 
@@ -151,7 +151,7 @@ But dgo provides its own methods for typical post-estimation tasks.
 For a high-level summary of the result, use `summary`.
 
 ```{r}
-summary(dgirt_out_abortion)
+summary(dgmrp_out_abortion)
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives
@@ -160,7 +160,7 @@ the latent outcome for the groups defined by time, local geographic area, and
 the demographic characteristics specified in the earlier call to `shape`.
 
 ```{r}
-head(summarize(dgirt_out_abortion))
+head(summarize(dgmrp_out_abortion))
 ```
 
 Alternatively, `summarize` can apply arbitrary functions to posterior samples
@@ -169,7 +169,7 @@ with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th
 posterior quantiles.
 
 ```{r}
-summarize(dgirt_out_abortion, pars = "xi", funs = "var")
+summarize(dgmrp_out_abortion, pars = "xi", funs = "var")
 ```
 
 To access posterior samples in tabular form use `as.data.frame`. By default,
@@ -177,7 +177,7 @@ this method returns post-warmup samples for the `theta_bar` parameters, but like
 other methods takes a `pars` argument.
 
 ```{r}
-head(as.data.frame(dgirt_out_abortion))
+head(as.data.frame(dgmrp_out_abortion))
 ```
 
 To poststratify the results use `poststratify`. The following example uses the
@@ -187,7 +187,7 @@ and aggregate estimates to strata defined by state-years.
 Read `help("poststratify")` for more details.
 
 ```{r}
-poststratify(dgirt_out_abortion, annual_state_race_targets, strata_names =
+poststratify(dgmrp_out_abortion, annual_state_race_targets, strata_names =
   c("state", "year"), aggregated_names = "race3")
 ```
 
@@ -196,16 +196,20 @@ samples by time period. By default, it shows a 95% credible interval around
 posterior medians for the `theta_bar` parameters, for each local geographic
 area. For this (unconverged) toy example we omit the CIs.
 
-```{r}
-dgirt_plot(dgirt_out_abortion, y_min = NULL, y_max = NULL)
+```{r dgmrp_plot, fig.show = 'hide'}
+dgirt_plot(dgmrp_out_abortion, y_min = NULL, y_max = NULL)
 ```
+
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgmrp_plot-1.png)
 
 Output from `dgirt_plot` can be customized to some extent using objects from the
 ggplot2 package.
 
-```{r}
-dgirt_plot(dgirt_out_abortion, y_min = NULL, y_max = NULL) + theme_classic()
+```{r dgmrp_plot_plus, fig.show = 'hide'}
+dgirt_plot(dgmrp_out_abortion, y_min = NULL, y_max = NULL) + theme_classic()
 ```
+
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgmrp_plot_plus-1.png)
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This
 requires arguments that identify the relevant variables in the `data.frame`.
@@ -215,12 +219,14 @@ call to `dgirt_plot`, we pass the names of the state and year variables. The
 `group_names` argument is `NULL` because there are no grouping variables left
 after aggregating over `race3`.
 
-```{r}
-ps <- poststratify(dgirt_out_abortion, annual_state_race_targets, strata_names =
+```{r dgmrp_plot_ps, fig.show = 'hide'}
+ps <- poststratify(dgmrp_out_abortion, annual_state_race_targets, strata_names =
   c("state", "year"), aggregated_names = "race3")
 head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
+
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgmrp_plot_ps-1.png)
 
 ## Policy Liberalism
 
@@ -259,7 +265,7 @@ be passed to RStan's `stan` via the `...` argument of `dgirt` and `dgmrp`. This
 will almost always be desirable, at a minimum to specify the number of sampler
 iterations, chains, and cores.
 
-```{r, warning = FALSE}
+```{r, warning = FALSE, message = FALSE, results = 'hide'}
 dgirt_out_liberalism <- dgirt(dgirt_in_liberalism, iter = 3000, chains = 4,
   cores = 4, seed = 42)
 ```
@@ -317,9 +323,11 @@ samples by time period. By default, it shows a 95% credible interval around
 posterior medians for the `theta_bar` parameters, for each local geographic
 area. For this (unconverged) toy example we omit the CIs.
 
-```{r}
+```{r dgirt_plot, fig.show = 'hide'}
 dgirt_plot(dgirt_out_liberalism, y_min = NULL, y_max = NULL)
 ```
+
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgirt_plot-1.png)
 
 `dgirt_plot` can also plot the `data.frame` output from `poststratify`. This
 requires arguments that identify the relevant variables in the `data.frame`.
@@ -329,12 +337,14 @@ call to `dgirt_plot`, we pass the names of the state and year variables. The
 `group_names` argument is `NULL` because there are no grouping variables left
 after aggregating over `race3`.
 
-```{r}
+```{r dgirt_plot_ps, fig.show = 'hide'}
 ps <- poststratify(dgirt_out_liberalism, annual_state_race_targets, strata_names = c("state",
     "year"), aggregated_names = "race3")
 head(ps)
 dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 ```
+
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgirt_plot_ps-1.png)
 
 ## Troubleshooting
 
@@ -361,6 +371,13 @@ the output from `tempdir()`.
 tempdir()   
 #> [1] "/var/folders/2p/_d3c95qd6ljg28j1f5l2jqxm0000gn/T//Rtmp38a10A"
 ```
+
+Models fitted before October 2016 (specifically <
+[#8e6a2cf](https://github.com/jamesdunham/dgo/commit/8e6a2cfbe00b2cd4a908b3067241e06124d143cd))
+using dgirtfit are not fully compatible with dgo. Their contents can be
+extracted without using dgo, however, with the `$` indexing operator. For
+example: `as.data.frame(dgirtfit_object$stan.cmb)`.
+
 
 ## Contributing and citing
 

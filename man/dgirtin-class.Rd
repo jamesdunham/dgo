@@ -60,7 +60,7 @@ get_item_n(x, by = NULL, aggregate_data = FALSE)
 to `shape` as `aggregate_data` instead of on the individual data and count
 nonmissingness in the given variable.}
 
-\item{aggregate_data}{If specified `get_n` will operate on the table passed
+\item{aggregate_data}{If specified `get_item_n` will operate on the table passed
 to `shape` as `aggregate_data` instead of on the individual data.}
 }
 \value{
@@ -81,22 +81,26 @@ Count Respondents for Items in DGIRT Data
 Show Summary of DGIRT Data
 }
 \examples{
+data(toy_dgirt_in)
 get_item_names(toy_dgirt_in)
 get_n(toy_dgirt_in)
 get_n(toy_dgirt_in, by = "year")
 get_n(toy_dgirt_in, by = "source")
 get_item_n(toy_dgirt_in)
 get_item_n(toy_dgirt_in, by = "year")
+data(toy_dgirt_in)
 get_item_names(toy_dgirt_in)
 # respondent count
+data(toy_dgirt_in)
 get_n(toy_dgirt_in)
 
 # respondent count by year
 get_n(toy_dgirt_in, by = "year")
 
-# respondent count by survey identifier
-get_n(toy_dgirt_in, by = "source")
+# respondent count by year and survey identifier
+get_n(toy_dgirt_in, by = c("year", "source"))
 
+data(toy_dgirt_in)
 get_item_n(toy_dgirt_in)
 get_item_n(toy_dgirt_in, by = "year")
 }

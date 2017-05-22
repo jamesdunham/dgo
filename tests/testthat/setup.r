@@ -1,6 +1,3 @@
-# load for debugging
-library(testthat)
-
 min_item_call <- function(...) {
   default <- list(item_data = opinion,
                   item_names = "abortion",
