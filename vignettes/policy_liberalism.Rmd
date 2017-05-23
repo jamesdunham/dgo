@@ -1,0 +1,123 @@
+---
+output: github_document
+---
+
+# Policy Liberalism
+
+## Prepare input data with `shape`
+
+```{r}
+library(dgo)
+dgirt_in_liberalism <- shape(opinion, item_names = c("abortion",
+    "affirmative_action","stemcell_research" , "gaymarriage_amendment",
+    "partialbirth_abortion") , time_name = "year", geo_name = "state",
+  group_names = "race3", geo_filter = c("CA", "GA", "LA", "MA"))
+```
+
+The reshaped and subsetted data can be summarized in a few ways before model
+fitting.
+
+```{r}
+summary(dgirt_in_liberalism)
+```
+
+Response counts by item-year:
+
+```{r}
+get_item_n(dgirt_in_liberalism, by = "year")
+```
+
+## Fit a model with `dgirt`
+
+`dgirt()` and `dgmrp()` fit estimation models to data from `shape()`. `dgirt()` can be
+used to estimate a latent variable based on responses to multiple survey
+questions (e.g., latent policy conservatism), while `dgmrp()` can be used to
+estimate public opinion on an individual survey question using a dynamic
+multi-level regression and post-stratification (MRP) model.  
+
+Under the hood, these functions use RStan for MCMC sampling, and arguments can
+be passed to RStan's [`stan()`](https://www.rdocumentation.org/packages/rstan/versions/2.15.1/topics/stan) via the `...` argument of `dgirt` and `dgmrp`. This
+will almost always be desirable, at a minimum to specify the number of sampler
+iterations, chains, and cores.
+
+```{r, warning = FALSE, message = FALSE, results = 'hide'}
+dgirt_out_liberalism <- dgirt(dgirt_in_liberalism, iter = 3000, chains = 4,
+  cores = 4, seed = 42)
+```
+
+The model results are held in a `dgirtfit` object. Methods from RStan like
+`extract` are available if needed because `dgirtfit` is a subclass of `stanfit`.
+But dgo provides its own methods for typical post-estimation tasks.
+
+## Work with `dgirt` results
+
+For a high-level summary of the result, use `summary`.
+
+```{r}
+summary(dgirt_out_liberalism)
+```
+
+To summarize posterior samples, use
+[`summarize()`](https://jdunham.io/dgo/reference/dgo_fit-methods.html). The default output gives
+summary statistics for the `theta_bar` parameters, which represent the mean of
+the latent outcome for the groups defined by time, local geographic area, and
+the demographic characteristics specified in the earlier call to `shape()`.
+
+```{r}
+head(summarize(dgirt_out_liberalism))
+```
+
+Alternatively, [`summarize()`](https://jdunham.io/dgo/reference/dgo_fit-methods.html) can apply arbitrary functions to posterior samples
+for whatever parameter is given by its `pars` argument. Enclose function names
+with quotes. For convenience, `"q_025"` and `"q_975"` give the 2.5th and 97.5th
+posterior quantiles.
+
+```{r}
+summarize(dgirt_out_liberalism, pars = "xi", funs = "var")
+```
+
+To access posterior samples in tabular form use [`as.data.frame()`](https://jdunham.io/dgo/reference/dgo_fit-methods.html). By default,
+this method returns post-warmup samples for the `theta_bar` parameters, but like
+other methods takes a `pars` argument.
+
+```{r}
+head(as.data.frame(dgirt_out_liberalism))
+```
+
+To poststratify the results use `poststratify()`. The following example uses the
+group population proportions bundled as `annual_state_race_targets` to reweight and aggregate
+estimates to strata defined by state-years. Read `help("poststratify")` for more
+details.
+
+```{r}
+poststratify(dgirt_out_liberalism, annual_state_race_targets, strata_names = c("state",
+    "year"), aggregated_names = "race3")
+```
+
+To plot the results use `dgirt_plot()`. This method plots summaries of posterior
+samples by time period. By default, it shows a 95% credible interval around
+posterior medians for the `theta_bar` parameters, for each local geographic
+area. For this (unconverged) toy example we omit the CIs.
+
+```{r dgirt_plot, fig.show = 'hide'}
+dgirt_plot(dgirt_out_liberalism, y_min = NULL, y_max = NULL)
+```
+
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgirt_plot-1.png)
+
+`dgirt_plot()` can also plot the `data.frame` output from `poststratify()`. This
+requires arguments that identify the relevant variables in the `data.frame`.
+Below, `poststratify()` aggregates over the demographic grouping variable `race3`,
+resulting in a `data.frame` of estimates by state-year. So, in the subsequent
+call to `dgirt_plot()`, we pass the names of the state and year variables. The
+`group_names` argument is `NULL` because there are no grouping variables left
+after aggregating over `race3`.
+
+```{r dgirt_plot_ps, fig.show = 'hide'}
+ps <- poststratify(dgirt_out_liberalism, annual_state_race_targets, strata_names = c("state",
+    "year"), aggregated_names = "race3")
+head(ps)
+dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
+```
+
+![](https://raw.githubusercontent.com/jamesdunham/dgo/master/README/dgirt_plot_ps-1.png)
