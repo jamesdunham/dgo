@@ -27,7 +27,12 @@ matrix:
       sudo: required
 
     - os: osx
+      osx_image: xcode8.3
+      latex: false
+    - os: osx
       osx_image: xcode8
+      latex: false
+    - os: osx
       latex: false
     - os: osx
       osx_image: beta-xcode6.2
