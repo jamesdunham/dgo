@@ -51,5 +51,3 @@ readme: $(PKG)_$(VERSION).tar.gz
 docs:
 	$(R) --vanilla --slave -e "devtools::document()"
 
-site:
-	$(R) --vanilla --slave -e "pkgdown::build_site()"
