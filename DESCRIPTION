@@ -27,16 +27,13 @@ Imports:
     lubridate,
     methods,
     R6,
-    Rcpp (>= 0.12.10),
     survey
 Suggests:
     knitr,
     rmarkdown,
     testthat
-LinkingTo: Rcpp (>= 0.12.10)
 NeedsCompilation: yes
 Collate: 
-    'RcppExports.R'
     'aggregate_item_responses.r'
     'assertions.r'
     'class-control.r'

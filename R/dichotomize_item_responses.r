@@ -18,13 +18,23 @@ dichotomize <- function(item_data, ctrl) {
 
   for (k in ctrl@item_names) {
     stopifnot(is.numeric(item_data[[k]]))
-    gt_cols <- dichotomize_cpp(item_data[[k]])
+    gt_cols <- dichotomize_r(item_data[[k]])
     cn <- paste0(k, sub("^X", "", names(gt_cols)))
     item_data[, c(cn) := gt_cols]
     data.table::setattr(item_data, "gt_items", c(attr(item_data, "gt_items"),
                                                  cn))
   }
   invisible(item_data)
+}
+
+dichotomize_r <- function(vec) {
+  vec <- as.numeric(vec)
+  uniques <- sort(unique(na.omit(vec)))
+  ret <- data.table::data.table("X_gt1" = rep(NA, length(vec)))
+  for (i in seq.int(0, max(0, length(uniques) - 2))) {
+    ret[, paste0("X_gt", i + 1) := as.integer(vec > uniques[i + 1])]
+  }
+  ret[]
 }
 
 coerce_item_types <- function(item_data, ctrl) {
