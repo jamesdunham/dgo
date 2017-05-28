@@ -29,15 +29,26 @@ matrix:
     - os: osx
       osx_image: xcode8.3
       latex: false
+      r: release
     - os: osx
-      osx_image: xcode8
+      osx_image: xcode8.3
+      latex: false
+      r: devel
+    - os: osx
+      osx_image: xcode8.3
+      latex: false
+      r: oldrel
+    - os: osx
       latex: false
     - os: osx
       latex: false
+      r: release
     - os: osx
-      osx_image: beta-xcode6.2
-      disable_homebrew: true
       latex: false
+      r: devel
+    - os: osx
+      latex: false
+      r: oldrel
 
 notifications:
   email:
