@@ -1,4 +1,4 @@
-library(dgo)
+devtools::load_all()
 data(opinion)
 toy_dgirt_in <- shape(opinion,
                  time_name = "year",
@@ -10,3 +10,6 @@ toy_dgirt_in <- shape(opinion,
                  time_filter = 2009:2010,
                  weight_name = "weight")
 devtools::use_data(toy_dgirt_in, overwrite = TRUE)
+
+toy_dgirtfit <- dgirt(toy_dgirt_in, iter = 400, chains = 4, cores = 4)
+devtools::use_data(toy_dgirtfit, overwrite = TRUE)

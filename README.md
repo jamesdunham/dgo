@@ -129,7 +129,7 @@ For a high-level summary of the result, use `summary`.
 ``` r
 summary(dgmrp_out_abortion)
 #> dgirt samples from 4 chains of 1500 iterations, 750 warmup, thinned every 1 
-#>   Drawn Mon May 22 10:57:03 2017 
+#>   Drawn Sun May 28 17:20:32 2017 
 #>   Package version 0.2.9 
 #>   Model version 2017_01_04_singleissue 
 #>   117 parameters; 60 theta_bars (year state race3)
@@ -145,10 +145,10 @@ summary(dgmrp_out_abortion)
 #> 
 #> Elapsed time
 #>    chain warmup sample total
-#> 1:     1    15S    17S   32S
+#> 1:     1    15S    16S   31S
 #> 2:     2    15S    12S   27S
-#> 3:     3    14S    20S   34S
-#> 4:     4    16S    12S   28S
+#> 3:     3    15S    18S   33S
+#> 4:     4    16S    11S   27S
 ```
 
 To summarize posterior samples, use `summarize`. The default output gives summary statistics for the `theta_bar` parameters, which represent the mean of the latent outcome for the groups defined by time, local geographic area, and the demographic characteristics specified in the earlier call to `shape`.
