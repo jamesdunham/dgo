@@ -11,7 +11,7 @@ else
   R := R
 endif
 
-all: clean build check install readme 
+all: clean docs data readme build check install
 
 quick: clean 
 
@@ -45,9 +45,14 @@ install-quick:
 	$(R) CMD INSTALL --no-multiarch --no-docs --no-html \
 	  --with-keep.source .
 
-readme: $(PKG)_$(VERSION).tar.gz
+readme: README.Rmd
 	$(R) --vanilla --slave -e "rmarkdown::render('README.Rmd')"
 
 docs:
 	$(R) --vanilla --slave -e "devtools::document()"
 
+data:
+	Rscript --vanilla --slave tools/example_objects.R
+	Rscript --vanilla --slave tools/test_objects.R
+
+.PHONY: clean docs data
