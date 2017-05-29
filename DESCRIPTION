@@ -1,7 +1,7 @@
 Package: dgo
 Title: Dynamic Estimation of Group-Level Opinion
-Version: 0.2.9
-Date: 2017-05-21
+Version: 0.2.10
+Date: 2017-05-29
 Description: Fit dynamic group-level IRT and MRP models from individual or
     aggregated item response data. This package handles common preprocessing
     tasks and extends functions for inspecting results, poststratification, and
