@@ -7,7 +7,6 @@
 #'
 #' @docType package
 #' @name dgo
-#' @import Rcpp
 #' @import data.table
 #' @import dgodata
 #' @import ggplot2
@@ -16,5 +15,4 @@
 #' @importFrom stats as.formula formula model.frame model.matrix na.fail na.omit
 #'   quantile sd setNames weighted.mean weights
 #' @importFrom utils capture.output type.convert packageVersion
-#' @useDynLib dgo
 NULL
