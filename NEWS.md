@@ -1,4 +1,13 @@
-# 0.2.9
+## 0.2.10
+
+* Remove Rcpp dependency by rewriting `dichotomize()` in R.
+* Avoid estimating models (using RStan) during tests, with the goal of rendering
+  moot variation in build environments. This addresses a test failure during
+  CRAN's
+  [r-release-osx-x86_64](https://www.r-project.org/nosvn/R.check/r-release-osx-x86_64/dgo-00check.html)
+  build.
+
+## 0.2.9
 
 * Switch from compiling Stan models at install time to compiling them at
   runtime, avoiding an Rcpp module issue.
@@ -11,7 +20,7 @@
 * Argument `by` to `get_n()` and `get_item_n()` methods properly accepts a
   vector of variable names when combined with `aggregate` arguments.
 
-# 0.2.8
+## 0.2.8
 
 * Improve Stan models for shorter run times
 * Add `dgmrp()` for fitting single-issue MRP models with hierarchical covariates
@@ -21,7 +30,7 @@
   `dgo_fit` class
 * Bugfixes
 
-# 0.2.7
+## 0.2.7
 
 * Package renamed dgo: Dynamic Estimation of Group-level Opinion
 * Tweaks to pass CRAN checks: clean up examples and docs
@@ -30,12 +39,12 @@
 * Fix Rcpp module issue from 0.2.6 (`Error in .doLoadActions(where, attach)`)
 * Export `expand_rownames()`
  
-# 0.2.6
+## 0.2.6
 
 * Fix error in `dgirt_plot`
 * Fix path in `tools/make_cpp.R`
 
-# 0.2.5
+## 0.2.5
 
 * `group_names` is no longer required. If omitted, the geographic variable given
   by `geo_name` will define groups.
