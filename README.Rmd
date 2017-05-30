@@ -44,7 +44,7 @@ knitr::opts_chunk$set(
 
 # Installation
 
-dgo can be installed from CRAN:
+dgo can be installed from [CRAN](https://cran.r-project.org/web/packages/dgo/index.html):
 
 ```{r, eval = FALSE}
 install.packages("dgo")
@@ -67,7 +67,7 @@ If you don't have already have RStan, follow its
 Load the package and set RStan's recommended options for a local, multicore
 machine with excess RAM:
 
-```{r}
+```{r, result = 'hide'}
 library(dgo)
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
@@ -79,8 +79,6 @@ The minimal workflow from raw data to estimation is:
 2.  pass the result to the `dgirt()` function to estimate a latent trait (e.g.,
     conservatism) or `dgmrp()` function to estimate opinion on a single survey
     question.
-
-See the [package site](https://jdunham.io/dgo) for worked examples. 
 
 # Troubleshooting
 
@@ -112,7 +110,8 @@ encounter.
 
 dgo is under development and we welcome
 [suggestions](https://github.com/jamesdunham/dgo/issues).
-The package citation is 
 
-> Dunham, James, Devin Caughey, and Christopher Warshaw. 2017. dgo: Dynamic
-> Estimation of Group-level Opinion. R package. https://jdunham.io/dgo/.
+The package citation is:
+
+Dunham, James, Devin Caughey, and Christopher Warshaw. 2017. dgo: Dynamic
+Estimation of Group-level Opinion. R package.  https://jdunham.io/dgo/.
