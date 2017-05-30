@@ -1,0 +1,41 @@
+authors:
+ James Dunham:
+   href: https://jdunham.io
+ Devin Caughey:
+   href: http://caughey.mit.edu/welcome
+ Christopher Warshaw:
+   href: http://cwarshaw.scripts.mit.edu/
+
+template:
+  params:
+    bootswatch: readable
+
+reference:
+  - title: Shaping input data
+    contents:
+    - shape
+    - toy_dgirt_in
+  - title: Estimation
+    contents:
+    - dgirt
+    - dgmrp
+    - toy_dgirtfit
+  - title: Postestimation
+    contents:
+    - poststratify
+    - plot_rhats
+    - dgirt_plot
+    - expand_rownames
+
+navbar:
+  left:
+  - text: Policy Liberalism
+    href: articles/policy_liberalism.html
+  - text: Abortion Attitudes
+    href: articles/abortion_attitudes.html
+  - text: Reference
+    href: reference/index.html
+  - text: News
+    href: news/index.html
+  - icon: fa-github fa-lg
+    href: https://github.com/jamesdunham/dgo

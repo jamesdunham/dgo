@@ -13,7 +13,7 @@ This model opens up new areas of research on historical public opinion in the Un
 Installation
 ============
 
-dgo can be installed from CRAN:
+dgo can be installed from [CRAN](https://cran.r-project.org/web/packages/dgo/index.html):
 
 ``` r
 install.packages("dgo")
@@ -44,8 +44,6 @@ The minimal workflow from raw data to estimation is:
 1.  shape input data using the `shape()` function; and
 2.  pass the result to the `dgirt()` function to estimate a latent trait (e.g., conservatism) or `dgmrp()` function to estimate opinion on a single survey question.
 
-See the [package site](https://jdunham.io/dgo) for worked examples.
-
 Troubleshooting
 ===============
 
@@ -60,6 +58,8 @@ Please [report issues](https://github.com/jamesdunham/dgo/issues) that you encou
 Contributing and citing
 =======================
 
-dgo is under development and we welcome [suggestions](https://github.com/jamesdunham/dgo/issues). The package citation is
+dgo is under development and we welcome [suggestions](https://github.com/jamesdunham/dgo/issues).
 
-> Dunham, James, Devin Caughey, and Christopher Warshaw. 2017. dgo: Dynamic Estimation of Group-level Opinion. R package. <https://jdunham.io/dgo/>.
+The package citation is:
+
+Dunham, James, Devin Caughey, and Christopher Warshaw. 2017. dgo: Dynamic Estimation of Group-level Opinion. R package. <https://jdunham.io/dgo/>.

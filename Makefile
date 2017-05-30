@@ -55,4 +55,7 @@ data:
 	Rscript --vanilla --slave tools/example_objects.R
 	Rscript --vanilla --slave tools/test_objects.R
 
+site:
+	$(R) --vanilla --slave -e "pkgdown::build_site()"
+
 .PHONY: clean docs data

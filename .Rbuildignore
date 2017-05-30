@@ -10,9 +10,7 @@
 ^appveyor\.yml$
 ^codecov\.yml$
 ^cran-comments\.md$
-^data-ext/
 ^docs/
-^packrat/
 ^readme-cache/
-^setup.r$
 ^wercker\.yml$
+^vignettes/
