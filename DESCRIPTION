@@ -32,7 +32,6 @@ Suggests:
     knitr,
     rmarkdown,
     testthat
-NeedsCompilation: yes
 Collate: 
     'aggregate_item_responses.r'
     'assertions.r'
