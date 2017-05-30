@@ -351,33 +351,26 @@ dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
 Please [report issues](https://github.com/jamesdunham/dgo/issues) that you
 encounter.
 
-OS X only: RStan creates temporary files during estimation in a location given
-by `tempdir`, typically an arbitrary location in `/var/folders`. If a model runs
-for days, these files can be cleaned up while still needed, which induces an
-error. A good solution is to set a safer path for temporary files, using an
-environment variable checked at session startup. As described in `?tempdir`, 
+  * OS X only: RStan creates temporary files during estimation in a location
+    given by `tempdir`, typically an arbitrary location in `/var/folders`. If a
+    model runs for days, these files can be cleaned up while still needed, which
+    induces an error. A good solution is to set a safer path for temporary
+    files, using an environment variable checked at session startup. For help
+    setting environment variables, see the Stack Overflow question
+    [here](https://stackoverflow.com/questions/17107206/change-temporary-directory).
+    Confirm the new path before starting your model run by restarting R and
+    checking the output from `tempdir()`.
 
-> The environment variables ‘TMPDIR’, ‘TMP’ and ‘TEMP’ are checked in turn and
-> the first found which points to a writable directory is used: if none succeeds
-> ‘/tmp’ is used. The path should not contain spaces.  
+  * Models fitted before October 2016 (specifically <
+    [#8e6a2cf](https://github.com/jamesdunham/dgo/commit/8e6a2cfbe00b2cd4a908b3067241e06124d143cd))
+    using dgirtfit are not fully compatible with dgo. Their contents can be
+    extracted without using dgo, however, with the `$` indexing operator. For
+    example: `as.data.frame(dgirtfit_object$stan.cmb)`.
 
-For help setting environment variables, see the Stack Overflow question
-[here](https://stackoverflow.com/questions/17107206/change-temporary-directory).
-Confirm the new path before starting your model run by restarting R and checking
-the output from `tempdir()`.
-
-``` r
-# Problematic temporary directories on OS X look like this
-tempdir()   
-#> [1] "/var/folders/2p/_d3c95qd6ljg28j1f5l2jqxm0000gn/T//Rtmp38a10A"
-```
-
-Models fitted before October 2016 (specifically <
-[#8e6a2cf](https://github.com/jamesdunham/dgo/commit/8e6a2cfbe00b2cd4a908b3067241e06124d143cd))
-using dgirtfit are not fully compatible with dgo. Their contents can be
-extracted without using dgo, however, with the `$` indexing operator. For
-example: `as.data.frame(dgirtfit_object$stan.cmb)`.
-
+  * Calling `dgirt()` or `dgmrp()` can generate
+    [warnings](http://mc-stan.org/misc/warnings#compiler-warnings) during model
+    compilation. These are safe to ignore, or can be suppressed by following the
+    linked instructions.
 
 ## Contributing and citing
 
