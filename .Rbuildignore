@@ -7,12 +7,11 @@
 ^\.DS_Store$
 ^\.Rproj\.user$
 ^\.travis\.yml$
+^_pkgdown.yml$
 ^appveyor\.yml$
 ^codecov\.yml$
 ^cran-comments\.md$
-^data-ext/
 ^docs/
-^packrat/
 ^readme-cache/
-^setup.r$
+^vignettes/
 ^wercker\.yml$
