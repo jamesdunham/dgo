@@ -33,7 +33,7 @@ dgirt_in_liberalism <- shape(opinion, item_names = c("abortion",
 
 In this call to `shape()` we specified:
 
-* the survey item response variables as `item_names`
+* the survey item response variables as `item_names`;
 * which variable represents time (`year`), since dgo models are dynamic;
 * the variables representing respondent characteristics (`state` and `race3`),
   because dgo models are group-level.
@@ -47,6 +47,10 @@ Using the argument `geo_filter`, we subset the input data to the given values of
 the `geo_name` variable. And with the `id_vars` argument, we named an identfier
 that we'd like to keep in the processed data. (Other unused variables will be
 dropped.)
+
+Important: the `dgirt()` model assumes consistent coding of the polarity of item
+responses for identification. This is already true for the `opinion` data.
+Typically it requires manual recoding.
 
 ## Inspect the result
 

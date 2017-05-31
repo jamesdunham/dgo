@@ -98,7 +98,9 @@ Individual-level data giving item responses is expected as argument
 give the names of variables in \code{item_data} that indicate time period and
 local geographic area. Optional argument \code{group_names} gives other
 respondent characteristics to be modeled. \code{item_data} is optional if
-argument \code{aggregate_data} is used.
+argument \code{aggregate_data} is used. Note that the \code{dgirt()} model
+assumes consistent coding of the polarity of item responses for
+identification.
 }
 
 \section{Modifier Data}{

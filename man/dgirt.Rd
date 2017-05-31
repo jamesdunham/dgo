@@ -68,4 +68,7 @@ via the \code{...} argument, at a minimum \code{iter} and \code{cores}.
 By default \code{dgirt} and \code{dgmrp} override the
 \code{\link[rstan]{stan}} default for its \code{pars} argument to specify
 typical parameters of interest. They also set \code{iter_r} to \code{1L}.
+
+Important: the \code{dgirt} model assumes consistent coding of the polarity
+of item responses for identification.
 }

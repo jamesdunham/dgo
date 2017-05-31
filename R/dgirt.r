@@ -10,6 +10,9 @@
 #' \code{\link[rstan]{stan}} default for its \code{pars} argument to specify
 #' typical parameters of interest. They also set \code{iter_r} to \code{1L}.
 #'
+#' Important: the \code{dgirt} model assumes consistent coding of the polarity
+#' of item responses for identification.
+#'
 #' @param shaped_data Output from \code{\link{shape}}.
 #' @param ... Further arguments, passed to \code{\link[rstan]{stan}}.
 #' @param separate_t Whether smoothing of estimates over time should be

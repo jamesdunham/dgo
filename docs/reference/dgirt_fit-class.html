@@ -112,7 +112,22 @@ which inherits from <code><a href='dgo_fit-class.html'>dgo_fit</a></code>.</p>
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
 <span class='co'># summarize the fitted results</span>
-<span class='fu'><a href='dgirtin-class.html'>summary</a></span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'xi'</span>)</div><div class='output co'>#&gt; <span class='error'>Error in ss[["summary"]]: subscript out of bounds</span></div><div class='input'>
+<span class='fu'><a href='dgirtin-class.html'>summary</a></span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'xi'</span>)</div><div class='output co'>#&gt; dgirt samples from 4 chains of 400 iterations, 200 warmup, thinned every 1 
+#&gt;   Drawn Mon May 29 16:21:17 2017 
+#&gt;   Package version 0.2.10 
+#&gt;   Model version 2017_01_04 
+#&gt;   43 parameters; 12 theta_bars (year state race3)
+#&gt;   2 periods 2009 to 2010 
+#&gt; 
+#&gt; n_eff</div><div class='output co'>#&gt; <span class='message'>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span>
+#&gt; <span class='message'>  26.92  168.29  245.19  279.58  330.50  800.00 </span></div><div class='output co'>#&gt; 
+#&gt; Rhat</div><div class='output co'>#&gt; <span class='message'>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span>
+#&gt; <span class='message'> 0.9985  1.0065  1.0115  1.0141  1.0161  1.1075 </span></div><div class='output co'>#&gt; 
+#&gt; Elapsed time</div><div class='output co'>#&gt; <span class='message'>   chain warmup sample total</span>
+#&gt; <span class='message'>1:     1     2S     3S    5S</span>
+#&gt; <span class='message'>2:     2     3S     4S    7S</span>
+#&gt; <span class='message'>3:     3     2S     2S    4S</span>
+#&gt; <span class='message'>4:     4     3S     2S    5S</span></div><div class='input'>
 <span class='co'># get posterior means with a convenience function</span>
 <span class='fu'>get_posterior_mean</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>)</div><div class='output co'>#&gt;         param state race3 year         mean
 #&gt;  1: theta_bar    SC black 2009  2.581303889

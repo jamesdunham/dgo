@@ -82,13 +82,13 @@
 <span class="co">#&gt;  No changes</span></code></pre></div>
 <p>In this call to <code><a href="../reference/shape.html">shape()</a></code> we specified:</p>
 <ul>
-<li>the survey item response variables as <code>item_names</code>
-</li>
+<li>the survey item response variables as <code>item_names</code>;</li>
 <li>which variable represents time (<code>year</code>), since dgo models are dynamic;</li>
 <li>the variables representing respondent characteristics (<code>state</code> and <code>race3</code>), because dgo models are group-level.</li>
 </ul>
 <p>Notice that we named only one of these variables defining respondent groups using the <code>group_names</code> argument. The <code>geo_name</code> argument always takes the variable giving respondents’ local geographic area; it will be modeled differently.</p>
 <p>Using the argument <code>geo_filter</code>, we subset the input data to the given values of the <code>geo_name</code> variable. And with the <code>id_vars</code> argument, we named an identfier that we’d like to keep in the processed data. (Other unused variables will be dropped.)</p>
+<p>Important: the <code><a href="../reference/dgirt.html">dgirt()</a></code> model assumes consistent coding of the polarity of item responses for identification. This is already true for the <code>opinion</code> data. Typically it requires manual recoding.</p>
 </div>
 <div id="inspect-the-result" class="section level2">
 <h2 class="hasAnchor">
