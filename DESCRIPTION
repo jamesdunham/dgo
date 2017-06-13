@@ -49,6 +49,7 @@ Collate:
     'methods-dgirtfit-poststratify.r'
     'methods-dgirtfit.r'
     'methods-dgirtin.r'
+    'moc.R'
     'name_helpers.r'
     'package.R'
     'rake_partial.r'
