@@ -250,7 +250,7 @@ test_that("weights are trimmed by max_raked_weight argument", {
   toy_targets = set_up_pop(props = NULL)
   ctrl = new("Ctrl", raking = ~ wool, max_raked_weight = 0.5)
   rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
-  expect_true(all(rake_result[, raked_weight] == 0.5))
+  expect_equal(length(unique(rake_result[, raked_weight])), 1L) 
 })
 
 test_that("validation catches bad inputs to max_raked_weight argument", {
