@@ -39,11 +39,15 @@
 #' @section Reweighting:
 #' Use argument \code{target_data} to adjust the weighting of groups toward
 #' population targets via raking, using an adaptation of
-#' \code{\link[survey]{rake}}. To adjust individual survey weights in
+#' \code{\link[survey]{rake}}. To adjust existing survey weights in
 #' \code{item_data}, provide argument \code{weight_name}. Otherwise,
 #' observations in \code{item_data} will be assigned equal starting weights.
-#' Argument \code{raking} defines strata. Argument \code{proportion_name}
-#' is optional.
+#' Argument \code{raking} defines strata. If you pass it a list of formulas like
+#' \code{list(~ x, ~ y)}, raking is first over \code{x}, then over \code{y}.
+#' Given an additive formula like \code{~ x + y}, raking is over the
+#' combinations of \code{x} and \code{y}. So, \code{list(~ x, ~ y + z)} is first
+#' over \code{x}, then over \code{y}-\code{z} pairs. Argument
+#' \code{proportion_name} is optional.
 #'
 #' @section Restrictions:
 #' For convenience, data in \code{item_data}, \code{modifier_data},
@@ -84,6 +88,10 @@
 #'
 #' @param raking A formula or list of formulas specifying the variables on which
 #' to rake survey weights.
+#'
+#' @param max_raked_weight A maximum over which raked weights will be trimmed.
+#' Only applied after raking. To trim unraked weights, manipulate the input data
+#' directly.
 #'
 #' @param aggregate_data A table of trial and success counts by group and item.
 #' See details below.
@@ -158,6 +166,7 @@ shape <- function(item_data,
                   standardize = TRUE,
                   target_data = NULL,
                   raking = NULL,
+                  max_raked_weight = NULL,
                   weight_name = NULL,
                   proportion_name = "proportion",
                   aggregate_data = NULL,
@@ -187,6 +196,7 @@ shape <- function(item_data,
                        raking = raking,
                        weight_name = weight_name,
                        proportion_name = proportion_name,
+                       max_raked_weight = max_raked_weight,
                        constant_item = constant_item,
                        ...)
 

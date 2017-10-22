@@ -23,6 +23,7 @@ init_control <- function(item_data = item_data,
                          raking = raking,
                          weight_name = weight_name,
                          proportion_name = proportion_name,
+                         max_raked_weight = max_raked_weight,
                          constant_item = constant_item,
                          ...) {
   ctrl <- new("Control",
@@ -48,6 +49,7 @@ init_control <- function(item_data = item_data,
               raking = raking,
               weight_name = weight_name,
               proportion_name = proportion_name,
+              max_raked_weight = max_raked_weight,
               # modeling options
               constant_item = constant_item,
               ...)

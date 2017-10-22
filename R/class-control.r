@@ -22,6 +22,7 @@ setClass("Control",
                       weight_name = "ANY",
                       proportion_name = "character",
                       rake_names = "character",
+                      max_raked_weight = "ANY",
                       # modeling options
                       constant_item = "logical"),
          validity = function(object) {
@@ -64,14 +65,17 @@ setClass("Control",
            else if (!length(object@constant_item) == 1L &&
                     is.logical(object@constant_item))
              "\"constant_item\" should be a single logical value"
-          # else if (length(unique(object@time_filter)) == 1L)
-          #   "if specified \"time_filter\" should give at least two time periods"
            else if (length(unique(object@geo_filter)) == 1L)
              "if specified \"geo_filter\" should give at least two local geographic areas"
            else if (length(object@min_survey_filter) != 1L || object@min_survey_filter <= 0L)
              "\"min_survey_filter\" should be a positive integer"
            else if (!length(object@min_t_filter) == 1L && object@min_t_filter > 0L)
              "\"min_t_filter\" should be a positive integer"
+           else if (length(object@max_raked_weight) &&
+             (length(object@max_raked_weight) > 1 |
+               !is.numeric(object@max_raked_weight))) {
+             "if specified \"max_raked_weight\" should be a single number"
+           }
            else 
              TRUE
          })

@@ -106,8 +106,9 @@ sum_by = function(tab, index) {
 }
 
 setClass("Ctrl", slots = c("time_name", "weight_name",
-    "proportion_name", "raking"), prototype = list(time_name = "t",
-    weight_name = "weight", "proportion_name" = "proportion"))
+    "proportion_name", "raking", "max_raked_weight"), prototype = list(time_name = "t",
+    weight_name = "weight", "proportion_name" = "proportion",
+    max_raked_weight = NULL))
 
 test_that("raking has no effect if weights reflect population margins", {
   toy_data = set_up_sample(w = 1)
@@ -232,15 +233,48 @@ test_that("raking equalizes weights when they should be equal", {
   rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
   wool_sums = sum_by(rake_result, "wool")
   tension_sums = sum_by(rake_result, "tension")
-  Reduce(expect_equal, wool_sums)
-  Reduce(expect_equal, tension_sums)
+  expect_equivalent(wool_sums[1], wool_sums[2])
+  expect_equivalent(tension_sums[1], tension_sums[2], tension_sums[3])
 
   # When raking on tension, then wool, weights are made equal
   ctrl = new("Ctrl", raking = list(~ tension, ~ wool))
   rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
   wool_sums = sum_by(rake_result, "wool")
   tension_sums = sum_by(rake_result, "tension")
-  Reduce(expect_equal, wool_sums)
-  Reduce(expect_equal, tension_sums)
+  expect_equivalent(wool_sums[1], wool_sums[2])
+  expect_equivalent(tension_sums[1], tension_sums[2], tension_sums[3])
 })
 
+test_that("weights are trimmed by max_raked_weight argument", {
+  toy_data = set_up_sample(w = rep(c(0.5, 1), each = 3))
+  toy_targets = set_up_pop(props = NULL)
+  ctrl = new("Ctrl", raking = ~ wool, max_raked_weight = 0.5)
+  rake_result = suppressWarnings(dgo:::weight(data.table::copy(toy_data), toy_targets, ctrl))
+  expect_true(all(rake_result[, raked_weight] == 0.5))
+})
+
+test_that("validation catches bad inputs to max_raked_weight argument", {
+  data(annual_state_race_targets)
+  expect_error(
+    shape(item_data = opinion,
+      item_names = "abortion",
+      time_name = "year",
+      geo_name = "state",
+      group_names = "female",
+      target_data = annual_state_race_targets,
+      weight_name = "weight",
+      raking = ~ race3,
+      max_raked_weight = TRUE), 
+    "should be a single number")
+  expect_error(
+    shape(item_data = opinion,
+      item_names = "abortion",
+      time_name = "year",
+      geo_name = "state",
+      group_names = "female",
+      target_data = annual_state_race_targets,
+      weight_name = "weight",
+      raking = ~ race3,
+      max_raked_weight = c(1, 2)),
+    "should be a single number")
+})

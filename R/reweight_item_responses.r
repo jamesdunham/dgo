@@ -8,6 +8,11 @@ weight <- function(item_data, target_data, control) {
                                          mean(get("preweight"), na.rm = TRUE)),
             by = eval(control@time_name)]
 
+  if (length(control@max_raked_weight)) {
+    item_data[raked_weight > control@max_raked_weight, raked_weight :=
+      control@max_raked_weight]
+  }
+
   message("\nOriginal weights:")
   message(paste0(capture.output(summary(item_data[[control@weight_name]])),
                                 collapse = "\n"))
@@ -43,3 +48,4 @@ rake_weights <- function(item_data, target_data, control) {
   }
   return(raked_weights)
 }
+
