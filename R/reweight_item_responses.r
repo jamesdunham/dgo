@@ -1,4 +1,4 @@
-utils::globalVariables(c("raked_weight"))
+utils::globalVariables(c("raked_weight", "preweight"))
 
 weight <- function(item_data, target_data, control) {
   # Adjust individual survey weights given population targets
