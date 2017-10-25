@@ -41,7 +41,7 @@ has_all_names <- function(table, names, suggestion = NULL) {
 }
 
 assertthat::on_failure(has_all_names) <- function(call, env) {
-  paste0("not all ", call$names, " are names in ", deparse(call$table))
+  paste0("not all of ", deparse(call$names), " are names in ", deparse(call$table))
 }
 
 all_strings <- function(x) {

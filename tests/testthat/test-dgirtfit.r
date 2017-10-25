@@ -1,7 +1,5 @@
 context("dgirtfit class")
 
-data(toy_dgirt_in)
-data(opinion)
 dgirt_ret <- readRDS('dgirt_ret.Rds')
 dgmrp_ret <- readRDS('dgmrp_ret.Rds')
 
