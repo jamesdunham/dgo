@@ -2,8 +2,6 @@ context("poststratification")
 
 test_that("dispatch seems to work", {
   suppressMessages(library(data.table))
-  data(toy_dgirtfit)
-  data(annual_state_race_targets)
   expect_silent(poststratify(toy_dgirtfit,
                              target_data = annual_state_race_targets,
                              pars = 'theta_bar',
@@ -18,7 +16,6 @@ test_that("dispatch seems to work", {
 })
 
 test_that("poststratify and weighted.mean results are equivalent", {
-  data(warpbreaks)
   target_data <- warpbreaks[, c("wool", "tension")]
   target_data <- setDT(target_data)[, .N, by = c('wool', 'tension')]
   target_data[, prop := N / sum(N)]
@@ -101,3 +98,30 @@ test_that("variables duplicated across arguments is an error", {
     annual_state_race_targets, strata_names = c("state", "year", "race3"),
   aggregated_names = "race3"), "more than once")
 })
+
+test_that("target data not aggregated over strata is an error", {
+  expect_error(poststratify(toy_dgirtfit, target_data = annual_state_race_targets,
+    strata_names = "state", aggregated_names = "race3"),
+  "Variables in aggregated_names should partition the strata")
+})
+
+test_that("mismatched strata in estimates and targets is an error", {
+  est_table <- as.data.frame(toy_dgirtfit)
+  expect_true(check_target_levels('race3', est_table,
+      annual_state_race_targets))
+
+  est_table$race3 = factor(est_table$race3)
+  expect_error(check_target_levels('race3', est_table,
+      annual_state_race_targets), "Please reconcile the types")
+  expect_error(poststratify(est_table, annual_state_race_targets,
+      c("state", "year"), "race3"), "Please reconcile the types")
+
+  est_table <- as.data.frame(toy_dgirtfit)
+  data.table::setDT(annual_state_race_targets)
+  targets = annual_state_race_targets[get('race3') == 'black']
+  expect_error(check_target_levels('race3', est_table, targets),
+    "Not all levels of 'race3'")
+  expect_error(poststratify(toy_dgirtfit, targets, c("state", "year"), "race3"),
+    "Not all levels of 'race3'")
+})
+

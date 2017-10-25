@@ -112,27 +112,17 @@ setMethod("poststratify", "data.frame",
     targets[, c(extra_cols) := NULL]
   }
 
-  x_n <- nrow(x)
-  props <- merge(x, targets, all = FALSE, by = c(strata_names,
-                                                 aggregated_names))
-  if (!identical(x_n, nrow(props))) {
-  warning("Not all estimates could be matched with a population proportion ",
-            "using the stratifying and grouping variables. ", x_n -
-              nrow(props), " will be dropped from the output, ",
-            "and this may indicate a larger problem.")
+  for (varname in c(strata_names, aggregated_names)) {
+    check_target_levels(varname, x, targets)
   }
 
+  props <- merge(x, targets, all = FALSE, by = c(strata_names,
+                                                 aggregated_names))
   props <- scale_props(props, proportion_name, strata_names)
-
   check_proportions(props, strata_names)
   res <- props[, list(value = sum(value * scaled_prop)), by = strata_names] 
   res[]
 })
-
-check_estimates <- function(estimates, strata_names) {
-  estimates[, lapply(.SD, sum), by = c(strata_names)]
-  estimates
-}
 
 scale_props <- function(props, proportion_name, strata_names) {
   strata_sums <- props[, list(strata_sum = sum(get(proportion_name))),
@@ -156,13 +146,13 @@ check_proportions <- function(tabular, strata_names) {
 check_target_levels <- function(variable, x, targets) {
   if (!identical(class(x[[variable]]), class(targets[[variable]]))) {
     stop("'", variable, "' inherits from '", class(x[[variable]]),
-      "' in x and '", class(targets[[variable]]), "' in targets.",
-      "Please reconcile the types.")
+      "' in estimates and '", class(targets[[variable]]), "' in ",
+      "targets. Please reconcile the types.")
   } else if (!all(x[[variable]] %in% targets[[variable]])) {
     x_levels <- setdiff(x[[variable]], targets[[variable]])
     stop("Not all levels of '", variable, "' in estimates are levels of '",
          variable, "' in targets. Missing: ", paste(x_levels , collapse = ", "),
-         "missing. The target data should give the population proportion of each
-         ", "group represented in the estimates.")
+         ". The target data should give the population proportion of ",
+         "each group represented in the estimates.")
   } else TRUE
 }
