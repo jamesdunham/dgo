@@ -149,8 +149,8 @@
 #' get_item_n(shaped_responses, by = "year")
 #'
 #' @export
-shape <- function(item_data,
-                  item_names,
+shape <- function(item_data = NULL,
+                  item_names = NULL,
                   time_name,
                   geo_name,
                   group_names = NULL,
@@ -220,7 +220,7 @@ shape <- function(item_data,
     aggregate_data$item)
 
   # rake survey weights #
-  if (length(target_data)) {
+  if (length(target_data) & length(item_data)) {
     item_data <- weight(item_data, target_data, ctrl)
     ctrl@weight_name <- "raked_weight"
   }
@@ -251,7 +251,9 @@ init_dgirt_in <- function(item_data, aggregate_data, modifier_data, target_data,
   d_in <- dgirtIn$new(ctrl)
 
   # aggregate individual item response data to group level #
-  item_data <- dichotomize(item_data, ctrl)
+  if (length(item_data)) {
+    item_data <- dichotomize(item_data, ctrl)
+  }
   d_in$group_grid <- make_group_grid(item_data, aggregate_data, ctrl)
   d_in$group_grid_t <- make_group_grid_t(d_in$group_grid, ctrl)
   d_in$group_counts <- make_group_counts(item_data, aggregate_data, ctrl)

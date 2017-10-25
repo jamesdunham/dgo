@@ -4,12 +4,12 @@
 \alias{shape}
 \title{\code{shape}: prepare data for modeling with \code{dgirt} or \code{dgmrp}}
 \usage{
-shape(item_data, item_names, time_name, geo_name, group_names = NULL,
-  id_vars = NULL, time_filter = NULL, geo_filter = NULL,
-  min_t_filter = 1L, min_survey_filter = 1L, survey_name = NULL,
-  modifier_data = NULL, modifier_names = NULL, t1_modifier_names = NULL,
-  standardize = TRUE, target_data = NULL, raking = NULL,
-  max_raked_weight = NULL, weight_name = NULL,
+shape(item_data = NULL, item_names = NULL, time_name, geo_name,
+  group_names = NULL, id_vars = NULL, time_filter = NULL,
+  geo_filter = NULL, min_t_filter = 1L, min_survey_filter = 1L,
+  survey_name = NULL, modifier_data = NULL, modifier_names = NULL,
+  t1_modifier_names = NULL, standardize = TRUE, target_data = NULL,
+  raking = NULL, max_raked_weight = NULL, weight_name = NULL,
   proportion_name = "proportion", aggregate_data = NULL,
   aggregate_item_names = NULL, constant_item = TRUE, ...)
 }

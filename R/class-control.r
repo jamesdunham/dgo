@@ -1,6 +1,5 @@
 setClass("Control",
-         slots = list(# item data
-                      item_names = "character",
+         slots = list(item_names = "ANY",
                       time_name = "character",
                       geo_name = "character",
                       group_names = "ANY",
@@ -24,12 +23,19 @@ setClass("Control",
                       rake_names = "character",
                       max_raked_weight = "ANY",
                       # modeling options
-                      constant_item = "logical"),
+                      constant_item = "logical",
+                      # indicators for state
+                      has_individual_data = "ANY",
+                      has_aggregate_data = "ANY",
+                      has_target_data = "ANY",
+                      has_modifier_data = "ANY"),
          validity = function(object) {
            if (!length(object@time_name) == 1L)
              "\"time_name\" should be a single variable name"
            else if (!length(object@geo_name) == 1L)
              "\"geo_name\" should be a single variable name"
+           else if (length(object@item_names) && !is.character(object@item_names))
+             "if specified \"item_names\" should give variable names in a character vector"
            else if (length(object@survey_name) && length(object@survey_name) != 1L)
              "if specified \"survey_name\" should be a single variable name"
            else if (length(object@survey_name) && !is.character(object@survey_name))

@@ -27,7 +27,6 @@ init_control <- function(item_data = item_data,
                          constant_item = constant_item,
                          ...) {
   ctrl <- new("Control",
-              # item data
               item_names = item_names,
               time_name = time_name,
               geo_name = geo_name,
@@ -53,9 +52,13 @@ init_control <- function(item_data = item_data,
               # modeling options
               constant_item = constant_item,
               ...)
-  is_item_name <- valid_names(item_data, ctrl, 1L)
-  is_item_name(c("time_name", "geo_name"))
-  has_type(c("time_name", "geo_name"), item_data, ctrl)
+
+  if (length(item_data)) {
+    is_item_name <- valid_names(item_data, ctrl, 1L)
+    is_item_name(c("time_name", "geo_name"))
+    has_type(c("time_name", "geo_name"), item_data, ctrl)
+  }
+
   if (length(aggregate_data)) {
     is_agg_name <- valid_names(aggregate_data, ctrl, 1L)
     is_agg_name(c("time_name", "geo_name"))
@@ -67,6 +70,10 @@ init_control <- function(item_data = item_data,
     }
   }
 
+  if (!length(item_data) & !length(aggregate_data)) {
+    stop("either \"item_data\" or \"aggregate_data\" must be specified")
+  }
+
   if (length(ctrl@modifier_names)) {
     if (!length(ctrl@t1_modifier_names)) {
       ctrl@t1_modifier_names <- ctrl@modifier_names
@@ -74,7 +81,9 @@ init_control <- function(item_data = item_data,
   }
 
   if (!length(ctrl@time_filter)) {
-    ctrl@time_filter <- sort(unique(item_data[[ctrl@time_name]]))
+    if (length(item_data)) {
+      ctrl@time_filter <- sort(unique(item_data[[ctrl@time_name]]))
+    }
     if (length(aggregate_data)) {
       ctrl@time_filter <- sort(unique(c(ctrl@time_filter,
                                         aggregate_data[[ctrl@time_name]])))
@@ -82,7 +91,9 @@ init_control <- function(item_data = item_data,
   }
 
   if (!length(ctrl@geo_filter)) {
-    ctrl@geo_filter <- sort(unique(as.character(item_data[[ctrl@geo_name]])))
+    if (length(item_data)) {
+      ctrl@geo_filter <- sort(unique(as.character(item_data[[ctrl@geo_name]])))
+    }
     if (length(aggregate_data)) {
       ctrl@geo_filter <- sort(unique(c(ctrl@geo_filter,
                                         aggregate_data[[ctrl@geo_name]])))
@@ -96,5 +107,11 @@ init_control <- function(item_data = item_data,
       ctrl@rake_names = all.vars(ctrl@raking)
     }
   }
+
+  ctrl@has_individual_data = ifelse(length(item_data), TRUE, FALSE)
+  ctrl@has_aggregate_data = ifelse(length(aggregate_data), TRUE, FALSE)
+  ctrl@has_modifier_data = ifelse(length(modifier_data), TRUE, FALSE)
+  ctrl@has_target_data = ifelse(length(target_data), TRUE, FALSE)
+
   ctrl
 }

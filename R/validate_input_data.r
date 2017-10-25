@@ -62,31 +62,33 @@ check_modifiers <- function(modifier_data, ctrl) {
 }
 
 check_item <- function(item_data, ctrl) {
-  is_name <- valid_names(item_data, ctrl, 1L)
-  is_name(c("time_name", "geo_name"))
-  are_names <- valid_names(item_data, ctrl)
-  are_names("item_names")
-  if (length(ctrl@id_vars)) {
-    are_names("id_vars")
-  }
-  for (varname in c("weight_name", "survey_name")) {
-    if (length(slot(ctrl, varname))) {
-      is_name(varname)
-      has_type(varname, item_data, ctrl)
+  if (length(item_data)) {
+    is_name <- valid_names(item_data, ctrl, 1L)
+    is_name(c("time_name", "geo_name"))
+    are_names <- valid_names(item_data, ctrl)
+    are_names("item_names")
+    if (length(ctrl@id_vars)) {
+      are_names("id_vars")
     }
-  }
-  has_type(c("time_name", "geo_name", "group_names"), item_data, ctrl)
-  check_time(item_data, ctrl@time_name) 
-  if (is.list(ctrl@raking)) {
-    raking = unlist(lapply(ctrl@raking, all.vars))
-  } else {
-    raking = all.vars(ctrl@raking)
-  }
-  are_valid_terms <- valid_names(item_data, len = 1, stub = "is a raking formula term but isn't")
-  are_valid_terms(raking)
-  for (name in c(ctrl@group_names, ctrl@geo_name)) {
-    if (!length(unique(item_data[[name]])) > 1)
-      stop(name, " doesn't vary in item_data")
+    for (varname in c("weight_name", "survey_name")) {
+      if (length(slot(ctrl, varname))) {
+        is_name(varname)
+        has_type(varname, item_data, ctrl)
+      }
+    }
+    has_type(c("time_name", "geo_name", "group_names"), item_data, ctrl)
+    check_time(item_data, ctrl@time_name) 
+    if (is.list(ctrl@raking)) {
+      raking = unlist(lapply(ctrl@raking, all.vars))
+    } else {
+      raking = all.vars(ctrl@raking)
+    }
+    are_valid_terms <- valid_names(item_data, len = 1, stub = "is a raking formula term but isn't")
+    are_valid_terms(raking)
+    for (name in c(ctrl@group_names, ctrl@geo_name)) {
+      if (!length(unique(item_data[[name]])) > 1)
+        stop(name, " doesn't vary in item_data")
+    }
   }
 }
 
