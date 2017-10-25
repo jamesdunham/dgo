@@ -43,7 +43,6 @@ Collate:
     'class-dgmrp_fit.r'
     'dgirt.r'
     'dichotomize_item_responses.r'
-    'expand_rownames.r'
     'methods-control.r'
     'methods-dgirtfit-plot.r'
     'methods-dgirtfit-poststratify.r'
