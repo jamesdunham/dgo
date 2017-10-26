@@ -19,13 +19,9 @@ clean:
 	@rm -rf src/*.so src/*.o *tar.gz *Rcheck*
 
 build: 
-	$(R) --vanilla --slave tools/example_objects.R
-	$(R) --vanilla --slave tools/test_objects.R
 	$(R) $(R_ARGS) CMD build .  
 
 build-cran:
-	$(R) --vanilla --slave tools/example_objects.R
-	$(R) --vanilla --slave tools/test_objects.R
 	$(R) CMD build . --no-resave-data --no-manual
 	
 check: 

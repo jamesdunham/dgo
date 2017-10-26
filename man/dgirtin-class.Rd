@@ -68,7 +68,7 @@ A list of item names.
 }
 \description{
 \code{shape} generates objects of class \code{dgirtIn} for modeling with
-\code{dgirt}.
+\code{dgirt} and \code{dgmrp}.
 
 Summarize DGIRT Data
 
