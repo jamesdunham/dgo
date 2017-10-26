@@ -1,3 +1,15 @@
+## dgo 0.2.11
+
+* Add poststratification over posterior samples (closes #21).
+* `shape()` now accepts aggregated item response data unaccompanied by
+  individual-level item response data. The `item_data` and `item_names`
+  arguments are no longer required.
+* Add a `max_raked_weight` argument to `shape()` for trimming raked weights.
+  Note that trimming occurs before raked weights are rescaled to have mean 1,
+  and the rescaled weights can be larger than `max_raked_weight`.
+* Remove the unused function `expand_rownames()`.
+* Bugfixes.
+
 ## dgo 0.2.10
 
 * Remove Rcpp dependency by rewriting `dichotomize()` in R.
