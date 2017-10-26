@@ -44,7 +44,7 @@ knitr::opts_chunk$set(
 
 # Installation
 
-dgo can be installed from [CRAN](https://cran.r-project.org/web/packages/dgo/index.html):
+dgo can be installed from [CRAN](https://CRAN.R-project.org/package=dgo):
 
 ```{r, eval = FALSE}
 install.packages("dgo")
