@@ -70,7 +70,7 @@
 <div id="prepare-input-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#prepare-input-data" class="anchor"></a>Prepare input data</h2>
-<p><code><a href="../reference/shape.html">shape()</a></code> prepares input data for use with the modeling functions <code><a href="../reference/dgirt.html">dgirt()</a></code> and <code><a href="../reference/dgirt.html">dgmrp()</a></code>. Here we use the included <code>opinion</code> dataset.</p>
+<p><code><a href="../reference/shape.html">shape()</a></code> prepares input data for use with the modeling functions <code><a href="../reference/dgirt.html">dgirt()</a></code> and <code>dgmrp()</code>. Here we use the included <code>opinion</code> dataset.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dgirt_in_liberalism &lt;-<span class="st"> </span><span class="kw"><a href="../reference/shape.html">shape</a></span>(opinion, <span class="dt">item_names =</span> <span class="kw">c</span>(<span class="st">"abortion"</span>,
     <span class="st">"affirmative_action"</span>,<span class="st">"stemcell_research"</span> , <span class="st">"gaymarriage_amendment"</span>,
     <span class="st">"partialbirth_abortion"</span>) , <span class="dt">time_name =</span> <span class="st">"year"</span>, <span class="dt">geo_name =</span> <span class="st">"state"</span>,
@@ -113,14 +113,14 @@
 <span class="co">#&gt; Constants:</span>
 <span class="co">#&gt;   Q   T   P   N   G   H   D </span>
 <span class="co">#&gt;   5   5   5 300  12   1   1</span></code></pre></div>
-<p><code><a href="../reference/dgirtin-class.html">get_n()</a></code> and <code><a href="../reference/dgirtin-class.html">get_item_n()</a></code> give response counts.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/dgirtin-class.html">get_n</a></span>(dgirt_in_liberalism, <span class="dt">by =</span> <span class="st">"state"</span>)
+<p><code>get_n()</code> and <code>get_item_n()</code> give response counts.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_n</span>(dgirt_in_liberalism, <span class="dt">by =</span> <span class="st">"state"</span>)
 <span class="co">#&gt;    state     n</span>
 <span class="co">#&gt; 1:    CA 14655</span>
 <span class="co">#&gt; 2:    GA  4667</span>
 <span class="co">#&gt; 3:    LA  1693</span>
 <span class="co">#&gt; 4:    MA  2617</span>
-<span class="kw"><a href="../reference/dgirtin-class.html">get_item_n</a></span>(dgirt_in_liberalism, <span class="dt">by =</span> <span class="st">"year"</span>)
+<span class="kw">get_item_n</span>(dgirt_in_liberalism, <span class="dt">by =</span> <span class="st">"year"</span>)
 <span class="co">#&gt;    year abortion affirmative_action stemcell_research</span>
 <span class="co">#&gt; 1: 2006     5275               4750              2483</span>
 <span class="co">#&gt; 2: 2007     1690               1557              1705</span>
@@ -249,7 +249,8 @@
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
         <div id="tocnav">
-      <h2>Contents</h2>
+      <h2 class="hasAnchor">
+<a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
 <li><a href="#prepare-input-data">Prepare input data</a></li>
       <li><a href="#inspect-the-result">Inspect the result</a></li>

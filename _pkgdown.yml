@@ -25,7 +25,6 @@ reference:
     - poststratify
     - plot_rhats
     - dgirt_plot
-    - expand_rownames
 
 navbar:
   left:
