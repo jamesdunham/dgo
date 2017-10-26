@@ -16,7 +16,7 @@ utils::globalVariables(c("value", "scaled_prop"))
 #' @param ... Additional arguments to methods.
 setGeneric("poststratify", signature = "x",
            function(x, target_data, strata_names, aggregated_names,
-                    proportion_name = "proportion", ...)
+             proportion_name = "proportion", ...)
              standardGeneric("poststratify"))
 
 #' @param pars Selected parameter names.
@@ -58,12 +58,11 @@ setMethod("poststratify", c("dgo_fit"),
 #' @export
 setMethod("poststratify", "data.frame",
           function(x, target_data, strata_names, aggregated_names,
-                   proportion_name = "proportion", pars = "theta_bar") {
+                   proportion_name = "proportion") {
   assert(is.data.frame(target_data))
   assert(all_strings(strata_names))
-  assert(all_strings(strata_names))
+  assert(all_strings(aggregated_names))
   assert(assertthat::is.string(proportion_name))
-  assert(all_strings(pars))
 
   if (anyDuplicated(c(strata_names, aggregated_names))) {
     stop("Variable names cannot be used more than once across ",
@@ -117,24 +116,33 @@ setMethod("poststratify", "data.frame",
   }
 
   props <- merge(x, targets, all = FALSE, by = c(strata_names,
-                                                 aggregated_names))
-  props <- scale_props(props, proportion_name, strata_names)
-  check_proportions(props, strata_names)
-  res <- props[, list(value = sum(value * scaled_prop)), by = strata_names] 
+      aggregated_names))
+  by_vars = c(strata_names, 'iteration')
+  if (!'iteration' %in% names(props)) {
+    props[, iteration := 1]
+    no_iterations <- TRUE
+  } else {
+    no_iterations <- FALSE
+  }
+  props <- scale_props(props, proportion_name, by_vars)
+  check_proportions(props, by_vars)
+  res <- props[, list(value = sum(value * scaled_prop)), by = by_vars] 
+  if (no_iterations) {
+    res[, iteration := NULL]
+  }
   res[]
 })
 
-scale_props <- function(props, proportion_name, strata_names) {
-  strata_sums <- props[, list(strata_sum = sum(get(proportion_name))),
-                       by = strata_names]
-  props <- merge(props, strata_sums, all = FALSE, by = strata_names)
+scale_props <- function(props, proportion_name, by_vars) {
+  strata_sums <- props[, list(strata_sum = sum(get(proportion_name))), by =
+    by_vars]
+  props <- merge(props, strata_sums, all = FALSE, by = by_vars)
   props[, c("scaled_prop") := get(proportion_name) / get("strata_sum")]
   return(props)
 }
 
-check_proportions <- function(tabular, strata_names) {
-  prop_sums <- tabular[, lapply(.SD, sum), .SDcols = "scaled_prop",
-                       by = strata_names]
+check_proportions <- function(tabular, by_vars) {
+  prop_sums <- tabular[, lapply(.SD, sum), .SDcols = "scaled_prop", by = by_vars]
   if (!isTRUE(all.equal(rep(1L, nrow(prop_sums)), prop_sums$scaled_prop))) {
     stop("Not all proportions sum to 1 within stratifying variables even ",
       " though they should have been rescaled. (The mean sum is ",

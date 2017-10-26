@@ -1,4 +1,4 @@
-library(data.table)
+suppressMessages(library(data.table))
 
 minimal_individual_data = data.table::data.table(
   period = rep(1:2, each = 5),

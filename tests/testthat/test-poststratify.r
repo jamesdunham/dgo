@@ -7,7 +7,6 @@ test_that("dispatch seems to work", {
                              pars = 'theta_bar',
                              strata_names = c('year', 'state'),
                              aggregated_names = 'race3'))
-
   estimates <- as.data.frame(toy_dgirtfit)
   expect_silent(poststratify(estimates,
                              annual_state_race_targets,
@@ -125,3 +124,41 @@ test_that("mismatched strata in estimates and targets is an error", {
     "Not all levels of 'race3'")
 })
 
+test_that("poststratification is by iteration for dgirtfit-class objects", {
+  expect_silent(ps_toy_theta_bars <- poststratify(toy_dgirtfit, target_data =
+      annual_state_race_targets, pars = 'theta_bar', strata_names = c('year',
+        'state'), aggregated_names = 'race3'))
+  expect_named(ps_toy_theta_bars, c('year', 'state', 'iteration', 'value'))
+})
+
+
+test_that("poststratification is by iteration for data.frames if an iteration column exists", {
+  df_theta_bars = as.data.frame(toy_dgirtfit)
+  expect_silent(ps_df_theta_bars <- poststratify(df_theta_bars, target_data = annual_state_race_targets, strata_names = c('year', 'state'), aggregated_names = 'race3'))
+  expect_named(df_theta_bars, c('param', 'state', 'race3', 'year', 'iteration', 'value'))
+})
+
+test_that("poststratification still works if no iteration column exists", {
+  df_theta_bars = as.data.frame(toy_dgirtfit)
+  df_theta_bars = df_theta_bars[, .(value = mean(value)), by = c('state', 'race3', 'year')]
+  expect_silent(ps_df_theta_bars <- poststratify(df_theta_bars, target_data = annual_state_race_targets, strata_names = c('year', 'state'), aggregated_names = 'race3'))
+})
+
+test_that("poststratifying posterior means gives the same result as averaging poststratified posterior samples", {
+  expect_silent(ps_toy_theta_bars <- poststratify(toy_dgirtfit, target_data =
+      annual_state_race_targets, pars = 'theta_bar', strata_names = c('year',
+        'state'), aggregated_names = 'race3'))
+  mean_ps_toy_theta_bars = ps_toy_theta_bars[, .(value = mean(value)), by = c('year', 'state')]
+  theta_bars = as.data.frame(toy_dgirtfit)
+  mean_theta_bar = theta_bars[, .(value = mean(value)), by = c('year', 'state', 'race3')]
+  expect_silent(ps_mean_theta_bar <- poststratify(mean_theta_bar, target_data = annual_state_race_targets, strata_names = c('year', 'state'), aggregated_names = 'race3'))
+  expect_named(ps_mean_theta_bar, c('year', 'state', 'value'))
+  expect_equivalent(mean_ps_toy_theta_bars, ps_mean_theta_bar)
+})
+
+test_that("if strata_names and aggregated_names don't uniquely identify rows, poststratify stops rather than averaging over them", {
+  skip('maybe?')
+  df_theta_bars = as.data.frame(toy_dgirtfit)
+  df_theta_bars[, iteration := NULL]
+  expect_error(ps_df_theta_bars <- poststratify(df_theta_bars, target_data = annual_state_race_targets, strata_names = c('year', 'state'), aggregated_names = 'race3'))
+})
