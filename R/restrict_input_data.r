@@ -289,12 +289,6 @@ drop_items_rare_in_polls <- function(item_data, ctrl) {
   invisible(item_data)
 }
 
-get_observed <- function(item_data, aggregate_data, varname) {
-  obs <- Map(unique.data.frame, list(item_data[, varname, with = FALSE],
-      aggregate_data[, varname, with = FALSE]))
-  sort.default(unique.default(unname(unlist(obs))))
-}
-
 stop_if_any_na <- function(where, varnames) {
   # If there are NA values in any variable named in 'varnames', in the dataframe
   # given by 'where', stop

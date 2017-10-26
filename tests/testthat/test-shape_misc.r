@@ -97,3 +97,15 @@ test_that("setDT_data works as expected", {
   expect_true(is.null(item_data))
 })
 
+test_that("min_t_filter restricts individual data", {
+  expect_error(suppressMessages(shape(minimal_individual_data, item_names = 'item_1',
+    time_name = 'period', geo_name = 'geo', group_names = 'pid',
+    min_t_filter = 3), 'no items remaining'))
+})
+
+test_that("min_survey_filter restricts individual data", {
+  minimal_individual_data[, survey := 'survey1']
+  expect_error(suppressMessages(shape(minimal_individual_data, item_names = 'item_1',
+    time_name = 'period', geo_name = 'geo', group_names = 'pid',
+    survey_name = 'survey', min_survey_filter = 2)), 'no items remaining')
+})
