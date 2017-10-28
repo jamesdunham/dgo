@@ -93,10 +93,10 @@
 <h2 class="hasAnchor">
 <a href="#dgo-0-2-11" class="anchor"></a>dgo 0.2.11</h2>
 <ul>
-<li>Function <code><a href="../reference/poststratify.html">poststratify()</a></code> operates by iteration given posterior samples (closes #2).</li>
-<li>Raked weights can be trimmed using a new <code>max_raked_weight</code> argument to <code><a href="../reference/shape.html">shape()</a></code>. (Note trimming occurs before raked weights are rescaled to have mean 1, so rescaled weights can be greater than <code>max_raked_weight</code>.)</li>
+<li>Add poststratification over posterior samples (closes #21).</li>
 <li>
-<code><a href="../reference/shape.html">shape()</a></code> accepts group-aggregate item response data unaccompanied by individual-level item response data. The <code>item_data</code> and <code>item_names</code> arguments are no longer required.</li>
+<code><a href="../reference/shape.html">shape()</a></code> now accepts aggregated item response data unaccompanied by individual-level item response data. The <code>item_data</code> and <code>item_names</code> arguments are no longer required.</li>
+<li>Add a <code>max_raked_weight</code> argument to <code><a href="../reference/shape.html">shape()</a></code> for trimming raked weights. Note that trimming occurs before raked weights are rescaled to have mean 1, and the rescaled weights can be larger than <code>max_raked_weight</code>.</li>
 <li>Remove the unused function <code>expand_rownames()</code>.</li>
 <li>Bugfixes.</li>
 </ul>

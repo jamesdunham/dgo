@@ -114,48 +114,48 @@ which inherits from <code><a href='dgo_fit-class.html'>dgo_fit</a></code>.</p>
     <pre class="examples"><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
 <span class='co'># summarize the fitted results</span>
 <span class='fu'><a href='dgirtin-class.html'>summary</a></span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'xi'</span>)</div><div class='output co'>#&gt; dgirt samples from 4 chains of 400 iterations, 200 warmup, thinned every 1 
-#&gt;   Drawn Thu Oct 26 09:58:25 2017 
+#&gt;   Drawn Thu Oct 26 09:22:11 2017 
 #&gt;   Package version 0.2.11 
 #&gt;   Model version 2017_01_04 
 #&gt;   43 parameters; 12 theta_bars (year state race3)
 #&gt;   2 periods 2009 to 2010 
 #&gt; 
 #&gt; n_eff</div><div class='output co'>#&gt; <span class='message'>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span>
-#&gt; <span class='message'>  89.08  136.56  190.12  235.74  276.52  773.61 </span></div><div class='output co'>#&gt; 
+#&gt; <span class='message'>  51.66  125.45  234.09  280.10  379.44  800.00 </span></div><div class='output co'>#&gt; 
 #&gt; Rhat</div><div class='output co'>#&gt; <span class='message'>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span>
-#&gt; <span class='message'>  1.001   1.011   1.023   1.022   1.030   1.053 </span></div><div class='output co'>#&gt; 
+#&gt; <span class='message'> 0.9977  1.0027  1.0061  1.0102  1.0126  1.0461 </span></div><div class='output co'>#&gt; 
 #&gt; Elapsed time</div><div class='output co'>#&gt; <span class='message'>   chain warmup sample total</span>
 #&gt; <span class='message'>1:     1     4S     5S    9S</span>
-#&gt; <span class='message'>2:     2     4S     4S    8S</span>
-#&gt; <span class='message'>3:     3     6S     4S   10S</span>
+#&gt; <span class='message'>2:     2     4S     6S   10S</span>
+#&gt; <span class='message'>3:     3     6S     5S   11S</span>
 #&gt; <span class='message'>4:     4     5S     4S    9S</span></div><div class='input'>
 <span class='co'># get posterior means with a convenience function</span>
 <span class='fu'>get_posterior_mean</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>)</div><div class='output co'>#&gt;         param state race3 year        mean
-#&gt;  1: theta_bar    SC black 2009  2.27918561
-#&gt;  2: theta_bar    SC black 2010  1.22043041
-#&gt;  3: theta_bar    SC other 2009 -1.39020024
-#&gt;  4: theta_bar    SC other 2010  0.04736177
-#&gt;  5: theta_bar    SC white 2009 -1.67254198
-#&gt;  6: theta_bar    SC white 2010 -1.36955157
-#&gt;  7: theta_bar    VA black 2009  2.01678885
-#&gt;  8: theta_bar    VA black 2010  1.44993059
-#&gt;  9: theta_bar    VA other 2009 -0.98106291
-#&gt; 10: theta_bar    VA other 2010  0.31428591
-#&gt; 11: theta_bar    VA white 2009 -0.94262607
-#&gt; 12: theta_bar    VA white 2010 -0.77981128</div><div class='input'>
+#&gt;  1: theta_bar    SC black 2009  2.24559756
+#&gt;  2: theta_bar    SC black 2010  1.15755259
+#&gt;  3: theta_bar    SC other 2009 -1.29813621
+#&gt;  4: theta_bar    SC other 2010  0.03000299
+#&gt;  5: theta_bar    SC white 2009 -1.59792561
+#&gt;  6: theta_bar    SC white 2010 -1.29950834
+#&gt;  7: theta_bar    VA black 2009  2.02881527
+#&gt;  8: theta_bar    VA black 2010  1.40617435
+#&gt;  9: theta_bar    VA other 2009 -0.93038106
+#&gt; 10: theta_bar    VA other 2010  0.27922913
+#&gt; 11: theta_bar    VA white 2009 -0.91333932
+#&gt; 12: theta_bar    VA white 2010 -0.71577875</div><div class='input'>
 <span class='co'># generally apply functions to posterior samples after warmup; n.b.</span>
 <span class='co'># `as.array` is iterations x chains x parameters so `MARGIN = 3` applies</span>
 <span class='co'># `FUN` over iterations and chains</span>
 <span class='fu'>apply</span>(<span class='fu'>as.array</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'xi'</span>), <span class='fl'>3</span>, <span class='no'>mean</span>)</div><div class='output co'>#&gt;     xi[1]     xi[2] 
-#&gt; 1.4338770 0.1256181 </div><div class='input'>
+#&gt; 1.4992850 0.1369921 </div><div class='input'>
 <span class='co'># access the posterior samples</span>
-<span class='fu'>head</span>(<span class='fu'>as.data.frame</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>))</div><div class='output co'>#&gt;        param state race3 year iteration    value
-#&gt; 1: theta_bar    SC black 2009         1 1.756762
-#&gt; 2: theta_bar    SC black 2009         2 1.812885
-#&gt; 3: theta_bar    SC black 2009         3 2.267943
-#&gt; 4: theta_bar    SC black 2009         4 2.437339
-#&gt; 5: theta_bar    SC black 2009         5 2.465419
-#&gt; 6: theta_bar    SC black 2009         6 2.312686</div></pre>
+<span class='fu'>head</span>(<span class='fu'>as.data.frame</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>))</div><div class='output co'>#&gt;        param state race3 year iteration     value
+#&gt; 1: theta_bar    SC black 2009         1 2.3585309
+#&gt; 2: theta_bar    SC black 2009         2 3.7881672
+#&gt; 3: theta_bar    SC black 2009         3 2.5182470
+#&gt; 4: theta_bar    SC black 2009         4 4.9504883
+#&gt; 5: theta_bar    SC black 2009         5 0.5702558
+#&gt; 6: theta_bar    SC black 2009         6 1.4339072</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
