@@ -25,18 +25,17 @@ build-cran:
 	$(R) CMD build . --no-resave-data --no-manual
 	
 check: 
-	$(R) CMD check $(PKG)_$(VERSION).tar.gz
+	$(R) CMD check $(BINARY)
 
 check-cran: 
-	$(R) CMD check --as-cran $(PKG)_$(VERSION).tar.gz
+	$(R) CMD check --as-cran $(BINARY)
 
-check-quick $(PKG)_$(VERSION).tar.gz:
+check-quick $(BINARY):
 	$(R) $(R_ARGS) CMD build . 
-	$(R) CMD check $(PKG)_$(VERSION).tar.gz
+	$(R) CMD check $(BINARY)
 
-install: $(PKG)_$(VERSION).tar.gz
-	$(R) CMD INSTALL --no-multiarch --with-keep.source \
-	  $(PKG)_$(VERSION).tar.gz
+install: $(BINARY)
+	$(R) CMD INSTALL --no-multiarch --with-keep.source $(BINARY)
 
 install-code:
 	$(R) CMD INSTALL --no-multiarch --with-keep.source --no-docs .

@@ -66,11 +66,11 @@
     
     
 <div class="contents">
-<p>This vignette demonstrates estimation of public attitudes toward abortion from responses to a single survey item, using the dynamic multi-level regression and post-stratification (MRP) model implemented in <code><a href="../reference/dgirt.html">dgmrp()</a></code>.</p>
+<p>This vignette demonstrates estimation of public attitudes toward abortion from responses to a single survey item, using the dynamic multi-level regression and post-stratification (MRP) model implemented in <code>dgmrp()</code>.</p>
 <div id="prepare-input-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#prepare-input-data" class="anchor"></a>Prepare input data</h2>
-<p><code><a href="../reference/shape.html">shape()</a></code> prepares input data for use with the modeling functions <code><a href="../reference/dgirt.html">dgirt()</a></code> and <code><a href="../reference/dgirt.html">dgmrp()</a></code>. Here we use the included <code>opinion</code> dataset.</p>
+<p><code><a href="../reference/shape.html">shape()</a></code> prepares input data for use with the modeling functions <code><a href="../reference/dgirt.html">dgirt()</a></code> and <code>dgmrp()</code>. Here we use the included <code>opinion</code> dataset.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dgirt_in_abortion &lt;-<span class="st"> </span><span class="kw"><a href="../reference/shape.html">shape</a></span>(opinion, <span class="dt">item_names =</span> <span class="st">"abortion"</span>, <span class="dt">time_name =</span> <span class="st">"year"</span>,
   <span class="dt">geo_name =</span> <span class="st">"state"</span>, <span class="dt">group_names =</span> <span class="st">"race3"</span>, <span class="dt">geo_filter =</span> <span class="kw">c</span>(<span class="st">"CA"</span>, <span class="st">"GA"</span>, <span class="st">"LA"</span>,
     <span class="st">"MA"</span>), <span class="dt">id_vars =</span> <span class="st">"source"</span>)
@@ -110,14 +110,14 @@
 <span class="co">#&gt; Constants:</span>
 <span class="co">#&gt;  Q  T  P  N  G  H  D </span>
 <span class="co">#&gt;  1  5  5 60 12  1  1</span></code></pre></div>
-<p><code><a href="../reference/dgirtin-class.html">get_n()</a></code> and <code><a href="../reference/dgirtin-class.html">get_item_n()</a></code> give response counts.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/dgirtin-class.html">get_n</a></span>(dgirt_in_abortion, <span class="dt">by =</span> <span class="st">"state"</span>)
+<p><code>get_n()</code> and <code>get_item_n()</code> give response counts.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_n</span>(dgirt_in_abortion, <span class="dt">by =</span> <span class="st">"state"</span>)
 <span class="co">#&gt;    state     n</span>
 <span class="co">#&gt; 1:    CA 14248</span>
 <span class="co">#&gt; 2:    GA  4547</span>
 <span class="co">#&gt; 3:    LA  1658</span>
 <span class="co">#&gt; 4:    MA  2554</span>
-<span class="kw"><a href="../reference/dgirtin-class.html">get_item_n</a></span>(dgirt_in_abortion, <span class="dt">by =</span> <span class="st">"year"</span>)
+<span class="kw">get_item_n</span>(dgirt_in_abortion, <span class="dt">by =</span> <span class="st">"year"</span>)
 <span class="co">#&gt;    year abortion</span>
 <span class="co">#&gt; 1: 2006     5275</span>
 <span class="co">#&gt; 2: 2007     1690</span>
@@ -128,9 +128,9 @@
 <div id="fit-a-model" class="section level2">
 <h2 class="hasAnchor">
 <a href="#fit-a-model" class="anchor"></a>Fit a model</h2>
-<p><code><a href="../reference/dgirt.html">dgmrp()</a></code> fits a dynamic multi-level regression and post-stratification (MRP) model to data processed by <code><a href="../reference/shape.html">shape()</a></code>. Here, we’ll use it to estimate public attitudes toward abortion over time, for the groups defined by <code>state</code> and <code>race3</code>. (Specifically, by their Cartesian product.)</p>
-<p>Under the hood, <code><a href="../reference/dgirt.html">dgmrp()</a></code> uses RStan for MCMC sampling, and arguments can be passed to RStan’s <a href="https://www.rdocumentation.org/packages/rstan/versions/2.15.1/topics/stan"><code>stan()</code></a> via the <code>...</code> argument of <code><a href="../reference/dgirt.html">dgmrp()</a></code>. This is almost always desirable. Here, we specify the number of sampler iterations, chains, and cores.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dgmrp_out_abortion &lt;-<span class="st"> </span><span class="kw"><a href="../reference/dgirt.html">dgmrp</a></span>(dgirt_in_abortion, <span class="dt">iter =</span> <span class="dv">1500</span>, <span class="dt">chains =</span> <span class="dv">4</span>, <span class="dt">cores =</span>
+<p><code>dgmrp()</code> fits a dynamic multi-level regression and post-stratification (MRP) model to data processed by <code><a href="../reference/shape.html">shape()</a></code>. Here, we’ll use it to estimate public attitudes toward abortion over time, for the groups defined by <code>state</code> and <code>race3</code>. (Specifically, by their Cartesian product.)</p>
+<p>Under the hood, <code>dgmrp()</code> uses RStan for MCMC sampling, and arguments can be passed to RStan’s <a href="https://www.rdocumentation.org/packages/rstan/versions/2.15.1/topics/stan"><code>stan()</code></a> via the <code>...</code> argument of <code>dgmrp()</code>. This is almost always desirable. Here, we specify the number of sampler iterations, chains, and cores.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dgmrp_out_abortion &lt;-<span class="st"> </span><span class="kw">dgmrp</span>(dgirt_in_abortion, <span class="dt">iter =</span> <span class="dv">1500</span>, <span class="dt">chains =</span> <span class="dv">4</span>, <span class="dt">cores =</span>
   <span class="dv">4</span>, <span class="dt">seed =</span> <span class="dv">42</span>)</code></pre></div>
 <p>The model results are held in a <code>dgmrp_fit</code> object. Methods from RStan like <code>extract()</code> are available if needed because <code>dgmrp_fit</code> is a subclass of <code>stanfit</code>. But dgo provides its own methods for typical post-estimation tasks.</p>
 </div>
@@ -240,7 +240,8 @@
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
         <div id="tocnav">
-      <h2>Contents</h2>
+      <h2 class="hasAnchor">
+<a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
 <li><a href="#prepare-input-data">Prepare input data</a></li>
       <li><a href="#inspect-the-result">Inspect the result</a></li>

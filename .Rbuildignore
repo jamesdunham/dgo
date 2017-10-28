@@ -15,3 +15,4 @@
 ^readme-cache/
 ^vignettes/
 ^wercker\.yml$
+^_pkgdown\.yml$

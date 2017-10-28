@@ -13,7 +13,7 @@ This model opens up new areas of research on historical public opinion in the Un
 Installation
 ============
 
-dgo can be installed from [CRAN](https://cran.r-project.org/web/packages/dgo/index.html):
+dgo can be installed from [CRAN](https://CRAN.R-project.org/package=dgo):
 
 ``` r
 install.packages("dgo")
@@ -35,6 +35,14 @@ Load the package and set RStan's recommended options for a local, multicore mach
 
 ``` r
 library(dgo)
+#> Loading required package: dgodata
+#> Loading required package: rstan
+#> Loading required package: ggplot2
+#> Loading required package: StanHeaders
+#> rstan (Version 2.16.2, packaged: 2017-07-03 09:24:58 UTC, GitRev: 2e1f913d3ca3)
+#> For execution on a local, multicore CPU with excess RAM we recommend calling
+#> rstan_options(auto_write = TRUE)
+#> options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 ```

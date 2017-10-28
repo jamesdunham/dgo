@@ -1,6 +1,5 @@
 setClass("Control",
-         slots = list(# item data
-                      item_names = "character",
+         slots = list(item_names = "ANY",
                       time_name = "character",
                       geo_name = "character",
                       group_names = "ANY",
@@ -22,13 +21,21 @@ setClass("Control",
                       weight_name = "ANY",
                       proportion_name = "character",
                       rake_names = "character",
+                      max_raked_weight = "ANY",
                       # modeling options
-                      constant_item = "logical"),
+                      constant_item = "logical",
+                      # indicators for state
+                      has_individual_data = "ANY",
+                      has_aggregate_data = "ANY",
+                      has_target_data = "ANY",
+                      has_modifier_data = "ANY"),
          validity = function(object) {
            if (!length(object@time_name) == 1L)
              "\"time_name\" should be a single variable name"
            else if (!length(object@geo_name) == 1L)
              "\"geo_name\" should be a single variable name"
+           else if (length(object@item_names) && !is.character(object@item_names))
+             "if specified \"item_names\" should give variable names in a character vector"
            else if (length(object@survey_name) && length(object@survey_name) != 1L)
              "if specified \"survey_name\" should be a single variable name"
            else if (length(object@survey_name) && !is.character(object@survey_name))
@@ -64,14 +71,17 @@ setClass("Control",
            else if (!length(object@constant_item) == 1L &&
                     is.logical(object@constant_item))
              "\"constant_item\" should be a single logical value"
-          # else if (length(unique(object@time_filter)) == 1L)
-          #   "if specified \"time_filter\" should give at least two time periods"
            else if (length(unique(object@geo_filter)) == 1L)
              "if specified \"geo_filter\" should give at least two local geographic areas"
            else if (length(object@min_survey_filter) != 1L || object@min_survey_filter <= 0L)
              "\"min_survey_filter\" should be a positive integer"
            else if (!length(object@min_t_filter) == 1L && object@min_t_filter > 0L)
              "\"min_t_filter\" should be a positive integer"
+           else if (length(object@max_raked_weight) &&
+             (length(object@max_raked_weight) > 1 |
+               !is.numeric(object@max_raked_weight))) {
+             "if specified \"max_raked_weight\" should be a single number"
+           }
            else 
              TRUE
          })

@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -107,7 +108,7 @@ population proportions for the interaction of the variables given in
 
 <span class='co'># S4 method for data.frame</span>
 <span class='fu'>poststratify</span>(<span class='no'>x</span>, <span class='no'>target_data</span>, <span class='no'>strata_names</span>,
-  <span class='no'>aggregated_names</span>, <span class='kw'>proportion_name</span> <span class='kw'>=</span> <span class='st'>"proportion"</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>"theta_bar"</span>)</pre>
+  <span class='no'>aggregated_names</span>, <span class='kw'>proportion_name</span> <span class='kw'>=</span> <span class='st'>"proportion"</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -152,18 +153,18 @@ strata proportions.</p></td>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>not_run</span>({
-  <span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
 
-  <span class='co'># the stratifying variables should uniquely identify proportions in the</span>
-  <span class='co'># target data; to achieve this, sum over the other variables</span>
-  <span class='no'>targets</span> <span class='kw'>&lt;-</span> <span class='fu'>aggregate</span>(<span class='no'>proportion</span> ~ <span class='no'>state</span> + <span class='no'>year</span> + <span class='no'>race3</span>, <span class='no'>targets</span>, <span class='no'>sum</span>)
+<span class='co'># the stratifying variables should uniquely identify proportions in the</span>
+<span class='co'># target data; to achieve this, sum over the other variables</span>
+<span class='no'>targets</span> <span class='kw'>&lt;-</span> <span class='fu'>aggregate</span>(<span class='no'>proportion</span> ~ <span class='no'>state</span> + <span class='no'>year</span> + <span class='no'>race3</span>, <span class='no'>targets</span>, <span class='no'>sum</span>)
 
-  <span class='co'># the dgirtfit method of poststratify takes a dgirtfit object, the target</span>
-  <span class='co'># data, the names of variables that define population strata, and the  names</span>
-  <span class='co'># of variables to be aggregated over</span>
-  <span class='no'>post</span> <span class='kw'>&lt;-</span> <span class='fu'>poststratify</span>(<span class='no'>toy_dgirtfit</span>, <span class='no'>targets</span>, <span class='fu'>c</span>(<span class='st'>"state"</span>, <span class='st'>"year"</span>), <span class='st'>"race3"</span>)
-})</div></pre>
+<span class='co'># the dgirtfit method of poststratify takes a dgirtfit object, the target</span>
+<span class='co'># data, the names of variables that define population strata, and the  names</span>
+<span class='co'># of variables to be aggregated over</span>
+<span class='no'>post</span> <span class='kw'>&lt;-</span> <span class='fu'>poststratify</span>(<span class='no'>toy_dgirtfit</span>, <span class='no'>targets</span>, <span class='fu'>c</span>(<span class='st'>"state"</span>, <span class='st'>"year"</span>), <span class='st'>"race3"</span>)
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

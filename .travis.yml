@@ -4,16 +4,6 @@ matrix:
   include:
 
     - os: linux
-      dist: precise
-      r: release
-    - os: linux
-      dist: precise
-      r: devel
-    - os: linux
-      dist: precise
-      r: oldrel
-
-    - os: linux
       dist: trusty
       r: release
       sudo: required
@@ -30,10 +20,6 @@ matrix:
       osx_image: xcode8.3
       latex: false
       r: release
-    # - os: osx
-    #   osx_image: xcode8.3
-    #   latex: false
-    #   r: devel
     - os: osx
       osx_image: xcode8.3
       latex: false
@@ -43,9 +29,6 @@ matrix:
     - os: osx
       latex: false
       r: release
-    # - os: osx
-    #   latex: false
-    #   r: devel
     - os: osx
       latex: false
       r: oldrel

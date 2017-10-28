@@ -1,9 +1,15 @@
-utils::globalVariables(c("raked_weight"))
+utils::globalVariables(c("raked_weight", "preweight"))
 
 weight <- function(item_data, target_data, control) {
   # Adjust individual survey weights given population targets
 
   item_data[, c("preweight") := rake_weights(item_data, target_data, control)]
+
+  if (length(control@max_raked_weight)) {
+    item_data[preweight > control@max_raked_weight, preweight :=
+      control@max_raked_weight]
+  }
+
   item_data[, c("raked_weight") := list(get("preweight") /
                                          mean(get("preweight"), na.rm = TRUE)),
             by = eval(control@time_name)]
@@ -43,3 +49,4 @@ rake_weights <- function(item_data, target_data, control) {
   }
   return(raked_weights)
 }
+

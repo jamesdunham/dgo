@@ -1,45 +1,47 @@
 restrict_items <- function(item_data, ctrl) {
-  extra_colnames <- setdiff(names(item_data),
-                            c(ctrl@item_names,
-                              ctrl@survey_name,
-                              ctrl@geo_name,
-                              ctrl@time_name,
-                              ctrl@group_names,
-                              ctrl@weight_name,
-                              ctrl@rake_names,
-                              ctrl@id_vars
-                              ))
-  if (length(extra_colnames)) {
-    item_data[, c(extra_colnames) := NULL]
-  }
-  coerce_factors(item_data, c(ctrl@group_names, ctrl@geo_name,
-                              ctrl@survey_name))
-  rename_numerics(item_data, c(ctrl@group_names, ctrl@geo_name,
-                               ctrl@survey_name))
-  initial_dim <- dim(item_data)
-  final_dim <- c()
-  iter <- 1L
-  while (!identical(initial_dim, final_dim)) {
-    message("Applying restrictions, pass ", iter, "...")
-    if (iter == 1L) { 
-      item_data <- drop_rows_missing_covariates(item_data, ctrl)
-      item_data <- keep_t(item_data, ctrl)
-      item_data <- keep_geo(item_data, ctrl)
+  if (length(item_data)) {
+    extra_colnames <- setdiff(names(item_data),
+                              c(ctrl@item_names,
+                                ctrl@survey_name,
+                                ctrl@geo_name,
+                                ctrl@time_name,
+                                ctrl@group_names,
+                                ctrl@weight_name,
+                                ctrl@rake_names,
+                                ctrl@id_vars
+                                ))
+    if (length(extra_colnames)) {
+      item_data[, c(extra_colnames) := NULL]
     }
+    coerce_factors(item_data, c(ctrl@group_names, ctrl@geo_name,
+                                ctrl@survey_name))
+    rename_numerics(item_data, c(ctrl@group_names, ctrl@geo_name,
+                                 ctrl@survey_name))
     initial_dim <- dim(item_data)
-    drop_responseless_items(item_data, ctrl)
-    drop_items_rare_in_time(item_data, ctrl)
-    if (length(ctrl@survey_name)) {
-      drop_items_rare_in_polls(item_data, ctrl)
+    final_dim <- c()
+    iter <- 1L
+    while (!identical(initial_dim, final_dim)) {
+      message("Applying restrictions, pass ", iter, "...")
+      if (iter == 1L) { 
+        item_data <- drop_rows_missing_covariates(item_data, ctrl)
+        item_data <- keep_t(item_data, ctrl)
+        item_data <- keep_geo(item_data, ctrl)
+      }
+      initial_dim <- dim(item_data)
+      drop_responseless_items(item_data, ctrl)
+      drop_items_rare_in_time(item_data, ctrl)
+      if (length(ctrl@survey_name)) {
+        drop_items_rare_in_polls(item_data, ctrl)
+      }
+      item_data <- drop_itemless_respondents(item_data, ctrl)
+      final_dim <- dim(item_data)
+      iter <- iter + 1L
+      if (identical(initial_dim, final_dim)) {
+        message("\tNo changes")
+      } 
     }
-    item_data <- drop_itemless_respondents(item_data, ctrl)
-    final_dim <- dim(item_data)
-    iter <- iter + 1L
-    if (identical(initial_dim, final_dim)) {
-      message("\tNo changes")
-    } 
+    setkeyv(item_data, c(ctrl@geo_name, ctrl@time_name))
   }
-  setkeyv(item_data, c(ctrl@geo_name, ctrl@time_name))
   invisible(item_data)
 }
 
@@ -285,12 +287,6 @@ drop_items_rare_in_polls <- function(item_data, ctrl) {
       stop("no items remaining after dropping items without responses")
   }
   invisible(item_data)
-}
-
-get_observed <- function(item_data, aggregate_data, varname) {
-  obs <- Map(unique.data.frame, list(item_data[, varname, with = FALSE],
-      aggregate_data[, varname, with = FALSE]))
-  sort.default(unique.default(unname(unlist(obs))))
 }
 
 stop_if_any_na <- function(where, varnames) {

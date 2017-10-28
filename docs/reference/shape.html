@@ -23,7 +23,8 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -93,14 +94,14 @@ arguments end in <code>_name</code> or <code>_names</code> and should be charact
 vectors.</p>
     
 
-    <pre class="usage"><span class='fu'>shape</span>(<span class='no'>item_data</span>, <span class='no'>item_names</span>, <span class='no'>time_name</span>, <span class='no'>geo_name</span>, <span class='kw'>group_names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>id_vars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>time_filter</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>geo_filter</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>min_t_filter</span> <span class='kw'>=</span> <span class='fl'>1L</span>, <span class='kw'>min_survey_filter</span> <span class='kw'>=</span> <span class='fl'>1L</span>, <span class='kw'>survey_name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>modifier_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>modifier_names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>t1_modifier_names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>standardize</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>target_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>raking</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>weight_name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>proportion_name</span> <span class='kw'>=</span> <span class='st'>"proportion"</span>,
-  <span class='kw'>aggregate_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>aggregate_item_names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>constant_item</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>shape</span>(<span class='kw'>item_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>item_names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>time_name</span>, <span class='no'>geo_name</span>,
+  <span class='kw'>group_names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>id_vars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>time_filter</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>geo_filter</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>min_t_filter</span> <span class='kw'>=</span> <span class='fl'>1L</span>, <span class='kw'>min_survey_filter</span> <span class='kw'>=</span> <span class='fl'>1L</span>,
+  <span class='kw'>survey_name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>modifier_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>modifier_names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>t1_modifier_names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>standardize</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>target_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>raking</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>max_raked_weight</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>weight_name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>proportion_name</span> <span class='kw'>=</span> <span class='st'>"proportion"</span>, <span class='kw'>aggregate_data</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>aggregate_item_names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>constant_item</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -191,6 +192,12 @@ geographic area and time period. See details below.</p></td>
 to rake survey weights.</p></td>
     </tr>
     <tr>
+      <th>max_raked_weight</th>
+      <td><p>A maximum over which raked weights will be trimmed.
+Only applied after raking. To trim unraked weights, manipulate the input data
+directly.</p></td>
+    </tr>
+    <tr>
       <th>weight_name</th>
       <td><p>A variable giving survey weights.</p></td>
     </tr>
@@ -223,7 +230,7 @@ over time.</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>An object of class <code>dgirtIn</code> expected by <code><a href='dgirt.html'>dgirt</a></code> and
-<code><a href='dgirt.html'>dgmrp</a></code>.</p>
+<code>dgmrp</code>.</p>
     
     <h2 class="hasAnchor" id="item-response-data"><a class="anchor" href="#item-response-data"></a>Item Response Data</h2>
 
@@ -233,7 +240,7 @@ over time.</p></td>
 give the names of variables in <code>item_data</code> that indicate time period and
 local geographic area. Optional argument <code>group_names</code> gives other
 respondent characteristics to be modeled. <code>item_data</code> is optional if
-argument <code>aggregate_data</code> is used. Note that the <code>dgirt()</code> model
+argument <code>aggregate_data</code> is used. Note that the <code><a href='dgirt.html'>dgirt()</a></code> model
 assumes consistent coding of the polarity of item responses for
 identification.</p>
     
@@ -265,11 +272,15 @@ consistently with the transformations applied during the aggregation by
     
     <p>Use argument <code>target_data</code> to adjust the weighting of groups toward
 population targets via raking, using an adaptation of
-<code><a href='http://www.rdocumentation.org/packages/survey/topics/rake'>rake</a></code>. To adjust individual survey weights in
+<code><a href='http://www.rdocumentation.org/packages/survey/topics/rake'>rake</a></code>. To adjust existing survey weights in
 <code>item_data</code>, provide argument <code>weight_name</code>. Otherwise,
 observations in <code>item_data</code> will be assigned equal starting weights.
-Argument <code>raking</code> defines strata. Argument <code>proportion_name</code>
-is optional.</p>
+Argument <code>raking</code> defines strata. If you pass it a list of formulas like
+<code>list(~ x, ~ y)</code>, raking is first over <code>x</code>, then over <code>y</code>.
+Given an additive formula like <code>~ x + y</code>, raking is over the
+combinations of <code>x</code> and <code>y</code>. So, <code>list(~ x, ~ y + z)</code> is first
+over <code>x</code>, then over <code>y</code>-<code>z</code> pairs. Argument
+<code>proportion_name</code> is optional.</p>
     
     <h2 class="hasAnchor" id="restrictions"><a class="anchor" href="#restrictions"></a>Restrictions</h2>
 
@@ -322,7 +333,7 @@ iterates over them until they leave the data unchanged.</p>
 #&gt;   Q   T   P   N   G   H   D 
 #&gt;   1   5  52 765 153   1   1 </div><div class='input'>
 <span class='co'># check sparseness of data to be modeled</span>
-<span class='fu'><a href='dgirtin-class.html'>get_item_n</a></span>(<span class='no'>shaped_responses</span>, <span class='kw'>by</span> <span class='kw'>=</span> <span class='st'>"year"</span>)</div><div class='output co'>#&gt;    year abortion
+<span class='fu'>get_item_n</span>(<span class='no'>shaped_responses</span>, <span class='kw'>by</span> <span class='kw'>=</span> <span class='st'>"year"</span>)</div><div class='output co'>#&gt;    year abortion
 #&gt; 1: 2006    33514
 #&gt; 2: 2007     9258
 #&gt; 3: 2008    32634

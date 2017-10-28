@@ -14,6 +14,17 @@ test_that("filters aren't accepted if too restrictive", {
 
 })
 
+test_that("items without responses are dropped", {
+  data(opinion)
+  opinion$abortion = NA
+  d <- shape(item_data = opinion[1:100, ],
+    item_names = c("abortion", "affirmative_action"),
+    time_name = "year",
+    geo_name = "state",
+    group_names = "female")
+  expect_false(any(c('abortion', 'abortion_gt1') %in% names(d$item_data)))
+})
+
 context("restricting modifier data")
 
 test_that("groups unobserved in item_data are dropped from modifier_data", {
@@ -124,6 +135,18 @@ test_that("geo in `aggregate_data` can be restricted by geo_filter", {
     group_names = c("female", "race3"))
   expect_equal(d_filtered$control@geo_filter, geos)
   expect_equal(sort(unique(d_filtered$group_counts[["state"]])), geos)
+})
+
+test_that("extra columns in `aggregate_data` are dropped", {
+  data(aggregates)
+  data.table::setDT(aggregates)
+  agg_subset = unique(aggregates, by = c('year', 'state', 'female'))
+  d <- shape(aggregate_data = agg_subset,
+    time_name = "year",
+    geo_name = "state",
+    group_names = "female")
+  expect_equivalent(names(d$aggregate_data), c('year', 'state', 'female',
+      'item', 'n_grp', 's_grp'))
 })
 
 test_that("all groups in `aggregate_data` are used", {

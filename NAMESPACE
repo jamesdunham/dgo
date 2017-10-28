@@ -3,7 +3,6 @@
 S3method(as.data.frame,dgo_fit)
 export(dgirt)
 export(dgmrp)
-export(expand_rownames)
 export(plot_rhats)
 export(shape)
 export(summarize)
