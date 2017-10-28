@@ -1,6 +1,6 @@
 utils::globalVariables(c("value", "scaled_prop"))
 
-#' \code{poststratify}: reweight and aggregate estimates
+#' Reweight and aggregate estimates
 #'
 #' This function reweights and aggregates estimates from \code{dgirt} for strata
 #' defined by modeled variables. The names of each of the model's time,

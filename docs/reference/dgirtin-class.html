@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Class <code>dgirtIn</code>: data prepared for modeling with <code>dgirt</code> — dgirtin-class • dgo</title>
+<title>A class for data ready to model — dgirtin-class • dgo</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -84,17 +84,12 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Class <code>dgirtIn</code>: data prepared for modeling with <code>dgirt</code></h1>
+    <h1>A class for data ready to model</h1>
     </div>
 
     
-    <p><code>shape</code> generates objects of class <code>dgirtIn</code> for modeling with
-<code>dgirt</code> and <code>dgmrp</code>.</p>
-<p>Summarize DGIRT Data</p>
-<p>Get Items Names in DGIRT Data.</p>
-<p>Count Respondents in DGIRT Data.</p>
-<p>Count Respondents for Items in DGIRT Data</p>
-<p>Show Summary of DGIRT Data</p>
+    <p><code><a href='shape.html'>shape()</a></code> generates objects of class <code>dgirtIn</code> for modeling with
+<code><a href='dgirt.html'>dgirt()</a></code> and <code>dgmrp()</code>.</p>
     
 
     <pre class="usage"><span class='fu'>summary</span>(<span class='no'>object</span>, <span class='no'>...</span>)
@@ -146,24 +141,20 @@
     </tr>
     <tr>
       <th>aggregate_name</th>
-      <td><p>If specified `get_n` will operate on the table passed
-to `shape` as `aggregate_data` instead of on the individual data and count
-nonmissingness in the given variable.</p></td>
+      <td><p>If specified <code>get_n</code> will operate on the table
+passed to <code>shape</code> as <code>aggregate_data</code> instead of on the individual
+data and count nonmissingness in the given variable.</p></td>
     </tr>
     <tr>
       <th>aggregate_data</th>
-      <td><p>If specified `get_item_n` will operate on the table passed
-to `shape` as `aggregate_data` instead of on the individual data.</p></td>
+      <td><p>If specified <code>get_item_n</code> will operate on the table passed
+to <code>shape</code> as <code>aggregate_data</code> instead of on the individual data.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A list of item names.</p>
-    
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
-
-    <p>`get_item_n, get_item_names`</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -211,8 +202,6 @@ to `shape` as `aggregate_data` instead of on the individual data.</p></td>
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-
-      <li><a href="#see-also">See also</a></li>
       
       <li><a href="#examples">Examples</a></li>
     </ul>

@@ -8,7 +8,7 @@
 \alias{plot,dgo_fit,missing-method}
 \alias{plot_rhats}
 \alias{plot_rhats,dgo_fit-method}
-\title{\code{dgirt_plot}: plot \code{dgo_fit}-class objects}
+\title{Plot estimates and diagnostic statistics}
 \usage{
 dgirt_plot(x, ...)
 
@@ -58,13 +58,8 @@ faceting.}
 respectively.}
 }
 \description{
-\code{dgirt_plot}: plot \code{dgo_fit}-class objects
-
-\code{dgirt_plot}: plot \code{data.frame} objects
-
-\code{plot}: plot method for \code{dgo_fit}-class objects
-
-This function plots R-hats from a dgirt model.
+\code{dgirt_plot} plots estimates from a dgo model. \code{plot_rhats} plots
+split R-hats.
 }
 \examples{
 \dontrun{

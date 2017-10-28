@@ -4,7 +4,7 @@
 \alias{dgirt}
 \alias{dgmrp}
 \alias{dgmrp}
-\title{\code{dgirt} and \code{dgmrp}: fit a DGIRT or single-issue MRP model}
+\title{Fit a dynamic group IRT or single-issue MRP model}
 \usage{
 dgirt(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
   delta_tbar_prior_sd = 0.25, innov_sd_delta_scale = 2.5,
@@ -47,7 +47,7 @@ innovation standard deviation of \code{gamma}, \code{xi}, and if
 smooth the group IRT estimates. If set to FALSE, the model will return raw
 group-IRT model estimates for each group. Default \code{TRUE}.}
 
-\item{model}{A Stan model object of class `stanmodel` to be used in
+\item{model}{A Stan model object of class \code{stanmodel} to be used in
 estimation. Specifying this argument avoids repeated model compilation. Note
 that the Stan model object for a model fitted with \code{dgirt()} or
 \code{dgmrp()} can be found in the the \code{stanmodel} slot of the resulting

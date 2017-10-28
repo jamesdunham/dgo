@@ -1,4 +1,4 @@
-#' \code{dgirt} and \code{dgmrp}: fit a DGIRT or single-issue MRP model
+#' Fit a dynamic group IRT or single-issue MRP model
 #'
 #' \code{dgirt} and \code{dgmrp} make calls to \code{\link[rstan]{stan}} with
 #' the Stan code and data for their respective models.
@@ -34,7 +34,7 @@
 #' @param hierarchical_model Whether a hierarchical model should be used to
 #' smooth the group IRT estimates. If set to FALSE, the model will return raw
 #' group-IRT model estimates for each group. Default \code{TRUE}.
-#' @param model A Stan model object of class `stanmodel` to be used in
+#' @param model A Stan model object of class \code{stanmodel} to be used in
 #' estimation. Specifying this argument avoids repeated model compilation. Note
 #' that the Stan model object for a model fitted with \code{dgirt()} or
 #' \code{dgmrp()} can be found in the the \code{stanmodel} slot of the resulting

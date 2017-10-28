@@ -1,13 +1,11 @@
 #' @rdname dgirtin-class
 setGeneric("summary")
 
-#' Summarize DGIRT Data
-#'
+#' @rdname dgirtin-class
 #' @param x An object of class \code{dgirtIn} as returned by \code{shape}.
 #' @param ... Unused.
 #' @param object An object of class \code{dgirtIn} as returned by \code{shape}.
 #'
-#' @rdname dgirtin-class
 #' @include class-dgirtin.r
 #' @export
 setMethod("summary", c(object = "dgirtIn"),
@@ -48,14 +46,12 @@ setMethod("print", c("x" = "dgirtIn"),
 setGeneric("get_item_names", signature = "x",
   function(x) standardGeneric("get_item_names"))
 
-#' Get Items Names in DGIRT Data.
-#'
+#' @rdname dgirtin-class
 #' @return A list of item names.
 #' @examples
 #' data(toy_dgirt_in)
 #' get_item_names(toy_dgirt_in)
 #' @include class-dgirtin.r
-#' @rdname dgirtin-class
 #' @aliases get_item_names
 #' @export
 setMethod("get_item_names", c("x" = "dgirtIn"),
@@ -69,12 +65,11 @@ setGeneric("get_n", signature = c("x", "by", "aggregate_name"),
            function(x, by = NULL, aggregate_name = NULL)
              standardGeneric("get_n"))
 
-#' Count Respondents in DGIRT Data.
-#'
+#' @rdname dgirtin-class
 #' @param by The name of a grouping variable.
-#' @param aggregate_name If specified `get_n` will operate on the table passed
-#' to `shape` as `aggregate_data` instead of on the individual data and count
-#' nonmissingness in the given variable.
+#' @param aggregate_name If specified \code{get_n} will operate on the table
+#' passed to \code{shape} as \code{aggregate_data} instead of on the individual
+#' data and count nonmissingness in the given variable.
 #'
 #' @examples
 #' # respondent count
@@ -87,10 +82,8 @@ setGeneric("get_n", signature = c("x", "by", "aggregate_name"),
 #' # respondent count by year and survey identifier
 #' get_n(toy_dgirt_in, by = c("year", "source"))
 #'
-#' @seealso `\link{get_item_n}, \link{get_item_names}`
 #' @include class-dgirtin.r
 #' @aliases get_n
-#' @rdname dgirtin-class
 #' @export
 setMethod("get_n", c("x" = "dgirtIn"),
   function(x, by = NULL, aggregate_name = NULL) {
@@ -117,17 +110,15 @@ stop_if_no_aggregates <- function(x) {
 setGeneric("get_item_n", signature = c("x", "by", "aggregate_data"),
            function(x, by = NULL, aggregate_data = FALSE) standardGeneric("get_item_n"))
 
-#' Count Respondents for Items in DGIRT Data
-#'
-#' @include class-dgirtin.r
 #' @rdname dgirtin-class
+#' @include class-dgirtin.r
 #' @examples
 #' data(toy_dgirt_in)
 #' get_item_n(toy_dgirt_in)
 #' get_item_n(toy_dgirt_in, by = "year")
 #' @aliases get_item_n
-#' @param aggregate_data If specified `get_item_n` will operate on the table passed
-#' to `shape` as `aggregate_data` instead of on the individual data.
+#' @param aggregate_data If specified \code{get_item_n} will operate on the table passed
+#' to \code{shape} as \code{aggregate_data} instead of on the individual data.
 #' @export
 setMethod("get_item_n", c("x" = "dgirtIn"),
   function(x, by = NULL, aggregate_data = FALSE) {
@@ -157,8 +148,7 @@ zero_nas <- function(n, by) {
     .SDcols = setdiff(names(n), by)]
 }
 
-#' Show Summary of DGIRT Data
-#' @include class-dgirtin.r
 #' @rdname dgirtin-class
+#' @include class-dgirtin.r
 #' @export
 setMethod("show", c("dgirtIn"), function(object) summary(object))

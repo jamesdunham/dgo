@@ -4,7 +4,7 @@
 \name{dgmrp_fit-class}
 \alias{dgmrp_fit-class}
 \alias{dgmrp_fit}
-\title{Class \code{dgmrp_fit}: a class for fitted models}
+\title{A class for fitted dynamic group MRP models}
 \description{
 \code{\link{dgmrp}} returns a fitted model object of class \code{dgmrp_fit},
 which inherits from \code{\link{dgo_fit}}.

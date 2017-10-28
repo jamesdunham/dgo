@@ -23,7 +23,7 @@
 \alias{get_item_n,dgirtIn-method}
 \alias{get_item_n}
 \alias{show,dgirtIn-method}
-\title{Class \code{dgirtIn}: data prepared for modeling with \code{dgirt}}
+\title{A class for data ready to model}
 \usage{
 summary(object, ...)
 
@@ -56,29 +56,19 @@ get_item_n(x, by = NULL, aggregate_data = FALSE)
 
 \item{by}{The name of a grouping variable.}
 
-\item{aggregate_name}{If specified `get_n` will operate on the table passed
-to `shape` as `aggregate_data` instead of on the individual data and count
-nonmissingness in the given variable.}
+\item{aggregate_name}{If specified \code{get_n} will operate on the table
+passed to \code{shape} as \code{aggregate_data} instead of on the individual
+data and count nonmissingness in the given variable.}
 
-\item{aggregate_data}{If specified `get_item_n` will operate on the table passed
-to `shape` as `aggregate_data` instead of on the individual data.}
+\item{aggregate_data}{If specified \code{get_item_n} will operate on the table passed
+to \code{shape} as \code{aggregate_data} instead of on the individual data.}
 }
 \value{
 A list of item names.
 }
 \description{
-\code{shape} generates objects of class \code{dgirtIn} for modeling with
-\code{dgirt} and \code{dgmrp}.
-
-Summarize DGIRT Data
-
-Get Items Names in DGIRT Data.
-
-Count Respondents in DGIRT Data.
-
-Count Respondents for Items in DGIRT Data
-
-Show Summary of DGIRT Data
+\code{shape()} generates objects of class \code{dgirtIn} for modeling with
+\code{dgirt()} and \code{dgmrp()}.
 }
 \examples{
 data(toy_dgirt_in)
@@ -103,7 +93,4 @@ get_n(toy_dgirt_in, by = c("year", "source"))
 data(toy_dgirt_in)
 get_item_n(toy_dgirt_in)
 get_item_n(toy_dgirt_in, by = "year")
-}
-\seealso{
-`\link{get_item_n}, \link{get_item_names}`
 }

@@ -1,4 +1,4 @@
-#' Class \code{dgirt_fit}: a class for fitted models
+#' A class for fitted dynamic group IRT models
 #'
 #' \code{\link{dgirt}} returns a fitted model object of class \code{dgirt_fit},
 #' which inherits from \code{\link{dgo_fit}}.
@@ -29,7 +29,7 @@
 #' head(as.data.frame(toy_dgirtfit, pars = 'theta_bar'))
 dgirt_fit <- setClass("dgirt_fit", contains = c("dgo_fit"))
 
-#' Class \code{dgirtfit}: a class for fitted models
+#' A class for fitted dynamic group IRT models
 #'
 #' dgo 0.2.8 deprecated the \code{dgirtfit} class and replaced it with the
 #' \code{\link{dgirt_fit}} class. 

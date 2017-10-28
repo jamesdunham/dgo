@@ -4,7 +4,7 @@
 \name{dgirtfit-class}
 \alias{dgirtfit-class}
 \alias{dgirtfit}
-\title{Class \code{dgirtfit}: a class for fitted models}
+\title{A class for fitted dynamic group IRT models}
 \description{
 dgo 0.2.8 deprecated the \code{dgirtfit} class and replaced it with the
 \code{\link{dgirt_fit}} class.

@@ -4,7 +4,7 @@
 \name{dgirt_fit-class}
 \alias{dgirt_fit-class}
 \alias{dgirt_fit}
-\title{Class \code{dgirt_fit}: a class for fitted models}
+\title{A class for fitted dynamic group IRT models}
 \description{
 \code{\link{dgirt}} returns a fitted model object of class \code{dgirt_fit},
 which inherits from \code{\link{dgo_fit}}.

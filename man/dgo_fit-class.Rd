@@ -4,7 +4,7 @@
 \name{dgo_fit-class}
 \alias{dgo_fit-class}
 \alias{dgo_fit}
-\title{Class \code{dgo_fit}: a class for fitted models}
+\title{A class for fitted models}
 \description{
 \code{dgo_fit} is a superclass for \code{\link{dgirt_fit}} and
 \code{\link{dgmrp_fit}} that inherits from the

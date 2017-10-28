@@ -3,7 +3,7 @@
 \docType{data}
 \name{toy_dgirt_in}
 \alias{toy_dgirt_in}
-\title{Class \code{dgirtIn}: a minimal example object}
+\title{A minimal example of shaped data}
 \format{A \code{\link[dgo]{dgirtin-class}} object.}
 \usage{
 toy_dgirt_in
