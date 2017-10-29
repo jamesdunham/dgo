@@ -2,7 +2,7 @@
 % Please edit documentation in R/shape.r
 \name{shape}
 \alias{shape}
-\title{\code{shape}: prepare data for modeling with \code{dgirt} or \code{dgmrp}}
+\title{Prepare data for modeling}
 \usage{
 shape(item_data = NULL, item_names = NULL, time_name, geo_name,
   group_names = NULL, id_vars = NULL, time_filter = NULL,

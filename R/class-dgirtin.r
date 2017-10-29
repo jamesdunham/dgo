@@ -1,7 +1,7 @@
-#' Class \code{dgirtIn}: data prepared for modeling with \code{dgirt}
+#' A class for data ready to model
 #'
-#' \code{shape} generates objects of class \code{dgirtIn} for modeling with
-#' \code{dgirt} and \code{dgmrp}.
+#' \code{shape()} generates objects of class \code{dgirtIn} for modeling with
+#' \code{dgirt()} and \code{dgmrp()}.
 #'
 #' @aliases dgirtin-class, get_item_n, get_item_names, get_n, dgirtIn-method,
 #'   print.dgirtIn,

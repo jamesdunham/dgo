@@ -4,7 +4,10 @@ utils::globalVariables(c("facet_vars"))
 setGeneric("dgirt_plot", signature = "x", function(x, ...)
            standardGeneric("dgirt_plot"))
 
-#' \code{dgirt_plot}: plot \code{dgo_fit}-class objects
+#' Plot estimates and diagnostic statistics
+#'
+#' \code{dgirt_plot} plots estimates from a dgo model. \code{plot_rhats} plots
+#' split R-hats.
 #'
 #' @param x A \code{dgo_fit-class} object.
 #' @param y_fun Summary function to be plotted as \code{y}.
@@ -37,15 +40,13 @@ setMethod("dgirt_plot", signature(x = "dgo_fit"),
                 y_min, y_max)
 })
 
-#' \code{dgirt_plot}: plot \code{data.frame} objects
-#'
+#' @rdname plot-method
 #' @param group_names Discrete grouping variables, if any, which will be used as
 #' the \code{color} argument in \code{aes}.
 #' @param time_name A time variable with numeric values that will be plotted on
 #' the x axis.
 #' @param geo_name A variable representing local areas that will be used in
 #' faceting.
-#' @rdname plot-method
 #' @export
 #' @examples
 #' \dontrun{
@@ -103,12 +104,10 @@ plot_internal <- function(samples, group_names, time_name, geo_name, y_fun,
   p
 }
 
-#' \code{plot}: plot method for \code{dgo_fit}-class objects
-#'
+#' @rdname plot-method
 #' @param y Ignored.
 #' @param ... Further arguments to \code{\link{dgirt_plot}}.
 #'
-#' @rdname plot-method
 #' @export
 #' @examples
 #' \dontrun{
@@ -125,15 +124,11 @@ setMethod("plot", signature(x = "dgo_fit", y = "missing"),
 setGeneric("plot_rhats", signature = "x", function(x, ...)
            standardGeneric("plot_rhats"))
 
-#' \code{plot_rhats}: plot split R-hats from \code{dgo_fit}-class objects
-#'
-#' This function plots R-hats from a dgirt model.
-#'
+#' @rdname plot-method
 #' @param facet_vars Optionally, one or more variables passed to \code{facet_wrap}
 #' @param shape_var,color_var,x_var Optionally, a variable passed to the
 #' \code{shape}, \code{color}, or \code{x} arguments of \code{aes_string},
 #' respectively.
-#' @rdname plot-method
 #' @export
 #' @examples
 #' \dontrun{

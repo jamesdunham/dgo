@@ -15,11 +15,15 @@ reference:
     contents:
     - shape
     - toy_dgirt_in
+    - dgirtin-class
   - title: Estimation
     contents:
     - dgirt
     - dgmrp
     - toy_dgirtfit
+    - dgirt_fit-class
+    - dgmrp_fit-class
+    - dgo_fit-class
   - title: Postestimation
     contents:
     - poststratify

@@ -1,4 +1,4 @@
-#' Class \code{dgirtfit}: a minimal example object
+#' A minimal example of a fitted model
 #'
 #' \code{\link[dgo]{dgirt}} returns a \code{\link[dgo]{dgirtfit}}-class object
 #' that extends \code{\link[rstan]{stanfit-class}}. \code{toy_dgirtfit} is a

@@ -1,4 +1,4 @@
-#' Class \code{dgmrp_fit}: a class for fitted models
+#' A class for fitted dynamic group MRP models
 #'
 #' \code{\link{dgmrp}} returns a fitted model object of class \code{dgmrp_fit},
 #' which inherits from \code{\link{dgo_fit}}.

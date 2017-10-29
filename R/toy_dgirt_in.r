@@ -1,4 +1,4 @@
-#' Class \code{dgirtIn}: a minimal example object
+#' A minimal example of shaped data
 #'
 #' \code{\link[dgo]{shape}} returns a \code{\link[dgo]{dgirtin-class}} object
 #' used with \code{\link[dgo]{dgirt}} for DGIRT modeling. \code{toy_dgirt_in} is

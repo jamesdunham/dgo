@@ -3,7 +3,7 @@
 \docType{data}
 \name{toy_dgirtfit}
 \alias{toy_dgirtfit}
-\title{Class \code{dgirtfit}: a minimal example object}
+\title{A minimal example of a fitted model}
 \format{A \code{\link[dgo]{dgirtfit-class}} object.}
 \usage{
 toy_dgirtfit

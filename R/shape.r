@@ -1,4 +1,4 @@
-#' \code{shape}: prepare data for modeling with \code{dgirt} or \code{dgmrp}
+#' Prepare data for modeling
 #'
 #' This function shapes data for use in a dgirt or dgmrp model. Most
 #' arguments give the name or names of key variables in the data. These
