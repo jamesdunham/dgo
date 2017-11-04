@@ -42,7 +42,8 @@ zero_unmodeled <- function(hierarchical, modifier_names, group_grid_t, ctrl) {
       paste0(x, unique(group_grid_t[[x]]))[-1]
     }))
   unmodeled_frame <- expand.grid(c(list(unmodeled_param_levels,
-        ctrl@time_filter), rep(list(0L), length(modifier_names))))
+        ctrl@time_filter), rep(list(0L), length(modifier_names))),
+    stringsAsFactors = FALSE)
   unmodeled_frame <- setNames(unmodeled_frame, c(ctrl@geo_name, ctrl@time_name,
       modifier_names))
   data.table::setDT(unmodeled_frame, key = c(ctrl@geo_name, ctrl@time_name))

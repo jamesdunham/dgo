@@ -63,7 +63,7 @@ restrict_modifier <- function(modifier_data, group_grid, ctrl) {
     modifier_data <- modifier_data[geo_time_grid, nomatch = 0]
 
     # confirm that modifier data covers all modeled geo and time
-    missing_geo_time <- modifier_data[!geo_time_grid]
+    missing_geo_time <- geo_time_grid[!modifier_data]
     if (nrow(missing_geo_time)) {
       stop("Not all pairs of time periods and geographic areas are in ",
            "modifier_data. ", nrow(missing_geo_time), " missing.")
