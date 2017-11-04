@@ -10,8 +10,10 @@ shape_hierarchical_data <- function(modifier_data, modifier_names, group_grid_t,
   hierarchical <- data.table::copy(modifier_data)
   hierarchical <- drop_extra_cols(hierarchical, modifier_names, ctrl) 
   data.table::setkeyv(hierarchical, c(ctrl@geo_name, ctrl@time_name))
-  unmodeled <- zero_unmodeled(hierarchical, modifier_names, group_grid_t, ctrl) 
-  hierarchical <- rbind(hierarchical, unmodeled)
+  if (length(ctrl@group_names)) {
+    unmodeled <- zero_unmodeled(hierarchical, modifier_names, group_grid_t, ctrl) 
+    hierarchical <- rbind(hierarchical, unmodeled)
+  }
   zz <- create_zz(hierarchical, modifier_names, ctrl)
   return(zz)
 }
