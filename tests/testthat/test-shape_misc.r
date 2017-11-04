@@ -109,3 +109,13 @@ test_that("min_survey_filter restricts individual data", {
     time_name = 'period', geo_name = 'geo', group_names = 'pid',
     survey_name = 'survey', min_survey_filter = 2)), 'no items remaining')
 })
+
+test_that("aggregated data can be used with geographic data, without demographic groups or individual data", {
+  data(aggregates)
+  data(states)
+  data.table::setDT(aggregates)
+  aggregates = aggregates[, .(n_grp = sum(n_grp), s_grp = sum(s_grp)), by = c('year', 'state', 'item')]
+  expect_silent(suppressMessages(shape(aggregate_data = aggregates, geo_name = 'state',
+      time_name = 'year', modifier_data = states, modifier_names =
+        'prop_hispanic')))
+})
