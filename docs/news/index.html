@@ -89,92 +89,6 @@
     </div>
 
     <div class="contents">
-    <div id="dgo-0-2-11" class="section level2">
-<h2 class="hasAnchor">
-<a href="#dgo-0-2-11" class="anchor"></a>dgo 0.2.11</h2>
-<ul>
-<li>Add poststratification over posterior samples (closes #21).</li>
-<li>
-<code><a href="../reference/shape.html">shape()</a></code> now accepts aggregated item response data unaccompanied by individual-level item response data. The <code>item_data</code> and <code>item_names</code> arguments are no longer required.</li>
-<li>Add a <code>max_raked_weight</code> argument to <code><a href="../reference/shape.html">shape()</a></code> for trimming raked weights. Note that trimming occurs before raked weights are rescaled to have mean 1, and the rescaled weights can be larger than <code>max_raked_weight</code>.</li>
-<li>Remove the unused function <code>expand_rownames()</code>.</li>
-<li>Bugfixes.</li>
-</ul>
-</div>
-    <div id="dgo-0-2-10" class="section level2">
-<h2 class="hasAnchor">
-<a href="#dgo-0-2-10" class="anchor"></a>dgo 0.2.10</h2>
-<ul>
-<li>Remove Rcpp dependency by rewriting <code>dichotomize()</code> in R.</li>
-<li>Avoid estimating models (using RStan) during tests, with the goal of rendering moot variation in build environments. This addresses a test failure during CRAN’s <a href="https://www.r-project.org/nosvn/R.check/r-release-osx-x86_64/dgo-00check.html">r-release-osx-x86_64</a> build.</li>
-</ul>
-</div>
-    <div id="dgo-0-2-9" class="section level2">
-<h2 class="hasAnchor">
-<a href="#dgo-0-2-9" class="anchor"></a>dgo 0.2.9</h2>
-<ul>
-<li>Switch from compiling Stan models at install time to compiling them at runtime, avoiding an Rcpp module issue.</li>
-<li>Add <code>model</code> argument to <code><a href="../reference/dgirt.html">dgirt()</a></code> and <code>dgmrp()</code> taking for reuse a previously compiled Stan model, as found in the <code>@stanmodel</code> slot of a <code>dgirt_fit</code>- or <code>dgmrp_fit</code>-class object.</li>
-<li>The <code>version</code> argument to <code><a href="../reference/dgirt.html">dgirt()</a></code> and <code>dgmrp()</code> can be used to specify arbitrary <code>.stan</code> files on the disk in addition to those included with the package.</li>
-<li>Argument <code>by</code> to <code>get_n()</code> and <code>get_item_n()</code> methods properly accepts a vector of variable names when combined with <code>aggregate</code> arguments.</li>
-</ul>
-</div>
-    <div id="dgo-0-2-8" class="section level2">
-<h2 class="hasAnchor">
-<a href="#dgo-0-2-8" class="anchor"></a>dgo 0.2.8</h2>
-<ul>
-<li>Improve Stan models for shorter run times</li>
-<li>Add <code>dgmrp()</code> for fitting single-issue MRP models with hierarchical covariates</li>
-<li>Add class <code>dgmrp_fit</code> for models fitted with <code>dgmrp()</code>, inheriting from a new virtual class <code>dgo_fit</code>
-</li>
-<li>
-<code><a href="../reference/dgirt.html">dgirt()</a></code> now returns a <code>dgirt_fit</code>-class object that also inherits from <code>dgo_fit</code> class</li>
-<li>Bugfixes</li>
-</ul>
-</div>
-    <div id="dgo-0-2-7" class="section level2">
-<h2 class="hasAnchor">
-<a href="#dgo-0-2-7" class="anchor"></a>dgo 0.2.7</h2>
-<ul>
-<li>Package renamed dgo: Dynamic Estimation of Group-level Opinion</li>
-<li>Tweaks to pass CRAN checks: clean up examples and docs</li>
-<li>Use roxygen2 for classes, methods, and <code>NAMESPACE</code>
-</li>
-<li>Fix checks on <code>P</code>, <code>S</code> related to <code>group_names</code> change in 0.2.5</li>
-<li>Fix Rcpp module issue from 0.2.6 (<code>Error in .doLoadActions(where, attach)</code>)</li>
-<li>Export <code>expand_rownames()</code>
-</li>
-</ul>
-</div>
-    <div id="dgo-0-2-6" class="section level2">
-<h2 class="hasAnchor">
-<a href="#dgo-0-2-6" class="anchor"></a>dgo 0.2.6</h2>
-<ul>
-<li>Fix error in <code>dgirt_plot</code>
-</li>
-<li>Fix path in <code>tools/make_cpp.R</code>
-</li>
-</ul>
-</div>
-    <div id="dgo-0-2-5" class="section level2">
-<h2 class="hasAnchor">
-<a href="#dgo-0-2-5" class="anchor"></a>dgo 0.2.5</h2>
-<ul>
-<li>
-<code>group_names</code> is no longer required. If omitted, the geographic variable given by <code>geo_name</code> will define groups.</li>
-<li>
-<code>aggregate_item_names</code> is no longer required. It defaults to the observed values of the <code>item</code> column in <code>aggregate_data</code>.</li>
-<li>
-<code>raking</code> argument to <code><a href="../reference/shape.html">shape()</a></code> replaces <code>strata_names</code>. It takes a formula or list of formulas and allows more complicated preweighting.</li>
-<li>
-<code>id_vars</code> argument to <code><a href="../reference/shape.html">shape()</a></code> specifies variables to be kept in <code>item_data</code>.</li>
-<li>
-<code>aggregate_data</code> may include geographic areas, demographics, or time periods that don’t appear in <code>item_data</code>.</li>
-<li>Fix: use a smaller epsilon than the default in survey::rake() for convergence with non-frequency weights.</li>
-<li>New <code>dgirtfit</code> methods <code><a href="../reference/dgo_fit-methods.html">rhats()</a></code> and <code><a href="../reference/plot-method.html">plot_rhats()</a></code> for model checking.</li>
-<li>New <code>dgirtfit</code> method <code>get_time_elapsed</code> gives model run times. These also appear in <code>summary</code> output.</li>
-</ul>
-</div>
     </div>
   </div>
 
@@ -182,13 +96,6 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-        <li><a href="#dgo-0-2-11">0.2.11</a></li>
-        <li><a href="#dgo-0-2-10">0.2.10</a></li>
-        <li><a href="#dgo-0-2-9">0.2.9</a></li>
-        <li><a href="#dgo-0-2-8">0.2.8</a></li>
-        <li><a href="#dgo-0-2-7">0.2.7</a></li>
-        <li><a href="#dgo-0-2-6">0.2.6</a></li>
-        <li><a href="#dgo-0-2-5">0.2.5</a></li>
       </ul>
     </div>
   </div>

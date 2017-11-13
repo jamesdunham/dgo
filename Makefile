@@ -11,7 +11,7 @@ else
   R := R
 endif
 
-all: clean docs data readme build check install
+all: clean docs data readme build check install site
 
 quick: clean 
 
