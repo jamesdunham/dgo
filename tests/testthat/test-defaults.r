@@ -60,7 +60,19 @@ test_that('aggregate_item_names defaults to unique items in aggregate_data', {
     time_name = "year",
     geo_name = "state",
     group_names = c("female", "race3"))
-  expect_equal(d_agg$control@aggregate_item_names,
-               sort(unique(aggregates[n_grp > 0, item])))
+  expect_equal(d_agg$control@aggregate_item_names, sort(unique(aggregates[, item])))
 })
 
+test_that('zero-trial rows in aggregate data are preserved', {
+  data(aggregates)
+  data.table::setDT(aggregates)
+  zeroed_row = data.frame(year = 0, state = 'GU', race3 = 'other', female =
+    'true', item = 'test_item', n_grp = 0, s_grp = 0, stringsAsFactors = FALSE)
+  aggregates = data.table::rbindlist(list(aggregates, zeroed_row))
+  shaped = shape(aggregate_data = aggregates, time_name = "year", geo_name =
+    "state", group_names = c("female", "race3"))
+  expect_true(0 %in% shaped$group_grid$year)
+  expect_true('true' %in% shaped$group_grid$female)
+  expect_true('other' %in% shaped$group_grid$race3)
+  expect_true('GU' %in% shaped$group_grid$state)
+})

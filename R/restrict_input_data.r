@@ -122,11 +122,6 @@ restrict_aggregates <- function(aggregate_data, ctrl) {
       stop("no rows in aggregate data remaining after subsetting to items ",
            "in `aggregate_item_names`")
 
-    aggregate_data <- aggregate_data[get("n_grp") > 0]
-    if (!nrow(aggregate_data))
-      stop("no rows in aggregate data remaining after dropping unobserved ",
-           "group-item combinations")
-
     extra_colnames <- setdiff(names(aggregate_data),
                               c(ctrl@geo_name, ctrl@time_name, ctrl@group_names, "item", "s_grp", "n_grp"))
     if (length(extra_colnames)) {
