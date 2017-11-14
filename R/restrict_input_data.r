@@ -63,7 +63,7 @@ restrict_modifier <- function(modifier_data, group_grid, ctrl) {
     modifier_data <- modifier_data[geo_time_grid, nomatch = 0]
 
     # confirm that modifier data covers all modeled geo and time
-    missing_geo_time <- modifier_data[!geo_time_grid]
+    missing_geo_time <- geo_time_grid[!modifier_data]
     if (nrow(missing_geo_time)) {
       stop("Not all pairs of time periods and geographic areas are in ",
            "modifier_data. ", nrow(missing_geo_time), " missing.")
@@ -121,11 +121,6 @@ restrict_aggregates <- function(aggregate_data, ctrl) {
     if (!nrow(aggregate_data))
       stop("no rows in aggregate data remaining after subsetting to items ",
            "in `aggregate_item_names`")
-
-    aggregate_data <- aggregate_data[get("n_grp") > 0]
-    if (!nrow(aggregate_data))
-      stop("no rows in aggregate data remaining after dropping unobserved ",
-           "group-item combinations")
 
     extra_colnames <- setdiff(names(aggregate_data),
                               c(ctrl@geo_name, ctrl@time_name, ctrl@group_names, "item", "s_grp", "n_grp"))

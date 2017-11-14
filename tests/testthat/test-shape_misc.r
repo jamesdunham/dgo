@@ -109,3 +109,34 @@ test_that("min_survey_filter restricts individual data", {
     time_name = 'period', geo_name = 'geo', group_names = 'pid',
     survey_name = 'survey', min_survey_filter = 2)), 'no items remaining')
 })
+
+test_that("aggregated data can be used with geographic data, without demographic groups or individual data", {
+  data(aggregates)
+  data(states)
+  data.table::setDT(aggregates)
+  aggregates = aggregates[, .(n_grp = sum(n_grp), s_grp = sum(s_grp)), by = c('year', 'state', 'item')]
+  expect_silent(ret <- suppressMessages(shape(aggregate_data = aggregates, geo_name = 'state',
+      time_name = 'year', modifier_data = states, modifier_names =
+        'prop_hispanic')))
+  # with only 1 item
+  expect_silent(ret <- suppressMessages(shape(aggregate_data = aggregates, geo_name = 'state',
+      time_name = 'year', modifier_data = states, modifier_names =
+        'prop_hispanic', aggregate_item_names = 'abany_binary')))
+})
+
+test_that("geographic data must be complete for all modeled groups, not just the groups observed in item response data", {
+  data(aggregates)
+  data(states)
+  data.table::setDT(aggregates)
+  data.table::setDT(states)
+  aggregates = aggregates[, .(n_grp = sum(n_grp), s_grp = sum(s_grp)), by = c('year', 'state', 'item')]
+  states = states[year == 2006]
+  expect_error(suppressWarnings(suppressMessages(shape(aggregate_data =
+          aggregates, geo_name = 'state', time_name = 'year', modifier_data =
+          states, modifier_names = 'prop_hispanic'))),
+    "Not all pairs of time periods and geographic areas")
+  expect_error(suppressWarnings(suppressMessages(shape(item_data = opinion,
+          item_names = 'abortion', geo_name = 'state', time_name = 'year',
+          modifier_data = states, modifier_names = 'prop_hispanic'))),
+    "Not all pairs of time periods and geographic areas")
+})

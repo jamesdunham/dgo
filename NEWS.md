@@ -1,3 +1,19 @@
+## dgo 0.2.12
+
+* Allow modeling of unobserved groups using aggregated data. The previous
+  behavior was to drop rows in `aggregate_data` indicating zero trials. (They
+  don't represent item responses.) Preserving them has the effect that
+  unobserved groups, defined partially or entirely by the values of the grouping
+  variables in zero-trial rows in `aggregate_data`, can be included in a model.
+* Fix an unexpected error when 1) `aggregate_data` is used without `item_data`,
+  2) no demographic groups are specified via `group_names`, and 3) geographic
+  `modifier_data` is used.
+* Fix the check for missing `modifier_data`. Geographic `modifier_data` must
+  cover all combinations of the geo and time variables in the item response data
+  (individual or aggregated), but because of a bug in the validation of the
+  geographic data, this requirement was not always enforced. In some cases a
+  warning would appear instead of an error.
+
 ## dgo 0.2.11
 
 * Add poststratification over posterior samples (closes #21).
