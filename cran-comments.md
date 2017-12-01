@@ -7,5 +7,7 @@
 
 ## R CMD check results
 
-There were no ERRORs, WARNINGs, or NOTEs. 
+There were no ERRORs or WARNINGs. There was one NOTE. (Days since last update:
+1). This update fixes a bug introduced in the most recent version and undetected
+until today.
 
