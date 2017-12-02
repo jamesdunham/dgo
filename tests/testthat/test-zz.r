@@ -103,3 +103,15 @@ test_that('ZZ_prior defaults to ZZ', {
   expect_identical(hier_names, dimnames(d_tprime_only$ZZ_prior)[[2]])
 })
 
+test_that("order of ZZ and XX columns is consistent when vector of group_names is unsorted and geographic data is used", {
+  expect_silent(suppressMessages(shape(item_data = opinion, 
+    item_names = "affirmative_action", 
+    weight_name = "weight",
+    time_name = "year",
+    geo_name = "state", 
+    group_names = c("female", "education"),
+    modifier_data = states,
+    modifier_names = 'prop_hispanic',
+    id_vars = "source")))
+})
+

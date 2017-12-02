@@ -114,48 +114,48 @@ which inherits from <code><a href='dgo_fit-class.html'>dgo_fit</a></code>.</p>
     <pre class="examples"><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
 <span class='co'># summarize the fitted results</span>
 <span class='fu'><a href='dgirtin-class.html'>summary</a></span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'xi'</span>)</div><div class='output co'>#&gt; dgirt samples from 4 chains of 400 iterations, 200 warmup, thinned every 1 
-#&gt;   Drawn Mon Nov 13 18:15:19 2017 
-#&gt;   Package version 0.2.12 
+#&gt;   Drawn Fri Dec  1 11:54:14 2017 
+#&gt;   Package version 0.2.13 
 #&gt;   Model version 2017_01_04 
 #&gt;   43 parameters; 12 theta_bars (year state race3)
 #&gt;   2 periods 2009 to 2010 
 #&gt; 
 #&gt; n_eff</div><div class='output co'>#&gt; <span class='message'>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span>
-#&gt; <span class='message'>  17.37  156.60  255.35  302.78  364.78  800.00 </span></div><div class='output co'>#&gt; 
+#&gt; <span class='message'>  94.08  149.33  174.47  270.79  363.04  800.00 </span></div><div class='output co'>#&gt; 
 #&gt; Rhat</div><div class='output co'>#&gt; <span class='message'>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span>
-#&gt; <span class='message'> 0.9958  1.0058  1.0128  1.0161  1.0208  1.1404 </span></div><div class='output co'>#&gt; 
+#&gt; <span class='message'> 0.9971  1.0082  1.0225  1.0202  1.0291  1.0520 </span></div><div class='output co'>#&gt; 
 #&gt; Elapsed time</div><div class='output co'>#&gt; <span class='message'>   chain warmup sample total</span>
-#&gt; <span class='message'>1:     1     3S     3S    6S</span>
-#&gt; <span class='message'>2:     2     4S     3S    7S</span>
-#&gt; <span class='message'>3:     3     4S     3S    7S</span>
-#&gt; <span class='message'>4:     4     4S     4S    8S</span></div><div class='input'>
+#&gt; <span class='message'>1:     1     5S     3S    8S</span>
+#&gt; <span class='message'>2:     2     5S     5S   10S</span>
+#&gt; <span class='message'>3:     3     5S     6S   11S</span>
+#&gt; <span class='message'>4:     4     5S     3S    8S</span></div><div class='input'>
 <span class='co'># get posterior means with a convenience function</span>
 <span class='fu'>get_posterior_mean</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>)</div><div class='output co'>#&gt;         param state race3 year        mean
-#&gt;  1: theta_bar    SC black 2009  2.35662560
-#&gt;  2: theta_bar    SC black 2010  1.22256665
-#&gt;  3: theta_bar    SC other 2009 -1.36379358
-#&gt;  4: theta_bar    SC other 2010  0.04227331
-#&gt;  5: theta_bar    SC white 2009 -1.63196374
-#&gt;  6: theta_bar    SC white 2010 -1.47489402
-#&gt;  7: theta_bar    VA black 2009  1.90274077
-#&gt;  8: theta_bar    VA black 2010  1.52339960
-#&gt;  9: theta_bar    VA other 2009 -0.95920551
-#&gt; 10: theta_bar    VA other 2010  0.28518022
-#&gt; 11: theta_bar    VA white 2009 -0.92697350
-#&gt; 12: theta_bar    VA white 2010 -0.83419892</div><div class='input'>
+#&gt;  1: theta_bar    SC black 2009  2.24053065
+#&gt;  2: theta_bar    SC black 2010  1.27549292
+#&gt;  3: theta_bar    SC other 2009 -1.40019273
+#&gt;  4: theta_bar    SC other 2010  0.04084414
+#&gt;  5: theta_bar    SC white 2009 -1.67983508
+#&gt;  6: theta_bar    SC white 2010 -1.42533238
+#&gt;  7: theta_bar    VA black 2009  2.01710000
+#&gt;  8: theta_bar    VA black 2010  1.48835032
+#&gt;  9: theta_bar    VA other 2009 -1.02559194
+#&gt; 10: theta_bar    VA other 2010  0.30256578
+#&gt; 11: theta_bar    VA white 2009 -0.93711250
+#&gt; 12: theta_bar    VA white 2010 -0.82327290</div><div class='input'>
 <span class='co'># generally apply functions to posterior samples after warmup; n.b.</span>
 <span class='co'># `as.array` is iterations x chains x parameters so `MARGIN = 3` applies</span>
 <span class='co'># `FUN` over iterations and chains</span>
-<span class='fu'>apply</span>(<span class='fu'>as.array</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'xi'</span>), <span class='fl'>3</span>, <span class='no'>mean</span>)</div><div class='output co'>#&gt;      xi[1]      xi[2] 
-#&gt; 1.35546402 0.04828843 </div><div class='input'>
+<span class='fu'>apply</span>(<span class='fu'>as.array</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'xi'</span>), <span class='fl'>3</span>, <span class='no'>mean</span>)</div><div class='output co'>#&gt;     xi[1]     xi[2] 
+#&gt; 1.3134883 0.1604207 </div><div class='input'>
 <span class='co'># access the posterior samples</span>
-<span class='fu'>head</span>(<span class='fu'>as.data.frame</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>))</div><div class='output co'>#&gt;        param state race3 year iteration     value
-#&gt; 1: theta_bar    SC black 2009         1 0.7183680
-#&gt; 2: theta_bar    SC black 2009         2 0.7609363
-#&gt; 3: theta_bar    SC black 2009         3 0.7942637
-#&gt; 4: theta_bar    SC black 2009         4 1.4685053
-#&gt; 5: theta_bar    SC black 2009         5 1.1297978
-#&gt; 6: theta_bar    SC black 2009         6 0.6581956</div></pre>
+<span class='fu'>head</span>(<span class='fu'>as.data.frame</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>))</div><div class='output co'>#&gt;        param state race3 year iteration    value
+#&gt; 1: theta_bar    SC black 2009         1 1.813383
+#&gt; 2: theta_bar    SC black 2009         2 2.187389
+#&gt; 3: theta_bar    SC black 2009         3 4.876919
+#&gt; 4: theta_bar    SC black 2009         4 1.638984
+#&gt; 5: theta_bar    SC black 2009         5 3.594305
+#&gt; 6: theta_bar    SC black 2009         6 4.129328</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

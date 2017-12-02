@@ -176,58 +176,58 @@ indexes, as output from RStan.</p></td>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
-<span class='fu'>summarize</span>(<span class='no'>toy_dgirtfit</span>)</div><div class='output co'>#&gt;         param state race3 year        mean        sd      median      q_025
-#&gt;  1: theta_bar    SC black 2009  2.35662560 1.6415237  2.02449197  0.5230645
-#&gt;  2: theta_bar    SC black 2010  1.22256665 0.8371110  1.06239289  0.2941792
-#&gt;  3: theta_bar    SC other 2009 -1.36379358 1.1174329 -1.10842179 -3.9993518
-#&gt;  4: theta_bar    SC other 2010  0.04227331 0.8781789  0.05571854 -1.6000637
-#&gt;  5: theta_bar    SC white 2009 -1.63196374 1.1129132 -1.37631685 -4.5840865
-#&gt;  6: theta_bar    SC white 2010 -1.47489402 1.0881085 -1.27747059 -4.2971941
-#&gt;  7: theta_bar    VA black 2009  1.90274077 1.2776764  1.67871864  0.4932506
-#&gt;  8: theta_bar    VA black 2010  1.52339960 1.0105135  1.31034193  0.3788519
-#&gt;  9: theta_bar    VA other 2009 -0.95920551 1.0113154 -0.74479466 -3.3714601
-#&gt; 10: theta_bar    VA other 2010  0.28518022 0.6061495  0.22600882 -0.8581018
-#&gt; 11: theta_bar    VA white 2009 -0.92697350 0.6981114 -0.77099368 -2.7673600
-#&gt; 12: theta_bar    VA white 2010 -0.83419892 0.6838827 -0.69712692 -2.5838185
-#&gt;          q_975
-#&gt;  1:  6.6377822
-#&gt;  2:  3.4078614
-#&gt;  3: -0.0339191
-#&gt;  4:  1.7330404
-#&gt;  5: -0.3398887
-#&gt;  6: -0.2790527
-#&gt;  7:  5.1766964
-#&gt;  8:  4.1273832
-#&gt;  9:  0.1818680
-#&gt; 10:  1.7790140
-#&gt; 11: -0.1639113
-#&gt; 12: -0.1079362</div><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
+<span class='fu'>summarize</span>(<span class='no'>toy_dgirtfit</span>)</div><div class='output co'>#&gt;         param state race3 year        mean        sd     median      q_025
+#&gt;  1: theta_bar    SC black 2009  2.24053065 1.9336147  1.7799611  0.4566614
+#&gt;  2: theta_bar    SC black 2010  1.27549292 1.0036580  0.9944347  0.2931024
+#&gt;  3: theta_bar    SC other 2009 -1.40019273 1.6534406 -1.0144666 -4.7212136
+#&gt;  4: theta_bar    SC other 2010  0.04084414 0.7356635  0.0503198 -1.4892224
+#&gt;  5: theta_bar    SC white 2009 -1.67983508 1.6607712 -1.2961321 -4.8426620
+#&gt;  6: theta_bar    SC white 2010 -1.42533238 1.1166382 -1.1603282 -4.4630400
+#&gt;  7: theta_bar    VA black 2009  2.01710000 1.7614584  1.6346355  0.4384231
+#&gt;  8: theta_bar    VA black 2010  1.48835032 1.0317741  1.1923152  0.3542094
+#&gt;  9: theta_bar    VA other 2009 -1.02559194 1.1759219 -0.6812453 -4.2629804
+#&gt; 10: theta_bar    VA other 2010  0.30256578 0.6388466  0.2265883 -0.9024376
+#&gt; 11: theta_bar    VA white 2009 -0.93711250 0.9046802 -0.7106767 -3.1100210
+#&gt; 12: theta_bar    VA white 2010 -0.82327290 0.6901749 -0.6491099 -2.6735110
+#&gt;           q_975
+#&gt;  1:  6.45595603
+#&gt;  2:  3.83169121
+#&gt;  3:  0.06443927
+#&gt;  4:  1.63704312
+#&gt;  5: -0.23570371
+#&gt;  6: -0.23587321
+#&gt;  7:  5.41852042
+#&gt;  8:  4.01645824
+#&gt;  9:  0.16390533
+#&gt; 10:  1.77105059
+#&gt; 11: -0.07141857
+#&gt; 12: -0.08582941</div><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
 <span class='co'># access posterior samples</span>
-<span class='fu'>as.data.frame</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>)</div><div class='output co'>#&gt;           param state race3 year iteration      value
-#&gt;    1: theta_bar    SC black 2009         1  0.7183680
-#&gt;    2: theta_bar    SC black 2009         2  0.7609363
-#&gt;    3: theta_bar    SC black 2009         3  0.7942637
-#&gt;    4: theta_bar    SC black 2009         4  1.4685053
-#&gt;    5: theta_bar    SC black 2009         5  1.1297978
-#&gt;   ---                                                
-#&gt; 9596: theta_bar    VA white 2010       796 -1.7576671
-#&gt; 9597: theta_bar    VA white 2010       797 -0.9733774
-#&gt; 9598: theta_bar    VA white 2010       798 -0.9442844
-#&gt; 9599: theta_bar    VA white 2010       799 -1.7814752
-#&gt; 9600: theta_bar    VA white 2010       800 -2.3038391</div><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
+<span class='fu'>as.data.frame</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>)</div><div class='output co'>#&gt;           param state race3 year iteration       value
+#&gt;    1: theta_bar    SC black 2009         1  1.81338340
+#&gt;    2: theta_bar    SC black 2009         2  2.18738932
+#&gt;    3: theta_bar    SC black 2009         3  4.87691903
+#&gt;    4: theta_bar    SC black 2009         4  1.63898360
+#&gt;    5: theta_bar    SC black 2009         5  3.59430508
+#&gt;   ---                                                 
+#&gt; 9596: theta_bar    VA white 2010       796 -0.32568849
+#&gt; 9597: theta_bar    VA white 2010       797 -0.12337371
+#&gt; 9598: theta_bar    VA white 2010       798 -0.08819301
+#&gt; 9599: theta_bar    VA white 2010       799 -0.27716272
+#&gt; 9600: theta_bar    VA white 2010       800 -0.03302348</div><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
 <span class='fu'>rhats</span>(<span class='no'>toy_dgirtfit</span>)</div><div class='output co'>#&gt;         param state race3 year      Rhat
-#&gt;  1: theta_bar    SC black 2009 1.0231219
-#&gt;  2: theta_bar    VA black 2009 1.0156964
-#&gt;  3: theta_bar    SC other 2009 1.0180730
-#&gt;  4: theta_bar    VA other 2009 1.0102031
-#&gt;  5: theta_bar    SC white 2009 1.0221029
-#&gt;  6: theta_bar    VA white 2009 1.0170904
-#&gt;  7: theta_bar    SC black 2010 1.0099752
-#&gt;  8: theta_bar    VA black 2010 1.0097523
-#&gt;  9: theta_bar    SC other 2010 0.9957962
-#&gt; 10: theta_bar    VA other 2010 1.0027474
-#&gt; 11: theta_bar    SC white 2010 1.0125680
-#&gt; 12: theta_bar    VA white 2010 1.0104212</div></pre>
+#&gt;  1: theta_bar    SC black 2009 1.0342446
+#&gt;  2: theta_bar    VA black 2009 1.0316121
+#&gt;  3: theta_bar    SC other 2009 1.0167080
+#&gt;  4: theta_bar    VA other 2009 1.0179279
+#&gt;  5: theta_bar    SC white 2009 1.0335336
+#&gt;  6: theta_bar    VA white 2009 1.0370154
+#&gt;  7: theta_bar    SC black 2010 1.0253885
+#&gt;  8: theta_bar    VA black 2010 1.0292079
+#&gt;  9: theta_bar    SC other 2010 0.9971425
+#&gt; 10: theta_bar    VA other 2010 1.0011172
+#&gt; 11: theta_bar    SC white 2010 1.0287917
+#&gt; 12: theta_bar    VA white 2010 1.0217522</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

@@ -1,3 +1,9 @@
+## dgo 0.2.13
+
+* Fix an issue introduced in v0.2.12 that led to an unexpected error in
+  `shape()` when 1) at least two `group_names` are specified in an order other
+  than alphabetic and 2) geographic `modifier_data` is used.
+
 ## dgo 0.2.12
 
 * Allow modeling of unobserved groups using aggregated data. The previous
@@ -5,8 +11,8 @@
   don't represent item responses.) Preserving them has the effect that
   unobserved groups, defined partially or entirely by the values of the grouping
   variables in zero-trial rows in `aggregate_data`, can be included in a model.
-* Fix an unexpected error when 1) `aggregate_data` is used without `item_data`,
-  2) no demographic groups are specified via `group_names`, and 3) geographic
+* Fix an unexpected error when 1) `aggregate_data` is used without `item_data`, 2) 
+  no demographic groups are specified via `group_names`, and 3) geographic
   `modifier_data` is used.
 * Fix the check for missing `modifier_data`. Geographic `modifier_data` must
   cover all combinations of the geo and time variables in the item response data
