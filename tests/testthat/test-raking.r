@@ -202,7 +202,7 @@ test_that("raking equalizes weights when they should be equal", {
   wool_sums = sum_by(rake_result, "wool")
   tension_sums = sum_by(rake_result, "tension")
   expect_length(unique(tension_sums), 2)
-  expect_length(unique(wool_sums), 1)
+  expect_length(unique(round(wool_sums, 4)), 1)
 
   toy_data = rbind(set_up_sample(w = 1), set_up_sample(w = 2))
   toy_targets = set_up_pop(props = NULL)

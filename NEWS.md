@@ -1,3 +1,13 @@
+## dgo 0.2.15
+
+* The `group_names` argument to `plot_dgirt()` has been replaced by argument
+  `group_name`, which takes the name of a single grouping variable. This is a
+  quick workaround for compatibility with breaking changes in ggplot2 3.0.0.
+
+## dgo 0.2.14
+
+* Avoid an error during testing, on R built `--without-long-double`.
+
 ## dgo 0.2.13
 
 * Fix an issue introduced in v0.2.12 that led to an unexpected error in

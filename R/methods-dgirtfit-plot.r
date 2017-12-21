@@ -36,13 +36,13 @@ setMethod("dgirt_plot", signature(x = "dgo_fit"),
   ctrl <- x@dgirt_in$control
   samples <- summarize(x, funs = c(y_fun, y_min, y_max))
 
-  plot_internal(samples, ctrl@group_names, ctrl@time_name, ctrl@geo_name, y_fun,
-                y_min, y_max)
+  plot_internal(samples, ctrl@group_names[1], ctrl@time_name, ctrl@geo_name,
+    y_fun, y_min, y_max)
 })
 
 #' @rdname plot-method
-#' @param group_names Discrete grouping variables, if any, which will be used as
-#' the \code{color} argument in \code{aes}.
+#' @param group_name A discrete grouping variable that will be passed to the
+#' \code{color} argument of \code{aes}.
 #' @param time_name A time variable with numeric values that will be plotted on
 #' the x axis.
 #' @param geo_name A variable representing local areas that will be used in
@@ -53,13 +53,13 @@ setMethod("dgirt_plot", signature(x = "dgo_fit"),
 #' data(toy_dgirtfit)
 #' ps <- poststratify(toy_dgirtfit, annual_state_race_targets, strata_names =
 #'                    c("state", "year"), aggregated_names = "race3")
-#' dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
+#' dgirt_plot(ps, group_name = NULL, time_name = "year", geo_name = "state")
 #' }
 setMethod("dgirt_plot", signature(x = "data.frame"),
-  function(x, group_names, time_name, geo_name, y_fun = "median", y_min =
+  function(x, group_name, time_name, geo_name, y_fun = "median", y_min =
            "q_025", y_max = "q_975") {
 
-    if (length(group_names)) assert(all_strings(group_names))
+    if (length(group_name)) assert(assertthat::is.string(group_name))
     if (length(time_name)) assert(assertthat::is.string(time_name))
     if (length(geo_name)) assert(assertthat::is.string(geo_name))
     if (length(y_min)) assert(assertthat::is.string(y_min))
@@ -68,14 +68,14 @@ setMethod("dgirt_plot", signature(x = "data.frame"),
     if (length(y_fun)) {
       assert(assertthat::is.string(y_fun))
       x <- x[, do_funs(list(value), c(y_fun, y_min, y_max)),
-             by = c(group_names, time_name, geo_name)]
+             by = c(group_name, time_name, geo_name)]
       data.table::setnames(x, grep("^V\\d+", names(x),value = TRUE),
                            c(y_fun, y_min, y_max))
     }
-    plot_internal(x, group_names, time_name, geo_name, y_fun, y_min, y_max)
+    plot_internal(x, group_name, time_name, geo_name, y_fun, y_min, y_max)
 })
 
-plot_internal <- function(samples, group_names, time_name, geo_name, y_fun,
+plot_internal <- function(samples, group_name, time_name, geo_name, y_fun,
                           y_min, y_max) {
 
   if (!length(y_fun) & (length(y_min) | length(y_max))) {
@@ -87,7 +87,7 @@ plot_internal <- function(samples, group_names, time_name, geo_name, y_fun,
   }
 
   p <- ggplot2::ggplot(data = samples,
-         ggplot2::aes_string(x = time_name, y = y_fun, color = group_names)) +
+         ggplot2::aes_string(x = time_name, y = y_fun, color = group_name)) +
        ggplot2::geom_line(alpha = 0.7) +
        ggplot2::facet_wrap(geo_name) +
        ggplot2::theme_bw() +

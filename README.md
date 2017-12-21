@@ -113,6 +113,6 @@ dgo is under development and we welcome
 
 The package citation is:
 
-Dunham, James, Devin Caughey, and Christopher Warshaw. 2017. dgo:
+Dunham, James, Devin Caughey, and Christopher Warshaw. 2018. dgo:
 Dynamic Estimation of Group-level Opinion. R package.
 <https://jdunham.io/dgo/>.

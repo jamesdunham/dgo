@@ -64,43 +64,54 @@
     
 <div class="contents">
 
-<section id="introduction" class="level1"><div class="page-header"><h1>Introduction</h1></div>
+<div id="introduction" class="section level1">
+<div class="page-header"><h1 class="hasAnchor">
+<a href="#introduction" class="anchor"></a>Introduction</h1></div>
 <p>dgo is an R package for the dynamic estimation of group-level public opinion. You can use the package to estimate latent trait means in subpopulations from survey data. For example, dgo can estimate the average policy liberalism in each American state over time among Democrats, Independents, and Republicans, given their answers to survey questions about policy proposals.</p>
 <p>dgo accomplishes this using a Bayesian group-level IRT approach developed by <a href="http://pan.oxfordjournals.org/content/early/2015/02/04/pan.mpu021.full.pdf+html">Caughey and Warshaw 2015</a>. It models latent traits at the level of demographic and geographic groups rather than individuals. It uses a hierarchical model to borrow strength cross-sectionally and dynamic linear models to do so across time.</p>
 <p>The package can also be used to estimate smoothed estimates of subpopulations’ average responses to single survey items, using a dynamic multi-level regression and poststratification (MRP) model (<a href="http://stat.columbia.edu/~gelman/research/published/StateOpinionsNationalPolls.050712.dkp.pdf">Park, Gelman, and Bafumi 2004</a>). For instance, you can use dgo to estimate public opinion in each state on same-sex marriage or the Affordable Care Act.</p>
 <p>This model opens up new areas of research on historical public opinion in the United States at the subnational level. It also allows scholars of comparative politics to estimate dynamic cross-national models of public opinion.</p>
-</section><section id="installation" class="level1"><h1>Installation</h1>
+</div>
+<div id="installation" class="section level1">
+<h1 class="hasAnchor">
+<a href="#installation" class="anchor"></a>Installation</h1>
 <p>dgo can be installed from <a href="https://CRAN.R-project.org/package=dgo">CRAN</a>:</p>
-<pre class="sourceCode r" id="cb1"><code class="sourceCode r"><div class="sourceLine" id="cb1-1" data-line-number="1">
-<span class="kw">install.packages</span>(<span class="st">"dgo"</span>)</div></code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">"dgo"</span>)</code></pre></div>
 <p>Or get the latest version from <a href="https://github.com/jamesdunham/dgo">GitHub</a> using <a href="https://github.com/hadley/devtools/">devtools</a>:</p>
-<pre class="sourceCode r" id="cb2"><code class="sourceCode r"><div class="sourceLine" id="cb2-1" data-line-number="1">
-<span class="cf">if</span> (<span class="op">!</span><span class="kw">require</span>(devtools, <span class="dt">quietly =</span> <span class="ot">TRUE</span>)) <span class="kw">install.packages</span>(<span class="st">"devtools"</span>)</div>
-<div class="sourceLine" id="cb2-2" data-line-number="2">devtools<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/install_github">install_github</a></span>(<span class="st">"jamesdunham/dgo"</span>)</div></code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">if (!<span class="kw">require</span>(devtools, <span class="dt">quietly =</span> <span class="ot">TRUE</span>)) <span class="kw">install.packages</span>(<span class="st">"devtools"</span>)
+devtools::<span class="kw"><a href="http://www.rdocumentation.org/packages/devtools/topics/install_github">install_github</a></span>(<span class="st">"jamesdunham/dgo"</span>)</code></pre></div>
 <p>dgo requires a working installation of <a href="http://mc-stan.org/interfaces/rstan.html">RStan</a>. If you don’t have already have RStan, follow its “<a href="https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started">Getting Started</a>” guide.</p>
-</section><section id="usage" class="level1"><h1>Usage</h1>
+</div>
+<div id="usage" class="section level1">
+<h1 class="hasAnchor">
+<a href="#usage" class="anchor"></a>Usage</h1>
 <p>Load the package and set RStan’s recommended options for a local, multicore machine with excess RAM:</p>
-<pre class="sourceCode r" id="cb3"><code class="sourceCode r"><div class="sourceLine" id="cb3-1" data-line-number="1">
-<span class="kw">library</span>(dgo)</div>
-<div class="sourceLine" id="cb3-2" data-line-number="2">
-<span class="kw">rstan_options</span>(<span class="dt">auto_write =</span> <span class="ot">TRUE</span>)</div>
-<div class="sourceLine" id="cb3-3" data-line-number="3">
-<span class="kw">options</span>(<span class="dt">mc.cores =</span> parallel<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/parallel/topics/detectCores">detectCores</a></span>())</div></code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dgo)
+<span class="kw">rstan_options</span>(<span class="dt">auto_write =</span> <span class="ot">TRUE</span>)
+<span class="kw">options</span>(<span class="dt">mc.cores =</span> parallel::<span class="kw">detectCores</span>())</code></pre></div>
 <p>The minimal workflow from raw data to estimation is:</p>
-<ol type="1">
+<ol style="list-style-type: decimal">
 <li>shape input data using the <code><a href="reference/shape.html">shape()</a></code> function; and</li>
 <li>pass the result to the <code><a href="reference/dgirt.html">dgirt()</a></code> function to estimate a latent trait (e.g., conservatism) or <code><a href="http://www.rdocumentation.org/packages/dgo/topics/dgirt">dgmrp()</a></code> function to estimate opinion on a single survey question.</li>
-</ol></section><section id="troubleshooting" class="level1"><h1>Troubleshooting</h1>
+</ol>
+</div>
+<div id="troubleshooting" class="section level1">
+<h1 class="hasAnchor">
+<a href="#troubleshooting" class="anchor"></a>Troubleshooting</h1>
 <p>Please <a href="https://github.com/jamesdunham/dgo/issues">report issues</a> that you encounter.</p>
 <ul>
 <li><p>OS X only: RStan creates temporary files during estimation in a location given by <code>tempdir()</code>, typically an arbitrary location in <code>/var/folders</code>. If a model runs for days, these files can be cleaned up while still needed, which induces an error. A good solution is to set a safer path for temporary files, using an environment variable checked at session startup. For help setting environment variables, see the Stack Overflow question <a href="https://stackoverflow.com/questions/17107206/change-temporary-directory">here</a>. Confirm the new path before starting your model run by restarting R and checking the output from <code>tempdir()</code>.</p></li>
 <li><p>Models fitted before October 2016 (specifically &lt; <a href="https://github.com/jamesdunham/dgo/commit/8e6a2cfbe00b2cd4a908b3067241e06124d143cd">#8e6a2cf</a>) using dgirt are not fully compatible with dgo. Their contents can be extracted without using dgo, however, with the <code>$</code> indexing operator. For example: <code>as.data.frame(dgirtfit_object$stan.cmb)</code>.</p></li>
 <li><p>Calling <code><a href="reference/dgirt.html">dgirt()</a></code> or <code><a href="http://www.rdocumentation.org/packages/dgo/topics/dgirt">dgmrp()</a></code> can generate <a href="http://mc-stan.org/misc/warnings#compiler-warnings">warnings</a> during model compilation. These are safe to ignore, or can be suppressed by following the linked instructions.</p></li>
-</ul></section><section id="contributing-and-citing" class="level1"><h1>Contributing and citing</h1>
+</ul>
+</div>
+<div id="contributing-and-citing" class="section level1">
+<h1 class="hasAnchor">
+<a href="#contributing-and-citing" class="anchor"></a>Contributing and citing</h1>
 <p>dgo is under development and we welcome <a href="https://github.com/jamesdunham/dgo/issues">suggestions</a>.</p>
 <p>The package citation is:</p>
 <p>Dunham, James, Devin Caughey, and Christopher Warshaw. 2017. dgo: Dynamic Estimation of Group-level Opinion. R package. <a href="https://jdunham.io/dgo/" class="uri">https://jdunham.io/dgo/</a>.</p>
-</section>
+</div>
 </div>
   </div>
 
@@ -108,8 +119,6 @@
     <h2 class="hasAnchor">
 <a href="#sidebar" class="anchor"></a>Links</h2>
 <ul class="list-unstyled">
-<li>Download from CRAN at <br><a href="https://cran.r-project.org/package=dgo">https://​cran.r-project.org/​package=dgo</a>
-</li>
 <li>Report a bug at <br><a href="https://github.com/jamesdunham/dgo/issues">https://​github.com/​jamesdunham/​dgo/​issues</a>
 </li>
 </ul>

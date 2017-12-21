@@ -15,7 +15,7 @@ dgirt_plot(x, ...)
 \S4method{dgirt_plot}{dgo_fit}(x, y_fun = "median", y_min = "q_025",
   y_max = "q_975", pars = "theta_bar")
 
-\S4method{dgirt_plot}{data.frame}(x, group_names, time_name, geo_name,
+\S4method{dgirt_plot}{data.frame}(x, group_name, time_name, geo_name,
   y_fun = "median", y_min = "q_025", y_max = "q_975")
 
 \S4method{plot}{dgo_fit,missing}(x, y, ...)
@@ -40,8 +40,8 @@ plot_rhats(x, ...)
 
 \item{pars}{Selected parameter.}
 
-\item{group_names}{Discrete grouping variables, if any, which will be used as
-the \code{color} argument in \code{aes}.}
+\item{group_name}{A discrete grouping variable that will be passed to the
+\code{color} argument of \code{aes}.}
 
 \item{time_name}{A time variable with numeric values that will be plotted on
 the x axis.}
@@ -73,7 +73,7 @@ p \%+\% ylab("posterior median")
 data(toy_dgirtfit)
 ps <- poststratify(toy_dgirtfit, annual_state_race_targets, strata_names =
                    c("state", "year"), aggregated_names = "race3")
-dgirt_plot(ps, group_names = NULL, time_name = "year", geo_name = "state")
+dgirt_plot(ps, group_name = NULL, time_name = "year", geo_name = "state")
 }
 \dontrun{
 data(toy_dgirtfit)
