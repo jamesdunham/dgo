@@ -1,11 +1,15 @@
 Package: dgo
 Title: Dynamic Estimation of Group-Level Opinion
-Version: 0.2.13
-Date: 2017-12-01
-Description: Fit dynamic group-level IRT and MRP models from individual or
-    aggregated item response data. This package handles common preprocessing
-    tasks and extends functions for inspecting results, poststratification, and
-    quick iteration over alternative models.
+Version: 0.2.14
+Date: 2017-12-20
+Description: Fit dynamic group-level item response theory (IRT) and multilevel
+    regression and poststratification (MRP) models from item response data. dgo
+    models latent traits at the level of demographic and geographic groups,
+    rather than individuals, in a Bayesian group-level IRT approach developed by
+    Caughey and Warshaw (2015) <doi:10.1093/pan/mpu021>. The package also
+    estimates subpopulations' average responses to single survey items with a
+    dynamic MRP model proposed by Park, Gelman, and Bafumi (2004)
+    <doi:10.11126/stanford/9780804753005.003.0011>.
 Maintainer: James Dunham <james@jdunham.io>
 Authors@R: c(
     person("James", "Dunham", email = "james@jdunham.io", role = c("aut", "cre")),

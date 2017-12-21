@@ -6,7 +6,7 @@ CURRENT_DIR := $(notdir $(patsubst %/,%,$(dir $(MAKEFILE_PATH))))
 R_ARGS := --no-site-file --no-environ --no-save \
 	  --no-restore --no-resave-data --no-manual --quiet
 ifneq (, $(findstring r-devel,$(CURRENT_DIR)))
-  R := R_devel.sh
+  R := Rdevel.sh
 else
   R := R
 endif

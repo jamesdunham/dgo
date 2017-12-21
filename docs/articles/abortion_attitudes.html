@@ -67,16 +67,18 @@
     
 <div class="contents">
 <p>This vignette demonstrates estimation of public attitudes toward abortion from responses to a single survey item, using the dynamic multi-level regression and post-stratification (MRP) model implemented in <code>dgmrp()</code>.</p>
-<section id="prepare-input-data" class="level2"><h2>Prepare input data</h2>
+<div id="prepare-input-data" class="section level2">
+<h2 class="hasAnchor">
+<a href="#prepare-input-data" class="anchor"></a>Prepare input data</h2>
 <p><code><a href="../reference/shape.html">shape()</a></code> prepares input data for use with the modeling functions <code><a href="../reference/dgirt.html">dgirt()</a></code> and <code>dgmrp()</code>. Here we use the included <code>opinion</code> dataset.</p>
-<pre class="sourceCode r" id="cb1"><code class="sourceCode r"><div class="sourceLine" id="cb1-1" data-line-number="1">dgirt_in_abortion &lt;-<span class="st"> </span><span class="kw"><a href="../reference/shape.html">shape</a></span>(opinion, <span class="dt">item_names =</span> <span class="st">"abortion"</span>, <span class="dt">time_name =</span> <span class="st">"year"</span>,</div>
-<div class="sourceLine" id="cb1-2" data-line-number="2">  <span class="dt">geo_name =</span> <span class="st">"state"</span>, <span class="dt">group_names =</span> <span class="st">"race3"</span>, <span class="dt">geo_filter =</span> <span class="kw">c</span>(<span class="st">"CA"</span>, <span class="st">"GA"</span>, <span class="st">"LA"</span>,</div>
-<div class="sourceLine" id="cb1-3" data-line-number="3">    <span class="st">"MA"</span>), <span class="dt">id_vars =</span> <span class="st">"source"</span>)</div>
-<div class="sourceLine" id="cb1-4" data-line-number="4"><span class="co">#&gt; Applying restrictions, pass 1...</span></div>
-<div class="sourceLine" id="cb1-5" data-line-number="5"><span class="co">#&gt;  Dropped 5 rows for missingness in covariates</span></div>
-<div class="sourceLine" id="cb1-6" data-line-number="6"><span class="co">#&gt;  Dropped 633 rows for lacking item responses</span></div>
-<div class="sourceLine" id="cb1-7" data-line-number="7"><span class="co">#&gt; Applying restrictions, pass 2...</span></div>
-<div class="sourceLine" id="cb1-8" data-line-number="8"><span class="co">#&gt;  No changes</span></div></code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dgirt_in_abortion &lt;-<span class="st"> </span><span class="kw"><a href="../reference/shape.html">shape</a></span>(opinion, <span class="dt">item_names =</span> <span class="st">"abortion"</span>, <span class="dt">time_name =</span> <span class="st">"year"</span>,
+  <span class="dt">geo_name =</span> <span class="st">"state"</span>, <span class="dt">group_names =</span> <span class="st">"race3"</span>, <span class="dt">geo_filter =</span> <span class="kw">c</span>(<span class="st">"CA"</span>, <span class="st">"GA"</span>, <span class="st">"LA"</span>,
+    <span class="st">"MA"</span>), <span class="dt">id_vars =</span> <span class="st">"source"</span>)
+<span class="co">#&gt; Applying restrictions, pass 1...</span>
+<span class="co">#&gt;  Dropped 5 rows for missingness in covariates</span>
+<span class="co">#&gt;  Dropped 633 rows for lacking item responses</span>
+<span class="co">#&gt; Applying restrictions, pass 2...</span>
+<span class="co">#&gt;  No changes</span></code></pre></div>
 <p>In this call to <code><a href="../reference/shape.html">shape()</a></code> we specified:</p>
 <ul>
 <li>the survey item response variable (<code>abortion</code>);</li>
@@ -85,159 +87,154 @@
 </ul>
 <p>Notice that we named only one of these variables defining respondent groups using the <code>group_names</code> argument. The <code>geo_name</code> argument always takes the variable giving respondents’ local geographic area; it will be modeled differently.</p>
 <p>Using the argument <code>geo_filter</code>, we subset the input data to the given values of the <code>geo_name</code> variable. And with the <code>id_vars</code> argument, we named an identfier that we’d like to keep in the processed data. (Other unused variables will be dropped.)</p>
-</section><section id="inspect-the-result" class="level2"><h2>Inspect the result</h2>
+</div>
+<div id="inspect-the-result" class="section level2">
+<h2 class="hasAnchor">
+<a href="#inspect-the-result" class="anchor"></a>Inspect the result</h2>
 <p><code><a href="../reference/dgirtin-class.html">summary()</a></code> gives a high-level description of the result.</p>
-<pre class="sourceCode r" id="cb2"><code class="sourceCode r"><div class="sourceLine" id="cb2-1" data-line-number="1">
-<span class="kw"><a href="../reference/dgirtin-class.html">summary</a></span>(dgirt_in_abortion)</div>
-<div class="sourceLine" id="cb2-2" data-line-number="2"><span class="co">#&gt; Items:</span></div>
-<div class="sourceLine" id="cb2-3" data-line-number="3"><span class="co">#&gt; [1] "abortion"</span></div>
-<div class="sourceLine" id="cb2-4" data-line-number="4"><span class="co">#&gt; Respondents:</span></div>
-<div class="sourceLine" id="cb2-5" data-line-number="5"><span class="co">#&gt;    23,007 in `item_data`</span></div>
-<div class="sourceLine" id="cb2-6" data-line-number="6"><span class="co">#&gt; Grouping variables:</span></div>
-<div class="sourceLine" id="cb2-7" data-line-number="7"><span class="co">#&gt; [1] "year"  "state" "race3"</span></div>
-<div class="sourceLine" id="cb2-8" data-line-number="8"><span class="co">#&gt; Time periods:</span></div>
-<div class="sourceLine" id="cb2-9" data-line-number="9"><span class="co">#&gt; [1] 2006 2007 2008 2009 2010</span></div>
-<div class="sourceLine" id="cb2-10" data-line-number="10"><span class="co">#&gt; Local geographic areas:</span></div>
-<div class="sourceLine" id="cb2-11" data-line-number="11"><span class="co">#&gt; [1] "CA" "GA" "LA" "MA"</span></div>
-<div class="sourceLine" id="cb2-12" data-line-number="12"><span class="co">#&gt; Hierarchical parameters:</span></div>
-<div class="sourceLine" id="cb2-13" data-line-number="13"><span class="co">#&gt; [1] "GA"         "LA"         "MA"         "race3other" "race3white"</span></div>
-<div class="sourceLine" id="cb2-14" data-line-number="14"><span class="co">#&gt; Modifiers of hierarchical parameters:</span></div>
-<div class="sourceLine" id="cb2-15" data-line-number="15"><span class="co">#&gt; NULL</span></div>
-<div class="sourceLine" id="cb2-16" data-line-number="16"><span class="co">#&gt; Constants:</span></div>
-<div class="sourceLine" id="cb2-17" data-line-number="17"><span class="co">#&gt;  Q  T  P  N  G  H  D </span></div>
-<div class="sourceLine" id="cb2-18" data-line-number="18"><span class="co">#&gt;  1  5  5 60 12  1  1</span></div></code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/dgirtin-class.html">summary</a></span>(dgirt_in_abortion)
+<span class="co">#&gt; Items:</span>
+<span class="co">#&gt; [1] "abortion"</span>
+<span class="co">#&gt; Respondents:</span>
+<span class="co">#&gt;    23,007 in `item_data`</span>
+<span class="co">#&gt; Grouping variables:</span>
+<span class="co">#&gt; [1] "year"  "state" "race3"</span>
+<span class="co">#&gt; Time periods:</span>
+<span class="co">#&gt; [1] 2006 2007 2008 2009 2010</span>
+<span class="co">#&gt; Local geographic areas:</span>
+<span class="co">#&gt; [1] "CA" "GA" "LA" "MA"</span>
+<span class="co">#&gt; Hierarchical parameters:</span>
+<span class="co">#&gt; [1] "GA"         "LA"         "MA"         "race3other" "race3white"</span>
+<span class="co">#&gt; Modifiers of hierarchical parameters:</span>
+<span class="co">#&gt; NULL</span>
+<span class="co">#&gt; Constants:</span>
+<span class="co">#&gt;  Q  T  P  N  G  H  D </span>
+<span class="co">#&gt;  1  5  5 60 12  1  1</span></code></pre></div>
 <p><code>get_n()</code> and <code>get_item_n()</code> give response counts.</p>
-<pre class="sourceCode r" id="cb3"><code class="sourceCode r"><div class="sourceLine" id="cb3-1" data-line-number="1">
-<span class="kw">get_n</span>(dgirt_in_abortion, <span class="dt">by =</span> <span class="st">"state"</span>)</div>
-<div class="sourceLine" id="cb3-2" data-line-number="2"><span class="co">#&gt;    state     n</span></div>
-<div class="sourceLine" id="cb3-3" data-line-number="3"><span class="co">#&gt; 1:    CA 14248</span></div>
-<div class="sourceLine" id="cb3-4" data-line-number="4"><span class="co">#&gt; 2:    GA  4547</span></div>
-<div class="sourceLine" id="cb3-5" data-line-number="5"><span class="co">#&gt; 3:    LA  1658</span></div>
-<div class="sourceLine" id="cb3-6" data-line-number="6"><span class="co">#&gt; 4:    MA  2554</span></div>
-<div class="sourceLine" id="cb3-7" data-line-number="7">
-<span class="kw">get_item_n</span>(dgirt_in_abortion, <span class="dt">by =</span> <span class="st">"year"</span>)</div>
-<div class="sourceLine" id="cb3-8" data-line-number="8"><span class="co">#&gt;    year abortion</span></div>
-<div class="sourceLine" id="cb3-9" data-line-number="9"><span class="co">#&gt; 1: 2006     5275</span></div>
-<div class="sourceLine" id="cb3-10" data-line-number="10"><span class="co">#&gt; 2: 2007     1690</span></div>
-<div class="sourceLine" id="cb3-11" data-line-number="11"><span class="co">#&gt; 3: 2008     4697</span></div>
-<div class="sourceLine" id="cb3-12" data-line-number="12"><span class="co">#&gt; 4: 2009     2141</span></div>
-<div class="sourceLine" id="cb3-13" data-line-number="13"><span class="co">#&gt; 5: 2010     9204</span></div></code></pre>
-</section><section id="fit-a-model" class="level2"><h2>Fit a model</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_n</span>(dgirt_in_abortion, <span class="dt">by =</span> <span class="st">"state"</span>)
+<span class="co">#&gt;    state     n</span>
+<span class="co">#&gt; 1:    CA 14248</span>
+<span class="co">#&gt; 2:    GA  4547</span>
+<span class="co">#&gt; 3:    LA  1658</span>
+<span class="co">#&gt; 4:    MA  2554</span>
+<span class="kw">get_item_n</span>(dgirt_in_abortion, <span class="dt">by =</span> <span class="st">"year"</span>)
+<span class="co">#&gt;    year abortion</span>
+<span class="co">#&gt; 1: 2006     5275</span>
+<span class="co">#&gt; 2: 2007     1690</span>
+<span class="co">#&gt; 3: 2008     4697</span>
+<span class="co">#&gt; 4: 2009     2141</span>
+<span class="co">#&gt; 5: 2010     9204</span></code></pre></div>
+</div>
+<div id="fit-a-model" class="section level2">
+<h2 class="hasAnchor">
+<a href="#fit-a-model" class="anchor"></a>Fit a model</h2>
 <p><code>dgmrp()</code> fits a dynamic multi-level regression and post-stratification (MRP) model to data processed by <code><a href="../reference/shape.html">shape()</a></code>. Here, we’ll use it to estimate public attitudes toward abortion over time, for the groups defined by <code>state</code> and <code>race3</code>. (Specifically, by their Cartesian product.)</p>
 <p>Under the hood, <code>dgmrp()</code> uses RStan for MCMC sampling, and arguments can be passed to RStan’s <a href="https://www.rdocumentation.org/packages/rstan/versions/2.15.1/topics/stan"><code>stan()</code></a> via the <code>...</code> argument of <code>dgmrp()</code>. This is almost always desirable. Here, we specify the number of sampler iterations, chains, and cores.</p>
-<pre class="sourceCode r" id="cb4"><code class="sourceCode r"><div class="sourceLine" id="cb4-1" data-line-number="1">dgmrp_out_abortion &lt;-<span class="st"> </span><span class="kw">dgmrp</span>(dgirt_in_abortion, <span class="dt">iter =</span> <span class="dv">1500</span>, <span class="dt">chains =</span> <span class="dv">4</span>, <span class="dt">cores =</span>
-</div>
-<div class="sourceLine" id="cb4-2" data-line-number="2">  <span class="dv">4</span>, <span class="dt">seed =</span> <span class="dv">42</span>)</div></code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dgmrp_out_abortion &lt;-<span class="st"> </span><span class="kw">dgmrp</span>(dgirt_in_abortion, <span class="dt">iter =</span> <span class="dv">1500</span>, <span class="dt">chains =</span> <span class="dv">4</span>, <span class="dt">cores =</span>
+  <span class="dv">4</span>, <span class="dt">seed =</span> <span class="dv">42</span>)</code></pre></div>
 <p>The model results are held in a <code>dgmrp_fit</code> object. Methods from RStan like <code>extract()</code> are available if needed because <code>dgmrp_fit</code> is a subclass of <code>stanfit</code>. But dgo provides its own methods for typical post-estimation tasks.</p>
-</section><section id="work-with-results" class="level2"><h2>Work with results</h2>
-<p>For a high-level summary of the result, use <code><a href="../reference/dgirtin-class.html">summary()</a></code>.</p>
-<pre class="sourceCode r" id="cb5"><code class="sourceCode r"><div class="sourceLine" id="cb5-1" data-line-number="1">
-<span class="kw"><a href="../reference/dgirtin-class.html">summary</a></span>(dgmrp_out_abortion)</div>
-<div class="sourceLine" id="cb5-2" data-line-number="2"><span class="co">#&gt; dgirt samples from 4 chains of 1500 iterations, 750 warmup, thinned every 1 </span></div>
-<div class="sourceLine" id="cb5-3" data-line-number="3"><span class="co">#&gt;   Drawn Mon May 29 23:27:34 2017 </span></div>
-<div class="sourceLine" id="cb5-4" data-line-number="4"><span class="co">#&gt;   Package version 0.2.10 </span></div>
-<div class="sourceLine" id="cb5-5" data-line-number="5"><span class="co">#&gt;   Model version 2017_01_04_singleissue </span></div>
-<div class="sourceLine" id="cb5-6" data-line-number="6"><span class="co">#&gt;   117 parameters; 60 theta_bars (year state race3)</span></div>
-<div class="sourceLine" id="cb5-7" data-line-number="7"><span class="co">#&gt;   5 periods 2006 to 2010 </span></div>
-<div class="sourceLine" id="cb5-8" data-line-number="8"><span class="co">#&gt; </span></div>
-<div class="sourceLine" id="cb5-9" data-line-number="9"><span class="co">#&gt; n_eff</span></div>
-<div class="sourceLine" id="cb5-10" data-line-number="10"><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></div>
-<div class="sourceLine" id="cb5-11" data-line-number="11"><span class="co">#&gt;   95.68  242.50  451.87  685.85  927.30 3000.00</span></div>
-<div class="sourceLine" id="cb5-12" data-line-number="12"><span class="co">#&gt; </span></div>
-<div class="sourceLine" id="cb5-13" data-line-number="13"><span class="co">#&gt; Rhat</span></div>
-<div class="sourceLine" id="cb5-14" data-line-number="14"><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></div>
-<div class="sourceLine" id="cb5-15" data-line-number="15"><span class="co">#&gt;  0.9993  1.0028  1.0068  1.0081  1.0126  1.0406</span></div>
-<div class="sourceLine" id="cb5-16" data-line-number="16"><span class="co">#&gt; </span></div>
-<div class="sourceLine" id="cb5-17" data-line-number="17"><span class="co">#&gt; Elapsed time</span></div>
-<div class="sourceLine" id="cb5-18" data-line-number="18"><span class="co">#&gt;    chain warmup sample total</span></div>
-<div class="sourceLine" id="cb5-19" data-line-number="19"><span class="co">#&gt; 1:     1    15S    16S   31S</span></div>
-<div class="sourceLine" id="cb5-20" data-line-number="20"><span class="co">#&gt; 2:     2    15S    11S   26S</span></div>
-<div class="sourceLine" id="cb5-21" data-line-number="21"><span class="co">#&gt; 3:     3    15S    19S   34S</span></div>
-<div class="sourceLine" id="cb5-22" data-line-number="22"><span class="co">#&gt; 4:     4    16S    10S   26S</span></div></code></pre>
-<p>To apply scalar functions to posterior samples, use <a href="https://jdunham.io/dgo/reference/dgo_fit-methods.html"><code><a href="../reference/dgo_fit-methods.html">summarize()</a></code></a>. The default output gives summary statistics for the model’s <code>theta_bar</code> parameters, which represent group means. These are indexed by time (<code>year</code>) and group, where groups are again defined by local geographic area (<code>state</code>) and any other respondent characteristics (<code>race3</code>).</p>
-<pre class="sourceCode r" id="cb6"><code class="sourceCode r"><div class="sourceLine" id="cb6-1" data-line-number="1">
-<span class="kw">head</span>(<span class="kw"><a href="../reference/dgo_fit-methods.html">summarize</a></span>(dgmrp_out_abortion))</div>
-<div class="sourceLine" id="cb6-2" data-line-number="2"><span class="co">#&gt;        param state race3 year      mean         sd    median     q_025</span></div>
-<div class="sourceLine" id="cb6-3" data-line-number="3"><span class="co">#&gt; 1: theta_bar    CA black 2006 0.7739283 0.02098019 0.7749083 0.7307567</span></div>
-<div class="sourceLine" id="cb6-4" data-line-number="4"><span class="co">#&gt; 2: theta_bar    CA black 2007 0.7980027 0.02771553 0.7979378 0.7439328</span></div>
-<div class="sourceLine" id="cb6-5" data-line-number="5"><span class="co">#&gt; 3: theta_bar    CA black 2008 0.7232980 0.02362116 0.7231930 0.6786121</span></div>
-<div class="sourceLine" id="cb6-6" data-line-number="6"><span class="co">#&gt; 4: theta_bar    CA black 2009 0.6863666 0.02128237 0.6863458 0.6463628</span></div>
-<div class="sourceLine" id="cb6-7" data-line-number="7"><span class="co">#&gt; 5: theta_bar    CA black 2010 0.7407779 0.01682742 0.7414667 0.7058706</span></div>
-<div class="sourceLine" id="cb6-8" data-line-number="8"><span class="co">#&gt; 6: theta_bar    CA other 2006 0.7347199 0.02322850 0.7354365 0.6872140</span></div>
-<div class="sourceLine" id="cb6-9" data-line-number="9"><span class="co">#&gt;        q_975</span></div>
-<div class="sourceLine" id="cb6-10" data-line-number="10"><span class="co">#&gt; 1: 0.8144084</span></div>
-<div class="sourceLine" id="cb6-11" data-line-number="11"><span class="co">#&gt; 2: 0.8517811</span></div>
-<div class="sourceLine" id="cb6-12" data-line-number="12"><span class="co">#&gt; 3: 0.7693334</span></div>
-<div class="sourceLine" id="cb6-13" data-line-number="13"><span class="co">#&gt; 4: 0.7279652</span></div>
-<div class="sourceLine" id="cb6-14" data-line-number="14"><span class="co">#&gt; 5: 0.7717651</span></div>
-<div class="sourceLine" id="cb6-15" data-line-number="15"><span class="co">#&gt; 6: 0.7790182</span></div></code></pre>
-<p>Alternatively, <a href="https://jdunham.io/dgo/reference/dgo_fit-methods.html"><code><a href="../reference/dgo_fit-methods.html">summarize()</a></code></a> can apply arbitrary functions to posterior samples for whatever parameter is given by its <code>pars</code> argument.</p>
-<pre class="sourceCode r" id="cb7"><code class="sourceCode r"><div class="sourceLine" id="cb7-1" data-line-number="1">
-<span class="kw"><a href="../reference/dgo_fit-methods.html">summarize</a></span>(dgmrp_out_abortion, <span class="dt">pars =</span> <span class="st">"xi"</span>, <span class="dt">funs =</span> <span class="st">"var"</span>)</div>
-<div class="sourceLine" id="cb7-2" data-line-number="2"><span class="co">#&gt;    param year        var</span></div>
-<div class="sourceLine" id="cb7-3" data-line-number="3"><span class="co">#&gt; 1:    xi 2006 0.01814362</span></div>
-<div class="sourceLine" id="cb7-4" data-line-number="4"><span class="co">#&gt; 2:    xi 2007 0.05026942</span></div>
-<div class="sourceLine" id="cb7-5" data-line-number="5"><span class="co">#&gt; 3:    xi 2008 0.05606188</span></div>
-<div class="sourceLine" id="cb7-6" data-line-number="6"><span class="co">#&gt; 4:    xi 2009 0.04857038</span></div>
-<div class="sourceLine" id="cb7-7" data-line-number="7"><span class="co">#&gt; 5:    xi 2010 0.04149793</span></div></code></pre>
-<p>To access posterior samples in tabular form use <a href="https://jdunham.io/dgo/reference/dgo_fit-methods.html"><code>as.data.frame()</code></a>. By default, this method returns post-warmup samples for the <code>theta_bar</code> parameters, but like other methods takes a <code>pars</code> argument.</p>
-<pre class="sourceCode r" id="cb8"><code class="sourceCode r"><div class="sourceLine" id="cb8-1" data-line-number="1">
-<span class="kw">head</span>(<span class="kw">as.data.frame</span>(dgmrp_out_abortion))</div>
-<div class="sourceLine" id="cb8-2" data-line-number="2"><span class="co">#&gt;        param state race3 year iteration     value</span></div>
-<div class="sourceLine" id="cb8-3" data-line-number="3"><span class="co">#&gt; 1: theta_bar    CA black 2006         1 0.7661626</span></div>
-<div class="sourceLine" id="cb8-4" data-line-number="4"><span class="co">#&gt; 2: theta_bar    CA black 2006         2 0.7690362</span></div>
-<div class="sourceLine" id="cb8-5" data-line-number="5"><span class="co">#&gt; 3: theta_bar    CA black 2006         3 0.7656257</span></div>
-<div class="sourceLine" id="cb8-6" data-line-number="6"><span class="co">#&gt; 4: theta_bar    CA black 2006         4 0.7935372</span></div>
-<div class="sourceLine" id="cb8-7" data-line-number="7"><span class="co">#&gt; 5: theta_bar    CA black 2006         5 0.7544080</span></div>
-<div class="sourceLine" id="cb8-8" data-line-number="8"><span class="co">#&gt; 6: theta_bar    CA black 2006         6 0.7819740</span></div></code></pre>
-<p>To poststratify the results use <code><a href="../reference/poststratify.html">poststratify()</a></code>. Here, we use the group population proportions bundled as <code>annual_state_race_targets</code> to reweight and aggregate estimates to strata defined by state-years.</p>
-<pre class="sourceCode r" id="cb9"><code class="sourceCode r"><div class="sourceLine" id="cb9-1" data-line-number="1">
-<span class="kw"><a href="../reference/poststratify.html">poststratify</a></span>(dgmrp_out_abortion, annual_state_race_targets, <span class="dt">strata_names =</span>
 </div>
-<div class="sourceLine" id="cb9-2" data-line-number="2">  <span class="kw">c</span>(<span class="st">"state"</span>, <span class="st">"year"</span>), <span class="dt">aggregated_names =</span> <span class="st">"race3"</span>)</div>
-<div class="sourceLine" id="cb9-3" data-line-number="3"><span class="co">#&gt;     state year     value</span></div>
-<div class="sourceLine" id="cb9-4" data-line-number="4"><span class="co">#&gt;  1:    CA 2006 0.7187353</span></div>
-<div class="sourceLine" id="cb9-5" data-line-number="5"><span class="co">#&gt;  2:    CA 2007 0.7469064</span></div>
-<div class="sourceLine" id="cb9-6" data-line-number="6"><span class="co">#&gt;  3:    CA 2008 0.6562966</span></div>
-<div class="sourceLine" id="cb9-7" data-line-number="7"><span class="co">#&gt;  4:    CA 2009 0.6272075</span></div>
-<div class="sourceLine" id="cb9-8" data-line-number="8"><span class="co">#&gt;  5:    CA 2010 0.6754691</span></div>
-<div class="sourceLine" id="cb9-9" data-line-number="9"><span class="co">#&gt;  6:    GA 2006 0.6339750</span></div>
-<div class="sourceLine" id="cb9-10" data-line-number="10"><span class="co">#&gt;  7:    GA 2007 0.6225482</span></div>
-<div class="sourceLine" id="cb9-11" data-line-number="11"><span class="co">#&gt;  8:    GA 2008 0.5232615</span></div>
-<div class="sourceLine" id="cb9-12" data-line-number="12"><span class="co">#&gt;  9:    GA 2009 0.5095145</span></div>
-<div class="sourceLine" id="cb9-13" data-line-number="13"><span class="co">#&gt; 10:    GA 2010 0.5705449</span></div>
-<div class="sourceLine" id="cb9-14" data-line-number="14"><span class="co">#&gt; 11:    LA 2006 0.5266416</span></div>
-<div class="sourceLine" id="cb9-15" data-line-number="15"><span class="co">#&gt; 12:    LA 2007 0.4769044</span></div>
-<div class="sourceLine" id="cb9-16" data-line-number="16"><span class="co">#&gt; 13:    LA 2008 0.4142786</span></div>
-<div class="sourceLine" id="cb9-17" data-line-number="17"><span class="co">#&gt; 14:    LA 2009 0.3985367</span></div>
-<div class="sourceLine" id="cb9-18" data-line-number="18"><span class="co">#&gt; 15:    LA 2010 0.4229707</span></div>
-<div class="sourceLine" id="cb9-19" data-line-number="19"><span class="co">#&gt; 16:    MA 2006 0.7629194</span></div>
-<div class="sourceLine" id="cb9-20" data-line-number="20"><span class="co">#&gt; 17:    MA 2007 0.8099707</span></div>
-<div class="sourceLine" id="cb9-21" data-line-number="21"><span class="co">#&gt; 18:    MA 2008 0.7058450</span></div>
-<div class="sourceLine" id="cb9-22" data-line-number="22"><span class="co">#&gt; 19:    MA 2009 0.6624888</span></div>
-<div class="sourceLine" id="cb9-23" data-line-number="23"><span class="co">#&gt; 20:    MA 2010 0.7078342</span></div></code></pre>
+<div id="work-with-results" class="section level2">
+<h2 class="hasAnchor">
+<a href="#work-with-results" class="anchor"></a>Work with results</h2>
+<p>For a high-level summary of the result, use <code><a href="../reference/dgirtin-class.html">summary()</a></code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/dgirtin-class.html">summary</a></span>(dgmrp_out_abortion)
+<span class="co">#&gt; dgirt samples from 4 chains of 1500 iterations, 750 warmup, thinned every 1 </span>
+<span class="co">#&gt;   Drawn Mon May 29 23:27:34 2017 </span>
+<span class="co">#&gt;   Package version 0.2.10 </span>
+<span class="co">#&gt;   Model version 2017_01_04_singleissue </span>
+<span class="co">#&gt;   117 parameters; 60 theta_bars (year state race3)</span>
+<span class="co">#&gt;   5 periods 2006 to 2010 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; n_eff</span>
+<span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span>
+<span class="co">#&gt;   95.68  242.50  451.87  685.85  927.30 3000.00</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Rhat</span>
+<span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span>
+<span class="co">#&gt;  0.9993  1.0028  1.0068  1.0081  1.0126  1.0406</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Elapsed time</span>
+<span class="co">#&gt;    chain warmup sample total</span>
+<span class="co">#&gt; 1:     1    15S    16S   31S</span>
+<span class="co">#&gt; 2:     2    15S    11S   26S</span>
+<span class="co">#&gt; 3:     3    15S    19S   34S</span>
+<span class="co">#&gt; 4:     4    16S    10S   26S</span></code></pre></div>
+<p>To apply scalar functions to posterior samples, use <a href="https://jdunham.io/dgo/reference/dgo_fit-methods.html"><code><a href="../reference/dgo_fit-methods.html">summarize()</a></code></a>. The default output gives summary statistics for the model’s <code>theta_bar</code> parameters, which represent group means. These are indexed by time (<code>year</code>) and group, where groups are again defined by local geographic area (<code>state</code>) and any other respondent characteristics (<code>race3</code>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(<span class="kw"><a href="../reference/dgo_fit-methods.html">summarize</a></span>(dgmrp_out_abortion))
+<span class="co">#&gt;        param state race3 year      mean         sd    median     q_025</span>
+<span class="co">#&gt; 1: theta_bar    CA black 2006 0.7739283 0.02098019 0.7749083 0.7307567</span>
+<span class="co">#&gt; 2: theta_bar    CA black 2007 0.7980027 0.02771553 0.7979378 0.7439328</span>
+<span class="co">#&gt; 3: theta_bar    CA black 2008 0.7232980 0.02362116 0.7231930 0.6786121</span>
+<span class="co">#&gt; 4: theta_bar    CA black 2009 0.6863666 0.02128237 0.6863458 0.6463628</span>
+<span class="co">#&gt; 5: theta_bar    CA black 2010 0.7407779 0.01682742 0.7414667 0.7058706</span>
+<span class="co">#&gt; 6: theta_bar    CA other 2006 0.7347199 0.02322850 0.7354365 0.6872140</span>
+<span class="co">#&gt;        q_975</span>
+<span class="co">#&gt; 1: 0.8144084</span>
+<span class="co">#&gt; 2: 0.8517811</span>
+<span class="co">#&gt; 3: 0.7693334</span>
+<span class="co">#&gt; 4: 0.7279652</span>
+<span class="co">#&gt; 5: 0.7717651</span>
+<span class="co">#&gt; 6: 0.7790182</span></code></pre></div>
+<p>Alternatively, <a href="https://jdunham.io/dgo/reference/dgo_fit-methods.html"><code><a href="../reference/dgo_fit-methods.html">summarize()</a></code></a> can apply arbitrary functions to posterior samples for whatever parameter is given by its <code>pars</code> argument.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/dgo_fit-methods.html">summarize</a></span>(dgmrp_out_abortion, <span class="dt">pars =</span> <span class="st">"xi"</span>, <span class="dt">funs =</span> <span class="st">"var"</span>)
+<span class="co">#&gt;    param year        var</span>
+<span class="co">#&gt; 1:    xi 2006 0.01814362</span>
+<span class="co">#&gt; 2:    xi 2007 0.05026942</span>
+<span class="co">#&gt; 3:    xi 2008 0.05606188</span>
+<span class="co">#&gt; 4:    xi 2009 0.04857038</span>
+<span class="co">#&gt; 5:    xi 2010 0.04149793</span></code></pre></div>
+<p>To access posterior samples in tabular form use <a href="https://jdunham.io/dgo/reference/dgo_fit-methods.html"><code>as.data.frame()</code></a>. By default, this method returns post-warmup samples for the <code>theta_bar</code> parameters, but like other methods takes a <code>pars</code> argument.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(<span class="kw">as.data.frame</span>(dgmrp_out_abortion))
+<span class="co">#&gt;        param state race3 year iteration     value</span>
+<span class="co">#&gt; 1: theta_bar    CA black 2006         1 0.7661626</span>
+<span class="co">#&gt; 2: theta_bar    CA black 2006         2 0.7690362</span>
+<span class="co">#&gt; 3: theta_bar    CA black 2006         3 0.7656257</span>
+<span class="co">#&gt; 4: theta_bar    CA black 2006         4 0.7935372</span>
+<span class="co">#&gt; 5: theta_bar    CA black 2006         5 0.7544080</span>
+<span class="co">#&gt; 6: theta_bar    CA black 2006         6 0.7819740</span></code></pre></div>
+<p>To poststratify the results use <code><a href="../reference/poststratify.html">poststratify()</a></code>. Here, we use the group population proportions bundled as <code>annual_state_race_targets</code> to reweight and aggregate estimates to strata defined by state-years.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/poststratify.html">poststratify</a></span>(dgmrp_out_abortion, annual_state_race_targets, <span class="dt">strata_names =</span>
+  <span class="kw">c</span>(<span class="st">"state"</span>, <span class="st">"year"</span>), <span class="dt">aggregated_names =</span> <span class="st">"race3"</span>)
+<span class="co">#&gt;     state year     value</span>
+<span class="co">#&gt;  1:    CA 2006 0.7187353</span>
+<span class="co">#&gt;  2:    CA 2007 0.7469064</span>
+<span class="co">#&gt;  3:    CA 2008 0.6562966</span>
+<span class="co">#&gt;  4:    CA 2009 0.6272075</span>
+<span class="co">#&gt;  5:    CA 2010 0.6754691</span>
+<span class="co">#&gt;  6:    GA 2006 0.6339750</span>
+<span class="co">#&gt;  7:    GA 2007 0.6225482</span>
+<span class="co">#&gt;  8:    GA 2008 0.5232615</span>
+<span class="co">#&gt;  9:    GA 2009 0.5095145</span>
+<span class="co">#&gt; 10:    GA 2010 0.5705449</span>
+<span class="co">#&gt; 11:    LA 2006 0.5266416</span>
+<span class="co">#&gt; 12:    LA 2007 0.4769044</span>
+<span class="co">#&gt; 13:    LA 2008 0.4142786</span>
+<span class="co">#&gt; 14:    LA 2009 0.3985367</span>
+<span class="co">#&gt; 15:    LA 2010 0.4229707</span>
+<span class="co">#&gt; 16:    MA 2006 0.7629194</span>
+<span class="co">#&gt; 17:    MA 2007 0.8099707</span>
+<span class="co">#&gt; 18:    MA 2008 0.7058450</span>
+<span class="co">#&gt; 19:    MA 2009 0.6624888</span>
+<span class="co">#&gt; 20:    MA 2010 0.7078342</span></code></pre></div>
 <p>To plot the results use <code><a href="../reference/plot-method.html">dgirt_plot()</a></code>. This method plots summaries of posterior samples by time period. By default, it shows a 95% credible interval around posterior medians for the <code>theta_bar</code> parameters, for each local geographic area. Here we omit the CIs.</p>
-<pre class="sourceCode r" id="cb10"><code class="sourceCode r"><div class="sourceLine" id="cb10-1" data-line-number="1">
-<span class="kw"><a href="../reference/plot-method.html">dgirt_plot</a></span>(dgmrp_out_abortion, <span class="dt">y_min =</span> <span class="ot">NULL</span>, <span class="dt">y_max =</span> <span class="ot">NULL</span>)</div></code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plot-method.html">dgirt_plot</a></span>(dgmrp_out_abortion, <span class="dt">y_min =</span> <span class="ot">NULL</span>, <span class="dt">y_max =</span> <span class="ot">NULL</span>)</code></pre></div>
 <p><img src="abortion_attitudes_files/figure-html/dgmrp_plot-1.png" width="672"></p>
 <p><code><a href="../reference/plot-method.html">dgirt_plot()</a></code> can also plot the <code>data.frame</code> output from <code><a href="../reference/poststratify.html">poststratify()</a></code>, given arguments that identify the relevant variables. Below, we aggregate over the demographic grouping variable <code>race3</code>, resulting in a <code>data.frame</code> of estimates by state-year.</p>
-<pre class="sourceCode r" id="cb11"><code class="sourceCode r"><div class="sourceLine" id="cb11-1" data-line-number="1">ps &lt;-<span class="st"> </span><span class="kw"><a href="../reference/poststratify.html">poststratify</a></span>(dgmrp_out_abortion, annual_state_race_targets, <span class="dt">strata_names =</span>
-</div>
-<div class="sourceLine" id="cb11-2" data-line-number="2">  <span class="kw">c</span>(<span class="st">"state"</span>, <span class="st">"year"</span>), <span class="dt">aggregated_names =</span> <span class="st">"race3"</span>)</div>
-<div class="sourceLine" id="cb11-3" data-line-number="3">
-<span class="kw">head</span>(ps)</div>
-<div class="sourceLine" id="cb11-4" data-line-number="4"><span class="co">#&gt;    state year     value</span></div>
-<div class="sourceLine" id="cb11-5" data-line-number="5"><span class="co">#&gt; 1:    CA 2006 0.7187353</span></div>
-<div class="sourceLine" id="cb11-6" data-line-number="6"><span class="co">#&gt; 2:    CA 2007 0.7469064</span></div>
-<div class="sourceLine" id="cb11-7" data-line-number="7"><span class="co">#&gt; 3:    CA 2008 0.6562966</span></div>
-<div class="sourceLine" id="cb11-8" data-line-number="8"><span class="co">#&gt; 4:    CA 2009 0.6272075</span></div>
-<div class="sourceLine" id="cb11-9" data-line-number="9"><span class="co">#&gt; 5:    CA 2010 0.6754691</span></div>
-<div class="sourceLine" id="cb11-10" data-line-number="10"><span class="co">#&gt; 6:    GA 2006 0.6339750</span></div>
-<div class="sourceLine" id="cb11-11" data-line-number="11">
-<span class="kw"><a href="../reference/plot-method.html">dgirt_plot</a></span>(ps, <span class="dt">group_names =</span> <span class="ot">NULL</span>, <span class="dt">time_name =</span> <span class="st">"year"</span>, <span class="dt">geo_name =</span> <span class="st">"state"</span>)</div></code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ps &lt;-<span class="st"> </span><span class="kw"><a href="../reference/poststratify.html">poststratify</a></span>(dgmrp_out_abortion, annual_state_race_targets, <span class="dt">strata_names =</span>
+  <span class="kw">c</span>(<span class="st">"state"</span>, <span class="st">"year"</span>), <span class="dt">aggregated_names =</span> <span class="st">"race3"</span>)
+<span class="kw">head</span>(ps)
+<span class="co">#&gt;    state year     value</span>
+<span class="co">#&gt; 1:    CA 2006 0.7187353</span>
+<span class="co">#&gt; 2:    CA 2007 0.7469064</span>
+<span class="co">#&gt; 3:    CA 2008 0.6562966</span>
+<span class="co">#&gt; 4:    CA 2009 0.6272075</span>
+<span class="co">#&gt; 5:    CA 2010 0.6754691</span>
+<span class="co">#&gt; 6:    GA 2006 0.6339750</span>
+<span class="kw"><a href="../reference/plot-method.html">dgirt_plot</a></span>(ps, <span class="dt">group_names =</span> <span class="ot">NULL</span>, <span class="dt">time_name =</span> <span class="st">"year"</span>, <span class="dt">geo_name =</span> <span class="st">"state"</span>)</code></pre></div>
 <p><img src="abortion_attitudes_files/figure-html/dgmrp_plot_ps-1.png" width="672"></p>
 <p>In the call to <code><a href="../reference/plot-method.html">dgirt_plot()</a></code>, we passed the names of the <code>state</code> and <code>year</code> variables. The <code>group_names</code> argument was then <code>NULL</code>, because there were no grouping variables left after we aggregated over <code>race3</code>.</p>
-</section>
+</div>
 </div>
   </div>
 

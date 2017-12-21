@@ -1,3 +1,7 @@
+## dgo 0.2.14
+
+* Avoid an error during testing, on R built `--without-long-double`.
+
 ## dgo 0.2.13
 
 * Fix an issue introduced in v0.2.12 that led to an unexpected error in
