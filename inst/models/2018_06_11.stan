@@ -66,12 +66,11 @@ transformed parameters {
   vector<lower=0>[Q] sd_item; // item standard deviation
   vector<lower=0>[Q] var_item; // item variance
   vector<lower=0>[T] var_theta; // within-group variance of theta
-  // var. of theta_bar w/in each level-two group **NOT CONSTRAINED TO BE POSITIVE**
   vector[P] gamma[T]; // hierarchical parameters (adjusted)
   vector[G] mu_theta_bar[T]; // linear predictor for group means
   vector[P] mu_gamma[T];
   vector[G] z[T, Q]; // array of vectors of group deviates
-  real<lower=0,upper=1> prob[T, Q, G]; // array of probabilities
+  real prob_logit[T, Q, G]; // array of probabilities (logit scale)
   // scale (product = 1)
   disc = disc_raw * pow(exp(sum(log(disc_raw))), (-inv(Q)));
   for (q in 1:Q) {
@@ -103,7 +102,7 @@ transformed parameters {
         // 2016-02-05: need to think more about nu_geo_prior; make it different for geographic and demographic
         // parameters
         //
-        // In the second year, agian use uniformative prior for gamma, rather
+        // In the second year, again use uniformative prior for gamma, rather
         // than one centered on its lagged value, because gamma is likely to be
         // very different in periods 1 and 2 because only in 2 is
         // theta_bar[t - 1] used to inform theta_bar[t].
@@ -133,11 +132,11 @@ transformed parameters {
       //mu_theta_bar[t] = theta_bar[t - 1] * delta_tbar[t] + XX * gamma[t];
     }
     // Matt trick for group means
-    if (hierarchical_model==1){
-   		 theta_bar[t] = mu_theta_bar[t] + sd_theta_bar[t] * theta_bar_raw[t]; 
+    if (hierarchical_model == 1){
+      theta_bar[t] = mu_theta_bar[t] + sd_theta_bar[t] * theta_bar_raw[t]; 
     }
-    if (hierarchical_model==0){
-   	 	theta_bar[t] =  sd_theta_bar[t] * theta_bar_raw[t]; 
+    if (hierarchical_model == 0){
+      theta_bar[t] = sd_theta_bar[t] * theta_bar_raw[t]; 
     }
     for (q in 1:Q) { // loop over questions
       real sd_tq;
@@ -152,11 +151,11 @@ transformed parameters {
       for (g in 1:G) { // loop over groups
         if (Q == 1) {
 	  // Manifest variable
-	  prob[t, q, g] = Phi_approx(theta_bar[t][g]);
+	  prob_logit[t, q, g] = probit_to_logit_scale(theta_bar[t][g]);
 	}	
         if (Q > 1) {
 	  // Latent variable (IRT model)
-          prob[t, q, g] = Phi_approx(z[t, q, g]);
+          prob_logit[t, q, g] = probit_to_logit_scale(z[t, q, g]);
 	} 
       }
     } // end question loop
@@ -165,7 +164,7 @@ transformed parameters {
 
 model {
   // TEMPORARY VARIABLES
-  real prob_vec[N]; // long vector of probabilities
+  real prob_logit_vec[N]; // long vector of probabilities (logit)
   int pos;
   pos = 0;
 
@@ -221,14 +220,14 @@ model {
     for (q in 1:Q) { // loop over questions
       for (g in 1:G) { // loop over groups
         pos = pos + 1;
-        prob_vec[pos] = prob[t, q, g];
+        prob_logit_vec[pos] = prob_logit[t, q, g];
       } // end group loop
     } // end question loop
 
   } // end time loop
 
   // Sampling model for group responses
-  s_vec[observed] ~ binomial(n_vec[observed], prob_vec[observed]);
+  s_vec[observed] ~ binomial_logit(n_vec[observed], prob_logit_vec[observed]);
 }
 
 generated quantities {
