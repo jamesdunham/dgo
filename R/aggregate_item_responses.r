@@ -25,67 +25,59 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   # doesn't matter.
   if (length(item_data)) {
     gt_names <- attr(item_data, "gt_items")
-    item_data[, c("n_responses") := list(rowSums(!is.na(.SD))),
+    item_data[, c("n_gt_responses") := list(rowSums(!is.na(.SD))),
               .SDcols = gt_names]
+    item_data[, c("n_item_responses") := list(rowSums(!is.na(.SD))),
+              .SDcols = ctrl@item_names]
+
     if (!length(ctrl@weight_name)) {
       item_data[, weight := 1L]
       ctrl@weight_name <- "weight"
     }
+
     item_data[, c("def") := lapply(.SD, calc_design_effects),
               .SDcols = ctrl@weight_name,
               by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
 
+    # get the number of dichotomized item responses for each item (1 for a
+    # dichotomous item, or K-1) 
+    item_levels = vapply(ctrl@item_names, function(item_name) {
+      sum(grepl(paste0('^', item_name, '_gt[0-9]+$'), gt_names))
+    }, integer(1))
+
+    # weight each _gt response: divide it by the number of _gt variables for the
+    # item (for an item already dichotomous, this is 1), and then divide it by
+    # the number of item responses
+    for (item_name in ctrl@item_names) {
+      for (gt_item in gt_names[grepl(paste0('^', item_name, '_gt[0-9]+$'), gt_names)]) {
+        item_data = item_data[, paste0(gt_item, '_weighted') := get(gt_item) /
+          item_levels[item_name] / get('n_item_responses')]
+      }
+    }
     # get design-effect-adjusted nonmissing response counts by group and item
-    item_n <- item_data[, lapply(.SD, count_items, get("n_responses"), get("def")),
-                        .SDcols = c(gt_names),
-                        by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
-    # append _n_grp to the response count columns
-    item_n_vars <- paste0(gt_names, "_n_grp")
-    names(item_n) <- replace(names(item_n), match(gt_names, names(item_n)), item_n_vars)
-    data.table::setkeyv(item_n, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
-    drop_cols <- setdiff(names(item_n), c(key(item_n), item_n_vars))
-    if (length(drop_cols)) {
-      item_n[, c(drop_cols) := NULL]
-    }
+    gt_wtd_names = paste0(gt_names, '_weighted')
+    item_n <- item_data[, lapply(.SD, count_items, get("def")),
+      .SDcols = c(gt_wtd_names), by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
+    item_n <- melt(item_n, id.vars = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name),
+      variable.name = 'item', value.name = 'n_grp')
+    item_n[, item := sub('_weighted', '', item)]
 
-    # get mean ystar
-    item_data[, c("adj_weight") := get(ctrl@weight_name) / get("n_responses")]
-    item_means <- item_data[, lapply(.SD, function(x) weighted.mean(x, .SD$adj_weight, na.rm = TRUE)),
-                            .SDcols = c(gt_names, "adj_weight"),
-                            by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
-    # append _mean to the mean response columns
-    item_mean_vars <- paste0(gt_names, "_mean")
-    names(item_means) <- replace(names(item_means), match(gt_names, names(item_means)), item_mean_vars)
-    data.table::setkeyv(item_means, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
-    drop_cols <- setdiff(names(item_means), c(key(item_means), item_mean_vars))
-    if (length(drop_cols)) {
-      item_means[, c(drop_cols) := NULL]
-    }
+    # take def-adjusted response sums by group and item
+    group_sum = function(x, def) ceiling(sum(x / def, na.rm = TRUE))
+    item_s <- item_data[, lapply(.SD, group_sum, get("def")), .SDcols =
+      c(gt_wtd_names), by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
+    item_s <- melt(item_s, id.vars = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name),
+      variable.name = 'item', value.name = 's_grp')
+    item_s[, item := sub('_weighted', '', item)]
 
-    # join response counts with means
-    count_means <- item_n[item_means]
-    count_means <- count_means[, c(ctrl@time_name, ctrl@geo_name,
-                                     ctrl@group_names, item_mean_vars,
-                                     item_n_vars), with = FALSE]
-
-    # the group success count for an item is the product of its count and mean
-    item_s_vars <- paste0(gt_names, "_s_grp")
-    count_means[, c(item_s_vars) := round(count_means[, (item_mean_vars), with = FALSE] *
-                                           count_means[, (item_n_vars), with = FALSE], 0)]
-    count_means <- count_means[, -grep("_mean$", names(count_means)), with = FALSE]
-
-
-    # we want a long table of successes (s_grp) and trials (n_grp) by group and
-    # item; items need to move from columns to rows
-    melted <- melt(count_means, id.vars = c(ctrl@time_name, ctrl@geo_name,
-                                             ctrl@group_names),
-                   variable.name = "item")
-    melted[, c("variable") := list(gsub(".*([sn]_grp)$", "\\1", get("item")))]
-    melted[, c("item") := list(gsub("(.*)_[sn]_grp$", "\\1", get("item")))]
-    f <- as.formula(paste0(paste(ctrl@time_name, ctrl@geo_name,
-                                 paste(ctrl@group_names, collapse = " + "),
-                                 "item", sep = "+"), " ~ variable"))
-    counts <- data.table::dcast.data.table(melted, f, drop = FALSE, fill = 0L)
+    stopifnot(!length(setdiff(item_n$item, item_s$item)))
+    stopifnot(!length(setdiff(item_s$item, item_n$item)))
+    counts = merge(item_s, item_n, by = c(ctrl@geo_name, ctrl@group_names,
+        ctrl@time_name, "item"))
+    stopifnot(all(counts$s_grp <= counts$n_grp))
+    stopifnot(!any(is.na(counts$s_grp)))
+    stopifnot(!any(is.na(counts$n_grp)))
+    counts[]
   }
 
   # include aggregates, if any
@@ -128,8 +120,8 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   counts
 }
 
-count_items <- function(x, n_responses, def) {
-  ceiling(sum(as.integer(!is.na(x)) / n_responses / def, na.rm = TRUE))
+count_items <- function(x, def) {
+  ceiling(sum(as.integer(!is.na(x)) / def, na.rm = TRUE))
 }
 
 calc_design_effects <- function(x) {
