@@ -18,13 +18,31 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
+
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
+
+
+<meta property="og:title" content="<code>print</code> method for <code>dgo_fit-class</code> objects — show,dgo_fit-method" />
+
+<meta property="og:description" content="print method for dgo_fit-class objects
+get_elapsed_time: extract chain run times from dgo_fit-class
+objects
+summary method for dgo_fit-class objects
+summarize method for dgo_fit-class objects
+as.data.frame method for dgo_fit-class objects
+rhats: extract split R-hats from dgo_fit-class objects" />
+<meta name="twitter:card" content="summary" />
+
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -47,8 +65,12 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">dgo</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">dgo</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.15</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -74,6 +96,7 @@
       <ul class="nav navbar-nav navbar-right">
         
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -81,26 +104,25 @@
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1><code>print</code> method for <code>dgo_fit-class</code> objects</h1>
+    
+    <div class="hidden name"><code>dgo_fit-methods.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
-    <p><code>print</code> method for <code>dgo_fit-class</code> objects
-
-    <code>get_elapsed_time</code>: extract chain run times from <code>dgo_fit</code>-class
-objects
-
-    <code>summary</code> method for <code>dgo_fit-class</code> objects
-
-    <code>summarize</code> method for <code>dgo_fit-class</code> objects
-
-    <code>as.data.frame</code> method for <code>dgo_fit-class</code> objects
-
-    <code>rhats</code>: extract split R-hats from <code>dgo_fit</code>-class objects</p>
+    <p><code>print</code> method for <code>dgo_fit-class</code> objects</p>
+<p><code>get_elapsed_time</code>: extract chain run times from <code>dgo_fit</code>-class
+objects</p>
+<p><code>summary</code> method for <code>dgo_fit-class</code> objects</p>
+<p><code>summarize</code> method for <code>dgo_fit-class</code> objects</p>
+<p><code>as.data.frame</code> method for <code>dgo_fit-class</code> objects</p>
+<p><code>rhats</code>: extract split R-hats from <code>dgo_fit</code>-class objects</p>
     
+    </div>
 
     <pre class="usage"><span class='co'># S4 method for dgo_fit</span>
 <span class='fu'>show</span>(<span class='no'>object</span>)
@@ -134,7 +156,7 @@ objects
 <span class='co'># S4 method for dgo_fit</span>
 <span class='fu'>rhats</span>(<span class='no'>x</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>"theta_bar"</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
@@ -176,58 +198,46 @@ indexes, as output from RStan.</p></td>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
-<span class='fu'>summarize</span>(<span class='no'>toy_dgirtfit</span>)</div><div class='output co'>#&gt;         param state race3 year        mean        sd     median      q_025
-#&gt;  1: theta_bar    SC black 2009  2.24053065 1.9336147  1.7799611  0.4566614
-#&gt;  2: theta_bar    SC black 2010  1.27549292 1.0036580  0.9944347  0.2931024
-#&gt;  3: theta_bar    SC other 2009 -1.40019273 1.6534406 -1.0144666 -4.7212136
-#&gt;  4: theta_bar    SC other 2010  0.04084414 0.7356635  0.0503198 -1.4892224
-#&gt;  5: theta_bar    SC white 2009 -1.67983508 1.6607712 -1.2961321 -4.8426620
-#&gt;  6: theta_bar    SC white 2010 -1.42533238 1.1166382 -1.1603282 -4.4630400
-#&gt;  7: theta_bar    VA black 2009  2.01710000 1.7614584  1.6346355  0.4384231
-#&gt;  8: theta_bar    VA black 2010  1.48835032 1.0317741  1.1923152  0.3542094
-#&gt;  9: theta_bar    VA other 2009 -1.02559194 1.1759219 -0.6812453 -4.2629804
-#&gt; 10: theta_bar    VA other 2010  0.30256578 0.6388466  0.2265883 -0.9024376
-#&gt; 11: theta_bar    VA white 2009 -0.93711250 0.9046802 -0.7106767 -3.1100210
-#&gt; 12: theta_bar    VA white 2010 -0.82327290 0.6901749 -0.6491099 -2.6735110
-#&gt;           q_975
-#&gt;  1:  6.45595603
-#&gt;  2:  3.83169121
-#&gt;  3:  0.06443927
-#&gt;  4:  1.63704312
-#&gt;  5: -0.23570371
-#&gt;  6: -0.23587321
-#&gt;  7:  5.41852042
-#&gt;  8:  4.01645824
-#&gt;  9:  0.16390533
-#&gt; 10:  1.77105059
-#&gt; 11: -0.07141857
-#&gt; 12: -0.08582941</div><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
+<span class='fu'>summarize</span>(<span class='no'>toy_dgirtfit</span>)</div><div class='output co'>#&gt;         param state race3 year        mean        sd      median      q_025
+#&gt;  1: theta_bar    SC black 2009  2.38534059 2.0905203  1.78508548  0.5454592
+#&gt;  2: theta_bar    SC black 2010  1.29432287 0.8970033  1.03984168  0.3001794
+#&gt;  3: theta_bar    SC other 2009 -1.45219991 1.4420309 -1.06769498 -5.2832870
+#&gt;  4: theta_bar    SC other 2010  0.06047909 0.8231323  0.05652235 -1.6102244
+#&gt;  5: theta_bar    SC white 2009 -1.76593109 1.4941141 -1.33209918 -5.7727416
+#&gt;  6: theta_bar    SC white 2010 -1.50148111 1.0729693 -1.23159639 -4.3021890
+#&gt;  7: theta_bar    VA black 2009  2.18758597 1.8987323  1.69340313  0.4959218
+#&gt;  8: theta_bar    VA black 2010  1.58467566 1.0397586  1.30697142  0.4353679
+#&gt;  9: theta_bar    VA other 2009 -1.07409462 1.3340352 -0.73716626 -4.4457165
+#&gt; 10: theta_bar    VA other 2010  0.35206957 0.6061441  0.29861246 -0.7661858
+#&gt; 11: theta_bar    VA white 2009 -1.01025758 0.9022485 -0.75410914 -3.4172480
+#&gt; 12: theta_bar    VA white 2010 -0.85962410 0.6614518 -0.67830912 -2.6348846
+#&gt;            q_975
+#&gt;  1:  9.111421857
+#&gt;  2:  3.796029263
+#&gt;  3:  0.009404873
+#&gt;  4:  1.983181931
+#&gt;  5: -0.307192897
+#&gt;  6: -0.274740852
+#&gt;  7:  7.181299396
+#&gt;  8:  4.320350413
+#&gt;  9:  0.286921553
+#&gt; 10:  1.763698324
+#&gt; 11: -0.126133469
+#&gt; 12: -0.117435494</div><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
 <span class='co'># access posterior samples</span>
-<span class='fu'>as.data.frame</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>)</div><div class='output co'>#&gt;           param state race3 year iteration       value
-#&gt;    1: theta_bar    SC black 2009         1  1.81338340
-#&gt;    2: theta_bar    SC black 2009         2  2.18738932
-#&gt;    3: theta_bar    SC black 2009         3  4.87691903
-#&gt;    4: theta_bar    SC black 2009         4  1.63898360
-#&gt;    5: theta_bar    SC black 2009         5  3.59430508
-#&gt;   ---                                                 
-#&gt; 9596: theta_bar    VA white 2010       796 -0.32568849
-#&gt; 9597: theta_bar    VA white 2010       797 -0.12337371
-#&gt; 9598: theta_bar    VA white 2010       798 -0.08819301
-#&gt; 9599: theta_bar    VA white 2010       799 -0.27716272
-#&gt; 9600: theta_bar    VA white 2010       800 -0.03302348</div><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
-<span class='fu'>rhats</span>(<span class='no'>toy_dgirtfit</span>)</div><div class='output co'>#&gt;         param state race3 year      Rhat
-#&gt;  1: theta_bar    SC black 2009 1.0342446
-#&gt;  2: theta_bar    VA black 2009 1.0316121
-#&gt;  3: theta_bar    SC other 2009 1.0167080
-#&gt;  4: theta_bar    VA other 2009 1.0179279
-#&gt;  5: theta_bar    SC white 2009 1.0335336
-#&gt;  6: theta_bar    VA white 2009 1.0370154
-#&gt;  7: theta_bar    SC black 2010 1.0253885
-#&gt;  8: theta_bar    VA black 2010 1.0292079
-#&gt;  9: theta_bar    SC other 2010 0.9971425
-#&gt; 10: theta_bar    VA other 2010 1.0011172
-#&gt; 11: theta_bar    SC white 2010 1.0287917
-#&gt; 12: theta_bar    VA white 2010 1.0217522</div></pre>
+<span class='fu'>as.data.frame</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>)</div><div class='output co'>#&gt;           param state race3 year iteration      value
+#&gt;    1: theta_bar    SC black 2009         1  3.5166090
+#&gt;    2: theta_bar    SC black 2009         2  1.5096366
+#&gt;    3: theta_bar    SC black 2009         3  1.7412044
+#&gt;    4: theta_bar    SC black 2009         4  1.8779541
+#&gt;    5: theta_bar    SC black 2009         5  1.6961017
+#&gt;   ---                                                
+#&gt; 9596: theta_bar    VA white 2010       796 -0.5914966
+#&gt; 9597: theta_bar    VA white 2010       797 -2.2654140
+#&gt; 9598: theta_bar    VA white 2010       798 -1.2288930
+#&gt; 9599: theta_bar    VA white 2010       799 -1.5256979
+#&gt; 9600: theta_bar    VA white 2010       800 -0.9425545</div><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
+<span class='fu'>rhats</span>(<span class='no'>toy_dgirtfit</span>)</div><div class='output co'>#&gt; <span class='error'>Error in summary(x, par = pars, verbose = TRUE)$summary: $ operator is invalid for atomic vectors</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -248,11 +258,14 @@ indexes, as output from RStan.</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

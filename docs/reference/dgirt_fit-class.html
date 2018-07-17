@@ -18,13 +18,26 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
+
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
+
+
+<meta property="og:title" content="A class for fitted dynamic group IRT models — dgirt_fit-class" />
+
+<meta property="og:description" content="dgirt returns a fitted model object of class dgirt_fit,
+which inherits from dgo_fit." />
+<meta name="twitter:card" content="summary" />
+
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -47,8 +60,12 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">dgo</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">dgo</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.15</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -74,6 +91,7 @@
       <ul class="nav navbar-nav navbar-right">
         
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -81,16 +99,20 @@
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>A class for fitted dynamic group IRT models</h1>
+    
+    <div class="hidden name"><code>dgirt_fit-class.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p><code><a href='dgirt.html'>dgirt</a></code> returns a fitted model object of class <code>dgirt_fit</code>,
 which inherits from <code><a href='dgo_fit-class.html'>dgo_fit</a></code>.</p>
     
+    </div>
 
         
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
@@ -107,55 +129,40 @@ which inherits from <code><a href='dgo_fit-class.html'>dgo_fit</a></code>.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p><code><a href='dgmrp_fit-class.html'>dgmrp_fit</a></code> <code><a href='dgo_fit-class.html'>dgo_fit</a></code></p>
+    <div class='dont-index'><p><code><a href='dgmrp_fit-class.html'>dgmrp_fit</a></code> <code><a href='dgo_fit-class.html'>dgo_fit</a></code></p></div>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'>data</span>(<span class='no'>toy_dgirtfit</span>)
 <span class='co'># summarize the fitted results</span>
-<span class='fu'><a href='dgirtin-class.html'>summary</a></span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'xi'</span>)</div><div class='output co'>#&gt; dgirt samples from 4 chains of 400 iterations, 200 warmup, thinned every 1 
-#&gt;   Drawn Fri Dec  1 11:54:14 2017 
-#&gt;   Package version 0.2.13 
-#&gt;   Model version 2017_01_04 
-#&gt;   43 parameters; 12 theta_bars (year state race3)
-#&gt;   2 periods 2009 to 2010 
-#&gt; 
-#&gt; n_eff</div><div class='output co'>#&gt; <span class='message'>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span>
-#&gt; <span class='message'>  94.08  149.33  174.47  270.79  363.04  800.00 </span></div><div class='output co'>#&gt; 
-#&gt; Rhat</div><div class='output co'>#&gt; <span class='message'>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span>
-#&gt; <span class='message'> 0.9971  1.0082  1.0225  1.0202  1.0291  1.0520 </span></div><div class='output co'>#&gt; 
-#&gt; Elapsed time</div><div class='output co'>#&gt; <span class='message'>   chain warmup sample total</span>
-#&gt; <span class='message'>1:     1     5S     3S    8S</span>
-#&gt; <span class='message'>2:     2     5S     5S   10S</span>
-#&gt; <span class='message'>3:     3     5S     6S   11S</span>
-#&gt; <span class='message'>4:     4     5S     3S    8S</span></div><div class='input'>
+<span class='fu'><a href='dgirtin-class.html'>summary</a></span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'xi'</span>)</div><div class='output co'>#&gt; <span class='error'>Error in ss[["summary"]]: subscript out of bounds</span></div><div class='input'>
 <span class='co'># get posterior means with a convenience function</span>
 <span class='fu'>get_posterior_mean</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>)</div><div class='output co'>#&gt;         param state race3 year        mean
-#&gt;  1: theta_bar    SC black 2009  2.24053065
-#&gt;  2: theta_bar    SC black 2010  1.27549292
-#&gt;  3: theta_bar    SC other 2009 -1.40019273
-#&gt;  4: theta_bar    SC other 2010  0.04084414
-#&gt;  5: theta_bar    SC white 2009 -1.67983508
-#&gt;  6: theta_bar    SC white 2010 -1.42533238
-#&gt;  7: theta_bar    VA black 2009  2.01710000
-#&gt;  8: theta_bar    VA black 2010  1.48835032
-#&gt;  9: theta_bar    VA other 2009 -1.02559194
-#&gt; 10: theta_bar    VA other 2010  0.30256578
-#&gt; 11: theta_bar    VA white 2009 -0.93711250
-#&gt; 12: theta_bar    VA white 2010 -0.82327290</div><div class='input'>
+#&gt;  1: theta_bar    SC black 2009  2.38534059
+#&gt;  2: theta_bar    SC black 2010  1.29432287
+#&gt;  3: theta_bar    SC other 2009 -1.45219991
+#&gt;  4: theta_bar    SC other 2010  0.06047909
+#&gt;  5: theta_bar    SC white 2009 -1.76593109
+#&gt;  6: theta_bar    SC white 2010 -1.50148111
+#&gt;  7: theta_bar    VA black 2009  2.18758597
+#&gt;  8: theta_bar    VA black 2010  1.58467566
+#&gt;  9: theta_bar    VA other 2009 -1.07409462
+#&gt; 10: theta_bar    VA other 2010  0.35206957
+#&gt; 11: theta_bar    VA white 2009 -1.01025758
+#&gt; 12: theta_bar    VA white 2010 -0.85962410</div><div class='input'>
 <span class='co'># generally apply functions to posterior samples after warmup; n.b.</span>
 <span class='co'># `as.array` is iterations x chains x parameters so `MARGIN = 3` applies</span>
 <span class='co'># `FUN` over iterations and chains</span>
 <span class='fu'>apply</span>(<span class='fu'>as.array</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'xi'</span>), <span class='fl'>3</span>, <span class='no'>mean</span>)</div><div class='output co'>#&gt;     xi[1]     xi[2] 
-#&gt; 1.3134883 0.1604207 </div><div class='input'>
+#&gt; 1.6310294 0.1488338 </div><div class='input'>
 <span class='co'># access the posterior samples</span>
-<span class='fu'>head</span>(<span class='fu'>as.data.frame</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>))</div><div class='output co'>#&gt;        param state race3 year iteration    value
-#&gt; 1: theta_bar    SC black 2009         1 1.813383
-#&gt; 2: theta_bar    SC black 2009         2 2.187389
-#&gt; 3: theta_bar    SC black 2009         3 4.876919
-#&gt; 4: theta_bar    SC black 2009         4 1.638984
-#&gt; 5: theta_bar    SC black 2009         5 3.594305
-#&gt; 6: theta_bar    SC black 2009         6 4.129328</div></pre>
+<span class='fu'>head</span>(<span class='fu'>as.data.frame</span>(<span class='no'>toy_dgirtfit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>'theta_bar'</span>))</div><div class='output co'>#&gt;        param state race3 year iteration     value
+#&gt; 1: theta_bar    SC black 2009         1 3.5166090
+#&gt; 2: theta_bar    SC black 2009         2 1.5096366
+#&gt; 3: theta_bar    SC black 2009         3 1.7412044
+#&gt; 4: theta_bar    SC black 2009         4 1.8779541
+#&gt; 5: theta_bar    SC black 2009         5 1.6961017
+#&gt; 6: theta_bar    SC black 2009         6 0.9672285</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -179,11 +186,14 @@ which inherits from <code><a href='dgo_fit-class.html'>dgo_fit</a></code>.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+
