@@ -6,5 +6,5 @@
 
 ## R CMD check results
 
-There were no ERRORs or NOTEs. appyeyor shows a WARNINGS that package
+There were no ERRORs or NOTEs. appyeyor shows a WARNING that package
 dependencies were built under R 3.5.1.
