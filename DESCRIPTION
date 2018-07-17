@@ -34,6 +34,7 @@ Imports:
     survey
 Suggests:
     knitr,
+    reshape2,
     rmarkdown,
     testthat
 Collate: 
