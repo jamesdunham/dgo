@@ -65,10 +65,9 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
     # take the weighted average over the *previously weighted* _gt responses,
     # where the weights for the average are individual weights divided by item
     # responses 
-    item_data[, c("adj_weight") := get(ctrl@weight_name) / get("n_item_responses")]
     item_means <- item_data[, lapply(.SD, function(x) weighted.mean(x,
-        .SD$adj_weight, na.rm = TRUE)), .SDcols = c(gt_wtd_names, "adj_weight"),
-      by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
+        get(ctrl@weight_name), na.rm = TRUE)), .SDcols = c(gt_wtd_names,
+      ctrl@weight_name), by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
 
     item_mean_vars <- paste0(gt_wtd_names, "_mean")
     setnames(item_means, gt_wtd_names, item_mean_vars)
