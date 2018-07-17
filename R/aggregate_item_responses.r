@@ -62,18 +62,31 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
       variable.name = 'item', value.name = 'n_grp')
     item_n[, item := sub('_weighted', '', item)]
 
-    # take def-adjusted response sums by group and item
-    group_sum = function(x, def) ceiling(sum(x / def, na.rm = TRUE))
-    item_s <- item_data[, lapply(.SD, group_sum, get("def")), .SDcols =
-      c(gt_wtd_names), by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
-    item_s <- melt(item_s, id.vars = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name),
-      variable.name = 'item', value.name = 's_grp')
-    item_s[, item := sub('_weighted', '', item)]
+    # take the weighted average over the *previously weighted* _gt responses,
+    # where the weights for the average are individual weights divided by item
+    # responses 
+    item_data[, c("adj_weight") := get(ctrl@weight_name) / get("n_item_responses")]
+    item_means <- item_data[, lapply(.SD, function(x) weighted.mean(x,
+        .SD$adj_weight, na.rm = TRUE)), .SDcols = c(gt_wtd_names, "adj_weight"),
+      by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
 
-    stopifnot(!length(setdiff(item_n$item, item_s$item)))
-    stopifnot(!length(setdiff(item_s$item, item_n$item)))
-    counts = merge(item_s, item_n, by = c(ctrl@geo_name, ctrl@group_names,
-        ctrl@time_name, "item"))
+    item_mean_vars <- paste0(gt_wtd_names, "_mean")
+    setnames(item_means, gt_wtd_names, item_mean_vars)
+    data.table::setkeyv(item_means, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
+    drop_cols <- setdiff(names(item_means), c(key(item_means), item_mean_vars))
+    if (length(drop_cols)) {
+      item_means[, c(drop_cols) := NULL]
+    }
+    item_means <- melt(item_means, id.vars = c(ctrl@geo_name, ctrl@group_names,
+        ctrl@time_name), variable.name = 'item', value.name = 'item_mean')
+    item_means[, item := sub('_weighted_mean', '', item)]
+
+    stopifnot(!length(setdiff(item_n$item, item_means$item)))
+    stopifnot(!length(setdiff(item_means$item, item_n$item)))
+    counts = merge(item_n, item_means, by = c(ctrl@time_name, ctrl@geo_name,
+        ctrl@group_names, "item"), all.x = TRUE)
+    counts[, s_grp := round(n_grp * item_mean, 0)]
+    counts[, item_mean := NULL]
     stopifnot(all(counts$s_grp <= counts$n_grp))
     stopifnot(!any(is.na(counts$s_grp)))
     stopifnot(!any(is.na(counts$n_grp)))
