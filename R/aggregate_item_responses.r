@@ -56,8 +56,14 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
     }
     # get design-effect-adjusted nonmissing response counts by group and item
     gt_wtd_names = paste0(gt_names, '_weighted')
-    item_n <- item_data[, lapply(.SD, count_items, get('n_item_responses'), get("def")),
+    item_n <- item_data[, lapply(.SD, count_items, get("def")),
       .SDcols = c(gt_wtd_names), by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
+    for (item_name in ctrl@item_names) {
+      for (gt_wtd_item in gt_wtd_names[grepl(paste0('^', item_name,
+            '_gt[0-9]+_weighted$'), gt_wtd_names)]) {
+        item_n[, c(gt_wtd_item) := get(gt_wtd_item) / item_levels[item_name]]
+      }
+    }
     item_n <- melt(item_n, id.vars = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name),
       variable.name = 'item', value.name = 'n_grp')
     item_n[, item := sub('_weighted', '', item)]
@@ -131,8 +137,8 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   counts
 }
 
-count_items <- function(x, n_responses, def) {
-  ceiling(sum(as.integer(!is.na(x)) / n_responses / def, na.rm = TRUE))
+count_items <- function(x, def) {
+  ceiling(sum(as.integer(!is.na(x)) / def, na.rm = TRUE))
 }
 
 calc_design_effects <- function(x) {
