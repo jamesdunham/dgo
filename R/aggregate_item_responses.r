@@ -25,73 +25,33 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
   # doesn't matter.
   if (length(item_data)) {
     gt_names <- attr(item_data, "gt_items")
-    item_data[, c("n_gt_responses") := list(rowSums(!is.na(.SD))),
-              .SDcols = gt_names]
-    item_data[, c("n_item_responses") := list(rowSums(!is.na(.SD))),
-              .SDcols = ctrl@item_names]
-
     if (!length(ctrl@weight_name)) {
       item_data[, weight := 1L]
       ctrl@weight_name <- "weight"
     }
 
-    item_data[, c("def") := lapply(.SD, calc_design_effects),
-              .SDcols = ctrl@weight_name,
-              by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
-
-    # get the number of dichotomized item responses for each item (1 for a
-    # dichotomous item, or K-1) 
-    item_levels = vapply(ctrl@item_names, function(item_name) {
-      sum(grepl(paste0('^', item_name, '_gt[0-9]+$'), gt_names))
-    }, integer(1))
-
-    # weight each _gt response: divide it by the number of _gt variables for the
-    # item (for an item already dichotomous, this is 1), and then divide it by
-    # the number of item responses
-    for (item_name in ctrl@item_names) {
-      for (gt_item in gt_names[grepl(paste0('^', item_name, '_gt[0-9]+$'), gt_names)]) {
-        item_data = item_data[, paste0(gt_item, '_weighted') := get(gt_item) /
-          item_levels[item_name] / get('n_item_responses')]
-      }
-    }
-    # get design-effect-adjusted nonmissing response counts by group and item
-    gt_wtd_names = paste0(gt_names, '_weighted')
-    item_n <- item_data[, lapply(.SD, count_items, get("def")),
-      .SDcols = c(gt_wtd_names), by = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
-    for (item_name in ctrl@item_names) {
-      for (gt_wtd_item in gt_wtd_names[grepl(paste0('^', item_name,
-            '_gt[0-9]+_weighted$'), gt_wtd_names)]) {
-        item_n[, c(gt_wtd_item) := ceiling(get(gt_wtd_item) /
-          item_levels[item_name])]
-      }
-    }
-    item_n <- melt(item_n, id.vars = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name),
-      variable.name = 'item', value.name = 'n_grp')
-    item_n[, item := sub('_weighted', '', item)]
-
-    # take the weighted average over the *previously weighted* _gt responses,
-    # where the weights for the average are individual weights divided by item
-    # responses 
-    item_data[, c("adj_weight") := get(ctrl@weight_name) / get("n_item_responses")]
-    item_means <- item_data[, lapply(.SD, function(x) weighted.mean(x,
-        .SD$adj_weight, na.rm = TRUE)), .SDcols = c(gt_names, "adj_weight"), by
-      = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)]
-
-    data.table::setkeyv(item_means, c(ctrl@time_name, ctrl@geo_name, ctrl@group_names))
-    drop_cols <- setdiff(names(item_means), c(key(item_means), gt_names))
-    if (length(drop_cols)) {
-      item_means[, c(drop_cols) := NULL]
-    }
-    item_means <- melt(item_means, id.vars = c(ctrl@geo_name, ctrl@group_names,
-        ctrl@time_name), variable.name = 'item', value.name = 'item_mean')
-    item_means[, item := sub('_weighted_mean', '', item)]
-
-    stopifnot(!length(setdiff(item_n$item, item_means$item)))
-    stopifnot(!length(setdiff(item_means$item, item_n$item)))
-    counts = merge(item_n, item_means, by = c(ctrl@time_name, ctrl@geo_name,
-        ctrl@group_names, "item"), all.x = TRUE)
-    counts[, s_grp := round(n_grp * item_mean, 0)]
-    counts[, item_mean := NULL]
+    group_names = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name)
+    # Calculate n* and s* by group 
+    ns = by(item_data, item_data[, c(group_names), with = FALSE],
+      function(group_data) {
+        stopifnot(is.data.frame(group_data))
+        r <- calc_r(group_data, gt_names)
+        nstar <- calc_nstar(group_data, r, ctrl, gt_names)
+        sstar <- calc_sstar(group_data, r, ctrl, nstar, gt_names)
+        # Move results into dataframes with columns n_grp/s_grp, 'item' (e.g.,
+        # 'abortion_gt1'), and the grouping variables
+        item_n = data.table(n_grp = nstar, item = names(nstar),
+          group_data[1, c(group_names), with = FALSE])
+        item_s = data.table(s_grp = sstar, item = names(sstar),
+          group_data[1, c(group_names), with = FALSE])
+        stopifnot(!length(setdiff(item_n$item, item_s$item)))
+        stopifnot(!length(setdiff(item_s$item, item_n$item)))
+        # The result of the merge is a dataframe with group identifiers and
+        # columns n_grp, s_grp, and item
+        ns = merge(item_s, item_n, by = c('item', group_names), all = TRUE)
+        ns
+    }, simplify = FALSE)
+    counts = rbindlist(ns, use.names = TRUE)
     stopifnot(all(counts$s_grp <= counts$n_grp))
     stopifnot(!any(is.na(counts$s_grp)))
     stopifnot(!any(is.na(counts$n_grp)))
@@ -146,3 +106,46 @@ calc_design_effects <- function(x) {
   y <- 1 + (sd(x, na.rm = T) / mean(x, na.rm = T)) ^ 2
   ifelse(is.na(y), 1, y)
 }
+
+grep_gt <- function(df) {
+  grep("\\_gt[0-9]+$", names(df), value = TRUE)
+}
+
+calc_r <- function(item_dt, gt_names) {
+  item_df <- as.data.frame(item_dt)
+  (gt_stems <- (gsub("(.*)\\_gt[0-9]+$", "\\1", gt_names)))
+  r <- matrix(NA, nrow = nrow(item_dt), ncol = length(gt_names),
+    dimnames = list(1:nrow(item_dt), gt_names))
+  for (i in 1:nrow(item_df)) {
+    (valid_i <- !is.na(item_df[i, gt_names]))
+    (n_qs <- sum(tapply(valid_i, gt_stems, any)))
+    stem_sums <- tapply(valid_i, gt_stems, sum)
+    n_dups <- stem_sums[match(gt_stems, names(stem_sums))]
+    names(n_dups) <- gt_names 
+    (r[i, ] <- n_qs * n_dups)
+    stopifnot(identical(sum(as.vector(valid_i) / r[i, ], na.rm = TRUE), 1))
+  }
+  r
+}
+
+calc_nstar <- function (item_subset, r_subset, ctrl, gt_names) {
+  item_subset <- as.data.frame(item_subset)
+  wt <- item_subset[, ctrl@weight_name]
+  def <- 1 + (sd(wt) / mean(wt))
+  n_mat <- as.matrix(!is.na(item_subset[, gt_names])) / (r_subset * def)
+  ceiling(colSums(n_mat, na.rm = TRUE))
+}
+
+calc_sstar <- function (item_subset, r_subset, ctrl, nstar, gt_names) {
+  item_subset <- as.data.frame(item_subset)
+  wt <- item_subset[, ctrl@weight_name]
+  ystar <- numeric(length(gt_names))
+  for (j in seq_along(gt_names)) {
+    ystar[j] <- weighted.mean(item_subset[, gt_names[j]],
+      w = wt / r_subset[, j],
+      na.rm = TRUE)
+  }
+  sstar <- round(ystar * nstar)
+  replace(sstar, is.na(sstar), 0)
+}
+
