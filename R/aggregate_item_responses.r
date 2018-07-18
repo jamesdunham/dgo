@@ -61,7 +61,8 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
     for (item_name in ctrl@item_names) {
       for (gt_wtd_item in gt_wtd_names[grepl(paste0('^', item_name,
             '_gt[0-9]+_weighted$'), gt_wtd_names)]) {
-        item_n[, c(gt_wtd_item) := get(gt_wtd_item) / item_levels[item_name]]
+        item_n[, c(gt_wtd_item) := ceiling(get(gt_wtd_item) /
+          item_levels[item_name])]
       }
     }
     item_n <- melt(item_n, id.vars = c(ctrl@geo_name, ctrl@group_names, ctrl@time_name),
@@ -138,7 +139,7 @@ make_group_counts <- function(item_data, aggregate_data, ctrl) {
 }
 
 count_items <- function(x, def) {
-  ceiling(sum(as.integer(!is.na(x)) / def, na.rm = TRUE))
+  sum(as.integer(!is.na(x)) / def, na.rm = TRUE)
 }
 
 calc_design_effects <- function(x) {
