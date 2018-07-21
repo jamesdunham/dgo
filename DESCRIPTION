@@ -1,7 +1,7 @@
 Package: dgo
 Title: Dynamic Estimation of Group-Level Opinion
-Version: 0.2.15
-Date: 2018-07-16
+Version: 0.2.16
+Date: 2018-07-21
 Description: Fit dynamic group-level item response theory (IRT) and multilevel
     regression and poststratification (MRP) models from item response data. dgo
     models latent traits at the level of demographic and geographic groups,

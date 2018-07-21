@@ -143,6 +143,10 @@ valid_names <- function(where, s_four = NULL, len = 0L, stub = "should give") {
 }
 
 check_count <- function(where, name) {
+  if (any(is.na(where[[name]]))) {
+    stop("values of \"", name, "\" in ", deparse(substitute(where)),
+      " should not be NA")
+  }
   if (any(where[[name]] %% 1 != 0L) || where[[name]] < 0) {
     stop("values of \"", name, "\" in ", deparse(substitute(where)),
          " should be positive integers")
@@ -150,6 +154,10 @@ check_count <- function(where, name) {
 }
 
 check_time <- function(where, name) {
+  if (any(is.na(where[[name]]))) {
+    stop("values of time_name variable in ", deparse(substitute(where)), " (",
+         name, ") should not be NA")
+  }
   if (any(where[[name]] %% 1 != 0L)) {
     stop("values of time_name variable in ", deparse(substitute(where)), " (",
          name, ") should be integers for now")
