@@ -3,18 +3,12 @@
 \name{dgirt}
 \alias{dgirt}
 \alias{dgmrp}
-\alias{dgmrp}
 \title{Fit a dynamic group IRT or single-issue MRP model}
 \usage{
-dgirt(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
-  delta_tbar_prior_sd = 0.25, innov_sd_delta_scale = 2.5,
-  innov_sd_theta_scale = 2.5, version = "2017_01_04",
-  hierarchical_model = TRUE, model = NULL)
-
-dgmrp(shaped_data, ..., separate_t = FALSE, delta_tbar_prior_mean = 0.65,
-  delta_tbar_prior_sd = 0.25, innov_sd_delta_scale = 2.5,
-  innov_sd_theta_scale = 2.5, version = "2017_01_04_singleissue",
-  model = NULL)
+dgirt(shaped_data, ..., separate_t = FALSE,
+  delta_tbar_prior_mean = 0.65, delta_tbar_prior_sd = 0.25,
+  innov_sd_delta_scale = 2.5, innov_sd_theta_scale = 2.5,
+  version = "2017_01_04", hierarchical_model = TRUE, model = NULL)
 }
 \arguments{
 \item{shaped_data}{Output from \code{\link{shape}}.}

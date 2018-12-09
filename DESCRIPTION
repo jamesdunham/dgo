@@ -1,7 +1,7 @@
 Package: dgo
 Title: Dynamic Estimation of Group-Level Opinion
-Version: 0.2.15
-Date: 2018-07-16
+Version: 0.3.00
+Date: 2018-12-09
 Description: Fit dynamic group-level item response theory (IRT) and multilevel
     regression and poststratification (MRP) models from item response data. dgo
     models latent traits at the level of demographic and geographic groups,
@@ -27,9 +27,11 @@ LazyData: true
 Imports:
     assertthat,
     data.table,
+    dplyr,
     ggplot2,
     lubridate,
     methods,
+    reshape2,
     R6,
     survey
 Suggests:
@@ -46,6 +48,7 @@ Collate:
     'constants.r'
     'class-dgirtin.r'
     'class-dgmrp_fit.r'
+    'class-mgirt_fit.R'
     'dgirt.r'
     'dichotomize_item_responses.r'
     'methods-control.r'
@@ -53,6 +56,7 @@ Collate:
     'methods-dgirtfit-poststratify.r'
     'methods-dgirtfit.r'
     'methods-dgirtin.r'
+    'mgirt.R'
     'name_helpers.r'
     'package.R'
     'rake_partial.r'
@@ -60,8 +64,9 @@ Collate:
     'reweight_item_responses.r'
     'shape.r'
     'shape_hierarchical.r'
+    'shape_multinomial.R'
     'toy_dgirt_in.r'
     'toy_dgirtfit.r'
     'validate_dgirtIn.r'
     'validate_input_data.r'
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

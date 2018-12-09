@@ -22,8 +22,9 @@ dgirt_plot(x, ...)
 
 plot_rhats(x, ...)
 
-\S4method{plot_rhats}{dgo_fit}(x, pars = "theta_bar", facet_vars = NULL,
-  shape_var = NULL, color_var = NULL, x_var = NULL)
+\S4method{plot_rhats}{dgo_fit}(x, pars = "theta_bar",
+  facet_vars = NULL, shape_var = NULL, color_var = NULL,
+  x_var = NULL)
 }
 \arguments{
 \item{x}{A \code{dgo_fit-class} object.}

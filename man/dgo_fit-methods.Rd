@@ -29,8 +29,8 @@ print.dgo_fit(x, ...)
 
 summarize(x, ...)
 
-\S4method{summarize}{dgo_fit}(x, pars = "theta_bar", funs = c("mean", "sd",
-  "median", "q_025", "q_975"))
+\S4method{summarize}{dgo_fit}(x, pars = "theta_bar", funs = c("mean",
+  "sd", "median", "q_025", "q_975"))
 
 \method{as.data.frame}{dgo_fit}(x, ..., pars = "theta_bar",
   keep.rownames = FALSE)

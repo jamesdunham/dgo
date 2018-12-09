@@ -15,13 +15,10 @@
 \alias{print,dgirtIn-method}
 \alias{get_item_names}
 \alias{get_item_names,dgirtIn-method}
-\alias{get_item_names}
 \alias{get_n}
 \alias{get_n,dgirtIn-method}
-\alias{get_n}
 \alias{get_item_n}
 \alias{get_item_n,dgirtIn-method}
-\alias{get_item_n}
 \alias{show,dgirtIn-method}
 \title{A class for data ready to model}
 \usage{
