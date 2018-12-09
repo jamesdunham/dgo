@@ -1,0 +1,3 @@
+- Purely cross-sectional model useful for people who basicaly want to do MRP
+- Dyanmic model useful for over-time smoothing
+- Purely separated with no smoothing and no dynamics is also useful

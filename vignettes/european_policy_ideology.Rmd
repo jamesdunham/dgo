@@ -1,0 +1,293 @@
+---
+title: "Policy Ideology in European Mass Publics, 1981--2016"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, knitr-options, echo = FALSE, result = 'hide', message = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  collapse = TRUE,
+  cache = TRUE,
+  comment = "#>")
+```
+
+These are constants.
+
+```{r define-constants}
+# If TRUE, restrict the data to a single year
+# TODO: what's the if(is.na(.)) filter doing?
+country_set <- "strictwestern"
+issue_domain <- "immi"
+item_model <- "constant"
+time_var <- "biennium"
+geo_var <- "country"
+demo_vars <- "gender_age"
+```
+
+We load and check package versions.
+
+```{r load-libraries}
+library(dgo)
+library(tidyverse)
+library(reshape2)
+library(rstan)
+library(assertthat)
+options(mc.cores = parallel::detectCores())
+rstan_options(auto_write = TRUE)
+sessionInfo()
+```
+
+
+Define some functions we'll use to prepare the data. Some of these might move
+into dgo.
+
+```{r functions}
+load_to_env <- function (RData, env = new.env()) {
+    load(RData, env)
+    return(env)
+}
+
+make_formula <- function (var_list) {
+    form_char_vec <- vector("character", length(var_list))
+    for (l in seq_along(var_list)) {
+        form_char_vec[l] <- paste(var_list[[l]], collapse = " + ")
+    }
+    form_char <- do.call(paste, list(form_char_vec, collapse = " ~ "))
+    as.formula(form_char)    
+}
+
+calc_def <- function (w) {
+    if (length(w) > 1) 1 + sd(w) / mean(w) else 1
+}
+
+name_file <- function (pre = NULL, post = NULL, ext = NULL, dir = ".",
+                       replace = FALSE) {
+    p <- paste(pre, collapse = "")
+    n <- paste(post, collapse = "")
+    e <- paste(".", ext, sep = "")
+    d <- format(Sys.Date(), "%y%m%d")
+    for (l in seq_along(letters)) {
+        if (l > 1) old_file_name <- file_name
+        file_name <- paste0(p, d, paste(n, letters[l], sep="-"), e)
+        if (!any(grepl(file_name, list.files(dir)))) {
+            if (replace) file_name <- ifelse(l > 1, old_file_name, file_name)
+            break
+        }
+    }
+    cat("\nFile name:", file_name, "\n\n")
+    return(paste0(dir, "/", file_name))
+}
+
+years_to_biennia <- function (years, odd_start = TRUE) {
+    if (odd_start) {
+        paste(trunc((years - 1) / 2) * 2 + 1, trunc((years - 1) / 2) * 2 + 2,
+              sep = "-")
+    } else {
+        paste(trunc(years / 2) * 2, trunc(years / 2) * 2 + 1, sep = "-")
+    }
+}
+```
+
+Load the data. 
+
+```{r load_data}
+#### LOAD DATA
+load("~/Dropbox (MIT)/dgo/europe_example/180731_immidata.Rda")
+opin_wide = immi_data
+
+item_vars <- names(select(opin_wide, -c(survey:w_europe)))
+#  [1] "immbetter"   "immcult"     "immgood"     "immpoor"     "immdiff"    
+#  [6] "immsame"     "legalrights" "immprove"    "takejobs"    "immecon"    
+# [11] "immcrime"    "trads"       "imports"     "concimms"    "limitfors"  
+# [16] "scarceimms"  "allhome"     "sendall"     "sendump"     "socright"   
+# [21] "forinfl"    
+
+biennia_to_est <- seq.int(min(opin_wide$year), max(opin_wide$year)) %>%
+    years_to_biennia(odd_start = TRUE) %>%
+    unique()
+biennia_to_est
+#  [1] "1989-1990" "1991-1992" "1993-1994" "1995-1996" "1997-1998"
+#  [6] "1999-2000" "2001-2002" "2003-2004" "2005-2006" "2007-2008"
+# [11] "2009-2010" "2011-2012" "2013-2014" "2015-2016"
+
+opin_wide <- opin_wide %>%
+  mutate(
+    # While data are still wide, assign respondent IDs
+    respondent_id = row_number(),
+    # Coarsen year
+    biennium = factor(years_to_biennia(year, odd_start = TRUE),
+      levels = biennia_to_est),
+    country = droplevels(country),
+    country = factor(country, labels = gsub("\\_", " ", levels(country))),
+    # Create an age categorical
+    age3 = case_when(
+      sixteen == 1 ~ "aged 16-34",
+      thirtyfive == 1 ~ "aged 35-59",
+      sixty == 1 ~ "aged 60+"
+      ),
+    age3 = factor(age3),
+    gender = factor(gender + 1, labels = c("male", "female")),
+    gender_age = interaction(gender, age3, sep = " | "))
+
+# Eyeball result
+summary(opin_wide)
+
+# Confirm translation to biennia worked
+table(opin_wide$biennium, opin_wide$year)
+
+tgq <- c(time_var, geo_var, demo_vars, "item")
+
+## melt to long
+assert_that(!has_name(opin_wide, 'value'))
+assert_that(!has_name(opin_wide, 'item'))
+opin_long <- opin_wide %>%
+  melt(measure.vars = item_vars, variable.name = "item") %>%
+  filter_at(vars(one_of("value", "weight", geo_var, demo_vars)),
+    all_vars(!is.na(.))) %>%
+  mutate(level = as.integer(value)) %>%
+  arrange(respondent_id, item)
+head(opin_long)
+
+# The result is a dataframe in which each row represents the item response of a
+# survey respondent. 
+
+item_levels <- opin_long %>%
+  group_by(item) %>%
+  summarise(max_level = max(value))
+
+# Identify categories with no responses in `unused_cut`, a Q x K-1 matrix
+unused_cut <- matrix(1, nrow = nrow(item_levels),
+  ncol = max(item_levels$max_level) - 1,
+  dimnames = list(item_levels$item, NULL))
+for (i in 1:nrow(unused_cut)) {
+  unused_cut[i, 1:(item_levels$max_level[i]) - 1] <- 0
+}
+
+## 1. Count items answered by respondent (denoted r_i)
+opin_long <- opin_long %>%
+  group_by(respondent_id) %>%
+  mutate(n_responses = n())
+
+## 2. Compute adjusted respondent weights (denoted w^*)
+opin_long <- opin_long %>%
+  group_by_at(vars(one_of(tgq))) %>%
+  mutate(weight_star = weight / mean(weight))
+stopifnot(!any(is.na(opin_long$weight_star)))
+
+## 3. Compute group design effects (denoted d_{tgq})
+opin_long <- opin_long %>%
+  group_by_at(vars(one_of(tgq))) %>%
+  mutate(design_effect = calc_def(weight_star))
+stopifnot(!any(is.na(opin_long$design_effect)))
+
+## 4. Compute n*
+n_star <- opin_long %>%
+  group_by_at(vars(one_of(tgq))) %>%
+  summarise(n = n(),
+    n_star = sum(1 / (n_responses * design_effect)))
+
+## 5a. Start calculating s*
+s_star <- opin_long %>%
+  ## denominator is the (unweighted) observation count in t,g,q
+  group_by_at(vars(one_of(tgq))) %>%
+  mutate(n_tgq = n()) %>%
+  ## numerator is the observation count in t,g,q,k multipled by w*
+  group_by(level, add = TRUE) %>%
+  summarise(s_prop = sum(weight_star / n_tgq))
+
+## This gives us a fraction of n*
+s_star
+
+## Join s*-in-progress and n*
+ns_star <- s_star %>%
+  left_join(y = n_star, by = c(geo_var, demo_vars, time_var, 'item'))
+stopifnot(nrow(ns_star) == nrow(s_star))
+
+assert_that(!has_name(ns_star, 's_star'))
+ns_star <- ns_star %>%
+  mutate(s_star = n_star * s_prop) %>%
+  ungroup()
+
+assert_that(!has_name(ns_star, 'group'))
+ns_star$group <- do.call(interaction,
+  list(ns_star[c(geo_var, demo_vars)], sep = " | "))
+
+head(ns_star)
+```
+
+Create Stan inputs.
+
+```{r create_stan_inputs}
+(cast_formula <- make_formula(list(time_var, "group", "item", "level")))
+
+# SSSS is a 4-dimensional array indexed time, group, item, and level 
+SSSS_ord <- ns_star %>%
+  ungroup %>%
+  acast(cast_formula, fun.aggregate = sum, value.var = "s_star", drop = FALSE)
+dimnames(SSSS_ord)
+
+apply(SSSS_ord, 4, function (x) sum(x > 0))
+
+stan_data <- list(
+  T = dim(SSSS_ord)[1],
+  G = dim(SSSS_ord)[2],
+  Q = dim(SSSS_ord)[3],
+  K = dim(SSSS_ord)[4],
+  D = 1,
+  SSSS = SSSS_ord,
+  beta_sign = matrix(1, dim(SSSS_ord)[3], 1),
+  evolving_alpha = as.integer(identical(item_model, "evolving")),
+  unused_cut = unused_cut,
+  N_nonzero = sum(SSSS_ord > 0))
+
+# # TODO: why?
+# if (packageVersion('rstan') >= '2.18') {
+#   Sys.setenv(USE_CXX14 = 1)
+# }
+# stan_mod <- rstan::stan_model(model_code = mdgirt_code)
+# ```
+#
+# We receive these errors from the Stan parser:
+#
+# ```
+# DIAGNOSTIC(S) FROM PARSER:
+# Info: left-hand side variable (name=raw_bar_theta) occurs on right-hand side of assignment, causing inefficient deep copy to avoid aliasing.
+# Info: left-hand side variable (name=alpha) occurs on right-hand side of assi gnment, causing inefficient deep copy to avoid aliasing.
+# Info: left-hand side variable (name=alpha) occurs on right-hand side of assi gnment, causing inefficient deep copy to avoid aliasing.
+# Unknown variable: to_array_1d
+# Unknown variable: to_array_1d
+# Unknown variable: to_array_1d
+# Unknown variable: to_array_1d
+# ```
+
+```{r}
+fit = mgirt(stan_data, iter = 10)
+dgo_fit = new('dgirt_fit', fit, dgirt_in = stan_data)
+```
+
+
+```{r}
+
+not_pars <- c("raw_bar_theta_N01", "raw_bar_theta", "raw_alpha", "beta_free",
+  "beta_pos", "beta_neg")
+
+vb_out <- vb(stan_mod, data = stan_data, pars = not_pars, include = FALSE)
+print(vb_out)
+
+samp_out <- sampling(stan_mod,
+  data = stan_data, 
+  iter = 10,
+  chains = 4,
+  refresh = 5,
+  pars = not_pars, include = FALSE,
+  control = list(adapt_delta = .8, max_treedepth = 12))
+
+samp_out_diag <- summary(samp_out)
+summary(samp_out_diag$summary)
+
+print(samp_out)
+```
+
