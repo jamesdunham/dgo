@@ -1,5 +1,5 @@
 #' @export
-shape_multinomial = function(responses, item_names, time_name, geo_name,
+shape_modgirt = function(responses, item_names, time_name, geo_name,
   group_names = NULL, weight_name = NULL) {
 
   opin_long <- responses %>%

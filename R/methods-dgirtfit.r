@@ -1,5 +1,5 @@
 utils::globalVariables(c("value", "iteration", ".", "rn", "total", "warmup",
-                         "Rhat"))
+    "Rhat"))
 
 #' @rdname dgo_fit-methods
 #' @param x A \code{dgo_fit-class} object
@@ -7,14 +7,14 @@ utils::globalVariables(c("value", "iteration", ".", "rn", "total", "warmup",
 #' @param pars Parameter name(s)
 #' @param ... Further arguments to \code{\link{stanfit-class}} methods.
 #' @export
-setMethod("show", "dgo_fit",
-          function(object) {
+setMethod("show", "dgo_fit", function(object) {
             print.dgo_fit(object)
-          })
+})
 
-# Generic documented for dgirtIn
-setGeneric("print", signature = "x",
-           function(x, ...) standardGeneric("print"))
+# Generic print method
+setGeneric("print", signature = "x", function(x, ...) {
+  standardGeneric("print")
+})
 
 #' @rdname dgo_fit-methods
 setMethod("print", "dgo_fit", function(x, ...) print.dgo_fit(x, ...))
@@ -49,12 +49,10 @@ print.dgo_fit <- function(x, ...) {
       max(ctrl@time_filter), "\n")
 
   cat("\nn_eff\n")
-  message(paste0(capture.output(summary((ss[, "n_eff"]))),
-                                collapse = "\n"))
+  message(paste0(capture.output(summary((ss[, "n_eff"]))), collapse = "\n"))
 
   cat("\nRhat\n")
-  message(paste0(capture.output(summary((ss[, "Rhat"]))),
-                                collapse = "\n"))
+  message(paste0(capture.output(summary((ss[, "Rhat"]))), collapse = "\n"))
 
   cat("\nElapsed time\n")
   message(paste0(capture.output(get_elapsed_time(x)), collapse = "\n"))
@@ -95,15 +93,15 @@ setMethod("summary", "dgo_fit", function(object, ..., verbose = FALSE) {
 
 #' @rdname dgo_fit-methods
 #' @export
-setMethod("get_posterior_mean", "dgo_fit",
-          function(object, pars = "theta_bar", ...) {
+setMethod("get_posterior_mean", "dgo_fit", function(object, pars = "theta_bar", ...) {
             summarize(object, pars, funs = "mean")
-          })
+})
 
 #' @rdname dgo_fit-methods
 #' @export
-setGeneric("summarize", signature = "x",
-           function(x, ...) standardGeneric("summarize"))
+setGeneric("summarize", signature = "x", function(x, ...) {
+  standardGeneric("summarize")
+})
 
 #' \code{summarize} method for \code{dgo_fit-class} objects
 #'
