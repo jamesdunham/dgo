@@ -9,13 +9,16 @@
 #' @import rstan
 #' @include constants.r
 #' @export
-modgirt <- function(shaped_data, version = "2018_08_18_mdgirt_ord", model = NULL,
-  evolving_alpha = FALSE, ...)  {
+modgirt <- function(shaped_data,
+  version = "2018_08_18_mdgirt_ord",
+  model = NULL,
+  evolving_alpha = FALSE,
+  ...) {
 
-  shaped_data$evolving_alpha = as.integer(evolving_alpha)
+  shaped_data@stan_data$evolving_alpha = as.integer(evolving_alpha)
 
   # Dots will be passed to RStan
-  dots <- list(..., data = shaped_data)
+  dots <- list(..., data = shaped_data@stan_data)
   # Add a model object
   dots$object = resolve_model(model, version)
 
@@ -33,11 +36,17 @@ modgirt <- function(shaped_data, version = "2018_08_18_mdgirt_ord", model = NULL
   stanfit <- do.call(rstan::sampling, dots)
 
   # TODO: create new model class for modgirt models
-  tryCatch(new('modgirt_fit', stanfit, call = match.call()),
+  tryCatch(new('modgirt_fit',
+      items = shaped_data@items,
+      time = shaped_data@time,
+      geo = shaped_data@geo,
+      demo = shaped_data@demo,
+      stan_data_dimnames = dimnames(shaped_data@stan_data$SSSS),
+      call = match.call(),
+      stanfit = stanfit),
     error = function(e) {
-      warning("Error constructing dgo_fit; returning stanfit object instead: ",
-        e)
-    stanfit
+      warning("Error constructing dgo_fit; returning stanfit object instead: ", e)
+      stanfit
   })
 }
 
@@ -73,14 +82,24 @@ resolve_model <- function(model, version) {
 }
 
 # Default model parameters to monitor
-modgirt_pars <- c( "raw_bar_theta_N01", "raw_alpha", "beta_free",
-  "beta_neg", "beta_pos", "sd_theta_N01", "sd_theta_IG", "sd_theta_evolve_N01",
-  "sd_theta_evolve_IG", "sd_alpha_evolve_N01", "sd_alpha_evolve_IG",
-  "raw_bar_theta", "bar_theta",
-  "beta",	            # discrimination
+modgirt_pars <- c(
   "alpha",            # thresholds (difficulty)
-  "sd_theta",	        # within-group SD of theta
-  "sd_theta_evolve",  # transition SD of theta
+  "bar_theta",
+  "beta",	            # discrimination
+  "beta_free",
+  "beta_neg",
+  "beta_pos",
+  "raw_alpha",
+  "raw_bar_theta",
+  "raw_bar_theta_N01",
   "sd_alpha_evolve",	# transition SD of alpha
+  "sd_alpha_evolve_IG",
+  "sd_alpha_evolve_N01",
+  "sd_theta",	        # within-group SD of theta
+  "sd_theta_IG",
+  "sd_theta_N01",
+  "sd_theta_evolve",  # transition SD of theta
+  "sd_theta_evolve_IG",
+  "sd_theta_evolve_N01",
   "sigma_theta")
 

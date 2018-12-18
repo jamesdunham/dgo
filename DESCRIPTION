@@ -24,6 +24,7 @@ Depends:
     R (>= 3.2.2),
     rstan (>= 2.15.1)
 LazyData: true
+Encoding: UTF-8
 Imports:
     assertthat,
     data.table,
@@ -48,15 +49,17 @@ Collate:
     'constants.r'
     'class-dgirtin.r'
     'class-dgmrp_fit.r'
-    'class-mgirt_fit.R'
+    'methods-dgirtfit.r'
+    'class-modgirt_fit.R'
+    'class-modgirt_in.R'
     'dgirt.r'
     'dichotomize_item_responses.r'
     'methods-control.r'
     'methods-dgirtfit-plot.r'
     'methods-dgirtfit-poststratify.r'
-    'methods-dgirtfit.r'
     'methods-dgirtin.r'
-    'mgirt.R'
+    'model.R'
+    'modgirt.R'
     'name_helpers.r'
     'package.R'
     'rake_partial.r'
@@ -64,7 +67,7 @@ Collate:
     'reweight_item_responses.r'
     'shape.r'
     'shape_hierarchical.r'
-    'shape_multinomial.R'
+    'shape_modgirt.R'
     'toy_dgirt_in.r'
     'toy_dgirtfit.r'
     'validate_dgirtIn.r'
