@@ -1,11 +1,16 @@
-#' Fit a multinomial group IRT model
+#' Fit a multidimensional, ordinal, dynamic group IRT model
 #'
-#' @param shaped_data Data shaped for the model. A function for accomplishing
-#' this is not yet implemented.
+#' @param shaped_data Data shaped for the model using
+#' \code{\link{shape_modgirt}}.
+#' @param version The name of the modgirt model to estimate, or the path to a
+#' \code{.stan} file. Ignored if argument \code{model} is used.
+#' @param model A Stan model object of class \code{stanmodel} to be used in
+#' estimation. Specifying this argument avoids repeated model compilation. Note
+#' that the Stan model object for a model fitted with \code{modgirt()} 
+#' can be found in the the \code{stanfit} slot of the resulting
+#' \code{modgirt_fit} object.
 #' @param ... Further arguments, passed to \code{\link[rstan]{stan}}.
-#' @return A \code{\link{modgirt_fit-class}} object that extends
-#' \code{\link[rstan]{stanfit-class}}. (Not yet implemented.)
-#'
+#' @return A \code{\link{modgirt_fit-class}} object.
 #' @import rstan
 #' @include constants.r
 #' @export
@@ -35,7 +40,6 @@ modgirt <- function(shaped_data,
   # Fit the model
   stanfit <- do.call(rstan::sampling, dots)
 
-  # TODO: create new model class for modgirt models
   tryCatch(new('modgirt_fit',
       items = shaped_data@items,
       time = shaped_data@time,
@@ -45,7 +49,7 @@ modgirt <- function(shaped_data,
       call = match.call(),
       stanfit = stanfit),
     error = function(e) {
-      warning("Error constructing dgo_fit; returning stanfit object instead: ", e)
+      warning("Error constructing modgirt_fit; returning stanfit object instead: ", e)
       stanfit
   })
 }

@@ -2,21 +2,29 @@
 % Please edit documentation in R/modgirt.R
 \name{modgirt}
 \alias{modgirt}
-\title{Fit a multinomial group IRT model}
+\title{Fit a multidimensional, ordinal, dynamic group IRT model}
 \usage{
 modgirt(shaped_data, version = "2018_08_18_mdgirt_ord", model = NULL,
   evolving_alpha = FALSE, ...)
 }
 \arguments{
-\item{shaped_data}{Data shaped for the model. A function for accomplishing
-this is not yet implemented.}
+\item{shaped_data}{Data shaped for the model using
+\code{\link{shape_modgirt}}.}
+
+\item{version}{The name of the modgirt model to estimate, or the path to a
+\code{.stan} file. Ignored if argument \code{model} is used.}
+
+\item{model}{A Stan model object of class \code{stanmodel} to be used in
+estimation. Specifying this argument avoids repeated model compilation. Note
+that the Stan model object for a model fitted with \code{modgirt()} 
+can be found in the the \code{stanfit} slot of the resulting
+\code{modgirt_fit} object.}
 
 \item{...}{Further arguments, passed to \code{\link[rstan]{stan}}.}
 }
 \value{
-A \code{\link{modgirt_fit-class}} object that extends
-\code{\link[rstan]{stanfit-class}}. (Not yet implemented.)
+A \code{\link{modgirt_fit-class}} object.
 }
 \description{
-Fit a multinomial group IRT model
+Fit a multidimensional, ordinal, dynamic group IRT model
 }
