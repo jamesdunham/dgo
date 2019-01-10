@@ -90,13 +90,13 @@ table(opin_wide$biennium, opin_wide$year)
 # }
 # stan_mod <- rstan::stan_model(model_code = mdgirt_code)
 
-stan_data = shape_multinomial(opin_wide,
-  item_names = item_vars, 
-  time_name = time_name,
-  geo_name = geo_name,
-  group_names = group_names,
-  weight_name = 'weight')
+stan_data = shape_modgirt(opin_wide,
+  items = item_vars, 
+  time = time_name,
+  geo = geo_name,
+  groups = group_names,
+  weight = 'weight')
 
-fit = mgirt(stan_data, iter = 10, model = model)
+fit = modgirt(stan_data, iter = 10, model = model)
 
 
