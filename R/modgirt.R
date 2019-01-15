@@ -15,7 +15,7 @@
 #' @include constants.r
 #' @export
 modgirt <- function(shaped_data,
-  version = "2018_08_18_mdgirt_ord",
+  version = "2019_01_10_modgirt",
   model = NULL,
   evolving_alpha = FALSE,
   ...) {
@@ -102,8 +102,9 @@ modgirt_pars <- c(
   "sd_theta",	        # within-group SD of theta
   "sd_theta_IG",
   "sd_theta_N01",
-  "sd_theta_evolve",  # transition SD of theta
-  "sd_theta_evolve_IG",
-  "sd_theta_evolve_N01",
-  "sigma_theta")
+  "sd_raw_bar_theta_evolve",  # transition SD of theta
+  "sd_raw_bar_theta_evolve_IG",
+  "sd_raw_bar_theta_evolve_N01",
+  "sd_bar_theta_evolve",
+  "Sigma_theta")
 

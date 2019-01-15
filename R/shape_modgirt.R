@@ -90,7 +90,16 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL) {
   # 6. Create group variable
   assert(!assertthat::has_name(ns_star, 'group'))
   ns_star$group <- do.call(interaction,
-    list(ns_star[c(geo, groups)], sep = " | "))
+    list(ns_star[c(geo, groups)], sep = "__"))
+
+  # Check for __ in group values
+  for (nm in c(groups)) {
+    if (any(grepl('__', ns_star[[nm]], fixed = TRUE))) {
+      warning(c('Found "__" in grouping variable values, ',
+          'which may cause issues when extracting estimates from fitted ',
+          'model objects'))
+    }
+  }
 
   # Create a 4-dimensional array of responses indexed time, group, item, and level
   cast_formula <- make_formula(list(time, "group", "item", "level"))

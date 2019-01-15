@@ -123,8 +123,17 @@ label_params <- function(x, fnames = NULL) {
 
   fname_len <- length(fnames)
   ftab <- data.table::setDT(list(fname = fnames))
-  ftab[, c('param', 'i', 'j', 'k') := tstrsplit(fname, '\\[|\\]|,', keep = 1:4)]
-  ftab[, c('i', 'j', 'k') := lapply(.SD, as.integer), .SDcols = c('i', 'j', 'k')]
+
+  # for the given fnames, there are no more than this many comma-separated
+  # splits; minimum 1, if fnames contains none of [],
+  splits = max(lengths(strsplit(ftab$fname, '\\[|\\]|,')))
+  # which includes the param name, so use this many index columns less 1, with
+  # names i, ...
+  indexes = letters[seq(9, length.out = splits - 1)]
+  ftab[, c('param', indexes) := tstrsplit(fname, '\\[|\\]|,', keep = seq.int(splits))]
+  if (length(indexes)) {
+    ftab[, c(indexes) := lapply(.SD, as.integer), .SDcols = indexes]
+  }
 
   for (parname in unique(ftab$param)) {
     # look up the names of parameter indexes
@@ -132,7 +141,7 @@ label_params <- function(x, fnames = NULL) {
       if (length(idx_name)) {
         # move integer index values from columns i/j/k to the appropriate named
         # column like 'item' or 'dimension'
-        pos <- c("i", "j", "k")[which(modgirt_indices[[parname]] == idx_name)]
+        pos <- indexes[which(modgirt_indices[[parname]] == idx_name)]
         ftab[param == parname, c(idx_name) := get(pos)]
       }
     }
@@ -140,7 +149,7 @@ label_params <- function(x, fnames = NULL) {
 
   if ("group_index" %in% names(ftab)) {
     group_names = setDT(
-      setNames(tstrsplit(x@stan_data_dimnames[[2]], ' | ', fixed = TRUE),
+      setNames(tstrsplit(x@stan_data_dimnames[[2]], '__', fixed = TRUE),
         c(x@geo, x@demo)))
     group_names[, group_index := .I]
     ftab <- merge(ftab, group_names, by = "group_index", all.x = TRUE)
@@ -158,7 +167,8 @@ label_params <- function(x, fnames = NULL) {
     ftab <- merge(ftab, item_names, by = "item_index", all.x = TRUE)
   }
 
-  drop_cols <- intersect(names(ftab), c("item_index", "time_index", "group_index", "i", "j", "k"))
+  drop_cols <- intersect(names(ftab), c("item_index", "time_index",
+      "group_index", indexes))
   if (length(drop_cols)) {
     ftab[, c(drop_cols) := NULL]
   }
@@ -175,15 +185,17 @@ modgirt_indices = list(
   "beta_neg" = c('dimension', 'item_index'),
   "beta_pos" = c('dimension', 'item_index'),
   "sd_theta_N01" = 'dimension',
-  "sd_theta_IG" =  'dimension',
-  "sd_theta_evolve_N01" =  'dimension',
-  "sd_theta_evolve_IG" =  'dimension',
+  "sd_theta_IG" = 'dimension',
+  "sd_bar_theta_evolve" = 'dimension',
+  "sd_raw_bar_theta_evolve" =  'dimension',
+  "sd_raw_bar_theta_evolve_N01" =  'dimension',
+  "sd_raw_bar_theta_evolve_IG" =  'dimension',
   "raw_bar_theta" = c('time_index', 'group_index', 'dimension'),
   "bar_theta" = c('time_index', 'group_index', 'dimension'),
   "beta" = c('item_index', 'dimension'),
   "alpha" = c('time_index', 'item_index'),
   "sd_theta" = 'dimension',
-  "sigma_theta" = 'dimension',
+  "Sigma_theta" = 'dimension',
   'mean_raw_bar_theta' = 'dimension'
 )
 

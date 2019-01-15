@@ -97,6 +97,12 @@ stan_data = shape_modgirt(opin_wide,
   groups = group_names,
   weight = 'weight')
 
-fit = modgirt(stan_data, iter = 10, model = model)
+fit = modgirt(stan_data, iter = 5, model = fit@stanfit@stanmodel, chains=2)
+
+d = as.data.frame(fit)
+as.data.frame(fit, pars='sd_raw_bar_theta_evolve_N01')
+as.data.frame(fit, pars='sd_raw_bar_theta_evolve_IG')
+as.data.frame(fit, pars='sd_raw_bar_theta_evolve')
+as.data.frame(fit, pars='sd_raw_bar_theta_evolve')
 
 
