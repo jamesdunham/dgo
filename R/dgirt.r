@@ -39,10 +39,8 @@
 #' that the Stan model object for a model fitted with \code{dgirt()} or
 #' \code{dgmrp()} can be found in the the \code{stanmodel} slot of the resulting
 #' \code{dgirt_fit} or \code{dgmrp_fit} object.
-#'
 #' @return A \code{\link{dgo_fit-class}} object that extends
 #' \code{\link[rstan]{stanfit-class}}.
-#'
 #' @aliases dgmrp
 #' @import rstan
 #' @include constants.r
@@ -71,7 +69,7 @@ dgirt <- function(shaped_data,
     model = model)
 }
 
-#'
+#' @rdname dgirt
 #' @export
 dgmrp <- function(shaped_data,
   ...,

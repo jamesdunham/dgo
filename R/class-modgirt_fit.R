@@ -11,6 +11,7 @@
 #' @slot demo Names of further grouping variables, usually demographic.
 #' @aliases modgirt_fit modgirt_fit-class
 #' @name modgirt_fit-class
+#' @export
 modgirt_fit <- setClass("modgirt_fit",
   slots = list(
     items = "character",
@@ -23,6 +24,7 @@ modgirt_fit <- setClass("modgirt_fit",
 ))
 
 # Show method
+
 #' @rdname modgirt_fit-methods
 #' @param x A \code{modgirt_fit-class} object
 #' @param object A \code{modgirt_fit-class} object
@@ -35,6 +37,7 @@ setMethod("show", "modgirt_fit",
 })
 
 # S4 print method
+
 #' @rdname modgirt_fit-methods
 #' @include methods-dgirtfit.r
 setMethod("print", "modgirt_fit", function(x) print.modgirt_fit(x))
@@ -44,6 +47,7 @@ setMethod("summary", "modgirt_fit", function(object, ...)
   print.modgirt_fit(object))
 
 # S3 print method
+
 #' \code{print} method for \code{modgirt_fit-class} objects
 #'
 #' @return NULL
@@ -66,6 +70,7 @@ print.modgirt_fit <- function(x) {
 
 #' Chain run times
 #' @rdname modgirt_fit-methods
+#' @export
 setMethod("get_elapsed_time", "modgirt_fit", function(object, ...) {
   # the stanfit method gives a matrix of time in seconds
   elapsed_time = rstan::get_elapsed_time(object@stanfit)
@@ -79,9 +84,8 @@ setMethod("get_elapsed_time", "modgirt_fit", function(object, ...) {
 })
 
 #' Split R-hats
-#'
+#' @rdname modgirt_fit-methods
 #' @return A table giving split R-hats for model parameters
-#' @include methods-dgirtfit.r
 #' @export
 setMethod("rhats", signature(x = "modgirt_fit"), function(x, pars = "bar_theta") {
   # extract r-hats from stanfit's summary method output
@@ -97,6 +101,13 @@ setMethod("rhats", signature(x = "modgirt_fit"), function(x, pars = "bar_theta")
   rhat[]
 })
 
+#' Extract estimates from \code{modgirt_fit-class} objects
+#'
+#' @param keep.fname Whether to retain original parameter names with numeric
+#'   indexes, as output from RStan.
+#'
+#' @rdname modgirt_fit-methods
+#' @export
 as.data.frame.modgirt_fit <- function(x, pars = "bar_theta", keep_fname = FALSE,
   ...) {
   # columns give parameter flatnames (e.g., "bar_theta[1,6,1]")

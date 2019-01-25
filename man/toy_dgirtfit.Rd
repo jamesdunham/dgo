@@ -9,7 +9,7 @@
 toy_dgirtfit
 }
 \description{
-\code{\link[dgo]{dgirt}} returns a \code{\link[dgo]{dgirtfit}}-class object
+\code{\link[dgo]{dgirt}} returns a \code{\link[dgo]{dgirt_fit}}-class object
 that extends \code{\link[rstan]{stanfit-class}}. \code{toy_dgirtfit} is a
-minimal \code{\link[dgo]{dgirtfit}} object for use in examples.
+minimal \code{\link[dgo]{dgirt_fit}} object for use in examples.
 }

@@ -6,6 +6,8 @@
 \alias{print,modgirt_fit-method}
 \alias{print.modgirt_fit}
 \alias{get_elapsed_time,modgirt_fit-method}
+\alias{rhats,modgirt_fit-method}
+\alias{as.data.frame.modgirt_fit}
 \title{\code{print} method for \code{modgirt_fit-class} objects}
 \usage{
 \S4method{show}{modgirt_fit}(object)
@@ -15,6 +17,11 @@
 print.modgirt_fit(x)
 
 \S4method{get_elapsed_time}{modgirt_fit}(object, ...)
+
+\S4method{rhats}{modgirt_fit}(x, pars = "bar_theta")
+
+\method{as.data.frame}{modgirt_fit}(x, pars = "bar_theta",
+  keep_fname = FALSE, ...)
 }
 \arguments{
 \item{object}{A \code{modgirt_fit-class} object}
@@ -24,9 +31,19 @@ print.modgirt_fit(x)
 \item{...}{Further arguments to \code{\link{stanfit-class}} methods.}
 
 \item{pars}{Parameter name(s)}
+
+\item{keep.fname}{Whether to retain original parameter names with numeric
+indexes, as output from RStan.}
+}
+\value{
+A table giving split R-hats for model parameters
 }
 \description{
 \code{print} method for \code{modgirt_fit-class} objects
 
 Chain run times
+
+Split R-hats
+
+Extract estimates from \code{modgirt_fit-class} objects
 }

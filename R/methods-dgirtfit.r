@@ -11,11 +11,6 @@ setMethod("show", "dgo_fit", function(object) {
             print.dgo_fit(object)
 })
 
-# Generic print method
-setGeneric("print", signature = "x", function(x, ...) {
-  standardGeneric("print")
-})
-
 #' @rdname dgo_fit-methods
 setMethod("print", "dgo_fit", function(x, ...) print.dgo_fit(x, ...))
 

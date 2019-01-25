@@ -36,9 +36,6 @@ setMethod("summary", c(object = "dgirtIn"),
   })
 
 #' @rdname dgirtin-class
-setGeneric("print")
-
-#' @rdname dgirtin-class
 setMethod("print", c("x" = "dgirtIn"),
   function(x, ...) summary(x))
 

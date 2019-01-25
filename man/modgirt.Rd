@@ -4,7 +4,7 @@
 \alias{modgirt}
 \title{Fit a multidimensional, ordinal, dynamic group IRT model}
 \usage{
-modgirt(shaped_data, version = "2018_08_18_mdgirt_ord", model = NULL,
+modgirt(shaped_data, version = "2019_01_10_modgirt", model = NULL,
   evolving_alpha = FALSE, ...)
 }
 \arguments{

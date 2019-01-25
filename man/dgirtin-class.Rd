@@ -11,7 +11,6 @@
 \alias{print.dgirtIn,}
 \alias{summary}
 \alias{summary,dgirtIn-method}
-\alias{print}
 \alias{print,dgirtIn-method}
 \alias{get_item_names}
 \alias{get_item_names,dgirtIn-method}
@@ -25,8 +24,6 @@
 summary(object, ...)
 
 \S4method{summary}{dgirtIn}(object, ...)
-
-print(x, ...)
 
 \S4method{print}{dgirtIn}(x, ...)
 
