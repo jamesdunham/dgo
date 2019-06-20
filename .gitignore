@@ -4,3 +4,4 @@ dgo.Rcheck/
 readme-cache
 src/*.o
 src/*.so
+.Rhistory

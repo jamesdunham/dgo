@@ -23,7 +23,7 @@ data {
   int unused_cut[Q, (K-1)];	  // indicates categories with no responses
   int<lower=0,upper=1> evolving_alpha; // indicates whether alpha should evolve
   int<lower=0> N_nonzero;	       // number of non-zero elements of SSSS
-  matrix<lower=0, upper=1>[G, P] XX;   // indicator matrix for hierarchical vars
+  /* matrix<lower=0,upper=1>[G, P] XX;    // indicator matrix for hierarchical vars */
 }
 parameters {
   real raw_bar_theta_N01[T, G, D]; // group means (pre-normalized, N(0,1) scale)
@@ -39,6 +39,9 @@ parameters {
   real<lower=0> sd_alpha_evolve_N01;	  // standard normal
   real<lower=0> sd_alpha_evolve_IG;       // inverse-gamma
   real<lower=0> B_cut;			  // slope for cutpoint prior
+  /* new */
+  vector[T] xi;				  // year-specific intercept
+  vector[T] delta_tbar;			  // lag coefficient
 }
 transformed parameters {
   // Declarations
@@ -73,7 +76,10 @@ transformed parameters {
     if (t == 1) {
       for (g in 1:G) {
 	for (d in 1:D) {
-	  raw_bar_theta[t, g, d] = raw_bar_theta_N01[t, g, d];
+	  /* // implies raw_bar_theta[t, g, d] ~ N(0, 1) */
+	  /* raw_bar_theta[t, g, d] = raw_bar_theta_N01[t, g, d]; */
+	  // implies raw_bar_theta[t, g, d] ~ N(xi[t], 1)
+	  raw_bar_theta[t, g, d] = xi[t] + raw_bar_theta_N01[t, g, d];	  
 	}
       }
     }
@@ -81,7 +87,7 @@ transformed parameters {
       for (g in 1:G) {
 	for (d in 1:D) {
 	  // implies raw_bar_theta[t] ~ N(raw_bar_theta[t-1], sd_raw_bar_theta_evolve)
-	  raw_bar_theta[t, g, d] = raw_bar_theta[t-1, g, d]
+	  raw_bar_theta[t, g, d] = delta_tbar[t] * raw_bar_theta[t-1, g, d]
 	    + sd_raw_bar_theta_evolve[d] * raw_bar_theta_N01[t, g, d]; 
 	}
       }
@@ -148,6 +154,9 @@ model {
   sd_alpha_evolve_N01 ~ normal(0, 1);	    // ditto
   sd_alpha_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
   B_cut ~ normal(0, 1);
+  /* new */
+  delta_tbar[t] ~ normal(.5, 1);
+  xi[t] ~ normal(0, 1);
   // Likelihood
   for (t in 1:T) {
     for (q in 1:Q) { 
