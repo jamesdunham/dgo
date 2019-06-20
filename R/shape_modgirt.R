@@ -48,10 +48,11 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL) {
         dplyr::mutate(n_responses = dplyr::n())
 
     ## 2. Compute adjusted respondent weights (denoted w^*)
+    opin_long$__wt_tmp__ <- opin_long[[weight]]
     opin_long <- opin_long %>%
         dplyr::group_by_at(dplyr::vars(dplyr::one_of(tgq))) %>%
         ## FIXME: use weight
-        dplyr::mutate(weight_star = !!weight / mean(!!weight))
+        dplyr::mutate(weight_star = __wt_tmp__ / mean(__wt_tmp__))
     stopifnot(!any(is.na(opin_long$weight_star)))
 
     ## 3. Compute group design effects (denoted d_{tgq})
