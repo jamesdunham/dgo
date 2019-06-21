@@ -54,7 +54,9 @@ parameters {
   vector<lower=0>[D] sd_raw_bar_theta_evolve_IG;  // inverse-gamma
   real<lower=0> sd_alpha_evolve_N01;	  // standard normal
   real<lower=0> sd_alpha_evolve_IG;       // inverse-gamma
-  real<lower=0> B_cut;			  // slope for cutpoint prior
+  real<lower=0> sd_gamma_evolve;	  // evolution sd of gamma
+  real<lower=0> sd_xi_evolve;		  // evolution sd of xi
+real<lower=0> B_cut;			  // slope for cutpoint prior
   /* new */
   vector[T] raw_xi;				  // year-specific intercept
   vector[T] delta_tbar;			  // lag coefficient
@@ -179,6 +181,8 @@ model {
   sd_raw_bar_theta_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
   sd_alpha_evolve_N01 ~ normal(0, 1);	    // ditto
   sd_alpha_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
+  sd_xi_evolve ~ cauchy(0, 1);	    /* do trick later */
+  sd_gamma_evolve ~ cauchy(0, 1);	    /* do trick later */
   B_cut ~ normal(0, 1);
   /* new */
   for (t in 1:T) {
@@ -190,8 +194,8 @@ model {
     if (t > 1 && time_smooth == 1) {
       /* TODO: make sd paramters */
       delta_tbar[t] ~ normal(delta_tbar[t-1], .1);
-      raw_xi[t] ~ normal(raw_xi[t-1], 10);
-      raw_gamma[t] ~ normal(raw_gamma[t-1], .1);
+      raw_xi[t] ~ normal(raw_xi[t-1], sd_xi_evolve);
+      raw_gamma[t] ~ normal(raw_gamma[t-1], sd_gamma_evolve);
     }
   }
   // Likelihood
