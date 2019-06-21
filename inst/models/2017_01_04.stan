@@ -96,7 +96,7 @@ transformed parameters {
         // 2016-02-05: need to think more about nu_geo_prior; make it different for geographic and demographic
         // parameters
         //
-        // In the second year, agian use uniformative prior for gamma, rather
+        // In the second year, again use uniformative prior for gamma, rather
         // than one centered on its lagged value, because gamma is likely to be
         // very different in periods 1 and 2 because only in 2 is
         // theta_bar[t - 1] used to inform theta_bar[t].

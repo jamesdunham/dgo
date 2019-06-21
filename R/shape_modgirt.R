@@ -53,7 +53,6 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL) {
     opin_long$wt_tmp__ <- opin_long[[weight]]
     opin_long <- opin_long %>%
         dplyr::group_by_at(dplyr::vars(dplyr::one_of(tgq))) %>%
-        ## FIXME: use weight
         dplyr::mutate(weight_star = wt_tmp__ / mean(wt_tmp__))
     stopifnot(!any(is.na(opin_long$weight_star)))
 
