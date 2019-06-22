@@ -1,13 +1,15 @@
 #' @export
 shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
-                         periods_to_est, smooth_time, smooth_cross) {
+                         periods_to_est = NULL, smooth_time, smooth_cross) {
 
     ## Keep only specified variables
     itggw <- c(items, time, geo, groups, weight)
     data <- dplyr::select_at(data, dplyr::vars(dplyr::one_of(itggw)))
 
     ## Subset data to time period of interest
-    data <- data[data[[time]] %in% periods_to_est, ]
+    if (!is.null(periods_to_est)) {
+        data <- data[data[[time]] %in% periods_to_est, ]
+    }
     ## Drop columns with no non-missing values (including items)
     data <- dplyr::select_if(data, list(~any(!is.na(.))))
 
@@ -123,8 +125,7 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
         reshape2::acast(cast_formula, fun.aggregate = sum, value.var = "s_star",
                         drop = FALSE)
 
-
-    
+    ## Data for Stan
     stan_data = list(
         T = dim(SSSS)[1],
         G = dim(SSSS)[2],
