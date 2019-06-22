@@ -1,12 +1,24 @@
 #' @export
-shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL) {
-    
+shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
+                         periods_to_est, smooth_time, smooth_cross) {
+
+    ## Keep only specified variables
+    itggw <- c(items, time, geo, groups, weight)
+    data <- dplyr::select_at(data, dplyr::vars(dplyr::one_of(itggw)))
+
+    ## Subset data to time period of interest
+    data <- data[data[[time]] %in% periods_to_est, ]
+    ## Drop columns with no non-missing values (including items)
+    data <- dplyr::select_if(data, list(~any(!is.na(.))))
+
+    ## Subset to items that appear in the usable data 
+    items <- intersect(items, names(data))
+
     opin_long <- data %>%
-        ## Keep only specified variables
-        dplyr::select_at(dplyr::vars(dplyr::one_of(items, time, geo,
-                                                   groups, weight))) %>%
         ## While data are still wide, assign respondent IDs
         dplyr::mutate(respondent_id = dplyr::row_number()) %>%
+        ## Convert items to factors (without labels)
+        mutate_at(vars(one_of(items)), list(~as.integer(as.factor(.)))) %>%
         ## Melt to long
         reshape2::melt(measure.vars = items, variable.name = "item")
 
@@ -106,24 +118,36 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL) {
     ## Create a 4-dimensional array of responses indexed time, group, item, and
     ## level
     cast_formula <- make_formula(list(time, "group", "item", "level"))
-    SSSS_ord <- ns_star %>%
+    SSSS <- ns_star %>%
         dplyr::ungroup() %>%
         reshape2::acast(cast_formula, fun.aggregate = sum, value.var = "s_star",
                         drop = FALSE)
 
 
-    ## INSERT HERE: Create hierarchical design matrix
     
     stan_data = list(
-        T = dim(SSSS_ord)[1],
-        G = dim(SSSS_ord)[2],
-        Q = dim(SSSS_ord)[3],
-        K = dim(SSSS_ord)[4],
+        T = dim(SSSS)[1],
+        G = dim(SSSS)[2],
+        Q = dim(SSSS)[3],
+        K = dim(SSSS)[4],
         D = 1,
-        SSSS = SSSS_ord,
-        beta_sign = matrix(1, dim(SSSS_ord)[3], 1),
+        SSSS = SSSS,
+        beta_sign = matrix(1, dim(SSSS)[3], 1),
         unused_cut = unused_cut,
-        N_nonzero = sum(SSSS_ord > 0))
+        N_nonzero = sum(SSSS > 0),
+        smooth_time = smooth_time,
+        smooth_cross = smooth_cross)
+    
+    ## Create hierarchical design matrix
+    stan_data$XX = SSSS %>%
+        as.data.frame.table %>%
+        tidyr::separate(col = "Var2", into = c(geo, groups), sep = "\\_\\_") %>%
+        select(one_of(geo, groups)) %>%
+        sapply(unique) %>%
+        expand.grid() %>%
+        model.matrix(~., data = .)
+    stan_data$P = ncol(stan_data$XX)
+
 
     shaped = new('modgirt_in',
                  items = items,
