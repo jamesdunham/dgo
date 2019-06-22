@@ -25,8 +25,8 @@ data {
   int<lower=0,upper=1> evolving_alpha; // indicates whether alpha should evolve
   int<lower=0> N_nonzero;	       // number of non-zero elements of SSSS
   matrix<lower=0,upper=1>[G, P] XX;    // hier. preds. (includ. intercept)
-  int<lower=0,upper=1> cross_smooth;       // indicator for hierarchical model
-  int<lower=0,upper=1> time_smooth;     // indicator for no over-time smoothing
+  int<lower=0,upper=1> smooth_cross;       // indicator for hierarchical model
+  int<lower=0,upper=1> smooth_time;     // indicator for no over-time smoothing
 }
 transformed data {
   matrix[G, P] XX_ctr;
@@ -92,14 +92,14 @@ transformed parameters {
 	}
       }
     }
-    if (t == 1 || time_smooth == 0) {
+    if (t == 1 || smooth_time == 0) {
       for (g in 1:G) {
 	for (d in 1:D) {
 	  /* // implies raw_bar_theta[t, g, d] ~ N(0, 1) */
 	  /* raw_bar_theta[t, g, d] = raw_bar_theta_N01[t, g, d]; */
 	  // implies raw_bar_theta[t, g, d] ~ N(raw_xi[t] + XX_ctr * raw_gamma[t], 1)
 	  raw_bar_theta[t, g, d] = raw_xi[t]
-	    + XX_ctr[g, 2:P] * raw_gamma[t][1:(P-1)] * cross_smooth
+	    + XX_ctr[g, 2:P] * raw_gamma[t][1:(P-1)] * smooth_cross
 	    + raw_bar_theta_N01[t, g, d];
 	  /* ALTERNATIVELY (QR) */
 	  /* raw_bar_theta[t, g, d] = raw_xi[t] + Q_ast[g, 1:(P-1)] * raw_gamma[t][1:(P-1)] */
@@ -107,7 +107,7 @@ transformed parameters {
 	}
       }
     }
-    if (t > 1 && time_smooth == 1) {
+    if (t > 1 && smooth_time == 1) {
       for (g in 1:G) {
 	for (d in 1:D) {
 	  // implies raw_bar_theta[t] ~
@@ -163,10 +163,10 @@ model {
       raw_alpha[q][k] ~ normal(priormean, 1);
     }
     for (t in 1:T) {
-      if (t == 1 || time_smooth == 0) {
+      if (t == 1 || smooth_time == 0) {
 	alpha_drift[t][q] ~ normal(0, 1);
       }
-      if (t > 1 && time_smooth == 1) {
+      if (t > 1 && smooth_time == 1) {
 	alpha_drift[t][q] ~ normal(alpha_drift[t-1][q], sd_alpha_evolve);
       }
     }
@@ -186,12 +186,12 @@ model {
   B_cut ~ normal(0, 1);
   /* new */
   for (t in 1:T) {
-    if (t == 1 || time_smooth == 0) {
+    if (t == 1 || smooth_time == 0) {
       delta_tbar[t] ~ normal(.5, 1);
       raw_xi[t] ~ normal(0, 10);
       raw_gamma[t] ~ normal(0, 1);
     }
-    if (t > 1 && time_smooth == 1) {
+    if (t > 1 && smooth_time == 1) {
       /* TODO: make sd paramters */
       delta_tbar[t] ~ normal(delta_tbar[t-1], .1);
       raw_xi[t] ~ normal(raw_xi[t-1], sd_xi_evolve);
