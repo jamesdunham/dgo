@@ -33,8 +33,9 @@ modgirt <- function(shaped_data,
   }
 
   # Unless otherwise specified, monitor the default parameters
-  if (!length(dots$pars)) {
-    dots$pars <- modgirt_pars
+    if (!length(dots$pars)) {
+        if (length(shaped_data@items) == 1) dots$pars <- c(modgirt_pars, "PI")
+        else dots$pars <- modgirt_pars
   }
 
   # Fit the model
@@ -96,5 +97,4 @@ modgirt_pars <- c(
   "sd_xi_evolve",                       # transition SD of xi
   "sd_gamma_evolve"                     # transition SD of gamma/delta_tbar
 )
-if (length(shaped_data@items) == 1) modgirt_pars <- c(modgirt_pars, "PI")
 
