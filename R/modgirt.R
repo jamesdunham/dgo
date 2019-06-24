@@ -87,24 +87,14 @@ resolve_model <- function(model, version) {
 
 # Default model parameters to monitor
 modgirt_pars <- c(
-  "alpha",            # thresholds (difficulty)
-  "bar_theta",
-  "beta",	            # discrimination
-  "beta_free",
-  "beta_neg",
-  "beta_pos",
-  "raw_alpha",
-  "raw_bar_theta",
-  "raw_bar_theta_N01",
-  "sd_alpha_evolve",	# transition SD of alpha
-  "sd_alpha_evolve_IG",
-  "sd_alpha_evolve_N01",
-  "sd_theta",	        # within-group SD of theta
-  "sd_theta_IG",
-  "sd_theta_N01",
-  "sd_raw_bar_theta_evolve",  # transition SD of theta
-  "sd_raw_bar_theta_evolve_IG",
-  "sd_raw_bar_theta_evolve_N01",
-  "sd_bar_theta_evolve",
-  "Sigma_theta")
+  "bar_theta",                          # group means
+  "alpha",                              # thresholds (difficulty)
+  "beta",                               # discrimination
+  "sd_theta",                           # within-group SD of theta
+  "sd_bar_theta_evolve",                # transition SD of bar_theta
+  "sd_alpha_evolve",                    # transition SD of alpha
+  "sd_xi_evolve",                       # transition SD of xi
+  "sd_gamma_evolve"                     # transition SD of gamma/delta_tbar
+)
+if (length(shaped_data@items) == 1) modgirt_pars <- c(modgirt_pars, "PI")
 

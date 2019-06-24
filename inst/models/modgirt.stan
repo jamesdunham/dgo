@@ -30,16 +30,9 @@ data {
 }
 transformed data {
   matrix[G, P] XX_ctr;
-  /* matrix[G, P-1] Q_ast; */
-  /* matrix[P-1, P-1] R_ast; */
-  /* matrix[P-1, P-1] R_ast_inverse; */
   for (p in 1:P) {
     XX_ctr[1:G, p] = XX[1:G, p] - mean(XX[1:G, p]); // for interpretability
   }
-  // thin and scale the QR decomposition
-  /* Q_ast = qr_Q(XX[, 2:P])[, 1:(P-1)] * sqrt(G - 1); /\* no intercept *\/ */
-  /* R_ast = qr_R(XX[, 2:P])[1:(P-1), ] / sqrt(G - 1); */
-  /* R_ast_inverse = inverse(R_ast); */
 }
 parameters {
   real raw_bar_theta_N01[T, G, D]; // group means (pre-normalized, N(0,1) scale)
@@ -54,13 +47,14 @@ parameters {
   vector<lower=0>[D] sd_raw_bar_theta_evolve_IG;  // inverse-gamma
   real<lower=0> sd_alpha_evolve_N01;	  // standard normal
   real<lower=0> sd_alpha_evolve_IG;       // inverse-gamma
-  real<lower=0> sd_gamma_evolve;	  // evolution sd of gamma
-  real<lower=0> sd_xi_evolve;		  // evolution sd of xi
-real<lower=0> B_cut;			  // slope for cutpoint prior
-  /* new */
-  vector[T] raw_xi;				  // year-specific intercept
+  real<lower=0> sd_xi_evolve_N01;	  // standard normal
+  real<lower=0> sd_xi_evolve_IG;	  // inverse-gamma
+  real<lower=0> sd_gamma_evolve_N01;	  // standard normal
+  real<lower=0> sd_gamma_evolve_IG;       // inverse-gamma
+  real<lower=0> B_cut;			  // slope for cutpoint prior
+  vector[T] raw_xi;			  // year-specific intercept
   vector[T] delta_tbar;			  // lag coefficient
-  vector[P-1] raw_gamma[T];			  // hierarchical parameters
+  vector[P-1] raw_gamma[T];		  // hierarchical parameters
 }
 transformed parameters {
   // Declarations
@@ -74,11 +68,15 @@ transformed parameters {
   cov_matrix[D] Sigma_theta;   // diagonal matrix of within-group variances
   vector[D] mean_raw_bar_theta;
   vector[D] sd_raw_bar_theta;
+  real<lower=0> sd_gamma_evolve;	  // evolution sd of gamma
+  real<lower=0> sd_xi_evolve;		  // evolution sd of xi
   // Assignments
   sd_theta = sd_theta_N01 .* sqrt(sd_theta_IG); // sd_theta ~ cauchy(0, 1);
   sd_raw_bar_theta_evolve =
     sd_raw_bar_theta_evolve_N01 .* sqrt(sd_raw_bar_theta_evolve_IG); // ditto
   sd_alpha_evolve = sd_alpha_evolve_N01 * sqrt(sd_alpha_evolve_IG);  // ditto
+  sd_xi_evolve = sd_xi_evolve_N01 .* sqrt(sd_xi_evolve_IG);	     // ditto
+  sd_gamma_evolve = sd_gamma_evolve_N01 .* sqrt(sd_gamma_evolve_IG); // ditto
   Sigma_theta = diag_matrix(sd_theta .* sd_theta);
   for (t in 1:T) {
     for (q in 1:Q) {
@@ -95,15 +93,10 @@ transformed parameters {
     if (t == 1 || smooth_time == 0) {
       for (g in 1:G) {
 	for (d in 1:D) {
-	  /* // implies raw_bar_theta[t, g, d] ~ N(0, 1) */
-	  /* raw_bar_theta[t, g, d] = raw_bar_theta_N01[t, g, d]; */
 	  // implies raw_bar_theta[t, g, d] ~ N(raw_xi[t] + XX_ctr * raw_gamma[t], 1)
 	  raw_bar_theta[t, g, d] = raw_xi[t]
 	    + XX_ctr[g, 2:P] * raw_gamma[t][1:(P-1)] * smooth_cross
 	    + raw_bar_theta_N01[t, g, d];
-	  /* ALTERNATIVELY (QR) */
-	  /* raw_bar_theta[t, g, d] = raw_xi[t] + Q_ast[g, 1:(P-1)] * raw_gamma[t][1:(P-1)] */
-	  /*   + raw_bar_theta_N01[t, g, d];  */
 	}
       }
     }
@@ -181,10 +174,13 @@ model {
   sd_raw_bar_theta_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
   sd_alpha_evolve_N01 ~ normal(0, 1);	    // ditto
   sd_alpha_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
-  sd_xi_evolve ~ cauchy(0, 1);	    /* do trick later */
-  sd_gamma_evolve ~ cauchy(0, 1);	    /* do trick later */
+  sd_xi_evolve_N01 ~ normal(0, 1);	    // sd_xi_evolve ~ cauchy(0, 1); 
+  sd_xi_evolve_IG ~ inv_gamma(0.5, 0.5);    // ditto
+  sd_gamma_evolve_N01 ~ normal(0, 1);	    // sd_gamma_evolve ~ cauchy(0, 1); 
+  sd_gamma_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
+  /* sd_xi_evolve ~ cauchy(0, 1);	    /\* do trick later *\/ */
+  /* sd_gamma_evolve ~ cauchy(0, 1);	    /\* do trick later *\/ */
   B_cut ~ normal(0, 1);
-  /* new */
   for (t in 1:T) {
     if (t == 1 || smooth_time == 0) {
       delta_tbar[t] ~ normal(.5, 1);
@@ -192,10 +188,9 @@ model {
       raw_gamma[t] ~ normal(0, 1);
     }
     if (t > 1 && smooth_time == 1) {
-      /* TODO: make sd paramters */
-      delta_tbar[t] ~ normal(delta_tbar[t-1], .1);
       raw_xi[t] ~ normal(raw_xi[t-1], sd_xi_evolve);
       raw_gamma[t] ~ normal(raw_gamma[t-1], sd_gamma_evolve);
+      delta_tbar[t] ~ normal(delta_tbar[t-1], sd_gamma_evolve);
     }
   }
   // Likelihood
@@ -227,7 +222,7 @@ generated quantities {
   vector[T] xi;
   vector[P-1] gamma[T];			  
   for (t in 1:T) {
-    /* convert to bar_theta scale (NEED TO ACCOUNT FOR DIMENSIONALITY LATER) */
+    /* convert to bar_theta scale (TODO: MULTIDIMENSIONALITY) */
     for (d in 1:D) {
       xi[t] = (raw_xi[t] - mean_raw_bar_theta[d]) ./ sd_raw_bar_theta[d];
       gamma[t, 1:(P-1)] = raw_gamma[t, 1:(P-1)] ./ sd_raw_bar_theta[d];
