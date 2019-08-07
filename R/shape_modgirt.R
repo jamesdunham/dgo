@@ -26,16 +26,19 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
 
     ## TODO: Create weights if they don't exist 
     if (!length(weight)) {
-        weight <- 'weight'
-        opin_long$weight = 1
+        weight <- "weight"
+        opin_long$weight <- 1
         ## ...
     }
 
     ## Create time variable if it doesn't exist
     if (!length(time)) {
-        time <- 'time'
-        opin_long$time = 1
+        time <- "time"
+        opin_long$time <- periods_to_est <- 1
     }
+
+    ## Convert time variable to factor in case some years have no data
+    opin_long[[time]] <- factor(opin_long[[time]], periods_to_est)
     
     ## Filter rows such that no values of `value`, `weight`, `geo`, or
     ## `groups` will be NA 
@@ -94,9 +97,9 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
 
     ## 5b. Join s*-in-progress and n*
     ns_star <- s_star %>%
-        dplyr::left_join(y = n_star, by = c(geo, groups, time, 'item'))
+        dplyr::left_join(y = n_star, by = c(geo, groups, time, "item"))
     assert(nrow(ns_star) == nrow(s_star))
-    assert(!assertthat::has_name(ns_star, 's_star'))
+    assert(!assertthat::has_name(ns_star, "s_star"))
 
     ## 5c. Finish calculating s*
     ns_star <- ns_star %>%
@@ -104,13 +107,13 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
         dplyr::ungroup()
 
     ## 6. Create group variable
-    assert(!assertthat::has_name(ns_star, 'group'))
+    assert(!assertthat::has_name(ns_star, "group"))
     ns_star$group <- do.call(interaction,
                              list(ns_star[c(geo, groups)], sep = "__"))
 
     ## Check for __ in group values
     for (nm in c(groups)) {
-        if (any(grepl('__', ns_star[[nm]], fixed = TRUE))) {
+        if (any(grepl("__", ns_star[[nm]], fixed = TRUE))) {
             warning(c('Found "__" in grouping variable values, ',
                       'which may cause issues when extracting estimates from ',
                       'fitted model objects'))
@@ -150,7 +153,7 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
     stan_data$P = ncol(stan_data$XX)
 
 
-    shaped = new('modgirt_in',
+    shaped = new("modgirt_in",
                  items = items,
                  time = time,
                  geo = geo,
@@ -162,8 +165,8 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
 
 unobserved_levels = function(responses_long) {
     ## Identify categories with no responses in `unused_cut`, a Q x K-1 matrix
-    assert(assertthat::has_name(responses_long, 'item'))
-    assert(assertthat::has_name(responses_long, 'value'))
+    assert(assertthat::has_name(responses_long, "item"))
+    assert(assertthat::has_name(responses_long, "value"))
     item_max <- responses_long %>%
         dplyr::group_by(item) %>%
         dplyr::summarise(max_level = max(value))
