@@ -218,7 +218,7 @@ model {
 generated quantities {
   vector[D] sd_bar_theta_evolve =
     sd_raw_bar_theta_evolve[1:D] ./ sd_raw_bar_theta;
-  real PI[T, G, Q, K];
+  real<lower=0,upper=1> PPPP[T, G, Q, K];
   vector[T] xi;
   vector[P-1] gamma[T];			  
   for (t in 1:T) {
@@ -227,29 +227,29 @@ generated quantities {
       xi[t] = (raw_xi[t] - mean_raw_bar_theta[d]) ./ sd_raw_bar_theta[d];
       gamma[t, 1:(P-1)] = raw_gamma[t, 1:(P-1)] ./ sd_raw_bar_theta[d];
     }
-    /* for (g in 1:G) { */
-    /*   for (q in 1:Q) { */
-    /* 	real z_denom = */
-    /*   	  sqrt(1 + quad_form(Sigma_theta[1:D, 1:D], to_vector(beta[q][1:D]))); */
-    /* 	for (k in 1:K) { */
-    /* 	  if (k == 1) { */
-    /* 	    PI[t, g, q, k] = 1 - */
-    /* 	      Phi_approx((beta[q][1:D] * to_vector(bar_theta[t, g, 1:D]) - */
-    /* 			  alpha[t, q][k]) / z_denom); */
-    /* 	  } */
-    /* 	  if (k > 1 && k < K) { */
-    /* 	    PI[t, g, q, k] = */
-    /* 	      Phi_approx((beta[q][1:D] * to_vector(bar_theta[t, g, 1:D]) - */
-    /* 			  alpha[t, q][k - 1]) / z_denom) - */
-    /* 	      Phi_approx((beta[q][1:D] * to_vector(bar_theta[t, g, 1:D]) - */
-    /* 			  alpha[t, q][k]) / z_denom); */
-    /* 	  } if (k == K) { */
-    /* 	    PI[t, g, q, k] = */
-    /* 	      Phi_approx((beta[q][1:D] * to_vector(bar_theta[t, g, 1:D]) - */
-    /* 			  alpha[t, q][k - 1]) / z_denom); */
-    /* 	  } */
-    /* 	} */
-    /*   } */
-    /* } */
+    for (g in 1:G) {
+      for (q in 1:Q) {
+	real z_denom =
+      	  sqrt(1 + quad_form(Sigma_theta[1:D, 1:D], to_vector(beta[q][1:D])));
+  	for (k in 1:K) {
+  	  if (k == 1) {
+  	    PPPP[t, g, q, k] = 1 -
+  	      Phi_approx((beta[q][1:D] * to_vector(bar_theta[t, g, 1:D]) -
+  			  alpha[t, q][k]) / z_denom);
+  	  }
+  	  if (k > 1 && k < K) {
+  	    PPPP[t, g, q, k] =
+  	      Phi_approx((beta[q][1:D] * to_vector(bar_theta[t, g, 1:D]) -
+  			  alpha[t, q][k - 1]) / z_denom) -
+  	      Phi_approx((beta[q][1:D] * to_vector(bar_theta[t, g, 1:D]) -
+  			  alpha[t, q][k]) / z_denom);
+  	  } if (k == K) {
+  	    PPPP[t, g, q, k] =
+  	      Phi_approx((beta[q][1:D] * to_vector(bar_theta[t, g, 1:D]) -
+  			  alpha[t, q][k - 1]) / z_denom);
+  	  }
+  	}
+      }
+    }
   }
 }
