@@ -15,12 +15,16 @@
 #' @include constants.r
 #' @export
 modgirt <- function(shaped_data,
-  version = "2019_01_10_modgirt",
+  version = "2020_03_10_modgirt",
   model = NULL,
   evolving_alpha = FALSE,
+  smooth_time = FALSE,
+  smooth_cross = FALSE        
   ...) {
 
   shaped_data@stan_data$evolving_alpha = as.integer(evolving_alpha)
+  shaped_data@stan_data$smooth_time = as.integer(smooth_time)
+  shaped_data@stan_data$smooth_cross = as.integer(smooth_cross)
 
   # Dots will be passed to RStan
   dots <- list(..., data = shaped_data@stan_data)
@@ -34,7 +38,7 @@ modgirt <- function(shaped_data,
 
   # Unless otherwise specified, monitor the default parameters
     if (!length(dots$pars)) {
-        if (length(shaped_data@items) == 1) dots$pars <- c(modgirt_pars, "PI")
+        if (length(shaped_data@items) == 1) dots$pars <- c(modgirt_pars, "PPPP")
         else dots$pars <- modgirt_pars
   }
 
@@ -91,6 +95,8 @@ modgirt_pars <- c(
   "bar_theta",                          # group means
   "alpha",                              # thresholds (difficulty)
   "beta",                               # discrimination
+  "xi",                                 # year-specific intercept
+  "gamma",                              # hierarchical parameters
   "sd_theta",                           # within-group SD of theta
   "sd_bar_theta_evolve",                # transition SD of bar_theta
   "sd_alpha_evolve",                    # transition SD of alpha
