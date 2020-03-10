@@ -19,7 +19,7 @@ modgirt <- function(shaped_data,
   model = NULL,
   evolving_alpha = FALSE,
   smooth_time = FALSE,
-  smooth_cross = FALSE        
+  smooth_cross = FALSE,
   ...) {
 
   shaped_data@stan_data$evolving_alpha = as.integer(evolving_alpha)
