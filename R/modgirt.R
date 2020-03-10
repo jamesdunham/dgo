@@ -20,6 +20,7 @@ modgirt <- function(shaped_data,
   evolving_alpha = FALSE,
   smooth_time = FALSE,
   smooth_cross = FALSE,
+  verbose = FALSE,
   ...) {
 
   shaped_data@stan_data$evolving_alpha = as.integer(evolving_alpha)
@@ -27,7 +28,7 @@ modgirt <- function(shaped_data,
   shaped_data@stan_data$smooth_cross = as.integer(smooth_cross)
 
   # Dots will be passed to RStan
-  dots <- list(..., data = shaped_data@stan_data)
+  dots <- list(..., data = shaped_data@stan_data, verbose = verbose)
   # Add a model object
   dots$object = resolve_model(model, version)
 
