@@ -138,9 +138,7 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
         SSSS = SSSS,
         beta_sign = matrix(1, dim(SSSS)[3], 1),
         unused_cut = unused_cut,
-        N_nonzero = sum(SSSS > 0),
-        smooth_time = smooth_time,
-        smooth_cross = smooth_cross)
+        N_nonzero = sum(SSSS > 0))
     
     ## Create hierarchical design matrix
     stan_data$XX = SSSS %>%
