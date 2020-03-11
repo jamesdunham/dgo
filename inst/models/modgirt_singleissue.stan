@@ -41,8 +41,8 @@ parameters {
   /* real beta_free[D, Q];		   // discrimination (unconstrained) */
   /* real<upper=0> beta_neg[D, Q];	   // discrimination (negative) */
   /* real<lower=0> beta_pos[D, Q];	   // discrimination (positive) */
-  vector<lower=0>[D] sd_theta_N01; // standard normal
-  vector<lower=0>[D] sd_theta_IG;  // inverse-gamma
+  /* vector<lower=0>[D] sd_theta_N01; // standard normal */
+  /* vector<lower=0>[D] sd_theta_IG;  // inverse-gamma */
   vector<lower=0>[D] sd_raw_bar_theta_evolve_N01; // standard normal
   vector<lower=0>[D] sd_raw_bar_theta_evolve_IG;  // inverse-gamma
   real<lower=0> sd_alpha_evolve_N01;	  // standard normal
@@ -62,22 +62,22 @@ transformed parameters {
   real bar_theta[T, G, D];     // group means (normalized)
   /* matrix[Q, D] beta;	       // discrimination */
   ordered[K-1] alpha[T, Q];    // thresholds (difficulty)
-  vector[D] sd_theta;	       // within-group SD of theta
+  /* vector[D] sd_theta;	       // within-group SD of theta */
   vector[D] sd_raw_bar_theta_evolve;   // transition SD of theta
   real sd_alpha_evolve;	       // transition SD of alpha
-  cov_matrix[D] Sigma_theta;   // diagonal matrix of within-group variances
+  /* cov_matrix[D] Sigma_theta;   // diagonal matrix of within-group variances */
   vector[D] mean_raw_bar_theta;
   vector[D] sd_raw_bar_theta;
   real<lower=0> sd_gamma_evolve;	  // evolution sd of gamma
   real<lower=0> sd_xi_evolve;		  // evolution sd of xi
   // Assignments
-  sd_theta = sd_theta_N01 .* sqrt(sd_theta_IG); // sd_theta ~ cauchy(0, 1);
+  /* sd_theta = sd_theta_N01 .* sqrt(sd_theta_IG); // sd_theta ~ cauchy(0, 1); */
   sd_raw_bar_theta_evolve =
     sd_raw_bar_theta_evolve_N01 .* sqrt(sd_raw_bar_theta_evolve_IG); // ditto
   sd_alpha_evolve = sd_alpha_evolve_N01 * sqrt(sd_alpha_evolve_IG);  // ditto
   sd_xi_evolve = sd_xi_evolve_N01 .* sqrt(sd_xi_evolve_IG);	     // ditto
   sd_gamma_evolve = sd_gamma_evolve_N01 .* sqrt(sd_gamma_evolve_IG); // ditto
-  Sigma_theta = diag_matrix(sd_theta .* sd_theta);
+  /* Sigma_theta = diag_matrix(sd_theta .* sd_theta); */
   for (t in 1:T) {
     for (q in 1:Q) {
       for (k in 1:(K-1)) {
@@ -168,8 +168,8 @@ model {
   /* to_array_1d(beta_free[1:D, 1:Q]) ~ normal(0, 10); */
   /* to_array_1d(beta_neg[1:D, 1:Q]) ~ normal(0, 10); */
   /* to_array_1d(beta_pos[1:D, 1:Q]) ~ normal(0, 10); */
-  sd_theta_N01 ~ normal(0, 1);		    // sd_theta ~ cauchy(0, 1); 
-  sd_theta_IG ~ inv_gamma(0.5, 0.5);	    // ditto
+  /* sd_theta_N01 ~ normal(0, 1);		    // sd_theta ~ cauchy(0, 1);  */
+  /* sd_theta_IG ~ inv_gamma(0.5, 0.5);	    // ditto */
   sd_raw_bar_theta_evolve_N01 ~ normal(0, 1);	    // ditto
   sd_raw_bar_theta_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
   sd_alpha_evolve_N01 ~ normal(0, 1);	    // ditto
