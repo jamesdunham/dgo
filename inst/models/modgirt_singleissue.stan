@@ -206,7 +206,7 @@ model {
 	    SSSS_pos += 1;
 	    /* eta = p2l_real(beta[q][1:D] * to_vector(bar_theta[t, g, 1:D]) */
 	    /* 		   / z_denom); */
-	    eta = p2l_real(to_vector(bar_theta[t, g, 1:D])); 
+	    eta = p2l_real(bar_theta[t, g, 1]);
 	    loglike_summands[SSSS_pos] =
 	      SSSS[t, g, q, k] * ordered_logistic_lpmf(k | eta, cut);
 	  }
