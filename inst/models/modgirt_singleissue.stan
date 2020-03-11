@@ -38,9 +38,9 @@ parameters {
   real raw_bar_theta_N01[T, G, D]; // group means (pre-normalized, N(0,1) scale)
   ordered[K-1] raw_alpha[Q];	   // thresholds (difficulty) -> EDIT
   vector[Q] alpha_drift[T];	   // question-specific drift -> EDIT
-  real beta_free[D, Q];		   // discrimination (unconstrained)
-  real<upper=0> beta_neg[D, Q];	   // discrimination (negative)
-  real<lower=0> beta_pos[D, Q];	   // discrimination (positive)
+  /* real beta_free[D, Q];		   // discrimination (unconstrained) */
+  /* real<upper=0> beta_neg[D, Q];	   // discrimination (negative) */
+  /* real<lower=0> beta_pos[D, Q];	   // discrimination (positive) */
   vector<lower=0>[D] sd_theta_N01; // standard normal
   vector<lower=0>[D] sd_theta_IG;  // inverse-gamma
   vector<lower=0>[D] sd_raw_bar_theta_evolve_N01; // standard normal
@@ -60,7 +60,7 @@ transformed parameters {
   // Declarations
   real raw_bar_theta[T, G, D]; // group means (pre-normalized)
   real bar_theta[T, G, D];     // group means (normalized)
-  matrix[Q, D] beta;	       // discrimination
+  /* matrix[Q, D] beta;	       // discrimination */
   ordered[K-1] alpha[T, Q];    // thresholds (difficulty)
   vector[D] sd_theta;	       // within-group SD of theta
   vector[D] sd_raw_bar_theta_evolve;   // transition SD of theta
@@ -126,19 +126,19 @@ transformed parameters {
     }
   }
   // Identify polarity
-  for (q in 1:Q) {
-    for (d in 1:D) {
-      if (beta_sign[q, d] == 0) {
-	beta[q, d] = beta_free[d, q];
-      }
-      if (beta_sign[q, d] < 0) {
-	beta[q, d] = beta_neg[d, q];
-      }
-      if (beta_sign[q, d] > 0) {
-	beta[q, d] = beta_pos[d, q];
-      }
-    }
-  }
+  /* for (q in 1:Q) { */
+  /*   for (d in 1:D) { */
+  /*     if (beta_sign[q, d] == 0) { */
+  /* 	beta[q, d] = beta_free[d, q]; */
+  /*     } */
+  /*     if (beta_sign[q, d] < 0) { */
+  /* 	beta[q, d] = beta_neg[d, q]; */
+  /*     } */
+  /*     if (beta_sign[q, d] > 0) { */
+  /* 	beta[q, d] = beta_pos[d, q]; */
+  /*     } */
+  /*   } */
+  /* } */
 }
 model {
   vector[N_nonzero] loglike_summands; // to store log-likelihood for summation
@@ -165,9 +165,9 @@ model {
     }
   }
   to_array_1d(raw_bar_theta_N01[1:T, 1:G, 1:D]) ~ normal(0, 1);
-  to_array_1d(beta_free[1:D, 1:Q]) ~ normal(0, 10);
-  to_array_1d(beta_neg[1:D, 1:Q]) ~ normal(0, 10);
-  to_array_1d(beta_pos[1:D, 1:Q]) ~ normal(0, 10);
+  /* to_array_1d(beta_free[1:D, 1:Q]) ~ normal(0, 10); */
+  /* to_array_1d(beta_neg[1:D, 1:Q]) ~ normal(0, 10); */
+  /* to_array_1d(beta_pos[1:D, 1:Q]) ~ normal(0, 10); */
   sd_theta_N01 ~ normal(0, 1);		    // sd_theta ~ cauchy(0, 1); 
   sd_theta_IG ~ inv_gamma(0.5, 0.5);	    // ditto
   sd_raw_bar_theta_evolve_N01 ~ normal(0, 1);	    // ditto
@@ -178,8 +178,6 @@ model {
   sd_xi_evolve_IG ~ inv_gamma(0.5, 0.5);    // ditto
   sd_gamma_evolve_N01 ~ normal(0, 1);	    // sd_gamma_evolve ~ cauchy(0, 1); 
   sd_gamma_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
-  /* sd_xi_evolve ~ cauchy(0, 1);	    /\* do trick later *\/ */
-  /* sd_gamma_evolve ~ cauchy(0, 1);	    /\* do trick later *\/ */
   B_cut ~ normal(0, 1);
   for (t in 1:T) {
     if (t == 1 || smooth_time == 0) {
@@ -196,9 +194,10 @@ model {
   // Likelihood
   for (t in 1:T) {
     for (q in 1:Q) { 
-      real z_denom =
-      	  sqrt(1 + quad_form(Sigma_theta[1:D, 1:D], to_vector(beta[q][1:D])));
-      vector[K-1] cut = p2l_vector(alpha[t, q][1:(K-1)] / z_denom);
+      /* real z_denom = */
+      /* 	  sqrt(1 + quad_form(Sigma_theta[1:D, 1:D], to_vector(beta[q][1:D]))); */
+      /* vector[K-1] cut = p2l_vector(alpha[t, q][1:(K-1)] / z_denom); */
+      vector[K-1] cut = p2l_vector(alpha[t, q][1:(K-1)]);
       for (g in 1:G) {
         for (k in 1:K) {
 	  if (SSSS[t, g, q, k] > 0) {
@@ -223,31 +222,26 @@ generated quantities {
   vector[T] xi;
   vector[P-1] gamma[T];			  
   for (t in 1:T) {
-    /* convert to bar_theta scale (TODO: MULTIDIMENSIONALITY) */
     for (d in 1:D) {
       xi[t] = (raw_xi[t] - mean_raw_bar_theta[d]) ./ sd_raw_bar_theta[d];
       gamma[t, 1:(P-1)] = raw_gamma[t, 1:(P-1)] ./ sd_raw_bar_theta[d];
     }
     for (g in 1:G) {
       for (q in 1:Q) {
-	real z_denom =
-      	  sqrt(1 + quad_form(Sigma_theta[1:D, 1:D], to_vector(beta[q][1:D])));
+	/* real z_denom = */
+      	/*   sqrt(1 + quad_form(Sigma_theta[1:D, 1:D], to_vector(beta[q][1:D]))); */
   	for (k in 1:K) {
   	  if (k == 1) {
-  	    PPPP[t, g, q, k] = 1 -
-  	      Phi_approx((beta[q][1:D] * to_vector(bar_theta[t, g, 1:D]) -
-  			  alpha[t, q][k]) / z_denom);
+  	    PPPP[t, g, q, k] =
+	      1 - Phi_approx(bar_theta[t, g, 1] - alpha[t, q][k]);
   	  }
   	  if (k > 1 && k < K) {
   	    PPPP[t, g, q, k] =
-  	      Phi_approx((beta[q][1:D] * to_vector(bar_theta[t, g, 1:D]) -
-  			  alpha[t, q][k - 1]) / z_denom) -
-  	      Phi_approx((beta[q][1:D] * to_vector(bar_theta[t, g, 1:D]) -
-  			  alpha[t, q][k]) / z_denom);
+  	      Phi_approx(bar_theta[t, g, 1] - alpha[t, q][k - 1]) -
+  	      Phi_approx(bar_theta[t, g, 1] - alpha[t, q][k]);
   	  } if (k == K) {
   	    PPPP[t, g, q, k] =
-  	      Phi_approx((beta[q][1:D] * to_vector(bar_theta[t, g, 1:D]) -
-  			  alpha[t, q][k - 1]) / z_denom);
+  	      Phi_approx(bar_theta[t, g, 1] - alpha[t, q][k - 1]);
   	  }
   	}
       }
