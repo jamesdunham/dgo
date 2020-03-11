@@ -1,6 +1,6 @@
 #' @export
 shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
-                         periods_to_est = NULL, smooth_time, smooth_cross) {
+                         periods_to_est = NULL) {
 
     ## Keep only specified variables
     itggw <- c(items, time, geo, groups, weight)
