@@ -26,7 +26,7 @@ modgirt <- function(shaped_data,
     shaped_data@stan_data$smooth_time = as.integer(smooth_time)
     shaped_data@stan_data$smooth_cross = as.integer(smooth_cross)
     if (is.null(evolving_alpha)) {
-        cat("\nWarning: Unless you are running a single-issue model,\n`evolving_alpha` must be either TRUE or FALSE.")
+        cat("\nWarning: Unless you are running a single-issue model,\n`evolving_alpha` must be either TRUE or FALSE.\n")
     } else {
         shaped_data@stan_data$evolving_alpha =
             as.integer(evolving_alpha)
