@@ -37,7 +37,7 @@ transformed data {
 parameters {
   real raw_bar_theta_N01[T, G, D]; // group means (pre-normalized, N(0,1) scale)
   ordered[K-1] raw_alpha[Q];	   // thresholds (difficulty) -> EDIT
-  /* vector[Q] alpha_drift[T];	   // question-specific drift -> EDIT */
+  vector[Q] alpha_drift[T];	   // question-specific drift -> EDIT
   /* real beta_free[D, Q];		   // discrimination (unconstrained) */
   /* real<upper=0> beta_neg[D, Q];	   // discrimination (negative) */
   /* real<lower=0> beta_pos[D, Q];	   // discrimination (positive) */
@@ -45,8 +45,8 @@ parameters {
   /* vector<lower=0>[D] sd_theta_IG;  // inverse-gamma */
   vector<lower=0>[D] sd_raw_bar_theta_evolve_N01; // standard normal
   vector<lower=0>[D] sd_raw_bar_theta_evolve_IG;  // inverse-gamma
-  /* real<lower=0> sd_alpha_evolve_N01;	  // standard normal */
-  /* real<lower=0> sd_alpha_evolve_IG;       // inverse-gamma */
+  real<lower=0> sd_alpha_evolve_N01;	  // standard normal
+  real<lower=0> sd_alpha_evolve_IG;       // inverse-gamma
   real<lower=0> sd_xi_evolve_N01;	  // standard normal
   real<lower=0> sd_xi_evolve_IG;	  // inverse-gamma
   real<lower=0> sd_gamma_evolve_N01;	  // standard normal
@@ -64,7 +64,7 @@ transformed parameters {
   ordered[K-1] alpha[T, Q];    // thresholds (difficulty)
   /* vector[D] sd_theta;	       // within-group SD of theta */
   vector[D] sd_raw_bar_theta_evolve;   // transition SD of theta
-  /* real sd_alpha_evolve;	       // transition SD of alpha */
+  real sd_alpha_evolve;	       // transition SD of alpha
   /* cov_matrix[D] Sigma_theta;   // diagonal matrix of within-group variances */
   vector[D] mean_raw_bar_theta;
   vector[D] sd_raw_bar_theta;
@@ -74,21 +74,20 @@ transformed parameters {
   /* sd_theta = sd_theta_N01 .* sqrt(sd_theta_IG); // sd_theta ~ cauchy(0, 1); */
   sd_raw_bar_theta_evolve =
     sd_raw_bar_theta_evolve_N01 .* sqrt(sd_raw_bar_theta_evolve_IG); // ditto
-  /* sd_alpha_evolve = sd_alpha_evolve_N01 * sqrt(sd_alpha_evolve_IG);  // ditto */
+  sd_alpha_evolve = sd_alpha_evolve_N01 * sqrt(sd_alpha_evolve_IG);  // ditto
   sd_xi_evolve = sd_xi_evolve_N01 .* sqrt(sd_xi_evolve_IG);	     // ditto
   sd_gamma_evolve = sd_gamma_evolve_N01 .* sqrt(sd_gamma_evolve_IG); // ditto
   /* Sigma_theta = diag_matrix(sd_theta .* sd_theta); */
   for (t in 1:T) {
     for (q in 1:Q) {
       for (k in 1:(K-1)) {
-        /* if (evolving_alpha == 0) { */
-	/*   alpha[t, q][k] = raw_alpha[q, k] + alpha_drift[1][q]; // copy first period */
-	/* } */
-	/* if (evolving_alpha == 1) { */
-	/*   // implies alpha[t,q][k] ~ N(alpha[t-1, q][k], sd_alpha_evolve) */
-	/*   alpha[t, q][k] = raw_alpha[q, k] + alpha_drift[t][q]; */
-	/* } */
-	alpha[t, q][k] = raw_alpha[q, k]; 
+        if (evolving_alpha == 0) {
+	  alpha[t, q][k] = raw_alpha[q, k] + alpha_drift[1][q]; // copy first period
+	}
+	if (evolving_alpha == 1) {
+	  // implies alpha[t,q][k] ~ N(alpha[t-1, q][k], sd_alpha_evolve)
+	  alpha[t, q][k] = raw_alpha[q, k] + alpha_drift[t][q];
+	}
       }
     }
     if (t == 1 || smooth_time == 0) {
@@ -156,14 +155,14 @@ model {
       real priormean = 100 * unused_cut[q, k] + B_cut / adjust_slp * (k - adjust_int);
       raw_alpha[q][k] ~ normal(priormean, 1);
     }
-    /* for (t in 1:T) { */
-    /*   if (t == 1 || smooth_time == 0) { */
-    /* 	alpha_drift[t][q] ~ normal(0, 1); */
-    /*   } */
-    /*   if (t > 1 && smooth_time == 1) { */
-    /* 	alpha_drift[t][q] ~ normal(alpha_drift[t-1][q], sd_alpha_evolve); */
-    /*   } */
-    /* } */
+    for (t in 1:T) {
+      if (t == 1 || smooth_time == 0) {
+    	alpha_drift[t][q] ~ normal(0, 1);
+      }
+      if (t > 1 && smooth_time == 1) {
+    	alpha_drift[t][q] ~ normal(alpha_drift[t-1][q], sd_alpha_evolve);
+      }
+    }
   }
   to_array_1d(raw_bar_theta_N01[1:T, 1:G, 1:D]) ~ normal(0, 1);
   /* to_array_1d(beta_free[1:D, 1:Q]) ~ normal(0, 10); */
@@ -173,8 +172,8 @@ model {
   /* sd_theta_IG ~ inv_gamma(0.5, 0.5);	    // ditto */
   sd_raw_bar_theta_evolve_N01 ~ normal(0, 1);	    // ditto
   sd_raw_bar_theta_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
-  /* sd_alpha_evolve_N01 ~ normal(0, 1);	    // ditto */
-  /* sd_alpha_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto */
+  sd_alpha_evolve_N01 ~ normal(0, 1);	    // ditto
+  sd_alpha_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
   sd_xi_evolve_N01 ~ normal(0, 1);	    // sd_xi_evolve ~ cauchy(0, 1); 
   sd_xi_evolve_IG ~ inv_gamma(0.5, 0.5);    // ditto
   sd_gamma_evolve_N01 ~ normal(0, 1);	    // sd_gamma_evolve ~ cauchy(0, 1); 
