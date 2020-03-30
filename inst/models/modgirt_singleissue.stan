@@ -60,7 +60,7 @@ transformed parameters {
   sd_raw_bar_theta_evolve =
     sd_raw_bar_theta_evolve_N01 .* sqrt(sd_raw_bar_theta_evolve_IG);
   sd_xi_evolve = sd_xi_evolve_N01 .* sqrt(sd_xi_evolve_IG);	     
-  sd_gamma_evolve = sd_gamma_evolve_N01 .* sqrt(sd_gamma_evolve_IG);
+  sd_gamma_evolve = 0.1 .* sd_gamma_evolve_N01 .* sqrt(sd_gamma_evolve_IG);
   for (t in 1:T) {
     if (t == 1 || smooth_time == 0) {
       for (g in 1:G) {
