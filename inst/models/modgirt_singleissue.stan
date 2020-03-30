@@ -58,9 +58,9 @@ transformed parameters {
   real<lower=0> sd_xi_evolve;		  // evolution sd of xi
   // Assignments
   sd_raw_bar_theta_evolve =
-    sd_raw_bar_theta_evolve_N01 .* sqrt(sd_raw_bar_theta_evolve_IG); // ditto
-  sd_xi_evolve = sd_xi_evolve_N01 .* sqrt(sd_xi_evolve_IG);	     // ditto
-  sd_gamma_evolve = sd_gamma_evolve_N01 .* sqrt(sd_gamma_evolve_IG); // ditto
+    sd_raw_bar_theta_evolve_N01 .* sqrt(sd_raw_bar_theta_evolve_IG);
+  sd_xi_evolve = sd_xi_evolve_N01 .* sqrt(sd_xi_evolve_IG);	     
+  sd_gamma_evolve = sd_gamma_evolve_N01 .* sqrt(sd_gamma_evolve_IG);
   for (t in 1:T) {
     if (t == 1 || smooth_time == 0) {
       for (g in 1:G) {
@@ -97,20 +97,6 @@ transformed parameters {
       }
     }
   }
-  // Identify polarity
-  /* for (q in 1:Q) { */
-  /*   for (d in 1:D) { */
-  /*     if (beta_sign[q, d] == 0) { */
-  /* 	beta[q, d] = beta_free[d, q]; */
-  /*     } */
-  /*     if (beta_sign[q, d] < 0) { */
-  /* 	beta[q, d] = beta_neg[d, q]; */
-  /*     } */
-  /*     if (beta_sign[q, d] > 0) { */
-  /* 	beta[q, d] = beta_pos[d, q]; */
-  /*     } */
-  /*   } */
-  /* } */
 }
 model {
   vector[N_nonzero] loglike_summands; // to store log-likelihood for summation
@@ -139,9 +125,9 @@ model {
   B_cut ~ normal(0, 1);
   for (t in 1:T) {
     if (t == 1 || smooth_time == 0) {
-      delta_tbar[t] ~ normal(.5, 1);
+      delta_tbar[t] ~ normal(.5, .25);
       raw_xi[t] ~ normal(0, 10);
-      raw_gamma[t] ~ normal(0, 1);
+      raw_gamma[t] ~ normal(0, 10);
     }
     if (t > 1 && smooth_time == 1) {
       raw_xi[t] ~ normal(raw_xi[t-1], sd_xi_evolve);
