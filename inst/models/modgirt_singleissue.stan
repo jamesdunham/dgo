@@ -125,7 +125,7 @@ model {
   B_cut ~ normal(0, 1);
   for (t in 1:T) {
     if (t == 1 || smooth_time == 0) {
-      delta_tbar[t] ~ normal(.5, .25);
+      delta_tbar[t] ~ normal(.75, .25);
       raw_xi[t] ~ normal(0, 10);
       raw_gamma[t] ~ normal(0, 10);
     }
