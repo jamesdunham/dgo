@@ -79,8 +79,8 @@ transformed parameters {
 	  // N(raw_xi[t] + delta_tbar[t] * raw_bar_theta[t-1],
 	  // sd_raw_bar_theta_evolve)
 	  raw_bar_theta[t, g, d] = raw_xi[t]
-	    /* + delta_tbar[t] * (raw_bar_theta[t-1, g, d] - */
-	    /* 		       mean(raw_bar_theta[t-1, 1:G, d])) // centered */
+	    + delta_tbar[t] * (raw_bar_theta[t-1, g, d] -
+	    		       mean(raw_bar_theta[t-1, 1:G, d])) // centered
 	    + (raw_bar_theta[t-1, g, d] - mean(raw_bar_theta[t-1, 1:G, d]))
 	    + sd_raw_bar_theta_evolve[d] * raw_bar_theta_N01[t, g, d]; 
 	}
