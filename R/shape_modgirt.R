@@ -1,6 +1,6 @@
 #' @export
 shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
-                         periods_to_est = NULL) {
+                         periods_to_est = NULL, custom_XX = NULL) {
 
     ## Keep only specified variables
     itggw <- c(items, time, geo, groups, weight)
@@ -141,13 +141,18 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
         N_nonzero = sum(SSSS > 0))
     
     ## Create hierarchical design matrix
-    stan_data$XX = SSSS %>%
-        as.data.frame.table %>%
-        tidyr::separate(col = "Var2", into = c(geo, groups), sep = "\\_\\_") %>%
-        select(one_of(geo, groups)) %>%
-        sapply(unique) %>%
-        expand.grid() %>%
-        model.matrix(~., data = .)
+    if (is.null(custom_XX)) {
+        stan_data$XX = SSSS %>%
+            as.data.frame.table %>%
+            tidyr::separate(col = "Var2", into = c(geo, groups),
+                            sep = "\\_\\_") %>%
+            select(one_of(geo, groups)) %>%
+            sapply(unique) %>%
+            expand.grid() %>%
+            model.matrix(~., data = .)
+    } else {
+        stan_data$XX = custom_XX
+    }
     stan_data$P = ncol(stan_data$XX)
 
 
