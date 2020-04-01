@@ -42,6 +42,8 @@ parameters {
   real<lower=0> sd_xi_evolve_IG;	  // inverse-gamma
   real<lower=0> sd_gamma_evolve_N01;	  // standard normal
   real<lower=0> sd_gamma_evolve_IG;       // inverse-gamma
+  real<lower=0> sd_delta_evolve_N01;	  // standard normal
+  real<lower=0> sd_delta_evolve_IG;       // inverse-gamma
   real<lower=0> B_cut;			  // slope for cutpoint prior
   vector[T] raw_xi;			  // year-specific intercept
   vector[T] delta_tbar;			  // lag coefficient
@@ -55,17 +57,21 @@ transformed parameters {
   vector[D] mean_raw_bar_theta;
   vector[D] sd_raw_bar_theta;
   real<lower=0> sd_gamma_evolve;	  // evolution sd of gamma
+  real<lower=0> sd_delta_evolve;	  // evolution sd of delta_tbar
   real<lower=0> sd_xi_evolve;		  // evolution sd of xi
   // Assignments
   sd_raw_bar_theta_evolve =
     sd_raw_bar_theta_evolve_N01 .* sqrt(sd_raw_bar_theta_evolve_IG);
-  sd_xi_evolve = sd_xi_evolve_N01 .* sqrt(sd_xi_evolve_IG);	     
+  sd_xi_evolve = sd_xi_evolve_N01 .* sqrt(sd_xi_evolve_IG);
+  /// half-Cauchy(0, .1)
   sd_gamma_evolve = 0.1 .* sd_gamma_evolve_N01 .* sqrt(sd_gamma_evolve_IG);
+  sd_delta_evolve = 0.1 .* sd_delta_evolve_N01 .* sqrt(sd_delta_evolve_IG);
   for (t in 1:T) {
     if (t == 1 || smooth_time == 0) {
       for (g in 1:G) {
 	for (d in 1:D) {
-	  // implies raw_bar_theta[t, g, d] ~ N(raw_xi[t] + XX_ctr * raw_gamma[t], 1)
+	  // implies raw_bar_theta[t, g, d] ~
+	  // N(raw_xi[t] + XX_ctr*raw_gamma[t], 1)
 	  raw_bar_theta[t, g, d] = raw_xi[t]
 	    + XX_ctr[g, 2:P] * raw_gamma[t][1:(P-1)] * smooth_cross
 	    + raw_bar_theta_N01[t, g, d];
@@ -122,17 +128,24 @@ model {
   sd_xi_evolve_IG ~ inv_gamma(0.5, 0.5);    // ditto
   sd_gamma_evolve_N01 ~ normal(0, 1);	    // sd_gamma_evolve ~ cauchy(0, .1); 
   sd_gamma_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
+  sd_delta_evolve_N01 ~ normal(0, 1);	    // sd_delta_evolve ~ cauchy(0, .1); 
+  sd_delta_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
   B_cut ~ normal(0, 1);
   for (t in 1:T) {
     if (t == 1 || smooth_time == 0) {
-      delta_tbar[t] ~ normal(.75, .25);
       raw_xi[t] ~ normal(0, 10);
+      delta_tbar[t] ~ normal(.75, .25);
       raw_gamma[t] ~ normal(0, 10);
     }
     if (t > 1 && smooth_time == 1) {
       raw_xi[t] ~ normal(raw_xi[t-1], sd_xi_evolve);
-      raw_gamma[t] ~ normal(raw_gamma[t-1], sd_gamma_evolve);
-      delta_tbar[t] ~ normal(delta_tbar[t-1], sd_gamma_evolve);
+      delta_tbar[t] ~ normal(delta_tbar[t-1], sd_delta_evolve);
+      if (t == 2) { // draw anew bc gamma has different meaning after t = 1
+	raw_gamma[t] ~ normal(0, 10);
+      }
+      if (t > 2) {
+	raw_gamma[t] ~ normal(raw_gamma[t-1], sd_gamma_evolve);
+      }
     }
   }
   // Likelihood
