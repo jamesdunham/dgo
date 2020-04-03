@@ -40,12 +40,10 @@ parameters {
   vector<lower=0>[D] sd_raw_bar_theta_evolve_IG;  // inverse-gamma
   real<lower=0> sd_xi_evolve_N01;	  // standard normal
   real<lower=0> sd_xi_evolve_IG;	  // inverse-gamma
-  real<lower=0> sd_delta_evolve_N01;	  // standard normal
-  real<lower=0> sd_delta_evolve_IG;       // inverse-gamma
   real<lower=0> B_cut;			  // slope for cutpoint prior
   vector[T] raw_xi;			  // year-specific intercept
   vector[1] delta_tbar;			  // lag coefficient
-  vector[P-1] raw_gamma;		  // hierarchical parameters
+  vector[P-1] raw_gamma[1];		  // hierarchical parameters
 }
 transformed parameters {
   // Declarations
@@ -60,7 +58,6 @@ transformed parameters {
     sd_raw_bar_theta_evolve_N01 .* sqrt(sd_raw_bar_theta_evolve_IG);
   sd_xi_evolve = sd_xi_evolve_N01 .* sqrt(sd_xi_evolve_IG);
   /// half-Cauchy(0, .1)
-  sd_delta_evolve = 0.1 .* sd_delta_evolve_N01 .* sqrt(sd_delta_evolve_IG);
   for (t in 1:T) {
     if (t == 1 || smooth_time == 0) {
       for (g in 1:G) {
@@ -68,7 +65,7 @@ transformed parameters {
 	  // implies raw_bar_theta[t, g, d] ~
 	  // N(raw_xi[t] + XX_ctr*raw_gamma, 1)
 	  raw_bar_theta[t, g, d] = raw_xi[t]
-	    + XX_ctr[g, 2:P] * raw_gamma[1:(P-1)] * smooth_cross
+	    + XX_ctr[g, 2:P] * raw_gamma[1][1:(P-1)] * smooth_cross
 	    + raw_bar_theta_N01[t, g, d];
 	}
       }
@@ -80,8 +77,8 @@ transformed parameters {
 	  // N(raw_xi[t] + delta_tbar * raw_bar_theta[t-1],
 	  // sd_raw_bar_theta_evolve)
 	  raw_bar_theta[t, g, d] = raw_xi[t]
-	    + delta_tbar .* (raw_bar_theta[t-1, g, d] -
-			     mean(raw_bar_theta[t-1, 1:G, d])) // centered
+	    + delta_tbar[1] * (raw_bar_theta[t-1, g, d] -
+	    		       mean(raw_bar_theta[t-1, 1:G, d])) // centered
 	    + sd_raw_bar_theta_evolve[d] * raw_bar_theta_N01[t, g, d]; 
 	}
       }
@@ -121,11 +118,9 @@ model {
   sd_raw_bar_theta_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
   sd_xi_evolve_N01 ~ normal(0, 1);	    // sd_xi_evolve ~ cauchy(0, 1); 
   sd_xi_evolve_IG ~ inv_gamma(0.5, 0.5);    // ditto
-  sd_delta_evolve_N01 ~ normal(0, 1);	    // sd_delta_evolve ~ cauchy(0, .1); 
-  sd_delta_evolve_IG ~ inv_gamma(0.5, 0.5); // ditto
   B_cut ~ normal(0, 1);
-  raw_gamma ~ normal(0, 10);
   delta_tbar ~ normal(.75, .25);
+  raw_gamma[1] ~ normal(0, 10);
   for (t in 1:T) {
     if (t == 1 || smooth_time == 0) {
       raw_xi[t] ~ normal(0, 10);
@@ -154,15 +149,13 @@ model {
   target += sum(loglike_summands);
 }
 generated quantities {
-  // declarations
   vector[D] sd_bar_theta_evolve =
     sd_raw_bar_theta_evolve[1:D] ./ sd_raw_bar_theta;
   real<lower=0,upper=1> PPPP[T, G, Q, K];
   vector[T] xi;
-  vector[P-1] gamma;
-  // assignments
+  vector[P-1] gamma[1];			  
   for (d in 1:D) {
-    gamma[1:(P-1)] = raw_gamma[1:(P-1)] ./ sd_raw_bar_theta[d];
+    gamma[1, 1:(P-1)] = raw_gamma[1, 1:(P-1)] ./ sd_raw_bar_theta[1];
   }
   for (t in 1:T) {
     for (d in 1:D) {
