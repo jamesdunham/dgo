@@ -20,7 +20,8 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
         ## While data are still wide, assign respondent IDs
         dplyr::mutate(respondent_id = dplyr::row_number()) %>%
         ## Convert items to factors (without labels)
-        mutate_at(vars(one_of(items)), list(~as.integer(as.factor(.)))) %>%
+        mutate_at(vars(one_dplyr::of(items)),
+                  list(~as.integer(as.factor(.)))) %>%
         ## Melt to long
         reshape2::melt(measure.vars = items, variable.name = "item")
 
@@ -35,6 +36,11 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
     if (!length(time)) {
         time <- "time"
         opin_long$time <- periods_to_est <- 1
+    }
+
+    ## Create hierarchical formula if one not given
+    if(is.null(XX_formula)) {
+        XX_formula <- ~.
     }
 
     ## Convert time variable to factor in case some years have no data
@@ -91,7 +97,7 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
         dplyr::group_by_at(dplyr::vars(dplyr::one_of(tgq))) %>%
         dplyr::mutate(n_tgq = dplyr::n()) %>%
         ## numerator is the observation count in t,g,q,k multipled by w*
-        dplyr::group_by(level, add = TRUE) %>%
+        dplyr::group_by(level, .add = TRUE) %>%
         ## This gives us a fraction of n*
         dplyr::summarise(s_prop = sum(weight_star / n_tgq))
 
@@ -144,7 +150,7 @@ shape_modgirt = function(data, items, time, geo, groups = NULL, weight = NULL,
     stan_data$XX = SSSS %>%
         as.data.frame.table %>%
         tidyr::separate(col = "Var2", into = c(geo, groups), sep = "\\_\\_") %>%
-        select(one_of(geo, groups)) %>%
+        dplyr::select(one_of(geo, groups)) %>%
         sapply(unique) %>%
         expand.grid() %>%
         model.matrix(XX_formula, data = .)
